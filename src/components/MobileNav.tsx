@@ -20,7 +20,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
         />
         <NavButton
           icon={<ChatIcon size={24} />}
-          label="Chatt"
+          label="Diskus"
           isActive={activeTab === "chatt"}
           onClick={() => onTabChange("chatt")}
           badge={2}
