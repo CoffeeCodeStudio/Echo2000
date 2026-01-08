@@ -222,16 +222,16 @@ export function ChatWindow({
         {/* Messages Panel */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-card p-3 font-mono text-sm">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm">
             {messages.map((message) => (
-              <div key={message.id} className="mb-1">
+              <div key={message.id} className="mb-2">
                 <span className={cn(
-                  "font-bold",
-                  message.isSelf ? "text-[hsl(220,80%,45%)]" : "text-[hsl(340,70%,45%)]"
+                  "font-bold text-sm",
+                  message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-pink-600 dark:text-pink-400"
                 )}>
                   {message.senderName} säger:
                 </span>
-                <p className="ml-2 text-foreground whitespace-pre-wrap">{message.content}</p>
+                <p className="ml-2 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">{message.content}</p>
               </div>
             ))}
             {isTyping && (
