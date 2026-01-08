@@ -13,9 +13,10 @@ import { Klotterplanket } from "@/components/Klotterplanket";
 import { GamesSection } from "@/components/GamesSection";
 import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
+import { FAQSection } from "@/components/FAQSection";
 import { cn } from "@/lib/utils";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
 const communities = [
   {
@@ -139,6 +140,9 @@ export default function Index() {
 
       case "lajv":
         return <LajvSection />;
+
+      case "faq":
+        return <FAQSection />;
 
       case "profil":
         return <ProfilePage isOwnProfile={true} />;
