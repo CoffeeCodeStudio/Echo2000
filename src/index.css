@@ -17,86 +17,88 @@
 
 @layer base {
   :root {
-    /* Warm 2000s palette - softer, less neon */
-    --background: 240 15% 10%;
-    --foreground: 45 20% 95%;
+    /* LunarStorm-inspirerad palett */
+    --background: 230 35% 12%;
+    --foreground: 45 30% 96%;
 
-    --card: 240 12% 14%;
-    --card-foreground: 45 20% 95%;
+    --card: 230 30% 16%;
+    --card-foreground: 45 30% 96%;
 
-    --popover: 240 15% 12%;
-    --popover-foreground: 45 20% 95%;
+    --popover: 230 35% 14%;
+    --popover-foreground: 45 30% 96%;
 
-    /* Warm coral/peach primary */
-    --primary: 15 80% 65%;
-    --primary-foreground: 240 15% 10%;
+    /* LunarStorm orange/gul */
+    --primary: 32 95% 55%;
+    --primary-foreground: 230 35% 10%;
 
-    --secondary: 280 25% 25%;
-    --secondary-foreground: 45 20% 95%;
+    /* Lila accent */
+    --secondary: 260 40% 35%;
+    --secondary-foreground: 45 30% 96%;
 
-    --muted: 240 10% 20%;
-    --muted-foreground: 240 10% 55%;
+    --muted: 230 25% 22%;
+    --muted-foreground: 230 15% 60%;
 
-    /* Soft lavender accent */
-    --accent: 270 50% 70%;
-    --accent-foreground: 240 15% 10%;
+    /* Ljusblå accent */
+    --accent: 200 70% 55%;
+    --accent-foreground: 230 35% 10%;
 
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 45 20% 98%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 45 30% 98%;
 
-    --border: 240 10% 22%;
-    --input: 240 10% 18%;
-    --ring: 15 80% 65%;
+    --border: 230 25% 25%;
+    --input: 230 25% 20%;
+    --ring: 32 95% 55%;
 
     --radius: 0.75rem;
 
-    /* Softer status colors */
-    --online-green: 150 60% 45%;
-    --away-orange: 35 70% 55%;
-    --busy-red: 0 55% 50%;
-    --offline-gray: 240 8% 45%;
+    /* Status colors */
+    --online-green: 145 65% 42%;
+    --away-orange: 32 85% 55%;
+    --busy-red: 0 60% 50%;
+    --offline-gray: 230 15% 45%;
     
-    --glow-primary: 15 80% 65%;
-    --glow-accent: 270 50% 70%;
-    --glow-online: 150 60% 45%;
+    --glow-primary: 32 95% 55%;
+    --glow-accent: 200 70% 55%;
+    --glow-online: 145 65% 42%;
     
-    --gradient-start: 240 15% 10%;
-    --gradient-mid: 260 20% 14%;
-    --gradient-end: 280 18% 12%;
+    /* LunarStorm gradient - blå till lila */
+    --gradient-start: 230 40% 15%;
+    --gradient-mid: 250 35% 18%;
+    --gradient-end: 270 30% 16%;
     
-    --chat-bubble-self: 15 40% 25%;
-    --chat-bubble-other: 240 12% 20%;
+    --chat-bubble-self: 32 50% 25%;
+    --chat-bubble-other: 230 25% 22%;
 
-    --sidebar-background: 240 12% 12%;
-    --sidebar-foreground: 45 20% 90%;
-    --sidebar-primary: 15 80% 65%;
-    --sidebar-primary-foreground: 240 15% 10%;
-    --sidebar-accent: 280 25% 30%;
-    --sidebar-accent-foreground: 45 20% 95%;
-    --sidebar-border: 240 10% 20%;
-    --sidebar-ring: 15 80% 65%;
+    --sidebar-background: 230 30% 14%;
+    --sidebar-foreground: 45 30% 92%;
+    --sidebar-primary: 32 95% 55%;
+    --sidebar-primary-foreground: 230 35% 10%;
+    --sidebar-accent: 260 40% 35%;
+    --sidebar-accent-foreground: 45 30% 96%;
+    --sidebar-border: 230 25% 22%;
+    --sidebar-ring: 32 95% 55%;
   }
 
   .dark {
-    --background: 240 15% 10%;
-    --foreground: 45 20% 95%;
-    --card: 240 12% 14%;
-    --card-foreground: 45 20% 95%;
-    --popover: 240 15% 12%;
-    --popover-foreground: 45 20% 95%;
-    --primary: 15 80% 65%;
-    --primary-foreground: 240 15% 10%;
-    --secondary: 280 25% 25%;
-    --secondary-foreground: 45 20% 95%;
-    --muted: 240 10% 20%;
-    --muted-foreground: 240 10% 55%;
-    --accent: 270 50% 70%;
-    --accent-foreground: 240 15% 10%;
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 45 20% 98%;
-    --border: 240 10% 22%;
-    --input: 240 10% 18%;
-    --ring: 15 80% 65%;
+    --background: 230 35% 12%;
+    --foreground: 45 30% 96%;
+    --card: 230 30% 16%;
+    --card-foreground: 45 30% 96%;
+    --popover: 230 35% 14%;
+    --popover-foreground: 45 30% 96%;
+    --primary: 32 95% 55%;
+    --primary-foreground: 230 35% 10%;
+    --secondary: 260 40% 35%;
+    --secondary-foreground: 45 30% 96%;
+    --muted: 230 25% 22%;
+    --muted-foreground: 230 15% 60%;
+    --accent: 200 70% 55%;
+    --accent-foreground: 230 35% 10%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 45 30% 98%;
+    --border: 230 25% 25%;
+    --input: 230 25% 20%;
+    --ring: 32 95% 55%;
   }
 }
 
