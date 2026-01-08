@@ -281,4 +281,48 @@
                   0 0 30px hsl(var(--primary) / 0.2);
     }
   }
+
+  /* Pixel icon animations for notifications */
+  .animate-icon-bounce {
+    animation: icon-bounce 1s ease-in-out infinite;
+  }
+
+  @keyframes icon-bounce {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-3px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(-2px); }
+  }
+
+  .animate-icon-wiggle {
+    animation: icon-wiggle 0.5s ease-in-out infinite;
+  }
+
+  @keyframes icon-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+
+  .animate-icon-walk {
+    animation: icon-walk 0.6s ease-in-out infinite;
+  }
+
+  @keyframes icon-walk {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-1px) rotate(-3deg); }
+    50% { transform: translateX(0) rotate(0deg); }
+    75% { transform: translateX(1px) rotate(3deg); }
+  }
+
+  .animate-icon-jump {
+    animation: icon-jump 0.8s ease-in-out infinite;
+  }
+
+  @keyframes icon-jump {
+    0%, 100% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-4px) scale(1.05); }
+    50% { transform: translateY(0) scale(0.95); }
+    70% { transform: translateY(-2px) scale(1.02); }
+  }
 }

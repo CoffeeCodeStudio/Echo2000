@@ -62,6 +62,8 @@ function NavButton({
   onClick: () => void;
   badge?: number;
 }) {
+  const hasNotification = badge && badge > 0;
+  
   return (
     <button
       onClick={onClick}
@@ -72,10 +74,13 @@ function NavButton({
           : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <div className="relative">
+      <div className={cn(
+        "relative",
+        hasNotification && "animate-icon-walk"
+      )}>
         {icon}
-        {badge && badge > 0 && (
-          <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
+        {hasNotification && (
+          <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
             {badge}
           </span>
         )}
