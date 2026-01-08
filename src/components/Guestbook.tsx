@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Send, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { cn } from "@/lib/utils";
+import { GoodVibe } from "./GoodVibe";
 
 interface GuestbookEntry {
   id: string;
@@ -11,8 +11,6 @@ interface GuestbookEntry {
   authorAvatar?: string;
   message: string;
   timestamp: string;
-  likes: number;
-  isLiked: boolean;
 }
 
 const initialEntries: GuestbookEntry[] = [
@@ -21,32 +19,24 @@ const initialEntries: GuestbookEntry[] = [
     author: "Emma",
     message: "Vilken cool profil du har! Minns du när vi chattade på LunarStorm på riktigt? 🌙✨",
     timestamp: "idag kl 14:32",
-    likes: 3,
-    isLiked: false,
   },
   {
     id: "2",
     author: "Johan",
     message: "Hej kompansen! Länge sedan, hoppas allt är bra med dig. Nostalgitripp att vara här igen!",
     timestamp: "igår kl 21:15",
-    likes: 7,
-    isLiked: true,
   },
   {
     id: "3",
     author: "Lisa",
     message: "💕 Kramis! Saknar de gamla goda tiderna. Vi måste ses snart IRL!",
     timestamp: "2 dagar sedan",
-    likes: 12,
-    isLiked: false,
   },
   {
     id: "4",
     author: "Marcus",
     message: "Såg din nya bild, snygging! 😎 Hoppas du har det bra. Skriv i min gästbok också!",
     timestamp: "3 dagar sedan",
-    likes: 5,
-    isLiked: false,
   },
 ];
 
@@ -62,24 +52,10 @@ export function Guestbook() {
       author: "Du",
       message: newMessage,
       timestamp: "just nu",
-      likes: 0,
-      isLiked: false,
     };
 
     setEntries([newEntry, ...entries]);
     setNewMessage("");
-  };
-
-  const toggleLike = (id: string) => {
-    setEntries(entries.map(entry => 
-      entry.id === id 
-        ? { 
-            ...entry, 
-            isLiked: !entry.isLiked, 
-            likes: entry.isLiked ? entry.likes - 1 : entry.likes + 1 
-          }
-        : entry
-    ));
   };
 
   return (
@@ -126,18 +102,9 @@ export function Guestbook() {
                   </div>
                   <p className="text-sm mt-1 text-foreground/90">{entry.message}</p>
                   
-                  {/* Actions */}
+                  {/* Actions - Good-Vibe replaces likes */}
                   <div className="flex items-center gap-4 mt-3">
-                    <button
-                      onClick={() => toggleLike(entry.id)}
-                      className={cn(
-                        "flex items-center gap-1 text-xs transition-colors",
-                        entry.isLiked ? "text-accent" : "text-muted-foreground hover:text-accent"
-                      )}
-                    >
-                      <Heart className={cn("w-4 h-4", entry.isLiked && "fill-current")} />
-                      {entry.likes}
-                    </button>
+                    <GoodVibe targetType="guestbook" targetId={entry.id} />
                     <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                       <MessageCircle className="w-4 h-4" />
                       Svara

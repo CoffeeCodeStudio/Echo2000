@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      good_vibe_allowances: {
+        Row: {
+          created_at: string
+          id: string
+          is_paid_user: boolean
+          last_reset_at: string
+          monthly_allowance: number
+          updated_at: string
+          user_id: string
+          vibes_used_this_month: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_paid_user?: boolean
+          last_reset_at?: string
+          monthly_allowance?: number
+          updated_at?: string
+          user_id: string
+          vibes_used_this_month?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_paid_user?: boolean
+          last_reset_at?: string
+          monthly_allowance?: number
+          updated_at?: string
+          user_id?: string
+          vibes_used_this_month?: number
+        }
+        Relationships: []
+      }
+      good_vibes: {
+        Row: {
+          created_at: string
+          giver_id: string
+          id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          giver_id: string
+          id?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          giver_id?: string
+          id?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       lajv_messages: {
         Row: {
           avatar_url: string | null
@@ -49,7 +106,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_good_vibes: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: number
+      }
       delete_expired_lajv_messages: { Args: never; Returns: undefined }
+      give_good_vibe: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: Json
+      }
+      has_user_vibed: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: boolean
+      }
+      reset_monthly_vibes_if_needed: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
