@@ -44,13 +44,14 @@ interface WinampPlayerProps {
   className?: string;
 }
 
-// Sveriges Radio stations - direct URLs (no CORS needed for audio playback)
+// Radio stations
 const RADIO_STATIONS: RadioStation[] = [
   { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi.mp3", genre: "Pop/Hits", hasMetadata: true },
   { id: "p1", name: "Sveriges Radio P1", url: "https://sverigesradio.se/topsy/direkt/132-hi.mp3", genre: "Nyheter/Kultur", hasMetadata: true },
   { id: "p2", name: "Sveriges Radio P2", url: "https://sverigesradio.se/topsy/direkt/2562-hi.mp3", genre: "Klassiskt", hasMetadata: true },
   { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
   { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
+  { id: "starfm", name: "Star FM", url: "https://fm05-ice.stream.khz.se/fm05_mp3?platform=web", genre: "Hits/Classic rock" },
 ];
 
 const VISUALIZATION_MODES = [
