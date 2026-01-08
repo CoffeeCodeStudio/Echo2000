@@ -13,6 +13,7 @@ import {
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
+import { AvatarPicker, avatarOptions, type AvatarOption } from "./AvatarPicker";
 
 const occupationOptions = [
   "Student",
@@ -153,15 +154,42 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
           {/* Avatar */}
           <div className="flex justify-center -mt-16 mb-4">
             <div className="relative">
-              <Avatar
-                src={profile.avatar}
-                name={profile.name}
-                status={profile.status}
-                size="xl"
-                className="ring-4 ring-card"
-              />
+              {isEditing ? (
+                <button
+                  onClick={() => {}}
+                  className="relative group"
+                >
+                  <Avatar
+                    src={editData.avatar}
+                    name={editData.name}
+                    status={profile.status}
+                    size="xl"
+                    className="ring-4 ring-card group-hover:ring-primary/50 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit2 className="w-6 h-6 text-white" />
+                  </div>
+                </button>
+              ) : (
+                <Avatar
+                  src={profile.avatar}
+                  name={profile.name}
+                  status={profile.status}
+                  size="xl"
+                  className="ring-4 ring-card"
+                />
+              )}
             </div>
           </div>
+
+          {/* Avatar Picker (only in edit mode) */}
+          {isEditing && (
+            <AvatarPicker
+              selectedAvatarId={editData.avatar ? avatarOptions.find(a => a.src === editData.avatar)?.id : undefined}
+              onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar: avatar.src })}
+              className="mb-6"
+            />
+          )}
 
           {/* Profile Info */}
           <div className="text-center">
