@@ -100,20 +100,16 @@ export function LajvSection() {
   };
 
   const handleSendMessage = async () => {
-    if (!user) {
-      setShowAuthDialog(true);
-      return;
-    }
-
     if (!newMessage.trim()) return;
 
     setSending(true);
-    const username = user.user_metadata?.username || user.email?.split('@')[0] || 'Anonym';
+    const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Gäst';
+    const oderId = user?.id || crypto.randomUUID();
 
     const { error } = await supabase.from('lajv_messages').insert({
-      user_id: user.id,
+      user_id: oderId,
       username,
-      avatar_url: user.user_metadata?.avatar_url || null,
+      avatar_url: user?.user_metadata?.avatar_url || null,
       message: newMessage.trim(),
     });
 
@@ -178,50 +174,40 @@ export function LajvSection() {
 
       {/* Message input area - at top */}
       <div className="p-4 border-b border-border bg-card/50">
-        {user ? (
-          <div className="flex gap-3">
-            <Avatar
-              name={user.user_metadata?.username || user.email?.split('@')[0] || 'Du'}
-              status="online"
-              size="sm"
+        <div className="flex gap-3">
+          <Avatar
+            name={user?.user_metadata?.username || user?.email?.split('@')[0] || 'Gäst'}
+            status="online"
+            size="sm"
+          />
+          <div className="flex-1 flex flex-col gap-2">
+            <Textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Dela något med alla just nu..."
+              className="min-h-[60px] max-h-[120px] resize-none bg-input border-border focus:ring-primary input-glow"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
-            <div className="flex-1 flex flex-col gap-2">
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Dela något med alla just nu..."
-                className="min-h-[60px] max-h-[120px] resize-none bg-input border-border focus:ring-primary input-glow"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-              />
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">
-                  {newMessage.length}/280
-                </span>
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={sending || !newMessage.trim() || newMessage.length > 280}
-                  className="btn-nostalgic gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  Skicka
-                </Button>
-              </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">
+                {newMessage.length}/280 {!user && '(skriver som Gäst)'}
+              </span>
+              <Button
+                onClick={handleSendMessage}
+                disabled={sending || !newMessage.trim() || newMessage.length > 280}
+                className="btn-nostalgic gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Skicka
+              </Button>
             </div>
           </div>
-        ) : (
-          <div className="flex flex-col items-center gap-3 py-4">
-            <p className="text-muted-foreground text-sm">Logga in för att dela lajv-meddelanden</p>
-            <Button onClick={() => setShowAuthDialog(true)} className="btn-nostalgic gap-2">
-              <LogIn className="w-4 h-4" />
-              Logga in
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Messages list */}
