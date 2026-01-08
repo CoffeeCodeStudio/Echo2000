@@ -83,7 +83,7 @@ export function ChatWindow({
   friendName = "Emma", 
   friendStatus = "online",
   friendStatusMessage = "redo för helgen 🎉",
-  friendEmail = "emma@nostalgia.chat",
+  friendEmail = "emma@echo2000.se",
   className 
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
