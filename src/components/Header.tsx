@@ -1,9 +1,10 @@
-import { Menu, Mail, BookOpen, MessageSquare, Users, User, Bell, Search } from "lucide-react";
+import { Menu, Bell, Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar } from "./Avatar";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { GuestbookIcon, MailIcon, ChatIcon, FriendsIcon } from "./LunarIcons";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
 
@@ -18,10 +19,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const [mailCount] = useState(5);
 
   const mainNavItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: "gastbok", label: "GÄSTBOK", icon: <BookOpen className="w-4 h-4" /> },
-    { id: "mejl", label: "MEJL", icon: <Mail className="w-4 h-4" />, badge: mailCount },
-    { id: "chatt", label: "CHATT", icon: <MessageSquare className="w-4 h-4" /> },
-    { id: "vanner", label: "VÄNNER", icon: <Users className="w-4 h-4" /> },
+    { id: "gastbok", label: "GÄSTBOK", icon: <GuestbookIcon size={20} /> },
+    { id: "mejl", label: "MEJL", icon: <MailIcon size={20} />, badge: mailCount },
+    { id: "chatt", label: "CHATT", icon: <ChatIcon size={20} /> },
+    { id: "vanner", label: "VÄNNER", icon: <FriendsIcon size={20} /> },
   ];
 
   const subNavItems: { id: Tab; label: string }[] = [
