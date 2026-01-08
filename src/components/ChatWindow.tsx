@@ -9,6 +9,8 @@ import { StatusIndicator } from "./StatusIndicator";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
+import { MsnLogin } from "./MsnLogin";
+import { MsnEmoticonPicker, quickEmoticons, convertMsnEmoticons } from "./MsnEmoticons";
 
 interface Message {
   id: string;
@@ -21,54 +23,52 @@ interface Message {
 const initialMessages: Message[] = [
   {
     id: "1",
-    content: "Hej! Minns du när vi brukade chatta på MSN? 😄",
+    content: "Hej! Minns du när vi brukade chatta på MSN? :D",
     timestamp: "14:30",
     isSelf: false,
     senderName: "Emma",
   },
   {
     id: "2",
-    content: "Ja! De gamla goda tiderna med egna smileys och displaynamn 🦋",
+    content: "Ja! De gamla goda tiderna med egna smileys och displaynamn (L)",
     timestamp: "14:31",
     isSelf: true,
     senderName: "Du",
   },
   {
     id: "3",
-    content: "Och de där ~*glittriga*~ namnen som alla hade lol",
+    content: "Och de där ~*glittriga*~ namnen som alla hade lol :P",
     timestamp: "14:32",
     isSelf: false,
     senderName: "Emma",
   },
   {
     id: "4",
-    content: "Den här appen ger mig nostalgitripp! Älskar designen ✨",
+    content: "Den här appen ger mig nostalgitripp! Älskar designen (Y)",
     timestamp: "14:33",
     isSelf: true,
     senderName: "Du",
   },
   {
     id: "5",
-    content: "Eller hur?? Det är som en modern version av de klassiska messengerna",
+    content: "Eller hur?? Det är som en modern version av de klassiska messengerna ;)",
     timestamp: "14:34",
     isSelf: false,
     senderName: "Emma",
   },
 ];
 
-const emojis = ["😊", "😂", "😍", "🥺", "😎", "🤔", "😴", "🎉", "❤️", "👍", "✨", "🦋", "🌙", "⭐", "🔔"];
-
 const autoResponses = [
-  "Haha, visst! 😄",
-  "Det var bättre förr honestly...",
-  "OMG ja! Minns du *nudge*? 🔔",
-  "Nostalgitrippen är på riktigt ✨",
-  "Ska vi spela något sen?",
-  "Måste kolla, brb! 🏃",
-  "Lol, klassiskt! 😂",
-  "Facts! De gamla messenger-tiderna 💯",
-  "Jag saknar wizz-funktionen 😂",
-  "Ska vi lägga till fler i chatten?",
+  "Haha, visst! :D",
+  "Det var bättre förr honestly... :(",
+  "OMG ja! Minns du *nudge*? (H)",
+  "Nostalgitrippen är på riktigt (L)",
+  "Ska vi spela något sen? :)",
+  "Måste kolla, brb! (Y)",
+  "Lol, klassiskt! :P",
+  "Facts! De gamla messenger-tiderna :D",
+  "Jag saknar wizz-funktionen ;)",
+  "Ska vi lägga till fler i chatten? :O",
 ];
 
 interface ChatWindowProps {
@@ -82,10 +82,12 @@ interface ChatWindowProps {
 export function ChatWindow({ 
   friendName = "Emma", 
   friendStatus = "online",
-  friendStatusMessage = "redo för helgen 🎉",
+  friendStatusMessage = "~*redo för helgen*~ (L)",
   friendEmail = "emma@echo2000.se",
   className 
 }: ChatWindowProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userDisplayName, setUserDisplayName] = useState("");
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputMessage, setInputMessage] = useState("");
   const [showEmojis, setShowEmojis] = useState(false);
@@ -102,6 +104,11 @@ export function ChatWindow({
     scrollToBottom();
   }, [messages]);
 
+  const handleLogin = (displayName: string, status: string) => {
+    setUserDisplayName(displayName);
+    setIsLoggedIn(true);
+  };
+
   const handleSend = () => {
     if (!inputMessage.trim()) return;
 
@@ -110,7 +117,7 @@ export function ChatWindow({
       content: inputMessage,
       timestamp: new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }),
       isSelf: true,
-      senderName: "Du",
+      senderName: userDisplayName || "Du",
     };
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
@@ -151,6 +158,7 @@ export function ChatWindow({
 
   const addEmoji = (emoji: string) => {
     setInputMessage((prev) => prev + emoji);
+    setShowEmojis(false);
   };
 
   const nudge = () => {
@@ -166,6 +174,11 @@ export function ChatWindow({
       setTimeout(() => chatWindow.classList.remove("animate-shake"), 500);
     }
   };
+
+  // Show login screen if not logged in
+  if (!isLoggedIn) {
+    return <MsnLogin onLogin={handleLogin} />;
+  }
 
   return (
     <div 
@@ -217,12 +230,20 @@ export function ChatWindow({
         </div>
       </div>
 
+      {/* User status bar */}
+      <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 px-3 py-1 border-b border-gray-300 dark:border-gray-600 flex items-center gap-2">
+        <StatusIndicator status="online" size="sm" />
+        <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
+          {userDisplayName} - Online
+        </span>
+      </div>
+
       {/* Main Chat Area - MSN Style Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Messages Panel */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm">
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
             {messages.map((message) => (
               <div key={message.id} className="mb-2">
                 <span className={cn(
@@ -231,69 +252,66 @@ export function ChatWindow({
                 )}>
                   {message.senderName} säger:
                 </span>
-                <p className="ml-2 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                <p className="ml-2 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
+                  {convertMsnEmoticons(message.content)}
+                </p>
               </div>
             ))}
             {isTyping && (
-              <div className="mb-1 text-muted-foreground italic">
-                {friendName} skriver...
+              <div className="mb-1 text-muted-foreground italic flex items-center gap-2">
+                <span>{friendName} skriver</span>
+                <span className="flex gap-0.5">
+                  <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                  <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                  <span className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Emoji Toolbar */}
-          <div className="bg-muted/50 border-t border-border px-2 py-1.5 flex items-center gap-1 overflow-x-auto">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0"
-              onClick={() => setShowEmojis(!showEmojis)}
-            >
-              <Smile className="w-4 h-4 text-yellow-500" />
-            </Button>
+          {/* MSN Emoticon Toolbar */}
+          <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 border-t border-gray-300 dark:border-gray-600 px-2 py-1.5 flex items-center gap-1 overflow-x-auto">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                onClick={() => setShowEmojis(!showEmojis)}
+              >
+                <Smile className="w-4 h-4 text-yellow-500" />
+              </Button>
+              {showEmojis && (
+                <div className="absolute bottom-full left-0 mb-1 z-50">
+                  <MsnEmoticonPicker onSelect={addEmoji} />
+                </div>
+              )}
+            </div>
             <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
               <Image className="w-4 h-4 text-muted-foreground" />
             </Button>
             <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
               <Gift className="w-4 h-4 text-muted-foreground" />
             </Button>
-            <div className="h-4 w-px bg-border mx-1" />
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-              <Type className="w-4 h-4 text-muted-foreground" />
-            </Button>
+            <div className="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1" />
             
-            {/* Quick emojis */}
-            <div className="flex gap-0.5 ml-2">
-              {["😊", "😂", "😍", "😎", "🤔"].map((emoji) => (
+            {/* Quick MSN emoticons */}
+            <div className="flex gap-0.5 ml-1">
+              {quickEmoticons.slice(0, 8).map((item) => (
                 <button
-                  key={emoji}
-                  onClick={() => addEmoji(emoji)}
-                  className="text-lg hover:scale-125 transition-transform px-0.5"
+                  key={item.code}
+                  onClick={() => addEmoji(item.emoji)}
+                  title={item.code}
+                  className="text-base hover:scale-125 transition-transform px-0.5 hover:bg-white/50 rounded"
                 >
-                  {emoji}
+                  {item.emoji}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Emoji Picker */}
-          {showEmojis && (
-            <div className="bg-card border-t border-border p-2 grid grid-cols-8 gap-1">
-              {emojis.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => addEmoji(emoji)}
-                  className="text-xl hover:bg-muted rounded p-1 transition-colors"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Input Area */}
-          <div className="bg-card border-t border-border p-2">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-t border-gray-300 dark:border-gray-600 p-2">
             <div className="flex gap-2">
               <textarea
                 value={inputMessage}
@@ -301,7 +319,7 @@ export function ChatWindow({
                 onKeyDown={handleKeyPress}
                 placeholder="Skriv ett meddelande..."
                 rows={2}
-                className="flex-1 bg-white dark:bg-muted border border-border rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="flex-1 bg-white dark:bg-muted border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               />
               <div className="flex flex-col gap-1">
                 <Button 
@@ -313,7 +331,7 @@ export function ChatWindow({
                 </Button>
                 <Button 
                   variant="outline"
-                  className="text-xs px-4"
+                  className="text-xs px-4 border-gray-300 dark:border-gray-600"
                 >
                   Sök
                 </Button>
@@ -323,28 +341,32 @@ export function ChatWindow({
         </div>
 
         {/* Webcam/Avatar Panel - Desktop only */}
-        <div className="hidden lg:flex flex-col w-48 border-l border-border bg-muted/30">
+        <div className="hidden lg:flex flex-col w-48 border-l border-gray-300 dark:border-gray-600 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
           {/* Friend's "webcam" area */}
-          <div className="flex-1 p-2 flex flex-col items-center justify-center border-b border-border">
-            <div className="w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+          <div className="flex-1 p-2 flex flex-col items-center justify-center border-b border-gray-300 dark:border-gray-600">
+            <div className="w-32 h-32 bg-gradient-to-br from-blue-200/50 to-purple-200/50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg flex items-center justify-center border border-gray-300 dark:border-gray-600">
               <Avatar name={friendName} size="xl" status={friendStatus} />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">{friendName}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 truncate max-w-full px-2">{friendName}</p>
           </div>
           
           {/* Your "webcam" area */}
           <div className="flex-1 p-2 flex flex-col items-center justify-center">
-            <div className="w-32 h-32 bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg flex items-center justify-center">
-              <Avatar name="Du" size="xl" status="online" />
+            <div className="w-32 h-32 bg-gradient-to-br from-green-200/50 to-blue-200/50 dark:from-green-900/30 dark:to-blue-900/30 rounded-lg flex items-center justify-center border border-gray-300 dark:border-gray-600">
+              <Avatar name={userDisplayName || "Du"} size="xl" status="online" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Du</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 truncate max-w-full px-2">{userDisplayName || "Du"}</p>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="bg-muted/50 border-t border-border px-2 py-1 text-[10px] text-muted-foreground text-center">
-        💬 Chatta med dina vänner - precis som förr i tiden!
+      <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 border-t border-gray-300 dark:border-gray-600 px-2 py-1 text-[10px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
+        <span>💬 Echo Messenger - Nostalgi på riktigt!</span>
+        <span className="flex items-center gap-1">
+          {soundEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+          Ljud {soundEnabled ? "på" : "av"}
+        </span>
       </div>
     </div>
   );
