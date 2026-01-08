@@ -58,26 +58,31 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
           {/* Desktop Main Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {mainNavItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onTabChange?.(item.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all",
-                  activeTab === item.id
-                    ? "bg-white/20 text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                {item.icon}
-                {item.label}
-                {item.badge && item.badge > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-accent text-accent-foreground rounded-full">
-                    {item.badge}
+            {mainNavItems.map((item) => {
+              const hasNotification = item.badge && item.badge > 0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onTabChange?.(item.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all",
+                    activeTab === item.id
+                      ? "bg-white/20 text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  <span className={cn(hasNotification && "animate-icon-jump")}>
+                    {item.icon}
                   </span>
-                )}
-              </button>
-            ))}
+                  {item.label}
+                  {hasNotification && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-accent text-accent-foreground rounded-full animate-pulse">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Right side - Search & Notifications */}
