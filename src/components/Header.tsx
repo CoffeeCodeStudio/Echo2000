@@ -4,9 +4,9 @@ import { Avatar } from "./Avatar";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { GuestbookIcon, MailIcon, ChatIcon, FriendsIcon } from "./LunarIcons";
+import { GuestbookIcon, MailIcon, ChatIcon, FriendsIcon, LajvIcon } from "./LunarIcons";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -25,8 +25,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     { id: "vanner", label: "VÄNNER", icon: <FriendsIcon size={20} /> },
   ];
 
-  const subNavItems: { id: Tab; label: string }[] = [
+  const subNavItems: { id: Tab; label: string; icon?: React.ReactNode; highlight?: boolean }[] = [
     { id: "hem", label: "START" },
+    { id: "lajv", label: "LAJV", icon: <LajvIcon size={14} />, highlight: true },
     { id: "profil", label: "PROFIL" },
     { id: "chatt", label: "DISKUS" },
     { id: "klotterplanket", label: "KLOTTERPLANKET" },
@@ -125,12 +126,15 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 key={item.id + item.label}
                 onClick={() => onTabChange?.(item.id)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all",
+                  "px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all flex items-center gap-1",
                   activeTab === item.id
                     ? "bg-primary text-primary-foreground"
+                    : item.highlight
+                    ? "text-primary hover:bg-primary/10 animate-pulse-soft"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
+                {item.icon}
                 {item.label}
               </button>
             ))}
