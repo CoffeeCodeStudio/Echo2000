@@ -67,7 +67,7 @@ const faqItems: FAQItem[] = [
   },
   {
     question: "Hur gammal måste man vara?",
-    answer: "Du måste vara minst 13 år för att skapa ett konto. Om du är under 18, be gärna en förälder att kika så de vet vad du håller på med online.",
+    answer: "Echo2000 är primärt anpassad för personer 25 år och uppåt. Vi är en nostalgisk community för de som faktiskt minns 00-talet! Undantag kan göras för yngre användare som kommer via verifierade kontakter – men det är ovanligt.",
   },
   {
     question: "Vad är Lajv?",
