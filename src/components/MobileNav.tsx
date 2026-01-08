@@ -1,7 +1,7 @@
-import { MessageCircle, Users, User, Home } from "lucide-react";
+import { MessageSquare, Users, User, Home, BookOpen, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "home" | "chat" | "community" | "profile";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
 
 interface MobileNavProps {
   activeTab: Tab;
@@ -11,31 +11,38 @@ interface MobileNavProps {
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border z-50">
-      <div className="flex items-center justify-around py-2 px-4 safe-area-inset-bottom">
+      <div className="flex items-center justify-around py-2 px-2 safe-area-inset-bottom">
         <NavButton
           icon={<Home className="w-5 h-5" />}
-          label="Home"
-          isActive={activeTab === "home"}
-          onClick={() => onTabChange("home")}
+          label="Start"
+          isActive={activeTab === "hem"}
+          onClick={() => onTabChange("hem")}
         />
         <NavButton
-          icon={<MessageCircle className="w-5 h-5" />}
-          label="Chat"
-          isActive={activeTab === "chat"}
-          onClick={() => onTabChange("chat")}
+          icon={<MessageSquare className="w-5 h-5" />}
+          label="Chatt"
+          isActive={activeTab === "chatt"}
+          onClick={() => onTabChange("chatt")}
           badge={2}
         />
         <NavButton
-          icon={<Users className="w-5 h-5" />}
-          label="Community"
-          isActive={activeTab === "community"}
-          onClick={() => onTabChange("community")}
+          icon={<BookOpen className="w-5 h-5" />}
+          label="Gästbok"
+          isActive={activeTab === "gastbok"}
+          onClick={() => onTabChange("gastbok")}
+        />
+        <NavButton
+          icon={<Mail className="w-5 h-5" />}
+          label="Mejl"
+          isActive={activeTab === "mejl"}
+          onClick={() => onTabChange("mejl")}
+          badge={5}
         />
         <NavButton
           icon={<User className="w-5 h-5" />}
-          label="Profile"
-          isActive={activeTab === "profile"}
-          onClick={() => onTabChange("profile")}
+          label="Profil"
+          isActive={activeTab === "profil"}
+          onClick={() => onTabChange("profil")}
         />
       </div>
     </nav>
@@ -59,7 +66,7 @@ function NavButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 relative",
+        "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all duration-200 relative min-w-[48px]",
         isActive
           ? "text-primary"
           : "text-muted-foreground hover:text-foreground"
@@ -68,7 +75,7 @@ function NavButton({
       <div className="relative">
         {icon}
         {badge && badge > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
             {badge}
           </span>
         )}
