@@ -9,6 +9,7 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { Guestbook } from "@/components/Guestbook";
 import { Mailbox } from "@/components/Mailbox";
 import { FriendsList } from "@/components/FriendsList";
+import { Klotterplanket } from "@/components/Klotterplanket";
 import { cn } from "@/lib/utils";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
@@ -125,16 +126,7 @@ export default function Index() {
         return <FriendsList />;
 
       case "klotterplanket":
-        return (
-          <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-            <section className="container px-4 py-8">
-              <div className="nostalgia-card p-6 text-center">
-                <h1 className="font-display font-bold text-2xl mb-2">🎨 Klotterplanket</h1>
-                <p className="text-muted-foreground">Kommer snart! Här kan alla klottra fritt.</p>
-              </div>
-            </section>
-          </div>
-        );
+        return <Klotterplanket />;
 
       case "profil":
         return <ProfilePage isOwnProfile={true} />;
