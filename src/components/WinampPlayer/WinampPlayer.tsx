@@ -44,13 +44,16 @@ interface WinampPlayerProps {
   className?: string;
 }
 
-// Sveriges Radio stations with working streams and metadata support
+// Sveriges Radio stations - uses proxy to bypass CORS
+const getRadioStreamUrl = (stationId: string) => 
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radio-stream?station=${stationId}`;
+
 const RADIO_STATIONS: RadioStation[] = [
-  { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi.mp3", genre: "Pop/Hits", hasMetadata: true },
-  { id: "p1", name: "Sveriges Radio P1", url: "https://sverigesradio.se/topsy/direkt/132-hi.mp3", genre: "Nyheter/Kultur", hasMetadata: true },
-  { id: "p2", name: "Sveriges Radio P2", url: "https://sverigesradio.se/topsy/direkt/2562-hi.mp3", genre: "Klassiskt", hasMetadata: true },
-  { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
-  { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
+  { id: "p3", name: "Sveriges Radio P3", url: getRadioStreamUrl("p3"), genre: "Pop/Hits", hasMetadata: true },
+  { id: "p1", name: "Sveriges Radio P1", url: getRadioStreamUrl("p1"), genre: "Nyheter/Kultur", hasMetadata: true },
+  { id: "p2", name: "Sveriges Radio P2", url: getRadioStreamUrl("p2"), genre: "Klassiskt", hasMetadata: true },
+  { id: "p4stockholm", name: "P4 Stockholm", url: getRadioStreamUrl("p4stockholm"), genre: "Lokalt", hasMetadata: true },
+  { id: "dingatastockholm", name: "Din Gata", url: getRadioStreamUrl("dingatastockholm"), genre: "Urban", hasMetadata: true },
 ];
 
 const VISUALIZATION_MODES = [
@@ -380,6 +383,8 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
+        crossOrigin="anonymous"
+        preload="none"
       />
 
       {/* Hidden file input */}
