@@ -1,16 +1,19 @@
 import { Sparkles, MessageCircle, Users, Heart } from "lucide-react";
 import { Button } from "./ui/button";
+import { StarryBackground } from "./StarryBackground";
 
 export function WelcomeHero() {
   return (
     <section className="relative overflow-hidden py-12 md:py-20">
-      {/* Background effects */}
-      <div className="absolute inset-0 retro-gradient" />
-      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
+      {/* Animated starry background */}
+      <StarryBackground />
       
-      {/* Grid overlay for retro feel */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDQwIEwgNDAgNDAgNDAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))]" />
+      
+      {/* Soft gradient orbs */}
+      <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/15 rounded-full blur-[100px] animate-float" />
+      <div className="absolute bottom-10 right-1/4 w-72 h-72 bg-accent/15 rounded-full blur-[100px] animate-float" style={{ animationDelay: "-1.5s" }} />
 
       <div className="relative container px-4">
         <div className="max-w-2xl mx-auto text-center">
