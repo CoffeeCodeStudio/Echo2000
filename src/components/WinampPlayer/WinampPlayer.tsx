@@ -29,6 +29,14 @@ interface RadioStation {
   name: string;
   url: string;
   genre: string;
+  hasMetadata?: boolean;
+}
+
+interface NowPlaying {
+  title?: string;
+  artist?: string;
+  albumArt?: string;
+  currentShow?: string;
 }
 
 interface WinampPlayerProps {
@@ -36,14 +44,13 @@ interface WinampPlayerProps {
   className?: string;
 }
 
+// Sveriges Radio stations with working streams and metadata support
 const RADIO_STATIONS: RadioStation[] = [
-  { id: "starfm", name: "Star FM", url: "https://live-bauerse.sharp-stream.com/starfm_mp3", genre: "Rock/Pop" },
-  { id: "nrj", name: "NRJ Sverige", url: "https://stream.nrj.se/nrj_se_mp3", genre: "Pop/Dance" },
-  { id: "rixfm", name: "RIX FM", url: "https://live-bauerse.sharp-stream.com/rixfm_mp3", genre: "Pop" },
-  { id: "mixmegapol", name: "Mix Megapol", url: "https://live-bauerse.sharp-stream.com/mixmegapol_mp3", genre: "Pop" },
-  { id: "rockklassiker", name: "Rockklassiker", url: "https://live-bauerse.sharp-stream.com/rockklassiker_mp3", genre: "Classic Rock" },
-  { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi-mp3.m3u", genre: "Hits" },
-  { id: "bandit", name: "Bandit Rock", url: "https://live-bauerse.sharp-stream.com/banditrock_mp3", genre: "Rock" },
+  { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi.mp3", genre: "Pop/Hits", hasMetadata: true },
+  { id: "p1", name: "Sveriges Radio P1", url: "https://sverigesradio.se/topsy/direkt/132-hi.mp3", genre: "Nyheter/Kultur", hasMetadata: true },
+  { id: "p2", name: "Sveriges Radio P2", url: "https://sverigesradio.se/topsy/direkt/2562-hi.mp3", genre: "Klassiskt", hasMetadata: true },
+  { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
+  { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
 ];
 
 const VISUALIZATION_MODES = [
@@ -84,6 +91,8 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showRadio, setShowRadio] = useState(false);
   const [isRadioPlaying, setIsRadioPlaying] = useState(false);
+  const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
+  const [currentRadioStation, setCurrentRadioStation] = useState<RadioStation | null>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +128,51 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
       }
     };
   }, [updateAudioData]);
+
+  // Fetch metadata for current radio station
+  const fetchRadioMetadata = useCallback(async (stationId: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radio-proxy?action=metadata&station=${stationId}`,
+        {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNowPlaying({
+          title: data.nowPlaying?.title,
+          artist: data.nowPlaying?.artist,
+          albumArt: data.nowPlaying?.albumArt,
+          currentShow: data.currentShow,
+        });
+      }
+    } catch (e) {
+      console.log("Could not fetch radio metadata:", e);
+    }
+  }, []);
+
+  // Poll for metadata updates when radio is playing
+  useEffect(() => {
+    if (!isRadioPlaying || !currentRadioStation?.hasMetadata) {
+      setNowPlaying(null);
+      return;
+    }
+
+    // Fetch immediately
+    fetchRadioMetadata(currentRadioStation.id);
+
+    // Then poll every 30 seconds
+    const interval = setInterval(() => {
+      fetchRadioMetadata(currentRadioStation.id);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isRadioPlaying, currentRadioStation, fetchRadioMetadata]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -167,7 +221,9 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
     
     setCurrentTrack(radioTrack);
     setIsRadioPlaying(true);
+    setCurrentRadioStation(station);
     setShowRadio(false);
+    setNowPlaying(null);
     
     if (audioRef.current) {
       audioRef.current.src = station.url;
@@ -392,9 +448,47 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
         
         {/* Track info overlay */}
         {currentTrack && (
-          <div className="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-sm rounded px-3 py-1.5">
-            <p className="text-sm font-medium truncate">{currentTrack.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentTrack.artist}</p>
+          <div className="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-sm rounded px-3 py-2">
+            <div className="flex items-center gap-3">
+              {/* Album art for radio */}
+              {nowPlaying?.albumArt && (
+                <img 
+                  src={nowPlaying.albumArt} 
+                  alt="Album art"
+                  className="w-10 h-10 rounded object-cover flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                {/* Now playing song info (for radio with metadata) */}
+                {isRadioPlaying && nowPlaying?.title ? (
+                  <>
+                    <p className="text-sm font-medium truncate text-green-400">
+                      🎵 {nowPlaying.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {nowPlaying.artist}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/70 truncate">
+                      {currentTrack.name} {nowPlaying.currentShow && `• ${nowPlaying.currentShow}`}
+                    </p>
+                  </>
+                ) : isRadioPlaying && nowPlaying?.currentShow ? (
+                  <>
+                    <p className="text-sm font-medium truncate">{currentTrack.name}</p>
+                    <p className="text-xs text-green-400 truncate">📻 {nowPlaying.currentShow}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{currentTrack.artist}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium truncate">{currentTrack.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{currentTrack.artist}</p>
+                    {isRadioPlaying && (
+                      <p className="text-[10px] text-green-400">📻 Live</p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
