@@ -7,7 +7,8 @@ import {
   Upload,
   Music,
   Palette,
-  Zap
+  Zap,
+  Radio
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MilkDropVisualizer } from "./MilkDropVisualizer";
@@ -20,12 +21,30 @@ interface Track {
   name: string;
   artist: string;
   url: string;
+  isRadio?: boolean;
+}
+
+interface RadioStation {
+  id: string;
+  name: string;
+  url: string;
+  genre: string;
 }
 
 interface WinampPlayerProps {
   onClose?: () => void;
   className?: string;
 }
+
+const RADIO_STATIONS: RadioStation[] = [
+  { id: "starfm", name: "Star FM", url: "https://live-bauerse.sharp-stream.com/starfm_mp3", genre: "Rock/Pop" },
+  { id: "nrj", name: "NRJ Sverige", url: "https://stream.nrj.se/nrj_se_mp3", genre: "Pop/Dance" },
+  { id: "rixfm", name: "RIX FM", url: "https://live-bauerse.sharp-stream.com/rixfm_mp3", genre: "Pop" },
+  { id: "mixmegapol", name: "Mix Megapol", url: "https://live-bauerse.sharp-stream.com/mixmegapol_mp3", genre: "Pop" },
+  { id: "rockklassiker", name: "Rockklassiker", url: "https://live-bauerse.sharp-stream.com/rockklassiker_mp3", genre: "Classic Rock" },
+  { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi-mp3.m3u", genre: "Hits" },
+  { id: "bandit", name: "Bandit Rock", url: "https://live-bauerse.sharp-stream.com/banditrock_mp3", genre: "Rock" },
+];
 
 const VISUALIZATION_MODES = [
   { id: 0, name: "Waveform", icon: "〰️" },
@@ -63,6 +82,8 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showRadio, setShowRadio] = useState(false);
+  const [isRadioPlaying, setIsRadioPlaying] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,9 +150,41 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
   const loadTrack = (track: Track, index: number) => {
     setCurrentTrack(track);
     setCurrentIndex(index);
+    setIsRadioPlaying(track.isRadio || false);
     if (audioRef.current) {
       audioRef.current.src = track.url;
       audioRef.current.load();
+    }
+  };
+
+  const playRadioStation = async (station: RadioStation) => {
+    const radioTrack: Track = {
+      name: station.name,
+      artist: station.genre,
+      url: station.url,
+      isRadio: true,
+    };
+    
+    setCurrentTrack(radioTrack);
+    setIsRadioPlaying(true);
+    setShowRadio(false);
+    
+    if (audioRef.current) {
+      audioRef.current.src = station.url;
+      audioRef.current.load();
+      
+      if (!isInitialized) {
+        initializeAnalyzer(audioRef.current);
+      }
+      
+      await resumeContext();
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        playSound("play");
+      } catch (e) {
+        console.log("Could not play radio:", e);
+      }
     }
   };
 
@@ -397,18 +450,73 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
         />
       </div>
 
-      {/* Upload button */}
-      <button
-        onClick={() => {
-          handleButtonSound();
-          fileInputRef.current?.click();
-        }}
-        className="flex items-center justify-center gap-2 py-2 border-t transition-colors hover:bg-white/5"
+      {/* Action buttons */}
+      <div 
+        className="flex border-t"
         style={{ borderColor: `${currentSkin.accent}40` }}
       >
-        <Upload className="w-4 h-4" />
-        <span className="text-sm">Ladda upp musik</span>
-      </button>
+        <button
+          onClick={() => {
+            handleButtonSound();
+            fileInputRef.current?.click();
+          }}
+          className="flex-1 flex items-center justify-center gap-2 py-2 transition-colors hover:bg-white/5 border-r"
+          style={{ borderColor: `${currentSkin.accent}40` }}
+        >
+          <Upload className="w-4 h-4" />
+          <span className="text-sm">Ladda upp</span>
+        </button>
+        
+        <button
+          onClick={() => {
+            handleButtonSound();
+            setShowRadio(!showRadio);
+          }}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2 transition-colors hover:bg-white/5",
+            showRadio && "bg-white/10"
+          )}
+        >
+          <Radio className="w-4 h-4" />
+          <span className="text-sm">Radio</span>
+        </button>
+      </div>
+
+      {/* Radio stations panel */}
+      {showRadio && (
+        <div 
+          className="border-t p-3 space-y-2"
+          style={{ borderColor: `${currentSkin.accent}40` }}
+        >
+          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+            <Radio className="w-4 h-4" style={{ color: currentSkin.accent }} />
+            Radiokanaler
+          </h4>
+          <div className="grid grid-cols-2 gap-2">
+            {RADIO_STATIONS.map((station) => (
+              <button
+                key={station.id}
+                onClick={() => {
+                  handleButtonSound();
+                  playRadioStation(station);
+                }}
+                className={cn(
+                  "p-2 text-left rounded border transition-all hover:bg-white/10",
+                  currentTrack?.name === station.name && isRadioPlaying
+                    ? "bg-white/15 border-white/30"
+                    : "border-white/10"
+                )}
+              >
+                <p className="text-sm font-medium truncate">{station.name}</p>
+                <p className="text-xs text-muted-foreground">{station.genre}</p>
+                {currentTrack?.name === station.name && isPlaying && (
+                  <span className="text-xs text-green-400 animate-pulse">▶ Live</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Playlist */}
       {playlist.length > 0 && (
