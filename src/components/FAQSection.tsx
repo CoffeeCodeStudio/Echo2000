@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles } from "lucide-react";
+import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FAQItem {
@@ -8,6 +8,11 @@ interface FAQItem {
 }
 
 const communityRules = [
+  {
+    icon: Sun,
+    title: "Positiv energi",
+    description: "Echo2000 är en plats för glädje, oavsett bakgrund. Personliga påhopp och drama hör inte hemma här. Spara gnället för privatchatten.",
+  },
   {
     icon: Heart,
     title: "Respektera varandra",
