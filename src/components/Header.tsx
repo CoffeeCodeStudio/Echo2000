@@ -6,7 +6,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GuestbookIcon, MailIcon, ChatIcon, FriendsIcon } from "./LunarIcons";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -30,6 +30,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     { id: "profil", label: "PROFIL" },
     { id: "chatt", label: "DISKUS" },
     { id: "klotterplanket", label: "KLOTTERPLANKET" },
+    { id: "spel", label: "SPEL" },
   ];
 
   return (

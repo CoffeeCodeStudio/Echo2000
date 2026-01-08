@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { HomeIcon, ChatIcon, GuestbookIcon, MailIcon, ProfileIcon } from "./LunarIcons";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel";
 
 interface MobileNavProps {
   activeTab: Tab;

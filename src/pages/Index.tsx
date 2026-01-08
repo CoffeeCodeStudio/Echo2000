@@ -10,9 +10,10 @@ import { Guestbook } from "@/components/Guestbook";
 import { Mailbox } from "@/components/Mailbox";
 import { FriendsList } from "@/components/FriendsList";
 import { Klotterplanket } from "@/components/Klotterplanket";
+import { GamesSection } from "@/components/GamesSection";
 import { cn } from "@/lib/utils";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel";
 
 const communities = [
   {
@@ -127,6 +128,9 @@ export default function Index() {
 
       case "klotterplanket":
         return <Klotterplanket />;
+
+      case "spel":
+        return <GamesSection />;
 
       case "profil":
         return <ProfilePage isOwnProfile={true} />;
