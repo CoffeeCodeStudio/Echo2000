@@ -57,6 +57,17 @@ interface ChatWindowProps {
   className?: string;
 }
 
+const autoResponses = [
+  "Haha, visst! 😄",
+  "Det var bättre förr honestly...",
+  "OMG ja! Minns du *nudge*? 🔔",
+  "Nostalgitrippen är på riktigt ✨",
+  "Ska vi spela något sen?",
+  "Måste kolla, brb! 🏃",
+  "Lol, klassiskt! 😂",
+  "Facts! De gamla messenger-tiderna 💯",
+];
+
 export function ChatWindow({ 
   friendName = "Sarah Chen", 
   friendStatus = "online",
@@ -71,7 +82,20 @@ export function ChatWindow({
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isSelf: true,
     };
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
+
+    // Simulate auto-reply after a short delay
+    setTimeout(() => {
+      const randomResponse = autoResponses[Math.floor(Math.random() * autoResponses.length)];
+      const replyMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: randomResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isSelf: false,
+        senderName: friendName,
+      };
+      setMessages((prev) => [...prev, replyMessage]);
+    }, 1000 + Math.random() * 2000);
   };
 
   return (

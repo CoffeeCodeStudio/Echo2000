@@ -4,7 +4,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
 import { WelcomeHero } from "@/components/WelcomeHero";
-import { ProfileCard } from "@/components/ProfileCard";
+import { ProfilePage } from "@/components/ProfilePage";
 import { CommunityCard } from "@/components/CommunityCard";
 import { cn } from "@/lib/utils";
 
@@ -135,23 +135,7 @@ export default function Index() {
         );
 
       case "profile":
-        return (
-          <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-            <section className="container px-4 py-8 max-w-md mx-auto">
-              <ProfileCard
-                name="Alex Johnson"
-                username="alex_nostalgia"
-                status="online"
-                statusMessage="Living in the 2000s 🦋"
-                bio="Web developer by day, retro gaming enthusiast by night. Miss the days of AIM and MSN! Building cool stuff with modern tech."
-                location="Brooklyn, NY"
-                joinDate="December 2025"
-                friendsCount={47}
-                isOwnProfile={true}
-              />
-            </section>
-          </div>
-        );
+        return <ProfilePage isOwnProfile={true} />;
     }
   };
 
