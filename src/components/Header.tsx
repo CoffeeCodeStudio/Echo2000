@@ -56,8 +56,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             <span className="text-[10px] text-white/60 hidden sm:inline">NOSTALGI</span>
           </div>
 
-          {/* Main Navigation - visible on all screens */}
-          <nav className="flex items-center gap-0.5 md:gap-1">
+          {/* Desktop Main Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
             {mainNavItems.map((item) => {
               const hasNotification = item.badge && item.badge > 0;
               return (
@@ -65,7 +65,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   key={item.id}
                   onClick={() => onTabChange?.(item.id)}
                   className={cn(
-                    "flex items-center gap-1 px-1.5 md:px-3 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-wide rounded transition-all",
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all",
                     activeTab === item.id
                       ? "bg-white/20 text-white"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
@@ -74,9 +74,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   <span className={cn(hasNotification && "animate-icon-jump")}>
                     {item.icon}
                   </span>
-                  <span className="hidden sm:inline">{item.label}</span>
+                  {item.label}
                   {hasNotification && (
-                    <span className="ml-0.5 md:ml-1 px-1 md:px-1.5 py-0.5 text-[8px] md:text-[10px] bg-accent text-accent-foreground rounded-full animate-pulse">
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-accent text-accent-foreground rounded-full animate-pulse">
                       {item.badge}
                     </span>
                   )}
