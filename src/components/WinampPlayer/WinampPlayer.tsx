@@ -44,16 +44,13 @@ interface WinampPlayerProps {
   className?: string;
 }
 
-// Sveriges Radio stations - uses proxy to bypass CORS
-const getRadioStreamUrl = (stationId: string) => 
-  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radio-stream?station=${stationId}`;
-
+// Sveriges Radio stations - direct URLs (no CORS needed for audio playback)
 const RADIO_STATIONS: RadioStation[] = [
-  { id: "p3", name: "Sveriges Radio P3", url: getRadioStreamUrl("p3"), genre: "Pop/Hits", hasMetadata: true },
-  { id: "p1", name: "Sveriges Radio P1", url: getRadioStreamUrl("p1"), genre: "Nyheter/Kultur", hasMetadata: true },
-  { id: "p2", name: "Sveriges Radio P2", url: getRadioStreamUrl("p2"), genre: "Klassiskt", hasMetadata: true },
-  { id: "p4stockholm", name: "P4 Stockholm", url: getRadioStreamUrl("p4stockholm"), genre: "Lokalt", hasMetadata: true },
-  { id: "dingatastockholm", name: "Din Gata", url: getRadioStreamUrl("dingatastockholm"), genre: "Urban", hasMetadata: true },
+  { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi.mp3", genre: "Pop/Hits", hasMetadata: true },
+  { id: "p1", name: "Sveriges Radio P1", url: "https://sverigesradio.se/topsy/direkt/132-hi.mp3", genre: "Nyheter/Kultur", hasMetadata: true },
+  { id: "p2", name: "Sveriges Radio P2", url: "https://sverigesradio.se/topsy/direkt/2562-hi.mp3", genre: "Klassiskt", hasMetadata: true },
+  { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
+  { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
 ];
 
 const VISUALIZATION_MODES = [
@@ -115,13 +112,44 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
     setSoundsActive(soundsEnabled);
   }, [soundsEnabled, setSoundsActive]);
 
+  // Generate simulated audio data for radio (since CORS blocks real analysis)
+  const generateSimulatedAudioData = useCallback((): AudioData => {
+    const bufferLength = 256;
+    const frequencyData = new Uint8Array(bufferLength);
+    const waveformData = new Uint8Array(bufferLength);
+    
+    const time = Date.now() / 1000;
+    
+    // Generate random but smooth frequency data
+    for (let i = 0; i < bufferLength; i++) {
+      const noise = Math.sin(time * 3 + i * 0.1) * 0.3 + Math.random() * 0.7;
+      const bassBoost = i < bufferLength * 0.1 ? 1.5 : 1;
+      frequencyData[i] = Math.floor(noise * 180 * bassBoost);
+      waveformData[i] = 128 + Math.sin(time * 5 + i * 0.05) * 50;
+    }
+    
+    return {
+      frequencyData,
+      waveformData,
+      bass: 0.4 + Math.sin(time * 2) * 0.3,
+      mid: 0.5 + Math.sin(time * 3) * 0.2,
+      treble: 0.3 + Math.sin(time * 4) * 0.2,
+      average: 0.5 + Math.sin(time * 2.5) * 0.2,
+    };
+  }, []);
+
   const updateAudioData = useCallback(() => {
     if (isPlaying) {
-      const data = getAudioData();
-      setAudioData(data);
+      if (isRadioPlaying) {
+        // Use simulated data for radio (CORS blocks real analysis)
+        setAudioData(generateSimulatedAudioData());
+      } else {
+        const data = getAudioData();
+        setAudioData(data);
+      }
     }
     animationRef.current = requestAnimationFrame(updateAudioData);
-  }, [isPlaying, getAudioData]);
+  }, [isPlaying, isRadioPlaying, getAudioData, generateSimulatedAudioData]);
 
   useEffect(() => {
     animationRef.current = requestAnimationFrame(updateAudioData);
@@ -232,11 +260,9 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
       audioRef.current.src = station.url;
       audioRef.current.load();
       
-      if (!isInitialized) {
-        initializeAnalyzer(audioRef.current);
-      }
+      // Don't initialize analyzer for radio - CORS blocks it
+      // Visualizations will be simulated instead
       
-      await resumeContext();
       try {
         await audioRef.current.play();
         setIsPlaying(true);
@@ -377,13 +403,12 @@ export function WinampPlayer({ onClose, className }: WinampPlayerProps) {
         borderColor: currentSkin.accent,
       }}
     >
-      {/* Hidden audio element */}
+      {/* Hidden audio element - no crossOrigin for radio compatibility */}
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
-        crossOrigin="anonymous"
         preload="none"
       />
 
