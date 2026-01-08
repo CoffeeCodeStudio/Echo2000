@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { 
   Phone, Video, MoreVertical, Smile, Image, Gift, 
-  Mic, Type, Search, Bell, Volume2, X, Minimize2, Maximize2,
+  Mic, Type, Search, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
   Users, Gamepad2, Mail, Settings
 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator } from "./StatusIndicator";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { useMsnSounds } from "@/hooks/useMsnSounds";
 
 interface Message {
   id: string;
@@ -89,7 +90,9 @@ export function ChatWindow({
   const [inputMessage, setInputMessage] = useState("");
   const [showEmojis, setShowEmojis] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { playSound } = useMsnSounds();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,6 +115,11 @@ export function ChatWindow({
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
     setShowEmojis(false);
+    
+    // Play send sound
+    if (soundEnabled) {
+      playSound("send");
+    }
 
     // Simulate typing indicator and auto-reply
     setIsTyping(true);
@@ -126,6 +134,11 @@ export function ChatWindow({
         senderName: friendName,
       };
       setMessages((prev) => [...prev, replyMessage]);
+      
+      // Play message received sound
+      if (soundEnabled) {
+        playSound("message");
+      }
     }, 1500 + Math.random() * 2000);
   };
 
@@ -141,6 +154,11 @@ export function ChatWindow({
   };
 
   const nudge = () => {
+    // Play nudge sound
+    if (soundEnabled) {
+      playSound("nudge");
+    }
+    
     // Simulate nudge effect
     const chatWindow = document.getElementById("msn-chat-window");
     if (chatWindow) {
@@ -183,14 +201,18 @@ export function ChatWindow({
           </div>
         </div>
 
-        {/* Toolbar */}
         <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-transparent to-black/10">
           <ToolbarButton icon={<Users className="w-4 h-4" />} label="Bjud in" />
           <ToolbarButton icon={<Mic className="w-4 h-4" />} label="Röst" />
           <ToolbarButton icon={<Video className="w-4 h-4" />} label="Video" />
           <ToolbarButton icon={<Gamepad2 className="w-4 h-4" />} label="Spel" />
           <div className="h-4 w-px bg-white/30 mx-1" />
-          <ToolbarButton icon={<Volume2 className="w-4 h-4" />} label="Ljud" />
+          <ToolbarButton 
+            icon={soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />} 
+            label={soundEnabled ? "Ljud på" : "Ljud av"} 
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            isActive={soundEnabled}
+          />
           <ToolbarButton icon={<Bell className="w-4 h-4" />} label="Nudge" onClick={nudge} />
         </div>
       </div>
@@ -331,16 +353,21 @@ export function ChatWindow({
 function ToolbarButton({ 
   icon, 
   label,
-  onClick 
+  onClick,
+  isActive = false
 }: { 
   icon: React.ReactNode; 
   label: string;
   onClick?: () => void;
+  isActive?: boolean;
 }) {
   return (
     <button 
       onClick={onClick}
-      className="flex flex-col items-center gap-0.5 px-2 py-1 rounded hover:bg-white/10 transition-colors"
+      className={cn(
+        "flex flex-col items-center gap-0.5 px-2 py-1 rounded hover:bg-white/10 transition-colors",
+        isActive && "bg-white/20"
+      )}
     >
       {icon}
       <span className="text-[9px] text-white/80">{label}</span>
