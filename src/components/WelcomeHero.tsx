@@ -33,7 +33,7 @@ export function WelcomeHero() {
 
           {/* Subheading */}
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto mb-8 animate-fade-in">
-            En nostalgisk chatt-community inspirerad av MSN Messenger och LunarStorm, 
+            En nostalgisk chatt-community inspirerad av MSN Messenger, LunarStorm och Playahead, 
             återuppbyggd med modern design och funktioner.
           </p>
 
