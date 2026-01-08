@@ -1,0 +1,271 @@
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Avatar } from './Avatar';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Send, Radio, Clock, LogIn } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { AuthDialog } from './AuthDialog';
+import { toast } from 'sonner';
+
+interface LajvMessage {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  message: string;
+  created_at: string;
+  expires_at: string;
+}
+
+export function LajvSection() {
+  const { user, loading: authLoading } = useAuth();
+  const [messages, setMessages] = useState<LajvMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [newMessageNotification, setNewMessageNotification] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch initial messages and set up realtime subscription
+  useEffect(() => {
+    fetchMessages();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('lajv-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'lajv_messages',
+        },
+        (payload) => {
+          const newMsg = payload.new as LajvMessage;
+          setMessages((prev) => [...prev, newMsg]);
+          
+          // Show notification for new messages from others
+          if (newMsg.user_id !== user?.id) {
+            setNewMessageNotification(`${newMsg.username} skrev: "${newMsg.message.slice(0, 30)}${newMsg.message.length > 30 ? '...' : ''}"`);
+            setTimeout(() => setNewMessageNotification(null), 4000);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'lajv_messages',
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    // Clean up expired messages locally every minute
+    const cleanupInterval = setInterval(() => {
+      const now = new Date().toISOString();
+      setMessages((prev) => prev.filter((msg) => msg.expires_at > now));
+    }, 60000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(cleanupInterval);
+    };
+  }, [user?.id]);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const fetchMessages = async () => {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('lajv_messages')
+      .select('*')
+      .gt('expires_at', now)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching messages:', error);
+      return;
+    }
+
+    setMessages(data || []);
+  };
+
+  const handleSendMessage = async () => {
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+
+    if (!newMessage.trim()) return;
+
+    setSending(true);
+    const username = user.user_metadata?.username || user.email?.split('@')[0] || 'Anonym';
+
+    const { error } = await supabase.from('lajv_messages').insert({
+      user_id: user.id,
+      username,
+      avatar_url: user.user_metadata?.avatar_url || null,
+      message: newMessage.trim(),
+    });
+
+    if (error) {
+      console.error('Error sending message:', error);
+      toast.error('Kunde inte skicka meddelandet');
+    } else {
+      setNewMessage('');
+    }
+
+    setSending(false);
+  };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    const timeStr = date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    return isToday ? `Idag kl: ${timeStr}` : date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) + ` kl: ${timeStr}`;
+  };
+
+  const getTimeRemaining = (expiresAt: string) => {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diffMs = expires.getTime() - now.getTime();
+    const diffMins = Math.max(0, Math.floor(diffMs / 60000));
+    return diffMins;
+  };
+
+  if (authLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Laddar...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden bg-background">
+      {/* Header */}
+      <div className="msn-header px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Radio className="w-5 h-5 text-primary animate-pulse" />
+          <h2 className="font-display font-bold text-lg">LAJV</h2>
+          <span className="text-xs text-muted-foreground">Live-meddelanden</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          <span>Försvinner efter 10 min</span>
+        </div>
+      </div>
+
+      {/* New message notification */}
+      {newMessageNotification && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-2 duration-300">
+          <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-medium">
+            {newMessageNotification}
+          </div>
+        </div>
+      )}
+
+      {/* Message input area - at top */}
+      <div className="p-4 border-b border-border bg-card/50">
+        {user ? (
+          <div className="flex gap-3">
+            <Avatar
+              name={user.user_metadata?.username || user.email?.split('@')[0] || 'Du'}
+              status="online"
+              size="sm"
+            />
+            <div className="flex-1 flex flex-col gap-2">
+              <Textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Dela något med alla just nu..."
+                className="min-h-[60px] max-h-[120px] resize-none bg-input border-border focus:ring-primary input-glow"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">
+                  {newMessage.length}/280
+                </span>
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={sending || !newMessage.trim() || newMessage.length > 280}
+                  className="btn-nostalgic gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Skicka
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-4">
+            <p className="text-muted-foreground text-sm">Logga in för att dela lajv-meddelanden</p>
+            <Button onClick={() => setShowAuthDialog(true)} className="btn-nostalgic gap-2">
+              <LogIn className="w-4 h-4" />
+              Logga in
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Messages list */}
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic p-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            <Radio className="w-12 h-12 mb-4 opacity-30" />
+            <p className="text-center">Inga lajv-meddelanden just nu.</p>
+            <p className="text-sm text-center mt-1">Var först med att dela något!</p>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn(
+                "flex gap-3 p-3 rounded-xl bg-card/70 backdrop-blur-sm",
+                "border border-border/50 shadow-sm hover:shadow-md transition-shadow",
+                msg.user_id === user?.id && "bg-primary/5 border-primary/20"
+              )}
+            >
+              <Avatar
+                name={msg.username}
+                src={msg.avatar_url || undefined}
+                size="sm"
+                status="online"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-sm truncate">{msg.username}</span>
+                  <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
+                </div>
+                <p className="text-sm break-words">{msg.message}</p>
+                <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+    </div>
+  );
+}

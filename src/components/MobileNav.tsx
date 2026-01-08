@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { HomeIcon, ChatIcon, GuestbookIcon, MailIcon, ProfileIcon } from "./LunarIcons";
+import { HomeIcon, ChatIcon, GuestbookIcon, MailIcon, LajvIcon } from "./LunarIcons";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv";
 
 interface MobileNavProps {
   activeTab: Tab;
@@ -17,6 +17,13 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
           label="Start"
           isActive={activeTab === "hem"}
           onClick={() => onTabChange("hem")}
+        />
+        <NavButton
+          icon={<LajvIcon size={24} />}
+          label="Lajv"
+          isActive={activeTab === "lajv"}
+          onClick={() => onTabChange("lajv")}
+          highlight
         />
         <NavButton
           icon={<ChatIcon size={24} />}
@@ -38,12 +45,6 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
           onClick={() => onTabChange("mejl")}
           badge={5}
         />
-        <NavButton
-          icon={<ProfileIcon size={24} />}
-          label="Profil"
-          isActive={activeTab === "profil"}
-          onClick={() => onTabChange("profil")}
-        />
       </div>
     </nav>
   );
@@ -55,9 +56,11 @@ function NavButton({
   isActive,
   onClick,
   badge,
+  highlight,
 }: {
   icon: React.ReactNode;
   label: string;
+  highlight?: boolean;
   isActive: boolean;
   onClick: () => void;
   badge?: number;
@@ -71,6 +74,8 @@ function NavButton({
         "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all duration-200 relative min-w-[48px]",
         isActive
           ? "text-primary"
+          : highlight
+          ? "text-primary animate-pulse-soft"
           : "text-muted-foreground hover:text-foreground"
       )}
     >

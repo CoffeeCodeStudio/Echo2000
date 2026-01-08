@@ -183,3 +183,42 @@ export function HomeIcon({ className, size = 24 }: IconProps) {
     </svg>
   );
 }
+
+// Lajv - figur med radiovågor (live)
+export function LajvIcon({ className, size = 24 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={cn("text-current", className)}
+      fill="none"
+    >
+      {/* Radiovågor */}
+      <path 
+        d="M18 4 Q22 8 18 12" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        fill="none"
+        opacity="0.5"
+      />
+      <path 
+        d="M16 6 Q18 8 16 10" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        fill="none"
+        opacity="0.7"
+      />
+      {/* Pulsande prick */}
+      <circle cx="14" cy="8" r="2" fill="currentColor" />
+      
+      {/* Figur */}
+      <circle cx="8" cy="8" r="3.5" fill="currentColor" />
+      <rect x="5.5" y="11.5" width="5" height="4.5" rx="0.75" fill="currentColor" />
+      <rect x="5.5" y="16" width="2" height="3" fill="currentColor" />
+      <rect x="8.5" y="16" width="2" height="3" fill="currentColor" />
+      <ellipse cx="6.5" cy="19.5" rx="1.75" ry="0.75" fill="currentColor" />
+      <ellipse cx="9.5" cy="19.5" rx="1.75" ry="0.75" fill="currentColor" />
+    </svg>
+  );
+}
