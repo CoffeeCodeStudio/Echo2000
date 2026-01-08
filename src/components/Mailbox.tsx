@@ -54,7 +54,7 @@ const initialMails: MailMessage[] = [
     from: "Admin",
     subject: "Välkommen tillbaka!",
     preview: "Vi har saknat dig! Kolla in vad som är nytt...",
-    content: "Hej och välkommen tillbaka till NostalgiaChat!\n\nVi har saknat dig! Kolla in vad som är nytt sedan sist:\n\n• Ny gästboksfunktion\n• Förbättrad chatt\n• Fler profilanpassningar\n\nMvh,\nTeamet",
+    content: "Hej och välkommen tillbaka till Echo2000!\n\nVi har saknat dig! Kolla in vad som är nytt sedan sist:\n\n• Ny gästboksfunktion\n• Förbättrad chatt\n• Fler profilanpassningar\n\nMvh,\nTeamet",
     timestamp: "förra veckan",
     isRead: true,
     isStarred: false,

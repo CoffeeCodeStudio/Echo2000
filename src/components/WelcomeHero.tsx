@@ -17,40 +17,40 @@ export function WelcomeHero() {
           {/* Sparkle badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6 animate-fade-in">
             <Sparkles className="w-4 h-4" />
-            <span>Welcome back to the good old days</span>
+            <span>Välkommen tillbaka till de goda tiderna</span>
           </div>
 
           {/* Main heading */}
           <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl leading-tight text-glow mb-4 animate-fade-in">
-            Chat Like It's{" "}
-            <span className="text-primary">2005</span>
+            <span className="text-primary">Echo</span>
+            <span className="text-accent">2000</span>
             <br />
-            <span className="text-accent">Feel Like It's 2026</span>
+            <span className="text-foreground/80 text-2xl sm:text-3xl md:text-4xl">Chatta som förr</span>
           </h1>
 
           {/* Subheading */}
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto mb-8 animate-fade-in">
-            A nostalgic chat community inspired by MSN Messenger and LunarStorm, 
-            rebuilt with modern design and features.
+            En nostalgisk chatt-community inspirerad av MSN Messenger och LunarStorm, 
+            återuppbyggd med modern design och funktioner.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in">
             <Button variant="msn" size="lg" className="w-full sm:w-auto">
               <MessageCircle className="w-5 h-5" />
-              Start Chatting
+              Börja chatta
             </Button>
             <Button variant="outline" size="lg" className="w-full sm:w-auto">
               <Users className="w-5 h-5" />
-              Explore Community
+              Utforska communityn
             </Button>
           </div>
 
           {/* Stats */}
           <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-border/50">
-            <StatItem icon={<Users className="w-5 h-5" />} value="2.4k" label="Members" />
-            <StatItem icon={<MessageCircle className="w-5 h-5" />} value="15k" label="Messages" />
-            <StatItem icon={<Heart className="w-5 h-5" />} value="892" label="Connections" />
+            <StatItem icon={<Users className="w-5 h-5" />} value="2.4k" label="Medlemmar" />
+            <StatItem icon={<MessageCircle className="w-5 h-5" />} value="15k" label="Meddelanden" />
+            <StatItem icon={<Heart className="w-5 h-5" />} value="892" label="Vänner" />
           </div>
         </div>
       </div>

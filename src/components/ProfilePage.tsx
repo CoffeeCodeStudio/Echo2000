@@ -83,7 +83,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     name: "Alex Johnson",
-    username: "alex_nostalgia",
+    username: "alex_echo",
     avatar: undefined,
     status: "online",
     statusMessage: "Living in the 2000s 🦋",

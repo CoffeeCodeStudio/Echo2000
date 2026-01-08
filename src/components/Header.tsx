@@ -49,8 +49,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="font-display font-black text-xl tracking-tight">
-              <span className="text-white">LUNAR</span>
-              <span className="text-accent-foreground bg-accent px-1 rounded">STORM</span>
+              <span className="text-white">ECHO</span>
+              <span className="text-accent-foreground bg-accent px-1 rounded">2000</span>
             </div>
             <span className="text-[10px] text-white/60 hidden sm:inline">NOSTALGI</span>
           </div>
