@@ -14,6 +14,7 @@ import { GamesSection } from "@/components/GamesSection";
 import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
+import { WinampPlayer } from "@/components/WinampPlayer";
 import { cn } from "@/lib/utils";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
@@ -65,6 +66,16 @@ export default function Index() {
           <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
             <WelcomeHero />
             
+            {/* Music Player Section */}
+            <section className="container px-4 py-8">
+              <h2 className="font-display font-bold text-xl mb-4 flex items-center gap-2">
+                🎵 Musikspelare
+              </h2>
+              <div className="flex justify-center">
+                <WinampPlayer />
+              </div>
+            </section>
+
             {/* Communities Section */}
             <section className="container px-4 py-8">
               <h2 className="font-display font-bold text-xl mb-4">Aktiva Gemenskaper</h2>
