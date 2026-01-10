@@ -1,10 +1,22 @@
 import React from 'react';
+import { Furniture, Position } from './types';
+import { PixelFurniture } from './PixelFurniture';
 
 interface IsometricRoomProps {
   children: React.ReactNode;
+  furniture: Furniture[];
+  avatarPosition: Position;
+  selectedFurnitureId: string | null;
+  onFurnitureClick: (furniture: Furniture) => void;
 }
 
-export const IsometricRoom: React.FC<IsometricRoomProps> = ({ children }) => {
+export const IsometricRoom: React.FC<IsometricRoomProps> = ({ 
+  children, 
+  furniture, 
+  avatarPosition,
+  selectedFurnitureId,
+  onFurnitureClick 
+}) => {
   return (
     <div className="isometric-room-container">
       <svg 
@@ -43,6 +55,11 @@ export const IsometricRoom: React.FC<IsometricRoomProps> = ({ children }) => {
         <line x1="120" y1="80" x2="120" y2="130" stroke="#334455" strokeWidth="2" />
         <line x1="100" y1="105" x2="140" y2="105" stroke="#334455" strokeWidth="2" />
         
+        {/* Poster on right wall */}
+        <rect x="260" y="70" width="30" height="40" fill="#2a2a4a" stroke="#1a1a3a" strokeWidth="1" />
+        <rect x="263" y="73" width="24" height="34" fill="#3a3a5a" />
+        <text x="275" y="92" fill="#ffd700" fontSize="6" textAnchor="middle" fontFamily="monospace">E2K</text>
+        
         {/* Floor - isometric wooden planks */}
         <polygon 
           points="50,150 200,220 350,150 200,280" 
@@ -65,20 +82,42 @@ export const IsometricRoom: React.FC<IsometricRoomProps> = ({ children }) => {
         {/* Floor shadow/depth lines */}
         <line x1="200" y1="220" x2="200" y2="280" stroke="#5a4004" strokeWidth="2" />
         
-        {/* Pixel plant in corner */}
-        <rect x="70" y="125" width="16" height="20" fill="#8b4513" />
-        <rect x="74" y="105" width="8" height="22" fill="#228b22" />
-        <rect x="68" y="108" width="6" height="12" fill="#2e8b2e" />
-        <rect x="82" y="110" width="6" height="10" fill="#32cd32" />
-        
         {/* Small rug in center */}
-        <ellipse cx="200" cy="240" rx="40" ry="15" fill="#8b2252" opacity="0.8" />
-        <ellipse cx="200" cy="240" rx="30" ry="10" fill="#cd5c5c" opacity="0.9" />
+        <ellipse cx="200" cy="240" rx="50" ry="18" fill="#8b2252" opacity="0.8" />
+        <ellipse cx="200" cy="240" rx="40" ry="14" fill="#cd5c5c" opacity="0.9" />
+        <ellipse cx="200" cy="240" rx="25" ry="8" fill="#e07070" opacity="0.7" />
       </svg>
       
-      {/* Avatar and UI overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="pointer-events-auto relative" style={{ marginTop: '60px' }}>
+      {/* Furniture layer */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="relative w-full h-full">
+          {furniture.map(item => (
+            <div key={item.id} className="pointer-events-auto">
+              <PixelFurniture
+                furniture={item}
+                isSelected={selectedFurnitureId === item.id}
+                onClick={() => onFurnitureClick(item)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Avatar overlay - positioned based on avatarPosition */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div 
+          className="pointer-events-auto relative transition-all duration-500 ease-out"
+          style={{ 
+            transform: `translate(${(avatarPosition.x - 50) * 2}px, ${(avatarPosition.y - 50) * 1.5}px)`,
+          }}
+        >
           {children}
         </div>
       </div>

@@ -6,8 +6,24 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export type FurnitureType = 'chair' | 'table' | 'plant' | 'lamp' | 'sofa' | 'bookshelf';
+
+export interface Furniture {
+  id: string;
+  type: FurnitureType;
+  position: Position;
+  canSit?: boolean;
+  label: string;
+}
+
 export interface RoomState {
   isOpen: boolean;
   currentAction: AvatarAction;
   messages: ChatMessage[];
+  avatarPosition: Position;
 }
