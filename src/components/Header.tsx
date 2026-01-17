@@ -18,11 +18,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const [notificationCount] = useState(3);
   const [mailCount] = useState(5);
 
-  const mainNavItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: "gastbok", label: "GÄSTBOK", icon: <GuestbookIcon size={20} /> },
-    { id: "mejl", label: "MEJL", icon: <MailIcon size={20} />, badge: mailCount },
-    { id: "chatt", label: "CHATT", icon: <ChatIcon size={20} /> },
-    { id: "vanner", label: "VÄNNER", icon: <FriendsIcon size={20} /> },
+  const mainNavItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number; animation: string }[] = [
+    { id: "gastbok", label: "GÄSTBOK", icon: <GuestbookIcon size={20} />, animation: "animate-waddle" },
+    { id: "mejl", label: "MEJL", icon: <MailIcon size={20} />, badge: mailCount, animation: "animate-msn-bounce" },
+    { id: "chatt", label: "DISKUS", icon: <ChatIcon size={20} />, animation: "animate-writing" },
+    { id: "vanner", label: "VÄNNER", icon: <FriendsIcon size={20} />, animation: "animate-heartbeat" },
   ];
 
   const subNavItems: { id: Tab; label: string; icon?: React.ReactNode; highlight?: boolean }[] = [
@@ -61,7 +61,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
 
           {/* Desktop Main Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" style={{ backgroundColor: '#335577' }}>
             {mainNavItems.map((item) => {
               const hasNotification = item.badge && item.badge > 0;
               return (
@@ -69,13 +69,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   key={item.id}
                   onClick={() => onTabChange?.(item.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all",
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all group",
                     activeTab === item.id
                       ? "bg-white/20 text-white"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  <span className={cn(hasNotification && "animate-icon-jump")}>
+                  <span className={cn("icon-glow", item.animation)}>
                     {item.icon}
                   </span>
                   {item.label}

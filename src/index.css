@@ -345,4 +345,59 @@
       transform: translateY(0);
     }
   }
+
+  /* Navbar icon animations */
+  .animate-waddle {
+    animation: waddle 0.6s ease-in-out infinite;
+  }
+
+  @keyframes waddle {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(-8deg) translateY(-1px); }
+    75% { transform: rotate(8deg) translateY(-1px); }
+  }
+
+  .animate-msn-bounce {
+    animation: msn-bounce 0.5s ease-in-out infinite;
+  }
+
+  @keyframes msn-bounce {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-4px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(-2px); }
+  }
+
+  .animate-writing {
+    animation: writing 0.4s ease-in-out infinite;
+  }
+
+  @keyframes writing {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(2px) rotate(5deg); }
+    50% { transform: translateX(0) rotate(0deg); }
+    75% { transform: translateX(-2px) rotate(-5deg); }
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.15); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.15); }
+    56% { transform: scale(1); }
+  }
+
+  /* Icon glow on hover */
+  .icon-glow {
+    transition: filter 0.2s ease-in-out, transform 0.2s ease-in-out;
+  }
+
+  .icon-glow:hover {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.5));
+    transform: scale(1.1);
+  }
 }
