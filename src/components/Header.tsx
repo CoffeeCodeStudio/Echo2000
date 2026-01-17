@@ -1,10 +1,14 @@
-import { Menu, Bell, Search } from "lucide-react";
+import { Menu, Bell, Search, LogIn, LogOut, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar } from "./Avatar";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { GuestbookIcon, MailIcon, ChatIcon, FriendsIcon, LajvIcon } from "./LunarIcons";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -17,6 +21,48 @@ interface HeaderProps {
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [notificationCount] = useState(3);
   const [mailCount] = useState(5);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data } = await supabase.rpc('has_role', { 
+          _user_id: user.id, 
+          _role: 'admin' 
+        });
+        setIsAdmin(data === true);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Fel vid utloggning",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Du är utloggad",
+        description: "Ses snart igen!",
+      });
+    }
+  };
 
   const mainNavItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number; animation: string }[] = [
     { id: "gastbok", label: "GÄSTBOK", icon: <GuestbookIcon size={20} />, animation: "animate-waddle" },
@@ -89,7 +135,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             })}
           </nav>
 
-          {/* Right side - Search & Notifications */}
+          {/* Right side - Search, Auth & Notifications */}
           <div className="flex items-center gap-2">
             {/* Quick Search */}
             <div className="hidden lg:flex items-center gap-1 bg-white/10 rounded px-2 py-1">
@@ -100,6 +146,46 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               />
             </div>
 
+            {/* Auth buttons */}
+            {!loading && (
+              <>
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate("/admin")}
+                        className="text-primary-foreground hover:bg-white/10 text-xs gap-1"
+                      >
+                        <Shield className="w-4 h-4" />
+                        <span className="hidden sm:inline">Admin</span>
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="text-primary-foreground hover:bg-white/10 text-xs gap-1"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden sm:inline">Logga ut</span>
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/auth")}
+                    className="text-primary-foreground hover:bg-white/10 text-xs gap-1"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="hidden sm:inline">Logga in</span>
+                  </Button>
+                )}
+              </>
+            )}
+
             <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10">
               <Bell className="w-5 h-5" />
               {notificationCount > 0 && (
@@ -109,8 +195,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               )}
             </Button>
             <Avatar
-              name="Du"
-              status="online"
+              name={user ? "Du" : "Gäst"}
+              status={user ? "online" : "offline"}
               size="sm"
               className="cursor-pointer hover:opacity-80 transition-opacity"
             />
