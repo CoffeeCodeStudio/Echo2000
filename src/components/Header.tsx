@@ -1,4 +1,4 @@
-import { LogIn, LogOut, Shield, Menu } from "lucide-react";
+import { LogIn, LogOut, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -74,10 +74,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="font-display font-black text-lg sm:text-xl tracking-tight">
-            <span className="text-white">ECHO</span>
-            <span className="text-black bg-[#ff0000] px-1 rounded">2000</span>
+            <span className="text-foreground">ECHO</span>
+            <span className="text-primary-foreground bg-primary px-1 rounded">2000</span>
           </div>
-          <span className="text-[10px] text-white/60 hidden sm:inline">NOSTALGI</span>
+          <span className="text-[10px] text-muted-foreground hidden sm:inline">NOSTALGI</span>
         </div>
 
         {/* Nav Items - visible on all screen sizes */}
@@ -111,7 +111,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                       variant="ghost"
                       size="sm"
                       onClick={() => navigate("/admin")}
-                      className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
+                      className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
                     >
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
@@ -121,7 +121,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                     variant="ghost"
                     size="sm"
                     onClick={handleSignOut}
-                    className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
+                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:inline">Logga ut</span>
@@ -132,7 +132,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/auth")}
-                  className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
+                  className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
                 >
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Logga in</span>

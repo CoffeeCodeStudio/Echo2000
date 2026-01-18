@@ -401,20 +401,20 @@
     transform: scale(1.1);
   }
 
-  /* ========== NEW DARK NAVBAR STYLES ========== */
+  /* ========== DARK NAVBAR STYLES WITH ORANGE THEME ========== */
   .navbar-dark {
-    background-color: #000000;
+    background-color: hsl(230 35% 10%);
     display: flex;
     gap: 25px;
     padding: 15px 20px;
-    border-bottom: 2px solid #ff0000;
+    border-bottom: 2px solid hsl(var(--primary));
     align-items: center;
   }
 
   .nav-item-dark {
     text-align: center;
     cursor: pointer;
-    color: white;
+    color: hsl(var(--foreground));
     transition: 0.3s;
     display: flex;
     flex-direction: column;
@@ -422,11 +422,11 @@
   }
 
   .nav-item-dark:hover .icon-dark {
-    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000);
+    filter: drop-shadow(0 0 8px hsl(var(--primary))) drop-shadow(0 0 16px hsl(var(--primary)));
   }
 
   .nav-item-dark.active {
-    color: #ff0000;
+    color: hsl(var(--primary));
   }
 
   .icon-dark {
@@ -484,7 +484,7 @@
   .status-box-dark {
     display: flex;
     align-items: center;
-    color: white;
+    color: hsl(var(--foreground));
     font-weight: bold;
     font-size: 12px;
   }
@@ -493,9 +493,9 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    background: #ff0000;
+    background: hsl(var(--online-green));
     border-radius: 50%;
-    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+    box-shadow: 0 0 5px hsl(var(--online-green)), 0 0 10px hsl(var(--online-green));
     margin-right: 8px;
     animation: pulse-dot 2s infinite;
   }
