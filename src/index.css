@@ -400,4 +400,112 @@
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.5));
     transform: scale(1.1);
   }
+
+  /* ========== NEW DARK NAVBAR STYLES ========== */
+  .navbar-dark {
+    background-color: #000000;
+    display: flex;
+    gap: 25px;
+    padding: 15px 20px;
+    border-bottom: 2px solid #ff0000;
+    align-items: center;
+  }
+
+  .nav-item-dark {
+    text-align: center;
+    cursor: pointer;
+    color: white;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav-item-dark:hover .icon-dark {
+    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000);
+  }
+
+  .nav-item-dark.active {
+    color: #ff0000;
+  }
+
+  .icon-dark {
+    font-size: 24px;
+    display: inline-block;
+    transition: filter 0.3s ease;
+  }
+
+  .label-dark {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Dark navbar specific animations */
+  .footsteps {
+    animation: waddle-dark 2s infinite;
+  }
+
+  @keyframes waddle-dark {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(12deg); }
+  }
+
+  .msn-bounce {
+    animation: bounce-dark 2s infinite;
+  }
+
+  @keyframes bounce-dark {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+  }
+
+  .writing-pen {
+    animation: write-dark 2s infinite;
+  }
+
+  @keyframes write-dark {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(5px, -2px); }
+  }
+
+  .heart-pulse {
+    animation: pulse-dark 1.5s infinite;
+  }
+
+  @keyframes pulse-dark {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .status-box-dark {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  .online-dot-dark {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+    margin-right: 8px;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
+    50% { opacity: 0.7; box-shadow: 0 0 8px #ff0000, 0 0 16px #ff0000; }
+  }
+
+  .count-dark {
+    letter-spacing: 0.5px;
+  }
 }
