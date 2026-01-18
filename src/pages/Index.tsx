@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { MobileNav } from "@/components/MobileNav";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
 import { WelcomeHero } from "@/components/WelcomeHero";
@@ -160,14 +159,9 @@ export default function Index() {
         onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
       />
 
-      <main className={cn(
-        "flex-1 flex overflow-hidden",
-        "pb-16 md:pb-0" // Space for mobile nav
-      )}>
+      <main className="flex-1 flex overflow-hidden">
         {renderContent()}
       </main>
-
-      <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }

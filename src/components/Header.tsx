@@ -71,16 +71,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     <header className="sticky top-0 z-50">
       {/* Dark Navbar with ECHO2000 logo */}
       <div className="navbar-dark">
-        {/* Mobile menu button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMenuClick}
-          className="md:hidden text-white hover:bg-white/10 shrink-0"
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="font-display font-black text-lg sm:text-xl tracking-tight">
@@ -90,8 +80,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <span className="text-[10px] text-white/60 hidden sm:inline">NOSTALGI</span>
         </div>
 
-        {/* Desktop Nav Items */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-6 ml-4 lg:ml-8">
+        {/* Nav Items - visible on all screen sizes */}
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-6 ml-2 sm:ml-4 lg:ml-8">
           {navItems.map((item) => (
             <div
               key={item.id}
@@ -104,7 +94,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               <div className={cn("icon-dark", item.animationClass)}>
                 {item.emoji}
               </div>
-              <span className="label-dark hidden lg:block">{item.label}</span>
+              <span className="label-dark hidden sm:block">{item.label}</span>
             </div>
           ))}
         </div>
