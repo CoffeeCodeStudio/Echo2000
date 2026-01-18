@@ -1,4 +1,4 @@
-import { LogIn, LogOut, Shield } from "lucide-react";
+import { LogIn, LogOut, Shield, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ interface HeaderProps {
   onMenuClick?: () => void;
 }
 
-export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
+export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [onlineCount] = useState(35);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -69,10 +69,29 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* New Dark Navbar */}
+      {/* Dark Navbar with ECHO2000 logo */}
       <div className="navbar-dark">
-        {/* Nav Items */}
-        <div className="flex items-center gap-6">
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMenuClick}
+          className="md:hidden text-white hover:bg-white/10 shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+
+        {/* ECHO2000 Logo */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="font-display font-black text-lg sm:text-xl tracking-tight">
+            <span className="text-white">ECHO</span>
+            <span className="text-black bg-[#ff0000] px-1 rounded">2000</span>
+          </div>
+          <span className="text-[10px] text-white/60 hidden sm:inline">NOSTALGI</span>
+        </div>
+
+        {/* Desktop Nav Items */}
+        <div className="hidden md:flex items-center gap-2 lg:gap-6 ml-4 lg:ml-8">
           {navItems.map((item) => (
             <div
               key={item.id}
@@ -85,13 +104,13 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
               <div className={cn("icon-dark", item.animationClass)}>
                 {item.emoji}
               </div>
-              <span className="label-dark">{item.label}</span>
+              <span className="label-dark hidden lg:block">{item.label}</span>
             </div>
           ))}
         </div>
 
         {/* Right side - Auth & Status */}
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-auto">
           {/* Auth buttons */}
           {!loading && (
             <>
@@ -102,7 +121,7 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => navigate("/admin")}
-                      className="text-white hover:bg-white/10 text-xs gap-1"
+                      className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
                     >
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
@@ -112,7 +131,7 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
                     variant="ghost"
                     size="sm"
                     onClick={handleSignOut}
-                    className="text-white hover:bg-white/10 text-xs gap-1"
+                    className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:inline">Logga ut</span>
@@ -123,7 +142,7 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/auth")}
-                  className="text-white hover:bg-white/10 text-xs gap-1"
+                  className="text-white hover:bg-white/10 text-xs gap-1 px-2 sm:px-3"
                 >
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Logga in</span>
@@ -135,7 +154,8 @@ export function Header({ activeTab = "hem", onTabChange }: HeaderProps) {
           {/* Status Box */}
           <div className="status-box-dark">
             <div className="online-dot-dark"></div>
-            <span className="count-dark">{onlineCount} JUST NU</span>
+            <span className="count-dark hidden sm:inline">{onlineCount} JUST NU</span>
+            <span className="count-dark sm:hidden">{onlineCount}</span>
           </div>
         </div>
       </div>
