@@ -405,10 +405,24 @@
   .navbar-dark {
     background-color: hsl(230 35% 10%);
     display: flex;
-    gap: 25px;
-    padding: 15px 20px;
+    gap: 8px;
+    padding: 10px 12px;
     border-bottom: 2px solid hsl(var(--primary));
     align-items: center;
+  }
+
+  @media (min-width: 640px) {
+    .navbar-dark {
+      gap: 16px;
+      padding: 12px 16px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .navbar-dark {
+      gap: 20px;
+      padding: 15px 20px;
+    }
   }
 
   .nav-item-dark {
@@ -419,6 +433,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 4px 6px;
+    border-radius: 6px;
+  }
+
+  .nav-item-dark:hover {
+    background: hsl(var(--primary) / 0.1);
   }
 
   .nav-item-dark:hover .icon-dark {
@@ -427,20 +447,44 @@
 
   .nav-item-dark.active {
     color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.15);
   }
 
   .icon-dark {
-    font-size: 24px;
+    font-size: 18px;
     display: inline-block;
     transition: filter 0.3s ease;
   }
 
+  @media (min-width: 640px) {
+    .icon-dark {
+      font-size: 22px;
+    }
+  }
+
   .label-dark {
     display: block;
-    font-size: 11px;
+    font-size: 9px;
     font-weight: bold;
-    margin-top: 5px;
-    letter-spacing: 0.5px;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
+  }
+
+  @media (min-width: 1024px) {
+    .label-dark {
+      font-size: 11px;
+      margin-top: 5px;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  /* Hide scrollbar for nav items */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Dark navbar specific animations */
