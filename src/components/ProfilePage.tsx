@@ -109,6 +109,30 @@ interface EditableProfileData {
   spanar_in: string;
 }
 
+// Demo data for logged out users
+const demoProfile: EditableProfileData = {
+  username: "demo_alex",
+  avatar_url: null,
+  status_message: "Living in the 2000s 🦋",
+  bio: "Hej! Jag är en demo-profil. Logga in för att skapa din egen profil och börja chatta med andra!",
+  city: "Stockholm",
+  occupation: "Student",
+  relationship: "Singel",
+  personality: "Social",
+  hair_color: "Brunett",
+  body_type: "Normal",
+  clothing: "Casual",
+  likes: "Musik, gaming, vänner",
+  eats: "Pizza",
+  listens_to: "Allt möjligt",
+  prefers: "Hänga med kompisar",
+  looking_for: ["Vänskap", "Chatt"],
+  age: 22,
+  gender: "Kille",
+  interests: "Retro gaming, webbutveckling",
+  spanar_in: "Nya vänner",
+};
+
 interface ProfilePageProps {
   userId?: string;
 }
@@ -117,6 +141,9 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
+  
+  const isLoggedIn = !!user;
+  const showDemoMode = !isLoggedIn && !userId;
   
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"profil" | "gastbok" | "blog" | "vanner" | "album" | "besokare">("profil");
@@ -226,8 +253,8 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   // Dr. Love compatibility score (mock)
   const drLoveScore = 73;
 
-  // Loading state
-  if (loading) {
+  // Loading state (only when logged in)
+  if (loading && !showDemoMode) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
@@ -238,21 +265,8 @@ export function ProfilePage({ userId }: ProfilePageProps) {
     );
   }
 
-  // Not logged in
-  if (!user && !userId) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="text-center p-8">
-          <h2 className="font-display font-bold text-xl mb-4">Du måste logga in</h2>
-          <p className="text-muted-foreground mb-4">Logga in för att se och redigera din profil.</p>
-          <Button onClick={() => navigate("/auth")}>Logga in</Button>
-        </div>
-      </div>
-    );
-  }
-
-  // No profile found
-  if (!profile) {
+  // No profile found (only when logged in and looking at specific user)
+  if (!showDemoMode && !profile && userId) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center p-8">
@@ -263,37 +277,55 @@ export function ProfilePage({ userId }: ProfilePageProps) {
     );
   }
 
-  const displayData = isEditing ? editData : {
-    username: profile.username,
-    avatar_url: profile.avatar_url,
-    status_message: profile.status_message || "",
-    bio: profile.bio || "",
-    city: profile.city || "",
-    occupation: profile.occupation || "",
-    relationship: profile.relationship || "",
-    personality: profile.personality || "",
-    hair_color: profile.hair_color || "",
-    body_type: profile.body_type || "",
-    clothing: profile.clothing || "",
-    likes: profile.likes || "",
-    eats: profile.eats || "",
-    listens_to: profile.listens_to || "",
-    prefers: profile.prefers || "",
-    looking_for: profile.looking_for || [],
-    age: profile.age,
-    gender: profile.gender || "",
-    interests: profile.interests || "",
-    spanar_in: profile.spanar_in || "",
-  };
+  // Determine what data to show
+  const displayData = showDemoMode 
+    ? demoProfile 
+    : isEditing 
+      ? editData 
+      : {
+          username: profile?.username || "",
+          avatar_url: profile?.avatar_url || null,
+          status_message: profile?.status_message || "",
+          bio: profile?.bio || "",
+          city: profile?.city || "",
+          occupation: profile?.occupation || "",
+          relationship: profile?.relationship || "",
+          personality: profile?.personality || "",
+          hair_color: profile?.hair_color || "",
+          body_type: profile?.body_type || "",
+          clothing: profile?.clothing || "",
+          likes: profile?.likes || "",
+          eats: profile?.eats || "",
+          listens_to: profile?.listens_to || "",
+          prefers: profile?.prefers || "",
+          looking_for: profile?.looking_for || [],
+          age: profile?.age || null,
+          gender: profile?.gender || "",
+          interests: profile?.interests || "",
+          spanar_in: profile?.spanar_in || "",
+        };
 
   const userStatus: UserStatus = "online";
-  const memberSince = new Date(profile.created_at).toLocaleDateString('sv-SE', { 
-    year: 'numeric', 
-    month: 'long' 
-  });
+  const memberSince = profile 
+    ? new Date(profile.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })
+    : "December 2025";
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+      {/* Demo Mode Banner */}
+      {showDemoMode && (
+        <div className="bg-accent/20 border-b border-accent px-4 py-2">
+          <div className="container flex items-center justify-between">
+            <p className="text-sm text-accent-foreground">
+              👀 <strong>Demo-läge:</strong> Detta är en exempelprofil. Logga in för att skapa din egen!
+            </p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/auth")} className="text-xs">
+              Skapa konto
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* LunarStorm-style Profile Header Bar */}
       <div className="bg-gradient-to-r from-primary via-primary/90 to-accent text-primary-foreground">
         <div className="container px-4 py-2">
@@ -306,7 +338,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                 {displayData.city && `, ${displayData.city.toUpperCase()}`}
               </span>
             </div>
-            {isOwnProfile && (
+            {isOwnProfile && !showDemoMode && (
               <div>
                 {isEditing ? (
                   <div className="flex gap-2">
@@ -325,6 +357,11 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                   </Button>
                 )}
               </div>
+            )}
+            {showDemoMode && (
+              <Button size="sm" variant="secondary" onClick={() => navigate("/auth")}>
+                Logga in för att skapa profil
+              </Button>
             )}
           </div>
         </div>
