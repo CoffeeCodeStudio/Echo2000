@@ -144,7 +144,7 @@ export default function Index() {
         return <FAQSection />;
 
       case "profil":
-        return <ProfilePage isOwnProfile={true} />;
+        return <ProfilePage />;
 
       default:
         return null;
