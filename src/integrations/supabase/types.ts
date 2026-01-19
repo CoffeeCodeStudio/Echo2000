@@ -130,28 +130,82 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           avatar_url: string | null
+          bio: string | null
+          body_type: string | null
+          city: string | null
+          clothing: string | null
           created_at: string
+          eats: string | null
+          gender: string | null
+          hair_color: string | null
           id: string
+          interests: string | null
           is_admin: boolean
+          likes: string | null
+          listens_to: string | null
+          looking_for: string[] | null
+          occupation: string | null
+          personality: string | null
+          prefers: string | null
+          relationship: string | null
+          spanar_in: string | null
+          status_message: string | null
           updated_at: string
           user_id: string
           username: string
         }
         Insert: {
+          age?: number | null
           avatar_url?: string | null
+          bio?: string | null
+          body_type?: string | null
+          city?: string | null
+          clothing?: string | null
           created_at?: string
+          eats?: string | null
+          gender?: string | null
+          hair_color?: string | null
           id?: string
+          interests?: string | null
           is_admin?: boolean
+          likes?: string | null
+          listens_to?: string | null
+          looking_for?: string[] | null
+          occupation?: string | null
+          personality?: string | null
+          prefers?: string | null
+          relationship?: string | null
+          spanar_in?: string | null
+          status_message?: string | null
           updated_at?: string
           user_id: string
           username: string
         }
         Update: {
+          age?: number | null
           avatar_url?: string | null
+          bio?: string | null
+          body_type?: string | null
+          city?: string | null
+          clothing?: string | null
           created_at?: string
+          eats?: string | null
+          gender?: string | null
+          hair_color?: string | null
           id?: string
+          interests?: string | null
           is_admin?: boolean
+          likes?: string | null
+          listens_to?: string | null
+          looking_for?: string[] | null
+          occupation?: string | null
+          personality?: string | null
+          prefers?: string | null
+          relationship?: string | null
+          spanar_in?: string | null
+          status_message?: string | null
           updated_at?: string
           user_id?: string
           username?: string

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MapPin, Calendar, Heart, MessageCircle, Star, Edit2, Save, X, Ban, FileText, Crown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Calendar, Heart, MessageCircle, Star, Edit2, Save, X, Ban, FileText, Crown, Loader2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
@@ -14,6 +14,9 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 import { AvatarPicker, avatarOptions, type AvatarOption } from "./AvatarPicker";
+import { useProfile, type ProfileData } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const occupationOptions = [
   "Student",
@@ -81,86 +84,133 @@ const lookingForOptions = [
   "Inget speciellt",
 ];
 
-interface ProfileData {
-  name: string;
+const genderOptions = ["Kille", "Tjej", "Annat"];
+
+interface EditableProfileData {
   username: string;
-  avatar?: string;
-  status: UserStatus;
-  statusMessage: string;
+  avatar_url: string | null;
+  status_message: string;
   bio: string;
-  location: string;
   city: string;
   occupation: string;
   relationship: string;
   personality: string;
-  hairColor: string;
-  bodyType: string;
+  hair_color: string;
+  body_type: string;
   clothing: string;
   likes: string;
   eats: string;
-  listensTo: string;
+  listens_to: string;
   prefers: string;
-  lookingFor: string[];
-  age: string;
+  looking_for: string[];
+  age: number | null;
   gender: string;
   interests: string;
-  spanarIn: string;
-  vipStatus: string;
+  spanar_in: string;
 }
 
 interface ProfilePageProps {
-  isOwnProfile?: boolean;
+  userId?: string;
 }
 
-export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
+export function ProfilePage({ userId }: ProfilePageProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<"profil" | "gastbok" | "blog" | "vanner" | "album" | "besokare">("profil");
   
-  const [profile, setProfile] = useState<ProfileData>({
-    name: "Alex",
-    username: "alex_echo",
-    avatar: undefined,
-    status: "online",
-    statusMessage: "Living in the 2000s 🦋",
-    bio: "Web developer by day, retro gaming enthusiast by night.",
-    location: "Stockholm",
-    city: "Stockholm",
-    occupation: "Anställd",
-    relationship: "Singel",
-    personality: "Självsäker",
-    hairColor: "Ljusblondin",
-    bodyType: "Medellång",
-    clothing: "Färgglada",
-    likes: "Tvillingen",
-    eats: "Anything..",
-    listensTo: "Det mesta",
-    prefers: "Vännerna",
-    lookingFor: ["Vänskap", "Chatt"],
-    age: "28",
-    gender: "Kille",
-    interests: "Playahead",
-    spanarIn: "Lillys",
-    vipStatus: "VIP",
+  const [editData, setEditData] = useState<EditableProfileData>({
+    username: "",
+    avatar_url: null,
+    status_message: "",
+    bio: "",
+    city: "",
+    occupation: "",
+    relationship: "",
+    personality: "",
+    hair_color: "",
+    body_type: "",
+    clothing: "",
+    likes: "",
+    eats: "",
+    listens_to: "",
+    prefers: "",
+    looking_for: [],
+    age: null,
+    gender: "",
+    interests: "",
+    spanar_in: "",
   });
 
-  const [editData, setEditData] = useState(profile);
+  // Update editData when profile loads
+  useEffect(() => {
+    if (profile) {
+      setEditData({
+        username: profile.username || "",
+        avatar_url: profile.avatar_url,
+        status_message: profile.status_message || "",
+        bio: profile.bio || "",
+        city: profile.city || "",
+        occupation: profile.occupation || "",
+        relationship: profile.relationship || "",
+        personality: profile.personality || "",
+        hair_color: profile.hair_color || "",
+        body_type: profile.body_type || "",
+        clothing: profile.clothing || "",
+        likes: profile.likes || "",
+        eats: profile.eats || "",
+        listens_to: profile.listens_to || "",
+        prefers: profile.prefers || "",
+        looking_for: profile.looking_for || [],
+        age: profile.age,
+        gender: profile.gender || "",
+        interests: profile.interests || "",
+        spanar_in: profile.spanar_in || "",
+      });
+    }
+  }, [profile]);
 
-  const handleSave = () => {
-    setProfile(editData);
+  const handleSave = async () => {
+    await updateProfile(editData);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditData(profile);
+    if (profile) {
+      setEditData({
+        username: profile.username || "",
+        avatar_url: profile.avatar_url,
+        status_message: profile.status_message || "",
+        bio: profile.bio || "",
+        city: profile.city || "",
+        occupation: profile.occupation || "",
+        relationship: profile.relationship || "",
+        personality: profile.personality || "",
+        hair_color: profile.hair_color || "",
+        body_type: profile.body_type || "",
+        clothing: profile.clothing || "",
+        likes: profile.likes || "",
+        eats: profile.eats || "",
+        listens_to: profile.listens_to || "",
+        prefers: profile.prefers || "",
+        looking_for: profile.looking_for || [],
+        age: profile.age,
+        gender: profile.gender || "",
+        interests: profile.interests || "",
+        spanar_in: profile.spanar_in || "",
+      });
+    }
     setIsEditing(false);
   };
 
   const toggleLookingFor = (option: string) => {
     setEditData((prev) => ({
       ...prev,
-      lookingFor: prev.lookingFor.includes(option)
-        ? prev.lookingFor.filter((o) => o !== option)
-        : [...prev.lookingFor, option],
+      looking_for: prev.looking_for.includes(option)
+        ? prev.looking_for.filter((o) => o !== option)
+        : [...prev.looking_for, option],
     }));
   };
 
@@ -176,6 +226,72 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
   // Dr. Love compatibility score (mock)
   const drLoveScore = 73;
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-muted-foreground">Laddar profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in
+  if (!user && !userId) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <h2 className="font-display font-bold text-xl mb-4">Du måste logga in</h2>
+          <p className="text-muted-foreground mb-4">Logga in för att se och redigera din profil.</p>
+          <Button onClick={() => navigate("/auth")}>Logga in</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // No profile found
+  if (!profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <h2 className="font-display font-bold text-xl mb-4">Profil hittades inte</h2>
+          <p className="text-muted-foreground">Denna profil finns inte.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const displayData = isEditing ? editData : {
+    username: profile.username,
+    avatar_url: profile.avatar_url,
+    status_message: profile.status_message || "",
+    bio: profile.bio || "",
+    city: profile.city || "",
+    occupation: profile.occupation || "",
+    relationship: profile.relationship || "",
+    personality: profile.personality || "",
+    hair_color: profile.hair_color || "",
+    body_type: profile.body_type || "",
+    clothing: profile.clothing || "",
+    likes: profile.likes || "",
+    eats: profile.eats || "",
+    listens_to: profile.listens_to || "",
+    prefers: profile.prefers || "",
+    looking_for: profile.looking_for || [],
+    age: profile.age,
+    gender: profile.gender || "",
+    interests: profile.interests || "",
+    spanar_in: profile.spanar_in || "",
+  };
+
+  const userStatus: UserStatus = "online";
+  const memberSince = new Date(profile.created_at).toLocaleDateString('sv-SE', { 
+    year: 'numeric', 
+    month: 'long' 
+  });
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
       {/* LunarStorm-style Profile Header Bar */}
@@ -183,20 +299,19 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
         <div className="container px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg uppercase">{profile.username}</span>
-              <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded font-bold">
-                ({profile.vipStatus})
-              </span>
+              <span className="font-display font-bold text-lg uppercase">{displayData.username}</span>
               <span className="text-sm">
-                - {profile.gender}, {profile.age} ÅR, {profile.city.toUpperCase()}
+                {displayData.gender && `- ${displayData.gender}`}
+                {displayData.age && `, ${displayData.age} ÅR`}
+                {displayData.city && `, ${displayData.city.toUpperCase()}`}
               </span>
             </div>
             {isOwnProfile && (
               <div>
                 {isEditing ? (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={handleSave}>
-                      <Save className="w-4 h-4 mr-1" />
+                    <Button size="sm" variant="secondary" onClick={handleSave} disabled={saving}>
+                      {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
                       Spara
                     </Button>
                     <Button size="sm" variant="outline" className="text-foreground" onClick={handleCancel}>
@@ -250,8 +365,8 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     {isEditing ? (
                       <button onClick={() => {}} className="relative group">
                         <div className="w-32 h-40 bg-muted rounded-lg overflow-hidden border-2 border-border group-hover:border-primary/50 transition-all">
-                          {editData.avatar ? (
-                            <img src={editData.avatar} alt={editData.name} className="w-full h-full object-cover" />
+                          {editData.avatar_url ? (
+                            <img src={editData.avatar_url} alt={editData.username} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
                               INGET FOTO
@@ -264,8 +379,8 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                       </button>
                     ) : (
                       <div className="w-32 h-40 bg-muted rounded-lg overflow-hidden border-2 border-border">
-                        {profile.avatar ? (
-                          <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                        {displayData.avatar_url ? (
+                          <img src={displayData.avatar_url} alt={displayData.username} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
                             INGET FOTO
@@ -278,8 +393,8 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                   {/* Avatar Picker (only in edit mode) */}
                   {isEditing && (
                     <AvatarPicker
-                      selectedAvatarId={editData.avatar ? avatarOptions.find(a => a.src === editData.avatar)?.id : undefined}
-                      onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar: avatar.src })}
+                      selectedAvatarId={editData.avatar_url ? avatarOptions.find(a => a.src === editData.avatar_url)?.id : undefined}
+                      onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar_url: avatar.src })}
                       className="mt-3 max-w-[140px]"
                     />
                   )}
@@ -292,62 +407,57 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-foreground">
                         {isEditing ? (
-                          <div className="flex gap-2 items-center">
-                            <Select value={editData.gender} onValueChange={(v) => setEditData({ ...editData, gender: v })}>
+                          <div className="flex gap-2 items-center flex-wrap">
+                            <Select value={editData.gender || ""} onValueChange={(v) => setEditData({ ...editData, gender: v })}>
                               <SelectTrigger className="w-24 h-7 text-xs">
-                                <SelectValue />
+                                <SelectValue placeholder="Kön" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Kille">Kille</SelectItem>
-                                <SelectItem value="Tjej">Tjej</SelectItem>
-                                <SelectItem value="Annat">Annat</SelectItem>
+                                {genderOptions.map((g) => (
+                                  <SelectItem key={g} value={g}>{g}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <Input
-                              value={editData.age}
-                              onChange={(e) => setEditData({ ...editData, age: e.target.value })}
+                              value={editData.age?.toString() || ""}
+                              onChange={(e) => setEditData({ ...editData, age: e.target.value ? parseInt(e.target.value) : null })}
                               className="w-16 h-7 text-xs"
                               type="number"
+                              placeholder="Ålder"
                             />
                             <span className="text-sm">år från</span>
                             <Input
                               value={editData.city}
                               onChange={(e) => setEditData({ ...editData, city: e.target.value })}
                               className="w-28 h-7 text-xs"
+                              placeholder="Stad"
                             />
                           </div>
                         ) : (
                           <span className="text-sm">
-                            {profile.gender}, {profile.age} år från <span className="text-primary font-medium">{profile.city}</span>
+                            {displayData.gender || "Ej angivet"}, {displayData.age || "?"} år från <span className="text-primary font-medium">{displayData.city || "Okänt"}</span>
                           </span>
                         )}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <StatusIndicator status={profile.status} size="sm" />
+                      <StatusIndicator status={userStatus} size="sm" />
                       <span className="text-xs uppercase text-[hsl(var(--online-green))] font-medium">
-                        {profile.status === "online" ? "ONLINE" : profile.status.toUpperCase()}
+                        ONLINE
                       </span>
                       <span className="text-xs text-muted-foreground">
                         - spanar in{" "}
                         {isEditing ? (
                           <Input
-                            value={editData.spanarIn}
-                            onChange={(e) => setEditData({ ...editData, spanarIn: e.target.value })}
+                            value={editData.spanar_in}
+                            onChange={(e) => setEditData({ ...editData, spanar_in: e.target.value })}
                             className="inline-block w-24 h-5 text-xs px-1"
+                            placeholder="..."
                           />
                         ) : (
-                          <span className="text-primary">{profile.spanarIn}</span>
+                          <span className="text-primary">{displayData.spanar_in || "..."}</span>
                         )}
                       </span>
-                    </div>
-                  </div>
-
-                  {/* VIP Badge */}
-                  <div className="absolute top-4 right-4 hidden md:block">
-                    <div className="bg-accent text-accent-foreground px-3 py-1 rounded text-xs font-bold flex items-center gap-1">
-                      <Crown className="w-3 h-3" />
-                      {profile.vipStatus}
                     </div>
                   </div>
 
@@ -355,7 +465,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <ProfileField
                       label="Personlighet:"
-                      value={profile.personality}
+                      value={displayData.personality}
                       editValue={editData.personality}
                       isEditing={isEditing}
                       options={personalityOptions}
@@ -363,7 +473,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Civilstånd:"
-                      value={profile.relationship}
+                      value={displayData.relationship}
                       editValue={editData.relationship}
                       isEditing={isEditing}
                       options={relationshipOptions}
@@ -371,7 +481,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Sysselsättn.:"
-                      value={profile.occupation}
+                      value={displayData.occupation}
                       editValue={editData.occupation}
                       isEditing={isEditing}
                       options={occupationOptions}
@@ -379,15 +489,15 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Boende:"
-                      value={profile.location}
-                      editValue={editData.location}
+                      value={displayData.city}
+                      editValue={editData.city}
                       isEditing={isEditing}
                       isText
-                      onChange={(v) => setEditData({ ...editData, location: v })}
+                      onChange={(v) => setEditData({ ...editData, city: v })}
                     />
                     <ProfileField
                       label="Föredrar:"
-                      value={profile.prefers}
+                      value={displayData.prefers}
                       editValue={editData.prefers}
                       isEditing={isEditing}
                       isText
@@ -395,7 +505,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Gillar:"
-                      value={profile.likes}
+                      value={displayData.likes}
                       editValue={editData.likes}
                       isEditing={isEditing}
                       isText
@@ -403,15 +513,15 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Lyssnar På:"
-                      value={profile.listensTo}
-                      editValue={editData.listensTo}
+                      value={displayData.listens_to}
+                      editValue={editData.listens_to}
                       isEditing={isEditing}
                       isText
-                      onChange={(v) => setEditData({ ...editData, listensTo: v })}
+                      onChange={(v) => setEditData({ ...editData, listens_to: v })}
                     />
                     <ProfileField
                       label="Äter helst:"
-                      value={profile.eats}
+                      value={displayData.eats}
                       editValue={editData.eats}
                       isEditing={isEditing}
                       isText
@@ -419,15 +529,15 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Hårfärg:"
-                      value={profile.hairColor}
-                      editValue={editData.hairColor}
+                      value={displayData.hair_color}
+                      editValue={editData.hair_color}
                       isEditing={isEditing}
                       options={hairColorOptions}
-                      onChange={(v) => setEditData({ ...editData, hairColor: v })}
+                      onChange={(v) => setEditData({ ...editData, hair_color: v })}
                     />
                     <ProfileField
                       label="Intressen:"
-                      value={profile.interests}
+                      value={displayData.interests}
                       editValue={editData.interests}
                       isEditing={isEditing}
                       isText
@@ -435,7 +545,7 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Kläder:"
-                      value={profile.clothing}
+                      value={displayData.clothing}
                       editValue={editData.clothing}
                       isEditing={isEditing}
                       isText
@@ -443,12 +553,45 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     />
                     <ProfileField
                       label="Kropp:"
-                      value={profile.bodyType}
-                      editValue={editData.bodyType}
+                      value={displayData.body_type}
+                      editValue={editData.body_type}
                       isEditing={isEditing}
                       options={bodyTypeOptions}
-                      onChange={(v) => setEditData({ ...editData, bodyType: v })}
+                      onChange={(v) => setEditData({ ...editData, body_type: v })}
                     />
+                  </div>
+
+                  {/* Looking For Section */}
+                  <div className="mt-4">
+                    <span className="text-sm text-muted-foreground">Letar efter:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {isEditing ? (
+                        lookingForOptions.map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => toggleLookingFor(option)}
+                            className={cn(
+                              "px-2 py-0.5 text-xs rounded border transition-all",
+                              editData.looking_for.includes(option)
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted text-muted-foreground border-border hover:border-primary/50"
+                            )}
+                          >
+                            {option}
+                          </button>
+                        ))
+                      ) : (
+                        displayData.looking_for.length > 0 ? (
+                          displayData.looking_for.map((item) => (
+                            <span key={item} className="px-2 py-0.5 text-xs rounded bg-primary/10 text-primary border border-primary/20">
+                              {item}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Ej angivet</span>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -477,24 +620,21 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                     <FileText className="w-3 h-3 mr-1" />
                     Anteckningar
                   </Button>
-                  <span className="text-muted-foreground">|</span>
-                  <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
-                    <Crown className="w-3 h-3 mr-1" />
-                    Köp Ikon
-                  </Button>
                 </div>
               </div>
             )}
 
             {/* Dr. Love Section */}
-            <div className="bg-muted/30 border-t border-border px-4 py-2">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-bold text-accent">DR. LOVE:</span>
-                <span className="text-muted-foreground">
-                  {drLoveScore}% kan funka om du klär ut dig till chimpans och drar ett skämt!
-                </span>
+            {!isOwnProfile && (
+              <div className="bg-muted/30 border-t border-border px-4 py-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-bold text-accent">DR. LOVE:</span>
+                  <span className="text-muted-foreground">
+                    {drLoveScore}% kan funka om du klär ut dig till chimpans och drar ett skämt!
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Bio Section */}
             <div className="border-t border-border p-4">
@@ -505,39 +645,35 @@ export function ProfilePage({ isOwnProfile = true }: ProfilePageProps) {
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                   rows={3}
                   className="text-sm"
+                  placeholder="Berätta lite om dig själv..."
                 />
               ) : (
-                <p className="text-sm text-foreground/80">{profile.bio}</p>
+                <p className="text-sm text-foreground/80">{displayData.bio || "Ingen beskrivning ännu..."}</p>
               )}
             </div>
 
-            {/* Stats Section */}
-            <div className="border-t border-border px-4 py-3">
-              <div className="flex items-center justify-around text-center">
-                <div>
-                  <p className="font-display font-bold text-lg text-primary">47</p>
-                  <p className="text-xs text-muted-foreground">Vänner</p>
-                </div>
-                <div>
-                  <p className="font-display font-bold text-lg text-accent">128</p>
-                  <p className="text-xs text-muted-foreground">Inlägg</p>
-                </div>
-                <div>
-                  <p className="font-display font-bold text-lg text-[hsl(var(--online-green))]">892</p>
-                  <p className="text-xs text-muted-foreground">Besökare</p>
-                </div>
-                <div>
-                  <p className="font-display font-bold text-lg text-foreground">12</p>
-                  <p className="text-xs text-muted-foreground">Grupper</p>
-                </div>
-              </div>
+            {/* Status Message */}
+            <div className="border-t border-border p-4">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase mb-2">Statusmeddelande</h3>
+              {isEditing ? (
+                <Input
+                  value={editData.status_message}
+                  onChange={(e) => setEditData({ ...editData, status_message: e.target.value })}
+                  className="text-sm"
+                  placeholder="Vad gör du just nu?"
+                />
+              ) : (
+                <p className="text-sm text-foreground/80 italic">
+                  {displayData.status_message ? `"${displayData.status_message}"` : "Inget statusmeddelande"}
+                </p>
+              )}
             </div>
 
             {/* Member Since */}
             <div className="border-t border-border px-4 py-2 text-center">
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="w-3 h-3" />
-                <span>Medlem sedan December 2025</span>
+                <span>Medlem sedan {memberSince}</span>
               </div>
             </div>
           </div>
@@ -586,11 +722,12 @@ function ProfileField({
             value={editValue}
             onChange={(e) => onChange(e.target.value)}
             className="h-6 text-xs px-1 flex-1 min-w-0"
+            placeholder="..."
           />
         ) : (
-          <Select value={editValue} onValueChange={onChange}>
+          <Select value={editValue || ""} onValueChange={onChange}>
             <SelectTrigger className="h-6 text-xs px-1 flex-1 min-w-0">
-              <SelectValue />
+              <SelectValue placeholder="Välj..." />
             </SelectTrigger>
             <SelectContent>
               {options?.map((opt) => (
@@ -602,7 +739,7 @@ function ProfileField({
           </Select>
         )
       ) : (
-        <span className="text-primary truncate">{value}</span>
+        <span className="text-primary truncate">{value || "Ej angivet"}</span>
       )}
     </div>
   );
