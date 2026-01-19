@@ -65,6 +65,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
     { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen" },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
+    { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
+    { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
+    { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
   ];
 
   return (
@@ -80,21 +83,21 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <span className="text-[10px] text-muted-foreground hidden sm:inline">NOSTALGI</span>
         </div>
 
-        {/* Nav Items - visible on all screen sizes */}
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-6 ml-2 sm:ml-4 lg:ml-8">
+        {/* Nav Items - scrollable on small screens */}
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-2 sm:ml-4 overflow-x-auto scrollbar-hide flex-1 min-w-0">
           {navItems.map((item) => (
             <div
               key={item.id}
               onClick={() => onTabChange?.(item.id)}
               className={cn(
-                "nav-item-dark",
+                "nav-item-dark shrink-0",
                 activeTab === item.id && "active"
               )}
             >
-              <div className={cn("icon-dark", item.animationClass)}>
+              <div className={cn("icon-dark text-sm sm:text-base", item.animationClass)}>
                 {item.emoji}
               </div>
-              <span className="label-dark hidden sm:block">{item.label}</span>
+              <span className="label-dark hidden md:block text-[10px] lg:text-xs">{item.label}</span>
             </div>
           ))}
         </div>
