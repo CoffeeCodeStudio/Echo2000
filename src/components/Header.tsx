@@ -68,6 +68,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
     { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
     { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
+    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
   ];
 
   return (
