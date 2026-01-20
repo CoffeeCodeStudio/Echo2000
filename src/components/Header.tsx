@@ -85,7 +85,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
 
         {/* Nav Items - scrollable on small screens */}
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-2 sm:ml-4 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+        <nav className="flex items-center gap-1 sm:gap-2 lg:gap-3 overflow-x-auto scrollbar-hide flex-1 min-w-0 px-1">
           {navItems.map((item) => (
             <div
               key={item.id}
@@ -94,14 +94,17 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 "nav-item-dark shrink-0",
                 activeTab === item.id && "active"
               )}
+              role="button"
+              tabIndex={0}
+              aria-label={item.label}
             >
-              <div className={cn("icon-dark text-sm sm:text-base", item.animationClass)}>
+              <span className={cn("icon-dark", item.animationClass)}>
                 {item.emoji}
-              </div>
-              <span className="label-dark hidden md:block text-[10px] lg:text-xs">{item.label}</span>
+              </span>
+              <span className="label-dark">{item.label}</span>
             </div>
           ))}
-        </div>
+        </nav>
 
         {/* Right side - Auth & Status */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-auto">
