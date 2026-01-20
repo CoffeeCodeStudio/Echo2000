@@ -116,16 +116,8 @@ export function GoodVibe({ targetType, targetId, className }: GoodVibeProps) {
         setTimeout(() => setShowConfirmation(false), 3000);
         
         toast({
-          title: "Du gav en Good-Vibe",
-          description: result.vibes_remaining !== undefined 
-            ? `${result.vibes_remaining} Good-Vibes kvar denna månad`
-            : undefined
-        });
-      } else if (result.error === 'no_vibes_left') {
-        toast({
-          title: "Inga Good-Vibes kvar",
-          description: "Du har använt alla dina Good-Vibes denna månad.",
-          variant: "destructive"
+          title: "Du gav en Good-Vibe ✨",
+          description: "Tack för att du sprider positiv energi!"
         });
       } else if (result.error === 'already_vibed') {
         setHasUserVibed(true);
@@ -176,65 +168,12 @@ export function GoodVibe({ targetType, targetId, className }: GoodVibeProps) {
   );
 }
 
-// Component to show Good-Vibe allowance status
+// Simplified component - no longer shows limits since vibes are unlimited
 export function GoodVibeStatus() {
-  const [allowance, setAllowance] = useState<{
-    monthly: number;
-    used: number;
-    isPaid: boolean;
-  } | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id || null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUserId(session?.user?.id || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (userId) {
-      fetchAllowance();
-    }
-  }, [userId]);
-
-  const fetchAllowance = async () => {
-    const { data, error } = await supabase
-      .from('good_vibe_allowances')
-      .select('monthly_allowance, vibes_used_this_month, is_paid_user')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (data) {
-      setAllowance({
-        monthly: data.monthly_allowance,
-        used: data.vibes_used_this_month,
-        isPaid: data.is_paid_user
-      });
-    } else {
-      // Default for users without allowance record
-      setAllowance({ monthly: 0, used: 0, isPaid: false });
-    }
-  };
-
-  if (!userId || !allowance) return null;
-
-  const remaining = Math.max(0, allowance.monthly - allowance.used);
-
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <GlowDot isVibed={remaining > 0} size="sm" />
-      <span>
-        {remaining} Good-Vibes kvar
-        {!allowance.isPaid && remaining === 0 && (
-          <span className="ml-1 text-primary/70">(Bli medlem för fler)</span>
-        )}
-      </span>
+      <GlowDot isVibed={true} size="sm" />
+      <span>Oändliga Good-Vibes ✨</span>
     </div>
   );
 }

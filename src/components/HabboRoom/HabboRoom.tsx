@@ -21,13 +21,9 @@ const roomFurniture: Furniture[] = [
   { id: 'bookshelf1', type: 'bookshelf', position: { x: 88, y: 30 }, canSit: false, label: 'Bokhylla' },
 ];
 
-// Check if room is open (Sunday 18:00-23:00)
+// Room is always open now
 const isRoomOpen = (): boolean => {
-  const now = new Date();
-  const day = now.getDay(); // 0 = Sunday
-  const hour = now.getHours();
-  
-  return day === 0 && hour >= 18 && hour < 23;
+  return true;
 };
 
 const getNextOpenTime = (): string => {
