@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
 };
 
-// Radio station stream URLs
+// Radio station stream URLs - whitelist only
 const RADIO_STREAMS: Record<string, string> = {
   "p3": "https://sverigesradio.se/topsy/direkt/164-hi.mp3",
   "p1": "https://sverigesradio.se/topsy/direkt/132-hi.mp3",
@@ -22,10 +22,25 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // SECURITY: Validate API key to prevent unauthorized proxy abuse
+  const apikey = req.headers.get("apikey");
+  const expectedKey = Deno.env.get("SUPABASE_ANON_KEY");
+  
+  if (!apikey || apikey !== expectedKey) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+        status: 401 
+      }
+    );
+  }
+
   try {
     const url = new URL(req.url);
     const stationId = url.searchParams.get("station");
 
+    // SECURITY: Validate station ID is in whitelist
     if (!stationId || !RADIO_STREAMS[stationId]) {
       return new Response(
         JSON.stringify({ 

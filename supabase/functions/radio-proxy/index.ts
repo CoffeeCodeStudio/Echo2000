@@ -35,10 +35,32 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // SECURITY: Validate API key to prevent unauthorized proxy abuse
+  const apikey = req.headers.get("apikey");
+  const expectedKey = Deno.env.get("SUPABASE_ANON_KEY");
+  
+  if (!apikey || apikey !== expectedKey) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+        status: 401 
+      }
+    );
+  }
+
   try {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
     const stationId = url.searchParams.get("station");
+
+    // SECURITY: Validate station ID is in whitelist
+    if (stationId && !RADIO_STATIONS[stationId]) {
+      return new Response(
+        JSON.stringify({ error: "Invalid station" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
 
     if (action === "metadata" && stationId) {
       // Fetch metadata for Sveriges Radio stations
@@ -55,13 +77,13 @@ serve(async (req) => {
 
       const channel = data.channel;
       const currentSchedule = channel?.currentscheduledepisode;
-      const song = channel?.songlisturl;
 
       // Also try to get current song from song list
       let nowPlaying = null;
       if (channel?.siteurl) {
         try {
-          const songListUrl = `https://api.sr.se/api/v2/playlists/rightnow?channelid=${stationId === "p3" ? 164 : stationId === "p1" ? 132 : stationId === "p2" ? 2562 : 701}&format=json`;
+          const channelId = stationId === "p3" ? 164 : stationId === "p1" ? 132 : stationId === "p2" ? 2562 : stationId === "p4stockholm" ? 701 : 2576;
+          const songListUrl = `https://api.sr.se/api/v2/playlists/rightnow?channelid=${channelId}&format=json`;
           const songResponse = await fetch(songListUrl);
           const songData = await songResponse.json();
           
