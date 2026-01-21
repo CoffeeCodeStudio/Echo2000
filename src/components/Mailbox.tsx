@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Mail, Send, Inbox, Star, Trash2, ArrowLeft, Reply } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mail, Send, Inbox, Star, Trash2, ArrowLeft, Reply, Info } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface MailMessage {
   id: string;
@@ -18,9 +20,10 @@ interface MailMessage {
   isStarred: boolean;
 }
 
-const initialMails: MailMessage[] = [
+// Demo data for logged-out users
+const demoMails: MailMessage[] = [
   {
-    id: "1",
+    id: "demo-1",
     from: "Emma",
     subject: "Kommer du på festen?",
     preview: "Hej! Jag undrar om du tänkte komma på lördagens fest...",
@@ -30,7 +33,7 @@ const initialMails: MailMessage[] = [
     isStarred: true,
   },
   {
-    id: "2",
+    id: "demo-2",
     from: "Johan",
     subject: "Re: Gaming ikväll?",
     preview: "Absolut! Jag är online efter 20...",
@@ -40,7 +43,7 @@ const initialMails: MailMessage[] = [
     isStarred: false,
   },
   {
-    id: "3",
+    id: "demo-3",
     from: "Lisa",
     subject: "Titta på bilderna! 📸",
     preview: "Hej! Jag la upp bilderna från förra helgen...",
@@ -50,7 +53,7 @@ const initialMails: MailMessage[] = [
     isStarred: false,
   },
   {
-    id: "4",
+    id: "demo-4",
     from: "Admin",
     subject: "Välkommen tillbaka!",
     preview: "Vi har saknat dig! Kolla in vad som är nytt...",
@@ -60,7 +63,7 @@ const initialMails: MailMessage[] = [
     isStarred: false,
   },
   {
-    id: "5",
+    id: "demo-5",
     from: "Marcus",
     subject: "Kolla denna länk!",
     preview: "Hittade något du kanske gillar...",
@@ -73,15 +76,40 @@ const initialMails: MailMessage[] = [
 
 type MailView = "inbox" | "compose" | "read";
 
-export function Mailbox() {
-  const [mails, setMails] = useState<MailMessage[]>(initialMails);
+interface MailboxProps {
+  onUnreadCountChange?: (count: number) => void;
+}
+
+export function Mailbox({ onUnreadCountChange }: MailboxProps) {
+  const [mails, setMails] = useState<MailMessage[]>([]);
   const [view, setView] = useState<MailView>("inbox");
   const [selectedMail, setSelectedMail] = useState<MailMessage | null>(null);
   const [composeData, setComposeData] = useState({ to: "", subject: "", message: "" });
 
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const showDemoMode = !authLoading && !user;
+
+  // Load mails based on auth state
+  useEffect(() => {
+    if (showDemoMode) {
+      setMails(demoMails);
+    } else if (user) {
+      // TODO: Fetch real mails from server when database table is ready
+      // For now, show empty inbox for logged-in users
+      setMails([]);
+    }
+  }, [showDemoMode, user]);
+
+  // Report unread count to parent
   const unreadCount = mails.filter(m => !m.isRead).length;
+  useEffect(() => {
+    onUnreadCountChange?.(unreadCount);
+  }, [unreadCount, onUnreadCountChange]);
 
   const openMail = (mail: MailMessage) => {
+    if (showDemoMode) return; // Can't open mails in demo mode
     setSelectedMail(mail);
     setMails(mails.map(m => m.id === mail.id ? { ...m, isRead: true } : m));
     setView("read");
@@ -89,11 +117,13 @@ export function Mailbox() {
 
   const toggleStar = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (showDemoMode) return;
     setMails(mails.map(m => m.id === id ? { ...m, isStarred: !m.isStarred } : m));
   };
 
   const handleSend = () => {
-    // Simulate sending
+    if (showDemoMode) return;
+    // TODO: Actually send mail via server
     setComposeData({ to: "", subject: "", message: "" });
     setView("inbox");
   };
@@ -101,6 +131,18 @@ export function Mailbox() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
+        {/* Demo mode banner */}
+        {showDemoMode && (
+          <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
+            <div className="flex items-center gap-2 text-sm">
+              <Info className="w-4 h-4 text-primary" />
+              <span className="text-muted-foreground">
+                Du ser demo-mejl. <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se din riktiga inkorg!
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="nostalgia-card p-4 mb-6">
           <div className="flex items-center justify-between">
@@ -113,10 +155,15 @@ export function Mailbox() {
                 {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
               </p>
             </div>
-            {view === "inbox" && (
+            {view === "inbox" && !showDemoMode && (
               <Button variant="msn" onClick={() => setView("compose")}>
                 <Send className="w-4 h-4 mr-2" />
                 Skriv nytt
+              </Button>
+            )}
+            {view === "inbox" && showDemoMode && (
+              <Button variant="msn" onClick={() => navigate("/auth")}>
+                Logga in
               </Button>
             )}
           </div>
@@ -147,39 +194,51 @@ export function Mailbox() {
               )}
             </div>
             <div className="divide-y divide-border">
-              {mails.map((mail) => (
-                <button
-                  key={mail.id}
-                  onClick={() => openMail(mail)}
-                  className={cn(
-                    "w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-start gap-3",
-                    !mail.isRead && "bg-primary/5"
-                  )}
-                >
-                  <Avatar name={mail.from} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={cn("text-sm", !mail.isRead && "font-semibold")}>
-                        {mail.from}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{mail.timestamp}</span>
-                    </div>
-                    <p className={cn("text-sm truncate", !mail.isRead ? "text-foreground" : "text-muted-foreground")}>
-                      {mail.subject}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{mail.preview}</p>
-                  </div>
+              {mails.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Mail className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+                  <p className="text-muted-foreground">Din inkorg är tom</p>
+                  <p className="text-sm text-muted-foreground mt-1">Nya meddelanden dyker upp här</p>
+                </div>
+              ) : (
+                mails.map((mail) => (
                   <button
-                    onClick={(e) => toggleStar(mail.id, e)}
+                    key={mail.id}
+                    onClick={() => openMail(mail)}
                     className={cn(
-                      "p-1 transition-colors",
-                      mail.isStarred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"
+                      "w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-start gap-3",
+                      !mail.isRead && "bg-primary/5",
+                      showDemoMode && "cursor-default opacity-80"
                     )}
+                    disabled={showDemoMode}
                   >
-                    <Star className={cn("w-4 h-4", mail.isStarred && "fill-current")} />
+                    <Avatar name={mail.from} src={mail.fromAvatar} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={cn("text-sm", !mail.isRead && "font-semibold")}>
+                          {mail.from}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{mail.timestamp}</span>
+                      </div>
+                      <p className={cn("text-sm truncate", !mail.isRead ? "text-foreground" : "text-muted-foreground")}>
+                        {mail.subject}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{mail.preview}</p>
+                    </div>
+                    <button
+                      onClick={(e) => toggleStar(mail.id, e)}
+                      className={cn(
+                        "p-1 transition-colors",
+                        mail.isStarred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500",
+                        showDemoMode && "pointer-events-none"
+                      )}
+                      disabled={showDemoMode}
+                    >
+                      <Star className={cn("w-4 h-4", mail.isStarred && "fill-current")} />
+                    </button>
                   </button>
-                </button>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -188,7 +247,7 @@ export function Mailbox() {
         {view === "read" && selectedMail && (
           <div className="nostalgia-card p-4">
             <div className="flex items-start gap-3 mb-4">
-              <Avatar name={selectedMail.from} size="md" />
+              <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
               <div className="flex-1">
                 <h2 className="font-semibold">{selectedMail.subject}</h2>
                 <p className="text-sm text-muted-foreground">

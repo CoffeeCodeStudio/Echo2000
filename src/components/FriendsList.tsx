@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Search, UserPlus, MessageSquare, Star, MoreHorizontal } from "lucide-react";
+import { Search, UserPlus, MessageSquare, Star, MoreHorizontal, Info } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Friend {
   id: string;
@@ -16,20 +18,30 @@ interface Friend {
   isBestFriend: boolean;
 }
 
-const friends: Friend[] = [
-  { id: "1", name: "Emma", username: "emma_00", status: "online", statusMessage: "Chilla hemma 🏠", isBestFriend: true },
-  { id: "2", name: "Johan", username: "johansen", status: "online", statusMessage: "Gaming! 🎮", isBestFriend: true },
-  { id: "3", name: "Lisa", username: "lisa_k", status: "away", statusMessage: "brb", isBestFriend: false },
-  { id: "4", name: "Marcus", username: "marcusd", status: "online", statusMessage: "", isBestFriend: false },
-  { id: "5", name: "Sofia", username: "sofian", status: "busy", statusMessage: "Pluggar 📚", isBestFriend: true },
-  { id: "6", name: "Erik", username: "eriksson", status: "offline", statusMessage: "", isBestFriend: false },
-  { id: "7", name: "Anna", username: "anna_b", status: "offline", statusMessage: "Semester! ✈️", isBestFriend: false },
-  { id: "8", name: "Oscar", username: "oscar92", status: "online", statusMessage: "Musik 🎵", isBestFriend: false },
+// Demo friends for logged-out users
+const demoFriends: Friend[] = [
+  { id: "demo-1", name: "Emma", username: "emma_00", status: "online", statusMessage: "Chilla hemma 🏠", isBestFriend: true },
+  { id: "demo-2", name: "Johan", username: "johansen", status: "online", statusMessage: "Gaming! 🎮", isBestFriend: true },
+  { id: "demo-3", name: "Lisa", username: "lisa_k", status: "away", statusMessage: "brb", isBestFriend: false },
+  { id: "demo-4", name: "Marcus", username: "marcusd", status: "online", statusMessage: "", isBestFriend: false },
+  { id: "demo-5", name: "Sofia", username: "sofian", status: "busy", statusMessage: "Pluggar 📚", isBestFriend: true },
+  { id: "demo-6", name: "Erik", username: "eriksson", status: "offline", statusMessage: "", isBestFriend: false },
+  { id: "demo-7", name: "Anna", username: "anna_b", status: "offline", statusMessage: "Semester! ✈️", isBestFriend: false },
+  { id: "demo-8", name: "Oscar", username: "oscar92", status: "online", statusMessage: "Musik 🎵", isBestFriend: false },
 ];
 
 export function FriendsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "online" | "best">("all");
+  
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const showDemoMode = !authLoading && !user;
+  
+  // TODO: Fetch real friends from server when logged in
+  // For now, show demo friends for everyone (logged out) or empty for logged in
+  const friends = showDemoMode ? demoFriends : [];
 
   const filteredFriends = friends.filter(friend => {
     const matchesSearch = friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,19 +57,41 @@ export function FriendsList() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
+        {/* Demo mode banner */}
+        {showDemoMode && (
+          <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
+            <div className="flex items-center gap-2 text-sm">
+              <Info className="w-4 h-4 text-primary" />
+              <span className="text-muted-foreground">
+                Du ser demo-vänner. <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att hantera dina riktiga vänner!
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="nostalgia-card p-4 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-display font-bold text-xl mb-1">👥 Mina Vänner</h1>
               <p className="text-sm text-muted-foreground">
-                {onlineCount} av {friends.length} online just nu
+                {friends.length > 0 
+                  ? `${onlineCount} av ${friends.length} online just nu`
+                  : "Du har inga vänner ännu"
+                }
               </p>
             </div>
-            <Button variant="msn">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Lägg till
-            </Button>
+            {!showDemoMode && (
+              <Button variant="msn">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Lägg till
+              </Button>
+            )}
+            {showDemoMode && (
+              <Button variant="msn" onClick={() => navigate("/auth")}>
+                Logga in
+              </Button>
+            )}
           </div>
 
           {/* Search */}
@@ -114,15 +148,25 @@ export function FriendsList() {
         <div className="nostalgia-card overflow-hidden divide-y divide-border">
           {filteredFriends.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <p>Inga vänner hittades</p>
+              {friends.length === 0 ? (
+                <>
+                  <p className="mb-2">Du har inga vänner ännu</p>
+                  <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
+                </>
+              ) : (
+                <p>Inga vänner hittades</p>
+              )}
             </div>
           ) : (
             filteredFriends.map((friend) => (
               <div
                 key={friend.id}
-                className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
+                className={cn(
+                  "flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors",
+                  showDemoMode && "opacity-80"
+                )}
               >
-                <Avatar name={friend.name} status={friend.status} size="md" />
+                <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm">{friend.name}</span>
@@ -138,10 +182,10 @@ export function FriendsList() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={showDemoMode}>
                     <MessageSquare className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={showDemoMode}>
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </div>
