@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, MessageCircle, Loader2, Info } from "lucide-react";
+import { Send, MessageCircle, Loader2, Info, Trash2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -139,14 +139,21 @@ export function Guestbook() {
     setIsSending(true);
 
     try {
-      // Get user profile for username
+      // Get user profile for username - prioritize username over email
       const { data: profile } = await supabase
         .from("profiles")
         .select("username, avatar_url")
         .eq("user_id", user.id)
         .single();
 
-      const authorName = profile?.username || user.email?.split("@")[0] || "Anonym";
+      // Always use profile username if it exists and isn't the auto-generated one
+      let authorName = "Anonym";
+      if (profile?.username && !profile.username.startsWith("user_")) {
+        authorName = profile.username;
+      } else if (user.email) {
+        authorName = user.email.split("@")[0];
+      }
+      
       const avatarUrl = profile?.avatar_url || null;
 
       const { error } = await supabase.from("guestbook_entries").insert({
@@ -172,6 +179,33 @@ export function Guestbook() {
       });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("guestbook_entries")
+        .delete()
+        .eq("id", entryId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setEntries((prev) => prev.filter((e) => e.id !== entryId));
+      toast({
+        title: "Inlägg raderat",
+        description: "Ditt meddelande har tagits bort",
+      });
+    } catch (error) {
+      console.error("Error deleting guestbook entry:", error);
+      toast({
+        title: "Kunde inte radera",
+        description: "Något gick fel, försök igen",
+        variant: "destructive",
+      });
     }
   };
 
@@ -288,9 +322,21 @@ export function Guestbook() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-semibold text-sm">{entry.author_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTimestamp(entry.created_at)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimestamp(entry.created_at)}
+                        </span>
+                        {/* Delete button - only show for own entries */}
+                        {user && entry.user_id === user.id && (
+                          <button
+                            onClick={() => handleDelete(entry.id)}
+                            className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                            title="Radera inlägg"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-sm mt-1 text-foreground/90">{entry.message}</p>
 
