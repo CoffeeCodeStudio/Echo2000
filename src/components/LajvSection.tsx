@@ -1,157 +1,35 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from './Avatar';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { Send, Radio, Clock, LogIn } from 'lucide-react';
+import { Send, Radio, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AuthDialog } from './AuthDialog';
 import { toast } from 'sonner';
 
-interface LajvMessage {
-  id: string;
-  user_id: string;
-  username: string;
-  avatar_url: string | null;
-  message: string;
-  created_at: string;
-  expires_at: string;
-}
-
 export function LajvSection() {
   const { user, loading: authLoading } = useAuth();
-  const [messages, setMessages] = useState<LajvMessage[]>([]);
+  const { messages, sendMessage, sending } = useLajv();
   const [newMessage, setNewMessage] = useState('');
-  const [sending, setSending] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [newMessageNotification, setNewMessageNotification] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Fetch initial messages and set up realtime subscription
-  useEffect(() => {
-    fetchMessages();
-
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel('lajv-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'lajv_messages',
-        },
-        (payload) => {
-          const newMsg = payload.new as LajvMessage;
-          setMessages((prev) => {
-            // Avoid duplicates
-            if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
-          
-          // Show notification for new messages from others
-          if (newMsg.user_id !== user?.id) {
-            setNewMessageNotification(`${newMsg.username} skrev: "${newMsg.message.slice(0, 30)}${newMsg.message.length > 30 ? '...' : ''}"`);
-            setTimeout(() => setNewMessageNotification(null), 4000);
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'lajv_messages',
-        },
-        (payload) => {
-          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id));
-        }
-      )
-      .subscribe();
-
-    // Clean up expired messages locally every minute
-    const cleanupInterval = setInterval(() => {
-      const now = new Date().toISOString();
-      setMessages((prev) => prev.filter((msg) => msg.expires_at > now));
-    }, 60000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(cleanupInterval);
-    };
-  }, [user?.id]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const fetchMessages = async () => {
-    const now = new Date().toISOString();
-    const { data, error } = await supabase
-      .from('lajv_messages')
-      .select('*')
-      .gt('expires_at', now)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching messages:', error);
-      return;
-    }
-
-    setMessages(data || []);
-  };
-
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-
-    setSending(true);
     
-    // Get profile username if logged in
-    let username = 'Gäst';
-    let avatarUrl: string | null = null;
-    
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, avatar_url')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (profile?.username && !profile.username.startsWith('user_')) {
-        username = profile.username;
-      } else if (user.email) {
-        username = user.email.split('@')[0];
-      }
-      avatarUrl = profile?.avatar_url || null;
-    }
-    
-    const oderId = user?.id || crypto.randomUUID();
-
-    const { data, error } = await supabase.from('lajv_messages').insert({
-      user_id: oderId,
-      username,
-      avatar_url: avatarUrl,
-      message: newMessage.trim(),
-    }).select().single();
-
-    if (error) {
-      console.error('Error sending message:', error);
-      toast.error('Kunde inte skicka meddelandet');
-    } else {
-      // Immediately add to local state since realtime may be slow
-      if (data) {
-        setMessages((prev) => {
-          // Avoid duplicates from realtime
-          if (prev.some(m => m.id === data.id)) return prev;
-          return [...prev, data as LajvMessage];
-        });
-      }
+    const success = await sendMessage(newMessage);
+    if (success) {
       setNewMessage('');
+    } else {
+      toast.error('Kunde inte skicka meddelandet');
     }
-
-    setSending(false);
   };
 
   const formatTime = (dateStr: string) => {
@@ -193,15 +71,6 @@ export function LajvSection() {
           <span>Försvinner efter 10 min</span>
         </div>
       </div>
-
-      {/* New message notification */}
-      {newMessageNotification && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-2 duration-300">
-          <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-medium">
-            {newMessageNotification}
-          </div>
-        </div>
-      )}
 
       {/* Message input area - at top */}
       <div className="p-4 border-b border-border bg-card/50">
