@@ -44,7 +44,11 @@ export function LajvSection() {
         },
         (payload) => {
           const newMsg = payload.new as LajvMessage;
-          setMessages((prev) => [...prev, newMsg]);
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
           
           // Show notification for new messages from others
           if (newMsg.user_id !== user?.id) {
@@ -103,20 +107,47 @@ export function LajvSection() {
     if (!newMessage.trim()) return;
 
     setSending(true);
-    const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Gäst';
+    
+    // Get profile username if logged in
+    let username = 'Gäst';
+    let avatarUrl: string | null = null;
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profile?.username && !profile.username.startsWith('user_')) {
+        username = profile.username;
+      } else if (user.email) {
+        username = user.email.split('@')[0];
+      }
+      avatarUrl = profile?.avatar_url || null;
+    }
+    
     const oderId = user?.id || crypto.randomUUID();
 
-    const { error } = await supabase.from('lajv_messages').insert({
+    const { data, error } = await supabase.from('lajv_messages').insert({
       user_id: oderId,
       username,
-      avatar_url: user?.user_metadata?.avatar_url || null,
+      avatar_url: avatarUrl,
       message: newMessage.trim(),
-    });
+    }).select().single();
 
     if (error) {
       console.error('Error sending message:', error);
       toast.error('Kunde inte skicka meddelandet');
     } else {
+      // Immediately add to local state since realtime may be slow
+      if (data) {
+        setMessages((prev) => {
+          // Avoid duplicates from realtime
+          if (prev.some(m => m.id === data.id)) return prev;
+          return [...prev, data as LajvMessage];
+        });
+      }
       setNewMessage('');
     }
 
