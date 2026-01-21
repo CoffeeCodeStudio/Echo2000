@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Header } from "@/components/Header";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
@@ -13,6 +13,7 @@ import { GamesSection } from "@/components/GamesSection";
 import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
+import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { cn } from "@/lib/utils";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
@@ -56,6 +57,11 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>("hem");
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadMailCount, setUnreadMailCount] = useState(0);
+
+  const handleUnreadCountChange = useCallback((count: number) => {
+    setUnreadMailCount(count);
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -123,7 +129,7 @@ export default function Index() {
         return <Guestbook />;
 
       case "mejl":
-        return <Mailbox />;
+        return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
 
       case "vanner":
         return <FriendsList />;
@@ -157,6 +163,12 @@ export default function Index() {
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
         onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
+      />
+      
+      {/* Unread mail notification bar - only shows when logged in with unread mail */}
+      <UnreadMailBar 
+        unreadCount={unreadMailCount} 
+        onTabChange={(tab) => setActiveTab(tab as Tab)} 
       />
 
       <main className="flex-1 flex overflow-hidden">
