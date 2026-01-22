@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Header } from "@/components/Header";
+import { MobileNav } from "@/components/MobileNav";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
 import { WelcomeHero } from "@/components/WelcomeHero";
@@ -14,7 +15,6 @@ import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
 import { UnreadMailBar } from "@/components/UnreadMailBar";
-import { cn } from "@/lib/utils";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -158,7 +158,7 @@ export default function Index() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
       <Header 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
@@ -171,9 +171,12 @@ export default function Index() {
         onTabChange={(tab) => setActiveTab(tab as Tab)} 
       />
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden pb-16 md:pb-0">
         {renderContent()}
       </main>
+
+      {/* Mobile bottom navigation */}
+      <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }

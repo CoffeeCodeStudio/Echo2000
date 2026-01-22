@@ -17,19 +17,19 @@ interface MobileNavProps {
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Profile-relevant nav items (main row)
+  // Profile-relevant nav items (main row) - reduced for mobile
   const mainNavItems: { id: Tab; label: string; emoji: string; animationClass: string; badge?: number }[] = [
-    { id: "gastbok", label: "GÄSTBOK", emoji: "👣", animationClass: "footsteps" },
+    { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce", badge: 5 },
-    { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen", badge: 2 },
+    { id: "chatt", label: "CHATT", emoji: "🖊️", animationClass: "writing-pen", badge: 2 },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
-    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
   ];
 
-  // Secondary items for dropdown
+  // Secondary items for dropdown (includes profile now)
   const dropdownItems: { id: Tab; label: string; emoji: string }[] = [
     { id: "hem", label: "Hem", emoji: "🏠" },
-    { id: "klotterplanket", label: "Klotterplanket", emoji: "🎨" },
+    { id: "profil", label: "Min Profil", emoji: "👤" },
+    { id: "klotterplanket", label: "Klotter", emoji: "🎨" },
     { id: "traffar", label: "Träffar", emoji: "📅" },
     { id: "spel", label: "Spel", emoji: "🎮" },
     { id: "lajv", label: "Lajv", emoji: "🎭" },
@@ -37,6 +37,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   ];
 
   const isDropdownItemActive = dropdownItems.some(item => item.id === activeTab);
+  const activeDropdownItem = dropdownItems.find(item => item.id === activeTab);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark">
@@ -51,9 +52,9 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
               )}
             >
               <div className="relative">
-                <span className="mobile-nav-icon">☰</span>
+                <span className="mobile-nav-icon">{isDropdownItemActive ? activeDropdownItem?.emoji : "☰"}</span>
               </div>
-              <span className="mobile-nav-label">MER</span>
+              <span className="mobile-nav-label">{isDropdownItemActive ? activeDropdownItem?.label?.slice(0, 4).toUpperCase() : "MER"}</span>
               {isDropdownItemActive && (
                 <div className="mobile-nav-indicator" />
               )}
