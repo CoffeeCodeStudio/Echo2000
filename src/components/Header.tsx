@@ -60,20 +60,28 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     }
   };
 
-  const navItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+  // Primary nav row - main social features
+  const primaryNavItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "gastbok", label: "GÄSTBOK", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
     { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen" },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
+    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+  ];
+
+  // Secondary nav row - explore & activities
+  const secondaryNavItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+    { id: "hem", label: "HEM", emoji: "🏠", animationClass: "scale-in" },
+    { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
     { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
     { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
     { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
-    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+    { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" },
   ];
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Dark Navbar with ECHO2000 logo */}
+      {/* Top bar - Logo, Auth & Status */}
       <div className="navbar-dark">
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
@@ -84,31 +92,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <span className="text-[10px] text-muted-foreground hidden sm:inline">NOSTALGI</span>
         </div>
 
-        {/* Nav Items - scrollable on small screens */}
-        <nav className="flex items-center gap-1 sm:gap-2 lg:gap-3 overflow-x-auto scrollbar-hide flex-1 min-w-0 px-1">
-          {navItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onTabChange?.(item.id)}
-              className={cn(
-                "nav-item-dark shrink-0",
-                activeTab === item.id && "active"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-label={item.label}
-            >
-              <span className={cn("icon-dark", item.animationClass)}>
-                {item.emoji}
-              </span>
-              <span className="label-dark">{item.label}</span>
-            </div>
-          ))}
-        </nav>
-
         {/* Right side - Auth & Status */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-auto">
-          {/* Auth buttons */}
           {!loading && (
             <>
               {user ? (
@@ -156,6 +141,50 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
+
+      {/* Primary Nav Row - Main social features */}
+      <nav className="flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-2 px-2 bg-card/50 border-b border-border/50 overflow-x-auto scrollbar-hide">
+        {primaryNavItems.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onTabChange?.(item.id)}
+            className={cn(
+              "nav-item-dark shrink-0",
+              activeTab === item.id && "active"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-label={item.label}
+          >
+            <span className={cn("icon-dark", item.animationClass)}>
+              {item.emoji}
+            </span>
+            <span className="label-dark">{item.label}</span>
+          </div>
+        ))}
+      </nav>
+
+      {/* Secondary Nav Row - Explore & Activities (Primary colored) */}
+      <nav className="flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-1.5 px-2 bg-primary overflow-x-auto scrollbar-hide">
+        {secondaryNavItems.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onTabChange?.(item.id)}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-all text-primary-foreground hover:bg-primary-foreground/20 shrink-0",
+              activeTab === item.id && "bg-primary-foreground/30 font-semibold"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-label={item.label}
+          >
+            <span className={cn("text-sm sm:text-base", item.animationClass)}>
+              {item.emoji}
+            </span>
+            <span className="text-[10px] sm:text-xs font-medium">{item.label}</span>
+          </div>
+        ))}
+      </nav>
     </header>
   );
 }
