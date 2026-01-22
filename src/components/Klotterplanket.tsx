@@ -3,6 +3,7 @@ import { Eraser, Palette, Trash2, Download, Undo, Redo, Minus, Plus, Send, X, Me
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DrawPoint {
   x: number;
@@ -56,10 +57,11 @@ const demoKlotter: PublishedKlotter[] = [
 ];
 
 export function Klotterplanket() {
+  const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState(COLORS[0]);
-  const [brushSize, setBrushSize] = useState(8);
+  const [brushSize, setBrushSize] = useState(isMobile ? 12 : 8);
   const [isEraser, setIsEraser] = useState(false);
   const [history, setHistory] = useState<DrawAction[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -71,6 +73,9 @@ export function Klotterplanket() {
   const [publishComment, setPublishComment] = useState("");
   const [publishedKlotter, setPublishedKlotter] = useState<PublishedKlotter[]>(demoKlotter);
   const [activeTab, setActiveTab] = useState<"draw" | "gallery">("draw");
+
+  // Simplified mobile colors
+  const mobileColors = [COLORS[0], COLORS[1], COLORS[2], COLORS[4], COLORS[7]];
 
   // Initialize canvas
   useEffect(() => {
@@ -273,6 +278,201 @@ export function Klotterplanket() {
     return `${Math.floor(hours / 24)} dagar sedan`;
   };
 
+  // Mobile simplified UI
+  if (isMobile) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="nostalgia-card flex-1 flex flex-col overflow-hidden mx-2 my-2 rounded-lg">
+          {/* Simple mobile header */}
+          <div className="p-3 border-b border-border flex items-center justify-between">
+            <div className="flex gap-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab("draw")}
+                className={cn(
+                  "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                  activeTab === "draw" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground"
+                )}
+              >
+                🎨 Rita
+              </button>
+              <button
+                onClick={() => setActiveTab("gallery")}
+                className={cn(
+                  "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                  activeTab === "gallery" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground"
+                )}
+              >
+                🖼️ Galleri
+              </button>
+            </div>
+            {activeTab === "draw" && (
+              <Button
+                size="sm"
+                onClick={() => setShowPublishModal(true)}
+                disabled={historyIndex < 0}
+                className="gap-1 text-xs bg-primary"
+              >
+                <Send className="w-3 h-3" />
+                Publicera
+              </Button>
+            )}
+          </div>
+
+          {activeTab === "draw" ? (
+            <>
+              {/* Simplified mobile toolbar */}
+              <div className="flex items-center justify-between gap-2 p-2 border-b border-border bg-muted/30">
+                {/* Colors - fewer on mobile */}
+                <div className="flex items-center gap-1">
+                  {mobileColors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => {
+                        setColor(c);
+                        setIsEraser(false);
+                      }}
+                      className={cn(
+                        "w-8 h-8 rounded-full transition-all border-2",
+                        color === c && !isEraser
+                          ? "border-foreground scale-110"
+                          : "border-transparent"
+                      )}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+
+                {/* Quick actions */}
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant={isEraser ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setIsEraser(!isEraser)}
+                  >
+                    <Eraser className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={undo}
+                    disabled={historyIndex < 0}
+                  >
+                    <Undo className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={clearCanvas}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Canvas */}
+              <div className="flex-1 relative overflow-hidden">
+                <canvas
+                  ref={canvasRef}
+                  onPointerDown={startDrawing}
+                  onPointerMove={draw}
+                  onPointerUp={stopDrawing}
+                  onPointerLeave={stopDrawing}
+                  className="absolute inset-0 w-full h-full touch-none"
+                  style={{ cursor: "crosshair" }}
+                />
+              </div>
+            </>
+          ) : (
+            /* Mobile Gallery */
+            <div className="flex-1 overflow-y-auto p-2 scrollbar-nostalgic">
+              {publishedKlotter.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">Inga klotter än!</p>
+                  <Button 
+                    onClick={() => setActiveTab("draw")} 
+                    variant="link" 
+                    className="text-primary text-sm"
+                  >
+                    Bli först att rita
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {publishedKlotter.map((klotter) => (
+                    <div 
+                      key={klotter.id} 
+                      className="bg-card rounded-lg overflow-hidden border border-border"
+                    >
+                      <div className="aspect-video bg-[#1e2540] relative">
+                        {klotter.imageData ? (
+                          <img 
+                            src={klotter.imageData} 
+                            alt="Klotter" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-2xl">🎨</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <div className="flex items-center gap-1">
+                          <Avatar name={klotter.author} size="sm" />
+                          <span className="text-xs font-medium truncate">{klotter.author}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Publish Modal */}
+        {showPublishModal && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-end">
+            <div className="bg-card w-full rounded-t-2xl p-4 animate-slide-in-bottom">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold">Publicera klotter</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowPublishModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <textarea
+                value={publishComment}
+                onChange={(e) => setPublishComment(e.target.value)}
+                placeholder="Lägg till en kommentar..."
+                className="w-full p-3 rounded-lg bg-muted border border-border text-sm resize-none"
+                rows={2}
+              />
+              <Button
+                onClick={handlePublish}
+                className="w-full mt-3 bg-primary"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Publicera
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop version
   return (
     <div className="flex-1 flex flex-col overflow-hidden p-4">
       <div className="nostalgia-card flex-1 flex flex-col overflow-hidden">
