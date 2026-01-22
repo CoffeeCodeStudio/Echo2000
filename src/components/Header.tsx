@@ -83,13 +83,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     <header className="sticky top-0 z-50">
       {/* Top bar - Logo, Auth & Status */}
       <div className="navbar-dark">
-        {/* ECHO2000 Logo */}
+        {/* ECHO2000 Logo - Always visible */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="font-display font-black text-lg sm:text-xl tracking-tight">
+          <div className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight">
             <span className="text-foreground">ECHO</span>
             <span className="text-primary-foreground bg-primary px-1 rounded">2000</span>
           </div>
-          <span className="text-[10px] text-muted-foreground hidden sm:inline">NOSTALGI</span>
+          <span className="text-[10px] text-muted-foreground hidden md:inline">NOSTALGI</span>
         </div>
 
         {/* Right side - Auth & Status */}
@@ -142,8 +142,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
       </div>
 
-      {/* Primary Nav Row - Main social features */}
-      <nav className="flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-2 px-2 bg-card/50 border-b border-border/50 overflow-x-auto scrollbar-hide">
+      {/* Primary Nav Row - Main social features (hidden on mobile) */}
+      <nav className="hidden md:flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-2 px-2 bg-card/50 border-b border-border/50 overflow-x-auto scrollbar-hide">
         {primaryNavItems.map((item) => (
           <div
             key={item.id}
@@ -164,8 +164,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         ))}
       </nav>
 
-      {/* Secondary Nav Row - Explore & Activities (Primary colored) */}
-      <nav className="flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-1.5 px-2 bg-primary overflow-x-auto scrollbar-hide">
+      {/* Secondary Nav Row - Explore & Activities (hidden on mobile) */}
+      <nav className="hidden md:flex items-center justify-center gap-1 sm:gap-2 lg:gap-4 py-1.5 px-2 bg-primary overflow-x-auto scrollbar-hide">
         {secondaryNavItems.map((item) => (
           <div
             key={item.id}
