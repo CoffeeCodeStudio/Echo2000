@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Mail, Send, Inbox, Star, Trash2, ArrowLeft, Reply, Info } from "lucide-react";
+import { Mail, Send, Inbox, Star, Trash2, ArrowLeft, Reply, Info, Loader2, Users } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -7,11 +7,14 @@ import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MailMessage {
   id: string;
   from: string;
   fromAvatar?: string;
+  fromUserId: string;
   subject: string;
   preview: string;
   content: string;
@@ -20,11 +23,18 @@ interface MailMessage {
   isStarred: boolean;
 }
 
+interface RecipientOption {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
 // Demo data for logged-out users
 const demoMails: MailMessage[] = [
   {
     id: "demo-1",
     from: "Emma",
+    fromUserId: "demo",
     subject: "Kommer du på festen?",
     preview: "Hej! Jag undrar om du tänkte komma på lördagens fest...",
     content: "Hej!\n\nJag undrar om du tänkte komma på lördagens fest hos mig? Det blir massa folk från gamla gänget. Skulle vara jättekul om du kunde komma!\n\nKram,\nEmma",
@@ -35,6 +45,7 @@ const demoMails: MailMessage[] = [
   {
     id: "demo-2",
     from: "Johan",
+    fromUserId: "demo",
     subject: "Re: Gaming ikväll?",
     preview: "Absolut! Jag är online efter 20...",
     content: "Absolut! Jag är online efter 20. Ska vi köra lite retro-spel? Har laddat ner en massa gamla klassiker!\n\n/Johan",
@@ -45,6 +56,7 @@ const demoMails: MailMessage[] = [
   {
     id: "demo-3",
     from: "Lisa",
+    fromUserId: "demo",
     subject: "Titta på bilderna! 📸",
     preview: "Hej! Jag la upp bilderna från förra helgen...",
     content: "Hej!\n\nJag la upp bilderna från förra helgen i mitt album. Kolla in dem när du har tid! Det blev några riktigt fina.\n\n💕 Lisa",
@@ -55,6 +67,7 @@ const demoMails: MailMessage[] = [
   {
     id: "demo-4",
     from: "Admin",
+    fromUserId: "demo",
     subject: "Välkommen tillbaka!",
     preview: "Vi har saknat dig! Kolla in vad som är nytt...",
     content: "Hej och välkommen tillbaka till Echo2000!\n\nVi har saknat dig! Kolla in vad som är nytt sedan sist:\n\n• Ny gästboksfunktion\n• Förbättrad chatt\n• Fler profilanpassningar\n\nMvh,\nTeamet",
@@ -65,6 +78,7 @@ const demoMails: MailMessage[] = [
   {
     id: "demo-5",
     from: "Marcus",
+    fromUserId: "demo",
     subject: "Kolla denna länk!",
     preview: "Hittade något du kanske gillar...",
     content: "Yo!\n\nHittade denna sida som samlar alla gamla MSN-ljud och bakgrunder. Nostalgi på riktigt!\n\nKolla in det!\n\n/Marcus",
@@ -78,54 +92,278 @@ type MailView = "inbox" | "compose" | "read";
 
 interface MailboxProps {
   onUnreadCountChange?: (count: number) => void;
+  initialRecipient?: string;
 }
 
-export function Mailbox({ onUnreadCountChange }: MailboxProps) {
+export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps) {
   const [mails, setMails] = useState<MailMessage[]>([]);
   const [view, setView] = useState<MailView>("inbox");
   const [selectedMail, setSelectedMail] = useState<MailMessage | null>(null);
-  const [composeData, setComposeData] = useState({ to: "", subject: "", message: "" });
+  const [composeData, setComposeData] = useState({ to: initialRecipient || "", subject: "", message: "" });
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [recipientSearch, setRecipientSearch] = useState<RecipientOption[]>([]);
+  const [selectedRecipient, setSelectedRecipient] = useState<RecipientOption | null>(null);
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const showDemoMode = !authLoading && !user;
 
-  // Load mails based on auth state
+  // Fetch mails from database
   useEffect(() => {
     if (showDemoMode) {
       setMails(demoMails);
-    } else if (user) {
-      // TODO: Fetch real mails from server when database table is ready
-      // For now, show empty inbox for logged-in users
-      setMails([]);
+      setLoading(false);
+      return;
     }
-  }, [showDemoMode, user]);
+
+    if (!user) {
+      setMails([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchMails = async () => {
+      setLoading(true);
+      try {
+        // Get messages where user is recipient
+        const { data: messages, error } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("recipient_id", user.id)
+          .eq("deleted_by_recipient", false)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!messages || messages.length === 0) {
+          setMails([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get sender profiles
+        const senderIds = [...new Set(messages.map((m) => m.sender_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url")
+          .in("user_id", senderIds);
+
+        // Map to MailMessage format
+        const mailList: MailMessage[] = messages.map((msg) => {
+          const sender = profiles?.find((p) => p.user_id === msg.sender_id);
+          const createdAt = new Date(msg.created_at);
+          const now = new Date();
+          const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+          let timestamp: string;
+          if (diffDays === 0) {
+            timestamp = createdAt.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+          } else if (diffDays === 1) {
+            timestamp = "igår";
+          } else if (diffDays < 7) {
+            timestamp = `${diffDays} dagar sedan`;
+          } else {
+            timestamp = createdAt.toLocaleDateString("sv-SE");
+          }
+
+          return {
+            id: msg.id,
+            from: sender?.username || "Okänd",
+            fromAvatar: sender?.avatar_url || undefined,
+            fromUserId: msg.sender_id,
+            subject: msg.subject,
+            preview: msg.content.substring(0, 50) + (msg.content.length > 50 ? "..." : ""),
+            content: msg.content,
+            timestamp,
+            isRead: msg.is_read,
+            isStarred: msg.is_starred,
+          };
+        });
+
+        setMails(mailList);
+      } catch (error) {
+        console.error("Error fetching mails:", error);
+        toast({
+          title: "Kunde inte hämta mejl",
+          description: "Försök igen senare",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMails();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel("messages-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        () => {
+          fetchMails();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, showDemoMode, toast]);
 
   // Report unread count to parent
-  const unreadCount = mails.filter(m => !m.isRead).length;
+  const unreadCount = mails.filter((m) => !m.isRead).length;
   useEffect(() => {
     onUnreadCountChange?.(unreadCount);
   }, [unreadCount, onUnreadCountChange]);
 
-  const openMail = (mail: MailMessage) => {
-    if (showDemoMode) return; // Can't open mails in demo mode
+  // Search recipients
+  const handleRecipientSearch = async (query: string) => {
+    setComposeData({ ...composeData, to: query });
+
+    if (!query.trim() || !user) {
+      setRecipientSearch([]);
+      return;
+    }
+
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, username, avatar_url")
+        .ilike("username", `%${query}%`)
+        .neq("user_id", user.id)
+        .limit(5);
+
+      setRecipientSearch(data || []);
+    } catch (error) {
+      console.error("Error searching recipients:", error);
+    }
+  };
+
+  const openMail = async (mail: MailMessage) => {
+    if (showDemoMode) return;
     setSelectedMail(mail);
-    setMails(mails.map(m => m.id === mail.id ? { ...m, isRead: true } : m));
     setView("read");
+
+    // Mark as read
+    if (!mail.isRead && user) {
+      await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("id", mail.id);
+
+      setMails((prev) =>
+        prev.map((m) => (m.id === mail.id ? { ...m, isRead: true } : m))
+      );
+    }
   };
 
-  const toggleStar = (id: string, e: React.MouseEvent) => {
+  const toggleStar = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (showDemoMode) return;
-    setMails(mails.map(m => m.id === id ? { ...m, isStarred: !m.isStarred } : m));
+    if (showDemoMode || !user) return;
+
+    const mail = mails.find((m) => m.id === id);
+    if (!mail) return;
+
+    await supabase
+      .from("messages")
+      .update({ is_starred: !mail.isStarred })
+      .eq("id", id);
+
+    setMails((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, isStarred: !m.isStarred } : m))
+    );
   };
 
-  const handleSend = () => {
-    if (showDemoMode) return;
-    // TODO: Actually send mail via server
-    setComposeData({ to: "", subject: "", message: "" });
-    setView("inbox");
+  const handleSend = async () => {
+    if (!user || !selectedRecipient) return;
+
+    if (!composeData.subject.trim() || !composeData.message.trim()) {
+      toast({
+        title: "Fyll i alla fält",
+        description: "Ämne och meddelande krävs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        recipient_id: selectedRecipient.user_id,
+        subject: composeData.subject.trim(),
+        content: composeData.message.trim(),
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Mejl skickat!",
+        description: `Meddelande skickat till ${selectedRecipient.username}`,
+      });
+
+      setComposeData({ to: "", subject: "", message: "" });
+      setSelectedRecipient(null);
+      setView("inbox");
+    } catch (error) {
+      console.error("Error sending mail:", error);
+      toast({
+        title: "Kunde inte skicka",
+        description: "Försök igen senare",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedMail || !user) return;
+
+    try {
+      await supabase
+        .from("messages")
+        .update({ deleted_by_recipient: true })
+        .eq("id", selectedMail.id);
+
+      setMails((prev) => prev.filter((m) => m.id !== selectedMail.id));
+      setView("inbox");
+      setSelectedMail(null);
+
+      toast({
+        title: "Mejl raderat",
+      });
+    } catch (error) {
+      console.error("Error deleting mail:", error);
+    }
+  };
+
+  const handleReply = () => {
+    if (!selectedMail) return;
+    
+    // Find the sender's profile to set as recipient
+    setSelectedRecipient({
+      user_id: selectedMail.fromUserId,
+      username: selectedMail.from,
+      avatar_url: selectedMail.fromAvatar || null,
+    });
+    
+    setComposeData({
+      to: selectedMail.from,
+      subject: `Re: ${selectedMail.subject}`,
+      message: "",
+    });
+    setView("compose");
   };
 
   return (
@@ -152,7 +390,7 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
                 Mejl
               </h1>
               <p className="text-sm text-muted-foreground">
-                {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
+                {loading ? "Laddar..." : unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
               </p>
             </div>
             {view === "inbox" && !showDemoMode && (
@@ -171,18 +409,30 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
 
         {/* Back button for non-inbox views */}
         {view !== "inbox" && (
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="mb-4"
-            onClick={() => setView("inbox")}
+            onClick={() => {
+              setView("inbox");
+              setSelectedMail(null);
+              setSelectedRecipient(null);
+              setRecipientSearch([]);
+            }}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tillbaka till inkorg
           </Button>
         )}
 
+        {/* Loading state */}
+        {loading && !showDemoMode && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        )}
+
         {/* Inbox View */}
-        {view === "inbox" && (
+        {view === "inbox" && !loading && (
           <div className="nostalgia-card overflow-hidden">
             <div className="flex items-center gap-2 p-3 border-b border-border bg-muted/30">
               <Inbox className="w-4 h-4 text-primary" />
@@ -260,11 +510,11 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
               <p className="text-sm whitespace-pre-line">{selectedMail.content}</p>
             </div>
             <div className="flex gap-2 mt-6">
-              <Button variant="msn">
+              <Button variant="msn" onClick={handleReply}>
                 <Reply className="w-4 h-4 mr-2" />
                 Svara
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleDelete}>
                 <Trash2 className="w-4 h-4 mr-2" />
                 Radera
               </Button>
@@ -280,14 +530,52 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
               Skriv nytt mejl
             </h2>
             <div className="space-y-4">
-              <div>
+              <div className="relative">
                 <label className="text-xs font-medium text-muted-foreground uppercase">Till</label>
-                <Input
-                  value={composeData.to}
-                  onChange={(e) => setComposeData({ ...composeData, to: e.target.value })}
-                  placeholder="Användarnamn..."
-                  className="mt-1"
-                />
+                {selectedRecipient ? (
+                  <div className="flex items-center gap-2 mt-1 p-2 bg-muted rounded-md">
+                    <Avatar name={selectedRecipient.username} src={selectedRecipient.avatar_url} size="sm" />
+                    <span className="text-sm font-medium">{selectedRecipient.username}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto h-6 w-6 p-0"
+                      onClick={() => {
+                        setSelectedRecipient(null);
+                        setComposeData({ ...composeData, to: "" });
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      value={composeData.to}
+                      onChange={(e) => handleRecipientSearch(e.target.value)}
+                      placeholder="Sök användarnamn..."
+                      className="mt-1"
+                    />
+                    {recipientSearch.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg">
+                        {recipientSearch.map((recipient) => (
+                          <button
+                            key={recipient.user_id}
+                            onClick={() => {
+                              setSelectedRecipient(recipient);
+                              setComposeData({ ...composeData, to: recipient.username });
+                              setRecipientSearch([]);
+                            }}
+                            className="w-full flex items-center gap-2 p-2 hover:bg-muted transition-colors text-left"
+                          >
+                            <Avatar name={recipient.username} src={recipient.avatar_url} size="sm" />
+                            <span className="text-sm">{recipient.username}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase">Ämne</label>
@@ -296,6 +584,7 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
                   onChange={(e) => setComposeData({ ...composeData, subject: e.target.value })}
                   placeholder="Skriv ämne..."
                   className="mt-1"
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -306,15 +595,38 @@ export function Mailbox({ onUnreadCountChange }: MailboxProps) {
                   placeholder="Skriv ditt meddelande..."
                   rows={6}
                   className="mt-1"
+                  maxLength={5000}
                 />
+                <span className="text-xs text-muted-foreground">{composeData.message.length}/5000</span>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setView("inbox")}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setView("inbox");
+                    setSelectedRecipient(null);
+                    setRecipientSearch([]);
+                    setComposeData({ to: "", subject: "", message: "" });
+                  }}
+                >
                   Avbryt
                 </Button>
-                <Button variant="msn" onClick={handleSend}>
-                  <Send className="w-4 h-4 mr-2" />
-                  Skicka
+                <Button
+                  variant="msn"
+                  onClick={handleSend}
+                  disabled={sending || !selectedRecipient || !composeData.subject.trim() || !composeData.message.trim()}
+                >
+                  {sending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Skickar...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Skicka
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

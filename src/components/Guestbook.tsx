@@ -318,7 +318,7 @@ export function Guestbook() {
             entries.map((entry) => (
               <div key={entry.id} className="nostalgia-card p-4">
                 <div className="flex gap-3">
-                  <Avatar name={entry.author_name} size="md" status="online" />
+                  <Avatar name={entry.author_name} src={entry.author_avatar || undefined} size="md" status="online" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-semibold text-sm">{entry.author_name}</span>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, UserPlus, MessageSquare, Star, MoreHorizontal, Info } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, UserPlus, MessageSquare, Star, MoreHorizontal, Info, Check, X, Loader2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
@@ -7,6 +7,8 @@ import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Friend {
   id: string;
@@ -16,43 +18,234 @@ interface Friend {
   status: UserStatus;
   statusMessage?: string;
   isBestFriend: boolean;
+  friendshipId: string;
+  friendshipStatus: string;
+  isIncoming: boolean;
 }
 
 // Demo friends for logged-out users
 const demoFriends: Friend[] = [
-  { id: "demo-1", name: "Emma", username: "emma_00", status: "online", statusMessage: "Chilla hemma 🏠", isBestFriend: true },
-  { id: "demo-2", name: "Johan", username: "johansen", status: "online", statusMessage: "Gaming! 🎮", isBestFriend: true },
-  { id: "demo-3", name: "Lisa", username: "lisa_k", status: "away", statusMessage: "brb", isBestFriend: false },
-  { id: "demo-4", name: "Marcus", username: "marcusd", status: "online", statusMessage: "", isBestFriend: false },
-  { id: "demo-5", name: "Sofia", username: "sofian", status: "busy", statusMessage: "Pluggar 📚", isBestFriend: true },
-  { id: "demo-6", name: "Erik", username: "eriksson", status: "offline", statusMessage: "", isBestFriend: false },
-  { id: "demo-7", name: "Anna", username: "anna_b", status: "offline", statusMessage: "Semester! ✈️", isBestFriend: false },
-  { id: "demo-8", name: "Oscar", username: "oscar92", status: "online", statusMessage: "Musik 🎵", isBestFriend: false },
+  { id: "demo-1", name: "Emma", username: "emma_00", status: "online", statusMessage: "Chilla hemma 🏠", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-2", name: "Johan", username: "johansen", status: "online", statusMessage: "Gaming! 🎮", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-3", name: "Lisa", username: "lisa_k", status: "away", statusMessage: "brb", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-4", name: "Marcus", username: "marcusd", status: "online", statusMessage: "", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-5", name: "Sofia", username: "sofian", status: "busy", statusMessage: "Pluggar 📚", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-6", name: "Erik", username: "eriksson", status: "offline", statusMessage: "", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-7", name: "Anna", username: "anna_b", status: "offline", statusMessage: "Semester! ✈️", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
+  { id: "demo-8", name: "Oscar", username: "oscar92", status: "online", statusMessage: "Musik 🎵", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
 ];
 
-export function FriendsList() {
+interface FriendsListProps {
+  onSendMessage?: (userId: string) => void;
+}
+
+export function FriendsList({ onSendMessage }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "online" | "best">("all");
+  const [filter, setFilter] = useState<"all" | "online" | "best" | "pending">("all");
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const showDemoMode = !authLoading && !user;
-  
-  // TODO: Fetch real friends from server when logged in
-  // For now, show demo friends for everyone (logged out) or empty for logged in
-  const friends = showDemoMode ? demoFriends : [];
 
-  const filteredFriends = friends.filter(friend => {
-    const matchesSearch = friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         friend.username.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (filter === "online") return matchesSearch && friend.status !== "offline";
-    if (filter === "best") return matchesSearch && friend.isBestFriend;
+  // Fetch friends from database
+  useEffect(() => {
+    if (showDemoMode) {
+      setFriends(demoFriends);
+      setLoading(false);
+      return;
+    }
+
+    if (!user) {
+      setFriends([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchFriends = async () => {
+      setLoading(true);
+      try {
+        // Get all friendships where user is involved
+        const { data: friendships, error } = await supabase
+          .from("friends")
+          .select("*")
+          .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
+
+        if (error) throw error;
+
+        if (!friendships || friendships.length === 0) {
+          setFriends([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get all friend user IDs
+        const friendUserIds = friendships.map((f) =>
+          f.user_id === user.id ? f.friend_id : f.user_id
+        );
+
+        // Fetch profiles for these users
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url, status_message")
+          .in("user_id", friendUserIds);
+
+        if (profilesError) throw profilesError;
+
+        // Map profiles to friends
+        const friendsList: Friend[] = friendships.map((friendship) => {
+          const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+          const profile = profiles?.find((p) => p.user_id === friendUserId);
+          const isIncoming = friendship.friend_id === user.id && friendship.status === "pending";
+
+          return {
+            id: friendUserId,
+            name: profile?.username || "Okänd",
+            username: profile?.username || "okand",
+            avatar: profile?.avatar_url || undefined,
+            status: "online" as UserStatus, // TODO: Real online status
+            statusMessage: profile?.status_message || "",
+            isBestFriend: friendship.is_best_friend,
+            friendshipId: friendship.id,
+            friendshipStatus: friendship.status,
+            isIncoming,
+          };
+        });
+
+        setFriends(friendsList);
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+        toast({
+          title: "Kunde inte hämta vänner",
+          description: "Försök igen senare",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFriends();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel("friends-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "friends",
+        },
+        () => {
+          fetchFriends();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, showDemoMode, toast]);
+
+  const handleAccept = async (friendshipId: string) => {
+    if (!user) return;
+    setActionLoading(friendshipId);
+
+    try {
+      const { error } = await supabase
+        .from("friends")
+        .update({ status: "accepted" })
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Vänförfrågan accepterad!",
+        description: "Ni är nu vänner",
+      });
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      toast({
+        title: "Kunde inte acceptera",
+        description: "Försök igen",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (friendshipId: string) => {
+    if (!user) return;
+    setActionLoading(friendshipId);
+
+    try {
+      const { error } = await supabase
+        .from("friends")
+        .delete()
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Vänförfrågan avvisad",
+      });
+    } catch (error) {
+      console.error("Error rejecting friend request:", error);
+      toast({
+        title: "Kunde inte avvisa",
+        description: "Försök igen",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleBestFriend = async (friendshipId: string, currentValue: boolean) => {
+    if (!user) return;
+    setActionLoading(friendshipId);
+
+    try {
+      const { error } = await supabase
+        .from("friends")
+        .update({ is_best_friend: !currentValue })
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      setFriends((prev) =>
+        prev.map((f) =>
+          f.friendshipId === friendshipId ? { ...f, isBestFriend: !currentValue } : f
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling best friend:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const filteredFriends = friends.filter((friend) => {
+    const matchesSearch =
+      friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      friend.username.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (filter === "online") return matchesSearch && friend.status !== "offline" && friend.friendshipStatus === "accepted";
+    if (filter === "best") return matchesSearch && friend.isBestFriend && friend.friendshipStatus === "accepted";
+    if (filter === "pending") return matchesSearch && friend.friendshipStatus === "pending" && friend.isIncoming;
+    if (filter === "all") return matchesSearch && friend.friendshipStatus === "accepted";
     return matchesSearch;
   });
 
-  const onlineCount = friends.filter(f => f.status !== "offline").length;
+  const onlineCount = friends.filter((f) => f.status !== "offline" && f.friendshipStatus === "accepted").length;
+  const acceptedCount = friends.filter((f) => f.friendshipStatus === "accepted").length;
+  const pendingCount = friends.filter((f) => f.friendshipStatus === "pending" && f.isIncoming).length;
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
@@ -75,16 +268,15 @@ export function FriendsList() {
             <div>
               <h1 className="font-display font-bold text-xl mb-1">👥 Mina Vänner</h1>
               <p className="text-sm text-muted-foreground">
-                {friends.length > 0 
-                  ? `${onlineCount} av ${friends.length} online just nu`
-                  : "Du har inga vänner ännu"
-                }
+                {acceptedCount > 0
+                  ? `${onlineCount} av ${acceptedCount} online just nu`
+                  : "Du har inga vänner ännu"}
               </p>
             </div>
             {!showDemoMode && (
-              <Button variant="msn">
+              <Button variant="msn" onClick={() => navigate("/?tab=sok")}>
                 <UserPlus className="w-4 h-4 mr-2" />
-                Lägg till
+                Hitta vänner
               </Button>
             )}
             {showDemoMode && (
@@ -107,7 +299,7 @@ export function FriendsList() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 flex-wrap">
           <button
             onClick={() => setFilter("all")}
             className={cn(
@@ -117,7 +309,7 @@ export function FriendsList() {
                 : "bg-muted text-muted-foreground hover:text-foreground"
             )}
           >
-            Alla ({friends.length})
+            Alla ({acceptedCount})
           </button>
           <button
             onClick={() => setFilter("online")}
@@ -142,57 +334,125 @@ export function FriendsList() {
             <Star className="w-3 h-3" />
             Bästa vänner
           </button>
-        </div>
-
-        {/* Friends list */}
-        <div className="nostalgia-card overflow-hidden divide-y divide-border">
-          {filteredFriends.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {friends.length === 0 ? (
-                <>
-                  <p className="mb-2">Du har inga vänner ännu</p>
-                  <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
-                </>
-              ) : (
-                <p>Inga vänner hittades</p>
+          {pendingCount > 0 && (
+            <button
+              onClick={() => setFilter("pending")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-semibold rounded transition-colors",
+                filter === "pending"
+                  ? "bg-orange-500 text-white"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
               )}
-            </div>
-          ) : (
-            filteredFriends.map((friend) => (
-              <div
-                key={friend.id}
-                className={cn(
-                  "flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors",
-                  showDemoMode && "opacity-80"
-                )}
-              >
-                <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{friend.name}</span>
-                    {friend.isBestFriend && (
-                      <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <StatusIndicator status={friend.status} size="sm" />
-                    <span className="text-xs text-muted-foreground">
-                      {friend.statusMessage || friend.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={showDemoMode}>
-                    <MessageSquare className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={showDemoMode}>
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
+            >
+              Förfrågningar ({pendingCount})
+            </button>
           )}
         </div>
+
+        {/* Loading state */}
+        {loading && !showDemoMode && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Friends list */}
+        {!loading && (
+          <div className="nostalgia-card overflow-hidden divide-y divide-border">
+            {filteredFriends.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                {friends.length === 0 ? (
+                  <>
+                    <p className="mb-2">Du har inga vänner ännu</p>
+                    <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
+                  </>
+                ) : filter === "pending" ? (
+                  <p>Inga väntande vänförfrågningar</p>
+                ) : (
+                  <p>Inga vänner hittades</p>
+                )}
+              </div>
+            ) : (
+              filteredFriends.map((friend) => (
+                <div
+                  key={friend.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors",
+                    showDemoMode && "opacity-80"
+                  )}
+                >
+                  <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{friend.name}</span>
+                      {friend.isBestFriend && (
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <StatusIndicator status={friend.status} size="sm" />
+                      <span className="text-xs text-muted-foreground">
+                        {friend.statusMessage || friend.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Pending actions */}
+                  {friend.friendshipStatus === "pending" && friend.isIncoming ? (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                        onClick={() => handleAccept(friend.friendshipId)}
+                        disabled={actionLoading === friend.friendshipId}
+                      >
+                        {actionLoading === friend.friendshipId ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                        onClick={() => handleReject(friend.friendshipId)}
+                        disabled={actionLoading === friend.friendshipId}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={showDemoMode}
+                        onClick={() => onSendMessage?.(friend.id)}
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "h-8 w-8",
+                          friend.isBestFriend && "text-yellow-500"
+                        )}
+                        disabled={showDemoMode}
+                        onClick={() => handleToggleBestFriend(friend.friendshipId, friend.isBestFriend)}
+                      >
+                        <Star className={cn("w-4 h-4", friend.isBestFriend && "fill-current")} />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

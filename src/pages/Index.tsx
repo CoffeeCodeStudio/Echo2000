@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
@@ -15,6 +15,10 @@ import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
 import { UnreadMailBar } from "@/components/UnreadMailBar";
+import { UserSearch } from "@/components/UserSearch";
+import { OnboardingModal } from "@/components/OnboardingModal";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -58,10 +62,29 @@ export default function Index() {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMailCount, setUnreadMailCount] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const { user } = useAuth();
+  const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
+
+  // Check if onboarding is needed (missing required profile fields)
+  useEffect(() => {
+    if (user && !profileLoading && profile) {
+      const needsOnboarding = !profile.gender || !profile.city || !profile.age;
+      setShowOnboarding(needsOnboarding);
+    } else {
+      setShowOnboarding(false);
+    }
+  }, [user, profile, profileLoading]);
 
   const handleUnreadCountChange = useCallback((count: number) => {
     setUnreadMailCount(count);
   }, []);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    refetchProfile();
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -159,6 +182,11 @@ export default function Index() {
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+      {/* Onboarding Modal */}
+      {showOnboarding && user && (
+        <OnboardingModal userId={user.id} onComplete={handleOnboardingComplete} />
+      )}
+
       <Header 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
