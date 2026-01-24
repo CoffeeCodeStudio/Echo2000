@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, User } from "lucide-react";
+import { Loader2, Mail, Lock, Info } from "lucide-react";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -13,19 +13,13 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Lösenord måste vara minst 6 tecken" }),
 });
 
-const signupSchema = loginSchema.extend({
-  username: z.string().trim().min(2, { message: "Användarnamn måste vara minst 2 tecken" }).max(50),
-});
-
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; username?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,12 +30,9 @@ export default function Auth() {
   }, [user, loading, navigate]);
 
   const validateForm = () => {
-    const schema = isLogin ? loginSchema : signupSchema;
-    const data = isLogin ? { email, password } : { email, password, username };
-    
-    const result = schema.safeParse(data);
+    const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      const fieldErrors: { email?: string; password?: string; username?: string } = {};
+      const fieldErrors: { email?: string; password?: string } = {};
       result.error.errors.forEach((err) => {
         const field = err.path[0] as string;
         fieldErrors[field as keyof typeof fieldErrors] = err.message;
@@ -61,50 +52,26 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Inloggning misslyckades",
-              description: "Fel e-post eller lösenord",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Fel",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
+      const { error } = await signIn(email, password);
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Inloggning misslyckades",
+            description: "Fel e-post eller lösenord",
+            variant: "destructive",
+          });
         } else {
           toast({
-            title: "Välkommen tillbaka!",
-            description: "Du är nu inloggad",
+            title: "Fel",
+            description: error.message,
+            variant: "destructive",
           });
         }
       } else {
-        const { error } = await signUp(email, password, username);
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Konto finns redan",
-              description: "Denna e-post är redan registrerad. Försök logga in istället.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Fel",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            title: "Konto skapat!",
-            description: "Välkommen till Echo2000!",
-          });
-        }
+        toast({
+          title: "Välkommen tillbaka!",
+          description: "Du är nu inloggad",
+        });
       }
     } finally {
       setIsLoading(false);
@@ -131,47 +98,11 @@ export default function Auth() {
           <p className="text-muted-foreground text-sm">Nostalgi på riktigt</p>
         </div>
 
-        {/* Login/Signup Card */}
+        {/* Login Card */}
         <div className="nostalgia-card p-6">
-          <div className="flex gap-2 mb-6">
-            <Button
-              variant={isLogin ? "default" : "outline"}
-              className="flex-1"
-              onClick={() => setIsLogin(true)}
-            >
-              Logga in
-            </Button>
-            <Button
-              variant={!isLogin ? "default" : "outline"}
-              className="flex-1"
-              onClick={() => setIsLogin(false)}
-            >
-              Registrera
-            </Button>
-          </div>
+          <h2 className="font-bold text-lg mb-4 text-center">Logga in</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Användarnamn</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Ditt användarnamn"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.username && (
-                  <p className="text-destructive text-sm">{errors.username}</p>
-                )}
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="email">E-post</Label>
               <div className="relative">
@@ -214,15 +145,23 @@ export default function Auth() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isLogin ? "Loggar in..." : "Skapar konto..."}
+                  Loggar in...
                 </>
-              ) : isLogin ? (
-                "Logga in"
               ) : (
-                "Skapa konto"
+                "Logga in"
               )}
             </Button>
           </form>
+
+          {/* Info about registration */}
+          <div className="mt-6 p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-start gap-2 text-sm">
+              <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-muted-foreground">
+                Nya konton skapas av administratörer. Kontakta en admin om du vill gå med i Echo2000.
+              </p>
+            </div>
+          </div>
 
           <div className="mt-6 text-center">
             <button
