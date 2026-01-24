@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          is_best_friend: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          is_best_friend?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          is_best_friend?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       good_vibe_allowances: {
         Row: {
           created_at: string
@@ -125,6 +155,75 @@ export type Database = {
           message?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_by_recipient: boolean
+          deleted_by_sender: boolean
+          id: string
+          is_read: boolean
+          is_starred: boolean
+          recipient_id: string
+          sender_id: string
+          subject: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_by_recipient?: boolean
+          deleted_by_sender?: boolean
+          id?: string
+          is_read?: boolean
+          is_starred?: boolean
+          recipient_id: string
+          sender_id: string
+          subject: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_by_recipient?: boolean
+          deleted_by_sender?: boolean
+          id?: string
+          is_read?: boolean
+          is_starred?: boolean
+          recipient_id?: string
+          sender_id?: string
+          subject?: string
+        }
+        Relationships: []
+      }
+      profile_guestbook: {
+        Row: {
+          author_avatar: string | null
+          author_id: string
+          author_name: string
+          created_at: string
+          id: string
+          message: string
+          profile_owner_id: string
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_id: string
+          author_name: string
+          created_at?: string
+          id?: string
+          message: string
+          profile_owner_id: string
+        }
+        Update: {
+          author_avatar?: string | null
+          author_id?: string
+          author_name?: string
+          created_at?: string
+          id?: string
+          message?: string
+          profile_owner_id?: string
         }
         Relationships: []
       }
