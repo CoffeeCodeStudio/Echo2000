@@ -447,8 +447,8 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
               {mails.length === 0 ? (
                 <div className="p-8 text-center">
                   <Mail className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-                  <p className="text-muted-foreground">Din inkorg är tom</p>
-                  <p className="text-sm text-muted-foreground mt-1">Nya meddelanden dyker upp här</p>
+                  <p className="text-lg font-semibold text-muted-foreground mb-1">🌟 Här var det tomt!</p>
+                  <p className="text-sm text-muted-foreground">Nya meddelanden dyker upp här</p>
                 </div>
               ) : (
                 mails.map((mail) => (

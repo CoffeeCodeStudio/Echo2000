@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Checkbox } from "./ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -13,8 +14,41 @@ import {
 import { AvatarPicker, avatarOptions, type AvatarOption } from "./AvatarPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-const genderOptions = ["Kille", "Tjej", "Annat"];
+// Import avatars for gender defaults
+import avatarBoyBlue from "@/assets/avatars/avatar-boy-blue.png";
+import avatarGirlPink from "@/assets/avatars/avatar-girl-pink.png";
+import avatarRobot from "@/assets/avatars/avatar-robot.png";
+
+const genderOptions = [
+  { value: "Kille", label: "Kille", emoji: "👦", defaultAvatar: avatarBoyBlue },
+  { value: "Tjej", label: "Tjej", emoji: "👧", defaultAvatar: avatarGirlPink },
+  { value: "Annat", label: "Annat", emoji: "🌈", defaultAvatar: avatarRobot },
+];
+
+const relationshipOptions = [
+  "Singel",
+  "Kär",
+  "Sambo", 
+  "Gift",
+  "Letar",
+  "Komplicerat",
+];
+
+const interestOptions = [
+  { id: "musik", label: "Musik", emoji: "🎵" },
+  { id: "gaming", label: "Gaming", emoji: "🎮" },
+  { id: "fest", label: "Fest", emoji: "🎉" },
+  { id: "djur", label: "Djur", emoji: "🐾" },
+  { id: "foto", label: "Foto", emoji: "📷" },
+  { id: "traning", label: "Träning", emoji: "💪" },
+  { id: "trance", label: "Trance", emoji: "🎧" },
+  { id: "hiphop", label: "Hiphop", emoji: "🎤" },
+];
+
+const occupationOptions = ["Jobbar", "Pluggar", "Arbetssökande"];
+const smokingOptions = ["Ja", "Nej", "Fest"];
 
 interface OnboardingModalProps {
   userId: string;
@@ -22,17 +56,40 @@ interface OnboardingModalProps {
 }
 
 export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
+  const [step, setStep] = useState(1);
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
   const [age, setAge] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [relationship, setRelationship] = useState("");
+  const [interests, setInterests] = useState<string[]>([]);
+  const [occupation, setOccupation] = useState("");
+  const [smoking, setSmoking] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const isValid = gender && city && age;
+  const isStep1Valid = gender && city && age;
+  const totalSteps = 3;
+
+  const handleGenderSelect = (selectedGender: string) => {
+    setGender(selectedGender);
+    // Set default avatar based on gender
+    const genderOption = genderOptions.find(g => g.value === selectedGender);
+    if (genderOption && !avatarUrl) {
+      setAvatarUrl(genderOption.defaultAvatar);
+    }
+  };
+
+  const toggleInterest = (interestId: string) => {
+    setInterests(prev => 
+      prev.includes(interestId) 
+        ? prev.filter(i => i !== interestId)
+        : [...prev, interestId]
+    );
+  };
 
   const handleSubmit = async () => {
-    if (!isValid) return;
+    if (!isStep1Valid) return;
 
     setSaving(true);
     try {
@@ -43,6 +100,9 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
           city,
           age: parseInt(age),
           avatar_url: avatarUrl,
+          relationship,
+          interests: interests.join(", "),
+          occupation,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", userId);
@@ -50,7 +110,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
       if (error) throw error;
 
       toast({
-        title: "Profil sparad!",
+        title: "Profil sparad! 🎉",
         description: "Välkommen till Echo2000!",
       });
       onComplete();
@@ -67,8 +127,9 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="nostalgia-card max-w-md w-full p-6">
+    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div className="nostalgia-card max-w-lg w-full p-6 my-8">
+        {/* Header */}
         <div className="text-center mb-6">
           <div className="font-display font-black text-2xl tracking-tight mb-2">
             <span className="text-foreground">ECHO</span>
@@ -76,76 +137,233 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
           </div>
           <h1 className="font-bold text-lg mt-4">Välkommen! 🎉</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Fyll i din profil för att komma igång
+            Steg {step} av {totalSteps}
           </p>
+          {/* Progress bar */}
+          <div className="flex gap-2 mt-3">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex-1 h-2 rounded-full transition-colors",
+                  i < step ? "bg-primary" : "bg-muted"
+                )}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {/* Gender */}
-          <div className="space-y-2">
-            <Label>Kön *</Label>
-            <Select value={gender} onValueChange={setGender}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj kön..." />
-              </SelectTrigger>
-              <SelectContent>
-                {genderOptions.map((g) => (
-                  <SelectItem key={g} value={g}>
-                    {g}
-                  </SelectItem>
+        {/* Step 1: Basic Info */}
+        {step === 1 && (
+          <div className="space-y-6">
+            {/* Gender - Large clickable buttons */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Kön *</Label>
+              <div className="grid grid-cols-3 gap-3">
+                {genderOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleGenderSelect(option.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all min-h-[100px]",
+                      "hover:border-primary/50 hover:bg-primary/5",
+                      gender === option.value
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-border"
+                    )}
+                  >
+                    <span className="text-3xl">{option.emoji}</span>
+                    <span className="font-semibold text-sm">{option.label}</span>
+                    {gender === option.value && (
+                      <Check className="w-4 h-4 text-primary" />
+                    )}
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+            </div>
 
-          {/* City */}
-          <div className="space-y-2">
-            <Label>Stad *</Label>
-            <Input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Din stad..."
-              maxLength={100}
-            />
-          </div>
+            {/* City */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Stad *</Label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Din stad..."
+                maxLength={100}
+                className="h-12 text-base"
+              />
+            </div>
 
-          {/* Age */}
-          <div className="space-y-2">
-            <Label>Ålder *</Label>
-            <Input
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Din ålder..."
-              min={13}
-              max={99}
-            />
-          </div>
+            {/* Age */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Ålder *</Label>
+              <Input
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Din ålder..."
+                min={13}
+                max={99}
+                className="h-12 text-base"
+              />
+            </div>
 
-          {/* Avatar */}
-          <div className="space-y-2">
-            <Label>Välj en avatar</Label>
-            <AvatarPicker
-              selectedAvatarId={avatarUrl ? avatarOptions.find(a => a.src === avatarUrl)?.id : undefined}
-              onSelect={(avatar: AvatarOption) => setAvatarUrl(avatar.src)}
-            />
+            <Button
+              onClick={() => setStep(2)}
+              disabled={!isStep1Valid}
+              className="w-full h-12 text-base font-semibold"
+            >
+              Fortsätt →
+            </Button>
           </div>
-        </div>
+        )}
 
-        <Button
-          onClick={handleSubmit}
-          disabled={!isValid || saving}
-          className="w-full mt-6"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Sparar...
-            </>
-          ) : (
-            "Fortsätt till Echo2000"
-          )}
-        </Button>
+        {/* Step 2: Lifestyle */}
+        {step === 2 && (
+          <div className="space-y-6">
+            {/* Relationship Status */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Civilstånd</Label>
+              <Select value={relationship} onValueChange={setRelationship}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Välj..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {relationshipOptions.map((option) => (
+                    <SelectItem key={option} value={option} className="text-base py-3">
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Occupation */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Sysselsättning</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {occupationOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setOccupation(option)}
+                    className={cn(
+                      "py-3 px-4 rounded-lg border-2 font-medium transition-all",
+                      occupation === option
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Smoking */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Röker du?</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {smokingOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSmoking(option)}
+                    className={cn(
+                      "py-3 px-4 rounded-lg border-2 font-medium transition-all",
+                      smoking === option
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                className="flex-1 h-12"
+              >
+                ← Tillbaka
+              </Button>
+              <Button
+                onClick={() => setStep(3)}
+                className="flex-1 h-12 text-base font-semibold"
+              >
+                Fortsätt →
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Interests & Avatar */}
+        {step === 3 && (
+          <div className="space-y-6">
+            {/* Interests */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Intressen</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {interestOptions.map((interest) => (
+                  <button
+                    key={interest.id}
+                    type="button"
+                    onClick={() => toggleInterest(interest.id)}
+                    className={cn(
+                      "flex items-center gap-2 py-3 px-4 rounded-lg border-2 font-medium transition-all text-left",
+                      interests.includes(interest.id)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <span className="text-xl">{interest.emoji}</span>
+                    <span>{interest.label}</span>
+                    {interests.includes(interest.id) && (
+                      <Check className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Avatar */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Välj en avatar</Label>
+              <AvatarPicker
+                selectedAvatarId={avatarUrl ? avatarOptions.find(a => a.src === avatarUrl)?.id : undefined}
+                onSelect={(avatar: AvatarOption) => setAvatarUrl(avatar.src)}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setStep(2)}
+                className="flex-1 h-12"
+              >
+                ← Tillbaka
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={saving}
+                className="flex-1 h-12 text-base font-semibold"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sparar...
+                  </>
+                ) : (
+                  "Klar! 🚀"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground text-center mt-4">
           * Obligatoriska fält

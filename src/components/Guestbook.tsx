@@ -309,9 +309,10 @@ export function Guestbook() {
             </div>
           ) : entries.length === 0 ? (
             <div className="nostalgia-card p-8 text-center">
-              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">
-                Inga inlägg i gästboken än. Bli först att skriva!
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+              <p className="text-lg font-semibold text-muted-foreground mb-1">🌟 Här var det tomt!</p>
+              <p className="text-sm text-muted-foreground">
+                {user ? "Bli först att skriva!" : "Logga in för att skriva i gästboken!"}
               </p>
             </div>
           ) : (

@@ -361,15 +361,13 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
           <div className="nostalgia-card overflow-hidden divide-y divide-border">
             {filteredFriends.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                {friends.length === 0 ? (
-                  <>
-                    <p className="mb-2">Du har inga vänner ännu</p>
-                    <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
-                  </>
+                <p className="text-lg mb-2">🌟 Här var det tomt!</p>
+                {friends.length === 0 && !showDemoMode ? (
+                  <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
                 ) : filter === "pending" ? (
-                  <p>Inga väntande vänförfrågningar</p>
+                  <p className="text-sm">Inga väntande vänförfrågningar</p>
                 ) : (
-                  <p>Inga vänner hittades</p>
+                  <p className="text-sm">Inga vänner hittades</p>
                 )}
               </div>
             ) : (
