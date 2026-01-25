@@ -244,7 +244,8 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
         {/* Empty state */}
         {!isSearching && results.length === 0 && searchQuery && user && (
           <div className="nostalgia-card p-8 text-center">
-            <p className="text-muted-foreground">Inga användare hittades</p>
+            <p className="text-lg font-semibold text-muted-foreground mb-1">🌟 Här var det tomt!</p>
+            <p className="text-sm text-muted-foreground">Inga användare hittades med det namnet</p>
           </div>
         )}
       </section>
