@@ -17,6 +17,7 @@ import { FAQSection } from "@/components/FAQSection";
 import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { UserSearch } from "@/components/UserSearch";
 import { OnboardingModal } from "@/components/OnboardingModal";
+import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -192,6 +193,9 @@ export default function Index() {
         onTabChange={setActiveTab} 
         onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
       />
+
+      {/* Lajv ticker - inline row below navbar */}
+      <GlobalLajvTicker />
       
       {/* Unread mail notification bar - only shows when logged in with unread mail */}
       <UnreadMailBar 
