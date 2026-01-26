@@ -4,6 +4,7 @@ import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { GoodVibe } from "./GoodVibe";
+import { EmotePicker, replaceEmoteCodes } from "./PixelEmotes";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -266,15 +267,19 @@ export function Guestbook() {
             </div>
           ) : (
             <>
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Skriv ditt meddelande här..."
-                rows={3}
-                className="mb-3"
-                disabled={isSending}
-                maxLength={500}
-              />
+              <div className="relative mb-3">
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Skriv ditt meddelande här... (använd t.ex. :fire: :love: :star:)"
+                  rows={3}
+                  disabled={isSending}
+                  maxLength={500}
+                />
+                <div className="absolute bottom-2 left-2">
+                  <EmotePicker onSelect={(code) => setNewMessage(prev => prev + " " + code + " ")} />
+                </div>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">
                   {newMessage.length}/500 tecken
@@ -339,7 +344,7 @@ export function Guestbook() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm mt-1 text-foreground/90">{entry.message}</p>
+                    <p className="text-sm mt-1 text-foreground/90">{replaceEmoteCodes(entry.message)}</p>
 
                     {/* Actions - Good-Vibe replaces likes */}
                     <div className="flex items-center gap-4 mt-3">

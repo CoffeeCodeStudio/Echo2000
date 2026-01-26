@@ -7,6 +7,7 @@ import { Radio, Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { replaceEmoteCodes, EmotePicker } from './PixelEmotes';
 
 export function GlobalLajvTicker() {
   const { messages, sendMessage, sending } = useLajv();
@@ -79,7 +80,7 @@ export function GlobalLajvTicker() {
               {currentMessage.username}:
             </span>
             <span className="text-foreground/90 truncate flex-1">
-              {currentMessage.message}
+              {replaceEmoteCodes(currentMessage.message)}
             </span>
             {messages.length > 1 && (
               <span className="text-xs text-muted-foreground shrink-0">
@@ -94,12 +95,16 @@ export function GlobalLajvTicker() {
       {user && (
         <div className="flex items-center gap-2 shrink-0">
           {showInput ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <EmotePicker 
+                onSelect={(code) => setNewMessage(prev => prev + " " + code + " ")} 
+                className="scale-75"
+              />
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Skriv något..."
-                className="h-7 w-40 text-sm bg-background/50"
+                className="h-7 w-32 text-sm bg-background/50"
                 maxLength={280}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

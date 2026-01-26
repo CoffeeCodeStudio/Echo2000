@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Send, Smile } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { EmotePicker } from "./PixelEmotes";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -20,6 +21,10 @@ export function ChatInput({ onSend, placeholder = "Type a message...", className
     }
   };
 
+  const handleEmoteSelect = (code: string) => {
+    setMessage((prev) => prev + " " + code + " ");
+  };
+
   return (
     <form 
       onSubmit={handleSubmit}
@@ -28,14 +33,7 @@ export function ChatInput({ onSend, placeholder = "Type a message...", className
         className
       )}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="shrink-0 text-muted-foreground hover:text-primary"
-      >
-        <Smile className="w-5 h-5" />
-      </Button>
+      <EmotePicker onSelect={handleEmoteSelect} />
       <input
         type="text"
         value={message}

@@ -746,9 +746,27 @@ html, body {
     min-height: 52px;
   }
 
+  /* INACTIVE state: Grayscale and dimmed when no notifications */
+  .nav-item-single.inactive {
+    filter: grayscale(0.8);
+    opacity: 0.5;
+  }
+
+  .nav-item-single.inactive .icon-single {
+    animation: none !important;
+  }
+
+  /* ACTIVE/HAS-NOTICE state: Full color and animated */
+  .nav-item-single.has-notice {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+
   .nav-item-single:hover {
     background: hsl(var(--primary) / 0.15);
     transform: translateY(-2px);
+    filter: grayscale(0);
+    opacity: 1;
   }
 
   .nav-item-single:hover .icon-single {
@@ -758,6 +776,8 @@ html, body {
   .nav-item-single.active {
     color: hsl(var(--primary));
     background: hsl(var(--primary) / 0.2);
+    filter: grayscale(0);
+    opacity: 1;
   }
 
   .icon-single {
@@ -785,6 +805,19 @@ html, body {
     .label-single {
       font-size: 10px;
     }
+  }
+
+  /* ========== ALPHA BADGE ========== */
+  .alpha-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    background: transparent;
+    border: 1px solid white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   /* ========== LAJV TICKER ROW ========== */
