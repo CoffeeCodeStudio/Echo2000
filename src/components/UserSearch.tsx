@@ -63,9 +63,54 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
     };
 
     fetchFriends();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('user-search-friends')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, fetchFriends)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
+  // Realtime search with debounce
+  useEffect(() => {
+    if (!searchQuery.trim() || !user) {
+      setResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, user_id, username, avatar_url, city, gender, age")
+          .ilike("username", `%${searchQuery.trim()}%`)
+          .neq("user_id", user.id)
+          .limit(20);
+
+        if (error) throw error;
+        setResults(data || []);
+      } catch (error) {
+        console.error("Error searching users:", error);
+        toast({
+          title: "Sökning misslyckades",
+          description: "Försök igen senare",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // 300ms debounce for realtime feel
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, user, toast]);
+
   const handleSearch = async () => {
+    // Manual search trigger (for Enter key)
     if (!searchQuery.trim() || !user) return;
 
     setIsSearching(true);

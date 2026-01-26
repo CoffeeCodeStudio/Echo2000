@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserPlus, MessageSquare, Star, MoreHorizontal, Info, Check, X, Loader2 } from "lucide-react";
+import { Search, UserPlus, MessageSquare, Star, Info, Check, X, Loader2, UserMinus } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
@@ -231,6 +231,33 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
     }
   };
 
+  const handleRemoveFriend = async (friendshipId: string) => {
+    if (!user) return;
+    setActionLoading(friendshipId);
+
+    try {
+      const { error } = await supabase
+        .from("friends")
+        .delete()
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Vän borttagen",
+      });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      toast({
+        title: "Kunde inte ta bort vän",
+        description: "Försök igen",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const filteredFriends = friends.filter((friend) => {
     const matchesSearch =
       friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -429,6 +456,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                         className="h-8 w-8"
                         disabled={showDemoMode}
                         onClick={() => onSendMessage?.(friend.id)}
+                        title="Skicka meddelande"
                       >
                         <MessageSquare className="w-4 h-4" />
                       </Button>
@@ -441,8 +469,19 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                         )}
                         disabled={showDemoMode}
                         onClick={() => handleToggleBestFriend(friend.friendshipId, friend.isBestFriend)}
+                        title={friend.isBestFriend ? "Ta bort som bästis" : "Markera som bästis"}
                       >
                         <Star className={cn("w-4 h-4", friend.isBestFriend && "fill-current")} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        disabled={showDemoMode}
+                        onClick={() => handleRemoveFriend(friend.friendshipId)}
+                        title="Ta bort vän"
+                      >
+                        <UserMinus className="w-4 h-4" />
                       </Button>
                     </div>
                   )}
