@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNotifications } from "@/hooks/useNotifications";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -16,12 +17,24 @@ interface MobileNavProps {
 
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { counts } = useNotifications();
+
+  // Get badge count for each tab from real database
+  const getBadge = (id: Tab): number | undefined => {
+    switch (id) {
+      case 'mejl': return counts.unreadMail > 0 ? counts.unreadMail : undefined;
+      case 'vanner': return counts.pendingFriends > 0 ? counts.pendingFriends : undefined;
+      case 'gastbok': return counts.guestbookNew > 0 ? counts.guestbookNew : undefined;
+      case 'lajv': return counts.lajvActive > 0 ? counts.lajvActive : undefined;
+      default: return undefined;
+    }
+  };
 
   // Profile-relevant nav items (main row) - reduced for mobile
-  const mainNavItems: { id: Tab; label: string; emoji: string; animationClass: string; badge?: number }[] = [
+  const mainNavItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
-    { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce", badge: 5 },
-    { id: "chatt", label: "CHATT", emoji: "🖊️", animationClass: "writing-pen", badge: 2 },
+    { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
+    { id: "chatt", label: "CHATT", emoji: "🖊️", animationClass: "writing-pen" },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
   ];
 
@@ -86,7 +99,8 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
 
         {/* Main profile-relevant nav items */}
         {mainNavItems.map((item) => {
-          const hasNotification = item.badge && item.badge > 0;
+          const badge = getBadge(item.id);
+          const hasNotification = badge !== undefined && badge > 0;
           const isInactive = !hasNotification;
           
           return (
@@ -108,7 +122,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
                 </span>
                 {hasNotification && (
                   <span className="mobile-nav-badge-corner">
-                    {item.badge}
+                    {badge}
                   </span>
                 )}
               </div>

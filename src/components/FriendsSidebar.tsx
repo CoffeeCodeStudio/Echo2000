@@ -1,8 +1,10 @@
-import { Search, ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { Search, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { FriendItem } from "./FriendItem";
 import { cn } from "@/lib/utils";
 import type { UserStatus } from "./StatusIndicator";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Friend {
   id: string;
@@ -11,16 +13,6 @@ interface Friend {
   status: UserStatus;
   statusMessage?: string;
 }
-
-const mockFriends: Friend[] = [
-  { id: "1", name: "Sarah Chen", status: "online", statusMessage: "🎵 Listening to music" },
-  { id: "2", name: "Mike Johnson", status: "online", statusMessage: "Available to chat!" },
-  { id: "3", name: "Emma Davis", status: "away", statusMessage: "BRB in 5 mins" },
-  { id: "4", name: "Alex Kim", status: "busy", statusMessage: "In a meeting" },
-  { id: "5", name: "Jordan Taylor", status: "online" },
-  { id: "6", name: "Chris Brown", status: "offline" },
-  { id: "7", name: "Lisa Wang", status: "offline", statusMessage: "Gone fishing 🎣" },
-];
 
 interface FriendsSidebarProps {
   selectedFriendId?: string;
@@ -32,13 +24,93 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
   const [searchQuery, setSearchQuery] = useState("");
   const [onlineExpanded, setOnlineExpanded] = useState(true);
   const [offlineExpanded, setOfflineExpanded] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  const filteredFriends = mockFriends.filter((friend) =>
+  // Fetch real friends from database
+  useEffect(() => {
+    if (!user) {
+      setFriends([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchFriends = async () => {
+      setLoading(true);
+      try {
+        const { data: friendships, error } = await supabase
+          .from("friends")
+          .select("*")
+          .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+          .eq("status", "accepted");
+
+        if (error) throw error;
+
+        if (!friendships || friendships.length === 0) {
+          setFriends([]);
+          setLoading(false);
+          return;
+        }
+
+        const friendUserIds = friendships.map((f) =>
+          f.user_id === user.id ? f.friend_id : f.user_id
+        );
+
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url, status_message")
+          .in("user_id", friendUserIds);
+
+        const friendsList: Friend[] = friendships.map((friendship) => {
+          const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+          const profile = profiles?.find((p) => p.user_id === friendUserId);
+
+          return {
+            id: friendUserId,
+            name: profile?.username || "Okänd",
+            avatar: profile?.avatar_url || undefined,
+            status: "online" as UserStatus, // TODO: Real online status
+            statusMessage: profile?.status_message || "",
+          };
+        });
+
+        setFriends(friendsList);
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFriends();
+
+    const channel = supabase
+      .channel("sidebar-friends")
+      .on("postgres_changes", { event: "*", schema: "public", table: "friends" }, fetchFriends)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const filteredFriends = friends.filter((friend) =>
     friend.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const onlineFriends = filteredFriends.filter((f) => f.status !== "offline");
   const offlineFriends = filteredFriends.filter((f) => f.status === "offline");
+
+  if (loading) {
+    return (
+      <aside className={cn("flex flex-col h-full bg-sidebar", className)}>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className={cn("flex flex-col h-full bg-sidebar", className)}>
@@ -50,7 +122,7 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search friends..."
+            placeholder="Sök vänner..."
             className="w-full bg-muted/50 border border-border rounded-lg pl-9 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 input-glow transition-all"
           />
         </div>
@@ -58,45 +130,54 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
 
       {/* Friends List */}
       <div className="flex-1 overflow-y-auto scrollbar-nostalgic p-2">
-        {/* Online Section */}
-        <FriendsSection
-          title="Online"
-          count={onlineFriends.length}
-          expanded={onlineExpanded}
-          onToggle={() => setOnlineExpanded(!onlineExpanded)}
-        >
-          {onlineFriends.map((friend) => (
-            <FriendItem
-              key={friend.id}
-              name={friend.name}
-              avatar={friend.avatar}
-              status={friend.status}
-              statusMessage={friend.statusMessage}
-              isActive={selectedFriendId === friend.id}
-              onClick={() => onSelectFriend(friend.id)}
-            />
-          ))}
-        </FriendsSection>
+        {friends.length === 0 ? (
+          <div className="p-4 text-center text-muted-foreground">
+            <p className="text-sm mb-1">🌟 Här var det tomt!</p>
+            <p className="text-xs">Sök efter vänner för att komma igång.</p>
+          </div>
+        ) : (
+          <>
+            {/* Online Section */}
+            <FriendsSection
+              title="Online"
+              count={onlineFriends.length}
+              expanded={onlineExpanded}
+              onToggle={() => setOnlineExpanded(!onlineExpanded)}
+            >
+              {onlineFriends.map((friend) => (
+                <FriendItem
+                  key={friend.id}
+                  name={friend.name}
+                  avatar={friend.avatar}
+                  status={friend.status}
+                  statusMessage={friend.statusMessage}
+                  isActive={selectedFriendId === friend.id}
+                  onClick={() => onSelectFriend(friend.id)}
+                />
+              ))}
+            </FriendsSection>
 
-        {/* Offline Section */}
-        <FriendsSection
-          title="Offline"
-          count={offlineFriends.length}
-          expanded={offlineExpanded}
-          onToggle={() => setOfflineExpanded(!offlineExpanded)}
-        >
-          {offlineFriends.map((friend) => (
-            <FriendItem
-              key={friend.id}
-              name={friend.name}
-              avatar={friend.avatar}
-              status={friend.status}
-              statusMessage={friend.statusMessage}
-              isActive={selectedFriendId === friend.id}
-              onClick={() => onSelectFriend(friend.id)}
-            />
-          ))}
-        </FriendsSection>
+            {/* Offline Section */}
+            <FriendsSection
+              title="Offline"
+              count={offlineFriends.length}
+              expanded={offlineExpanded}
+              onToggle={() => setOfflineExpanded(!offlineExpanded)}
+            >
+              {offlineFriends.map((friend) => (
+                <FriendItem
+                  key={friend.id}
+                  name={friend.name}
+                  avatar={friend.avatar}
+                  status={friend.status}
+                  statusMessage={friend.statusMessage}
+                  isActive={selectedFriendId === friend.id}
+                  onClick={() => onSelectFriend(friend.id)}
+                />
+              ))}
+            </FriendsSection>
+          </>
+        )}
       </div>
     </aside>
   );

@@ -29,64 +29,7 @@ interface RecipientOption {
   avatar_url: string | null;
 }
 
-// Demo data for logged-out users
-const demoMails: MailMessage[] = [
-  {
-    id: "demo-1",
-    from: "Emma",
-    fromUserId: "demo",
-    subject: "Kommer du på festen?",
-    preview: "Hej! Jag undrar om du tänkte komma på lördagens fest...",
-    content: "Hej!\n\nJag undrar om du tänkte komma på lördagens fest hos mig? Det blir massa folk från gamla gänget. Skulle vara jättekul om du kunde komma!\n\nKram,\nEmma",
-    timestamp: "14:32",
-    isRead: false,
-    isStarred: true,
-  },
-  {
-    id: "demo-2",
-    from: "Johan",
-    fromUserId: "demo",
-    subject: "Re: Gaming ikväll?",
-    preview: "Absolut! Jag är online efter 20...",
-    content: "Absolut! Jag är online efter 20. Ska vi köra lite retro-spel? Har laddat ner en massa gamla klassiker!\n\n/Johan",
-    timestamp: "igår",
-    isRead: true,
-    isStarred: false,
-  },
-  {
-    id: "demo-3",
-    from: "Lisa",
-    fromUserId: "demo",
-    subject: "Titta på bilderna! 📸",
-    preview: "Hej! Jag la upp bilderna från förra helgen...",
-    content: "Hej!\n\nJag la upp bilderna från förra helgen i mitt album. Kolla in dem när du har tid! Det blev några riktigt fina.\n\n💕 Lisa",
-    timestamp: "mån",
-    isRead: false,
-    isStarred: false,
-  },
-  {
-    id: "demo-4",
-    from: "Admin",
-    fromUserId: "demo",
-    subject: "Välkommen tillbaka!",
-    preview: "Vi har saknat dig! Kolla in vad som är nytt...",
-    content: "Hej och välkommen tillbaka till Echo2000!\n\nVi har saknat dig! Kolla in vad som är nytt sedan sist:\n\n• Ny gästboksfunktion\n• Förbättrad chatt\n• Fler profilanpassningar\n\nMvh,\nTeamet",
-    timestamp: "förra veckan",
-    isRead: true,
-    isStarred: false,
-  },
-  {
-    id: "demo-5",
-    from: "Marcus",
-    fromUserId: "demo",
-    subject: "Kolla denna länk!",
-    preview: "Hittade något du kanske gillar...",
-    content: "Yo!\n\nHittade denna sida som samlar alla gamla MSN-ljud och bakgrunder. Nostalgi på riktigt!\n\nKolla in det!\n\n/Marcus",
-    timestamp: "förra veckan",
-    isRead: true,
-    isStarred: true,
-  },
-];
+// No demo data - only real messages from database
 
 type MailView = "inbox" | "compose" | "read";
 
@@ -109,12 +52,12 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const showDemoMode = !authLoading && !user;
+  const isLoggedOut = !authLoading && !user;
 
   // Fetch mails from database
   useEffect(() => {
-    if (showDemoMode) {
-      setMails(demoMails);
+    if (isLoggedOut) {
+      setMails([]);
       setLoading(false);
       return;
     }
@@ -218,7 +161,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, showDemoMode, toast]);
+  }, [user, isLoggedOut, toast]);
 
   // Report unread count to parent
   const unreadCount = mails.filter((m) => !m.isRead).length;
@@ -250,7 +193,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
   };
 
   const openMail = async (mail: MailMessage) => {
-    if (showDemoMode) return;
+    if (isLoggedOut) return;
     setSelectedMail(mail);
     setView("read");
 
@@ -269,7 +212,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
   const toggleStar = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (showDemoMode || !user) return;
+    if (isLoggedOut || !user) return;
 
     const mail = mails.find((m) => m.id === id);
     if (!mail) return;
@@ -369,13 +312,13 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
-        {/* Demo mode banner */}
-        {showDemoMode && (
+        {/* Login prompt for logged out users */}
+        {isLoggedOut && (
           <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
             <div className="flex items-center gap-2 text-sm">
               <Info className="w-4 h-4 text-primary" />
               <span className="text-muted-foreground">
-                Du ser demo-mejl. <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se din riktiga inkorg!
+                <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se din inkorg!
               </span>
             </div>
           </div>
@@ -393,13 +336,13 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                 {loading ? "Laddar..." : unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
               </p>
             </div>
-            {view === "inbox" && !showDemoMode && (
+            {view === "inbox" && !isLoggedOut && (
               <Button variant="msn" onClick={() => setView("compose")}>
                 <Send className="w-4 h-4 mr-2" />
                 Skriv nytt
               </Button>
             )}
-            {view === "inbox" && showDemoMode && (
+            {view === "inbox" && isLoggedOut && (
               <Button variant="msn" onClick={() => navigate("/auth")}>
                 Logga in
               </Button>
@@ -425,7 +368,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
         )}
 
         {/* Loading state */}
-        {loading && !showDemoMode && (
+        {loading && !isLoggedOut && (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
@@ -458,9 +401,9 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                     className={cn(
                       "w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-start gap-3",
                       !mail.isRead && "bg-primary/5",
-                      showDemoMode && "cursor-default opacity-80"
+                      isLoggedOut && "cursor-default opacity-80"
                     )}
-                    disabled={showDemoMode}
+                    disabled={isLoggedOut}
                   >
                     <Avatar name={mail.from} src={mail.fromAvatar} size="sm" />
                     <div className="flex-1 min-w-0">
@@ -480,9 +423,9 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                       className={cn(
                         "p-1 transition-colors",
                         mail.isStarred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500",
-                        showDemoMode && "pointer-events-none"
+                        isLoggedOut && "pointer-events-none"
                       )}
-                      disabled={showDemoMode}
+                      disabled={isLoggedOut}
                     >
                       <Star className={cn("w-4 h-4", mail.isStarred && "fill-current")} />
                     </button>

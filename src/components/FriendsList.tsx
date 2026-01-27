@@ -23,17 +23,7 @@ interface Friend {
   isIncoming: boolean;
 }
 
-// Demo friends for logged-out users
-const demoFriends: Friend[] = [
-  { id: "demo-1", name: "Emma", username: "emma_00", status: "online", statusMessage: "Chilla hemma 🏠", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-2", name: "Johan", username: "johansen", status: "online", statusMessage: "Gaming! 🎮", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-3", name: "Lisa", username: "lisa_k", status: "away", statusMessage: "brb", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-4", name: "Marcus", username: "marcusd", status: "online", statusMessage: "", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-5", name: "Sofia", username: "sofian", status: "busy", statusMessage: "Pluggar 📚", isBestFriend: true, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-6", name: "Erik", username: "eriksson", status: "offline", statusMessage: "", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-7", name: "Anna", username: "anna_b", status: "offline", statusMessage: "Semester! ✈️", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-  { id: "demo-8", name: "Oscar", username: "oscar92", status: "online", statusMessage: "Musik 🎵", isBestFriend: false, friendshipId: "", friendshipStatus: "accepted", isIncoming: false },
-];
+// No demo data - only real users from database
 
 interface FriendsListProps {
   onSendMessage?: (userId: string) => void;
@@ -50,17 +40,11 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const showDemoMode = !authLoading && !user;
+  const isLoggedOut = !authLoading && !user;
 
   // Fetch friends from database
   useEffect(() => {
-    if (showDemoMode) {
-      setFriends(demoFriends);
-      setLoading(false);
-      return;
-    }
-
-    if (!user) {
+    if (isLoggedOut || !user) {
       setFriends([]);
       setLoading(false);
       return;
@@ -150,7 +134,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, showDemoMode, toast]);
+  }, [user, isLoggedOut, toast]);
 
   const handleAccept = async (friendshipId: string) => {
     if (!user) return;
@@ -277,13 +261,13 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
-        {/* Demo mode banner */}
-        {showDemoMode && (
+        {/* Login prompt for logged out users */}
+        {isLoggedOut && (
           <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
             <div className="flex items-center gap-2 text-sm">
               <Info className="w-4 h-4 text-primary" />
               <span className="text-muted-foreground">
-                Du ser demo-vänner. <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att hantera dina riktiga vänner!
+                <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se och hantera dina vänner!
               </span>
             </div>
           </div>
@@ -300,13 +284,12 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                   : "Du har inga vänner ännu"}
               </p>
             </div>
-            {!showDemoMode && (
+            {!isLoggedOut ? (
               <Button variant="msn" onClick={() => navigate("/?tab=sok")}>
                 <UserPlus className="w-4 h-4 mr-2" />
                 Hitta vänner
               </Button>
-            )}
-            {showDemoMode && (
+            ) : (
               <Button variant="msn" onClick={() => navigate("/auth")}>
                 Logga in
               </Button>
@@ -377,7 +360,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
         </div>
 
         {/* Loading state */}
-        {loading && !showDemoMode && (
+        {loading && !isLoggedOut && (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
@@ -389,8 +372,8 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
             {filteredFriends.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <p className="text-lg mb-2">🌟 Här var det tomt!</p>
-                {friends.length === 0 && !showDemoMode ? (
-                  <p className="text-sm">Börja med att söka efter användare och lägg till dem som vänner!</p>
+                {friends.length === 0 && !isLoggedOut ? (
+                  <p className="text-sm">Sök efter vänner för att komma igång.</p>
                 ) : filter === "pending" ? (
                   <p className="text-sm">Inga väntande vänförfrågningar</p>
                 ) : (
@@ -401,10 +384,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
               filteredFriends.map((friend) => (
                 <div
                   key={friend.id}
-                  className={cn(
-                    "flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors",
-                    showDemoMode && "opacity-80"
-                  )}
+                  className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
                 >
                   <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
                   <div className="flex-1 min-w-0">
@@ -454,7 +434,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        disabled={showDemoMode}
+                        disabled={isLoggedOut}
                         onClick={() => onSendMessage?.(friend.id)}
                         title="Skicka meddelande"
                       >
@@ -467,7 +447,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                           "h-8 w-8",
                           friend.isBestFriend && "text-yellow-500"
                         )}
-                        disabled={showDemoMode}
+                        disabled={isLoggedOut}
                         onClick={() => handleToggleBestFriend(friend.friendshipId, friend.isBestFriend)}
                         title={friend.isBestFriend ? "Ta bort som bästis" : "Markera som bästis"}
                       >
@@ -477,7 +457,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        disabled={showDemoMode}
+                        disabled={isLoggedOut}
                         onClick={() => handleRemoveFriend(friend.friendshipId)}
                         title="Ta bort vän"
                       >

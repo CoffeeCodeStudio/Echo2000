@@ -19,49 +19,7 @@ interface GuestbookEntry {
   user_id: string;
 }
 
-// Demo entries for logged-out users
-const demoEntries: GuestbookEntry[] = [
-  {
-    id: "demo-1",
-    author_name: "Emma",
-    author_avatar: null,
-    message: "Hej! Vilken cool sida! Påminner om gamla goda LunarStorm-tiden 💕",
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 min ago
-    user_id: "demo",
-  },
-  {
-    id: "demo-2",
-    author_name: "Johan",
-    author_avatar: null,
-    message: "Nostalgi på riktigt! Saknar verkligen 00-talet och MSN 🎮",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
-    user_id: "demo",
-  },
-  {
-    id: "demo-3",
-    author_name: "Lisa",
-    author_avatar: null,
-    message: "Första gången jag ser något sånt här på länge! Grymt jobbat! ⭐",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-    user_id: "demo",
-  },
-  {
-    id: "demo-4",
-    author_name: "Marcus",
-    author_avatar: null,
-    message: "Kommer ihåg när man chattade på Playahead och Lunarstorm hela kvällarna... Tack för minnena!",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-    user_id: "demo",
-  },
-  {
-    id: "demo-5",
-    author_name: "Sofia",
-    author_avatar: null,
-    message: "Så kul att hitta andra som älskar retro-internet! 🌟",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
-    user_id: "demo",
-  },
-];
+// No demo data - only real entries from database
 
 export function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([]);
@@ -73,16 +31,11 @@ export function Guestbook() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const showDemoMode = !authLoading && !user;
+  const isLoggedOut = !authLoading && !user;
 
-  // Fetch entries on mount (only if logged in)
+  // Fetch entries on mount
   useEffect(() => {
-    if (showDemoMode) {
-      setEntries(demoEntries);
-      setIsLoading(false);
-      return;
-    }
-
+    // Always fetch from database (public guestbook)
     const fetchEntries = async () => {
       const { data, error } = await supabase
         .from("guestbook_entries")
@@ -123,7 +76,7 @@ export function Guestbook() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [toast, showDemoMode]);
+  }, [toast]);
 
   const handleSubmit = async () => {
     if (!newMessage.trim()) return;
@@ -230,17 +183,7 @@ export function Guestbook() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
-        {/* Demo mode banner */}
-        {showDemoMode && (
-          <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
-            <div className="flex items-center gap-2 text-sm">
-              <Info className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">
-                Du ser demo-inlägg. <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se riktiga inlägg och skriva själv!
-              </span>
-            </div>
-          </div>
-        )}
+        {/* No demo mode - always show real data */}
 
         <div className="nostalgia-card p-4 mb-6">
           <h1 className="font-display font-bold text-xl mb-1">📖 Min Gästbok</h1>

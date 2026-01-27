@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
-import { ChevronDown, ChevronRight, Search, Plus, Settings, Mail } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface MsnContact {
   id: string;
@@ -17,16 +18,6 @@ export interface MsnContact {
   lastSeen?: string;
   unreadCount?: number;
 }
-
-const mockContacts: MsnContact[] = [
-  { id: "1", name: "~*Emma*~", email: "emma@echo2000.se", status: "online", statusMessage: "redo för helgen 🎉", unreadCount: 2 },
-  { id: "2", name: "Marcus_92", email: "marcus@echo2000.se", status: "online", statusMessage: "Gaming mode ON", unreadCount: 0 },
-  { id: "3", name: "★Sofia★", email: "sofia@echo2000.se", status: "away", statusMessage: "brb, äter mat", unreadCount: 0 },
-  { id: "4", name: "Johan <3", email: "johan@echo2000.se", status: "busy", statusMessage: "Stör ej - pluggar!", unreadCount: 0 },
-  { id: "5", name: "Lisa_xoxo", email: "lisa@echo2000.se", status: "offline", statusMessage: "", lastSeen: "2 timmar sedan" },
-  { id: "6", name: "Erik ツ", email: "erik@echo2000.se", status: "offline", statusMessage: "", lastSeen: "igår" },
-  { id: "7", name: "Anna~", email: "anna@echo2000.se", status: "online", statusMessage: "(L) Livet är underbart (L)", unreadCount: 5 },
-];
 
 interface MsnContactListProps {
   onSelectContact: (contact: MsnContact) => void;
@@ -41,7 +32,8 @@ export function MsnContactList({
   className,
   soundEnabled = true 
 }: MsnContactListProps) {
-  const [contacts, setContacts] = useState<MsnContact[]>(mockContacts);
+  const [contacts, setContacts] = useState<MsnContact[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     online: true,
     away: true,
@@ -49,43 +41,96 @@ export function MsnContactList({
     offline: false,
   });
   const [searchQuery, setSearchQuery] = useState("");
-  const [recentlyOnline, setRecentlyOnline] = useState<string[]>([]);
   const { playSound } = useMsnSounds();
+  const { user } = useAuth();
 
-  // Simulate contacts coming online/offline
+  // Fetch real friends from database
   useEffect(() => {
-    const interval = setInterval(() => {
-      setContacts(prev => {
-        const randomIndex = Math.floor(Math.random() * prev.length);
-        const contact = prev[randomIndex];
-        
-        // 20% chance of status change
-        if (Math.random() < 0.2) {
-          const newStatus = contact.status === "offline" ? "online" : 
-                           contact.status === "online" && Math.random() < 0.3 ? "away" : 
-                           contact.status;
-          
-          if (newStatus !== contact.status) {
-            // Play sound when someone comes online
-            if (newStatus === "online" && soundEnabled) {
-              playSound("online");
-              setRecentlyOnline(prev => [...prev, contact.id]);
-              setTimeout(() => {
-                setRecentlyOnline(prev => prev.filter(id => id !== contact.id));
-              }, 3000);
-            }
-            
-            return prev.map((c, i) => 
-              i === randomIndex ? { ...c, status: newStatus as UserStatus } : c
-            );
-          }
-        }
-        return prev;
-      });
-    }, 10000);
+    if (!user) {
+      setContacts([]);
+      setLoading(false);
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, [playSound, soundEnabled]);
+    const fetchContacts = async () => {
+      setLoading(true);
+      try {
+        // Get accepted friendships
+        const { data: friendships, error } = await supabase
+          .from("friends")
+          .select("*")
+          .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+          .eq("status", "accepted");
+
+        if (error) throw error;
+
+        if (!friendships || friendships.length === 0) {
+          setContacts([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get friend user IDs
+        const friendUserIds = friendships.map((f) =>
+          f.user_id === user.id ? f.friend_id : f.user_id
+        );
+
+        // Fetch profiles
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url, status_message")
+          .in("user_id", friendUserIds);
+
+        // Get unread message counts per sender
+        const { data: unreadMessages } = await supabase
+          .from("messages")
+          .select("sender_id")
+          .eq("recipient_id", user.id)
+          .eq("is_read", false)
+          .eq("deleted_by_recipient", false);
+
+        const unreadCounts: Record<string, number> = {};
+        unreadMessages?.forEach(msg => {
+          unreadCounts[msg.sender_id] = (unreadCounts[msg.sender_id] || 0) + 1;
+        });
+
+        // Map to contacts
+        const contactsList: MsnContact[] = friendships.map((friendship) => {
+          const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+          const profile = profiles?.find((p) => p.user_id === friendUserId);
+
+          return {
+            id: friendUserId,
+            name: profile?.username || "Okänd",
+            email: `${profile?.username || "user"}@echo2000.se`,
+            status: "online" as UserStatus, // TODO: Real online status
+            statusMessage: profile?.status_message || "",
+            avatar: profile?.avatar_url || undefined,
+            unreadCount: unreadCounts[friendUserId] || 0,
+          };
+        });
+
+        setContacts(contactsList);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel("msn-contacts")
+      .on("postgres_changes", { event: "*", schema: "public", table: "friends" }, fetchContacts)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, fetchContacts)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const toggleGroup = (group: string) => {
     setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
@@ -98,68 +143,75 @@ export function MsnContactList({
   };
 
   const onlineCount = contacts.filter(c => c.status === "online").length;
-  const totalCount = contacts.length;
+  const awayCount = contacts.filter(c => c.status === "away").length;
+  const busyCount = contacts.filter(c => c.status === "busy").length;
+  const offlineCount = contacts.filter(c => c.status === "offline").length;
 
-  const renderGroup = (status: UserStatus, label: string) => {
+  const renderContactGroup = (status: UserStatus, label: string, count: number) => {
     const groupContacts_ = groupContacts(status);
     if (groupContacts_.length === 0 && searchQuery) return null;
-
+    
     return (
       <div key={status} className="mb-1">
         <button
           onClick={() => toggleGroup(status)}
-          className="w-full flex items-center gap-1 px-2 py-1 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 text-xs font-medium text-gray-700 dark:text-gray-300"
+          className={cn(
+            "w-full flex items-center gap-2 px-2 py-1.5 text-xs font-semibold rounded transition-colors",
+            "hover:bg-muted/50 text-muted-foreground"
+          )}
         >
           {expandedGroups[status] ? (
             <ChevronDown className="w-3 h-3" />
           ) : (
             <ChevronRight className="w-3 h-3" />
           )}
-          <span>{label} ({groupContacts_.length})</span>
+          <StatusIndicator status={status} size="sm" />
+          <span>{label}</span>
+          <span className="ml-auto text-[10px] opacity-75">({count})</span>
         </button>
         
         {expandedGroups[status] && (
-          <div className="pl-2">
-            {groupContacts_.map(contact => (
+          <div className="ml-2 space-y-0.5">
+            {groupContacts_.map((contact) => (
               <button
                 key={contact.id}
-                onClick={() => onSelectContact(contact)}
+              onClick={() => {
+                  if (soundEnabled) playSound("message");
+                  onSelectContact(contact);
+                }}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-all",
-                  "hover:bg-blue-100 dark:hover:bg-blue-900/30",
-                  selectedContactId === contact.id && "bg-blue-200 dark:bg-blue-800/50",
-                  recentlyOnline.includes(contact.id) && "animate-pulse bg-green-100 dark:bg-green-900/30"
+                  "w-full flex items-center gap-2 px-2 py-2 rounded transition-all",
+                  "hover:bg-primary/10",
+                  selectedContactId === contact.id && "bg-primary/20 border-l-2 border-primary"
                 )}
               >
-                <div className="relative">
-                  <Avatar name={contact.name} size="sm" />
-                  <div className="absolute -bottom-0.5 -right-0.5">
-                    <StatusIndicator status={contact.status} size="sm" />
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
+                <Avatar 
+                  name={contact.name} 
+                  src={contact.avatar} 
+                  status={contact.status} 
+                  size="sm" 
+                />
+                <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-1">
                     <span className={cn(
-                      "text-xs font-medium truncate",
-                      contact.status === "online" ? "text-blue-700 dark:text-blue-400" : 
-                      contact.status === "offline" ? "text-gray-500" : "text-gray-700 dark:text-gray-300",
-                      recentlyOnline.includes(contact.id) && "text-green-600 dark:text-green-400 font-bold"
+                      "text-sm font-medium truncate",
+                      contact.status === "offline" && "text-muted-foreground"
                     )}>
                       {contact.name}
                     </span>
                     {contact.unreadCount && contact.unreadCount > 0 && (
-                      <span className="px-1.5 py-0.5 text-[9px] bg-orange-500 text-white rounded-full font-bold animate-pulse">
+                      <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                         {contact.unreadCount}
                       </span>
                     )}
                   </div>
-                  {contact.statusMessage && contact.status !== "offline" && (
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate italic">
+                  {contact.statusMessage && (
+                    <p className="text-[11px] text-muted-foreground truncate italic">
                       {contact.statusMessage}
                     </p>
                   )}
                   {contact.status === "offline" && contact.lastSeen && (
-                    <p className="text-[10px] text-gray-400 truncate">
+                    <p className="text-[10px] text-muted-foreground">
                       Senast online: {contact.lastSeen}
                     </p>
                   )}
@@ -172,49 +224,64 @@ export function MsnContactList({
     );
   };
 
-  return (
-    <div className={cn("flex flex-col h-full bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800", className)}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-3 py-2">
-        <div className="text-xs font-medium">Mina kontakter</div>
-        <div className="text-[10px] text-white/70">
-          {onlineCount} av {totalCount} online
+  if (loading) {
+    return (
+      <div className={cn("flex flex-col h-full", className)}>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       </div>
+    );
+  }
 
+  if (!user) {
+    return (
+      <div className={cn("flex flex-col h-full", className)}>
+        <div className="p-4 text-center text-muted-foreground">
+          <p className="text-sm">Logga in för att se dina kontakter</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex flex-col h-full", className)}>
       {/* Search */}
-      <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-2 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
           <Input
-            type="text"
-            placeholder="Sök kontakter..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-7 text-xs pl-7 bg-white dark:bg-gray-800"
+            placeholder="Sök kontakter..."
+            className="pl-7 h-7 text-xs"
           />
         </div>
       </div>
 
-      {/* Contact Groups */}
-      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-        {renderGroup("online", "🟢 Online")}
-        {renderGroup("away", "🟡 Borta")}
-        {renderGroup("busy", "🔴 Upptagen")}
-        {renderGroup("offline", "⚫ Offline")}
+      {/* Contacts */}
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic p-1">
+        {contacts.length === 0 ? (
+          <div className="p-4 text-center text-muted-foreground">
+            <p className="text-sm mb-1">🌟 Här var det tomt!</p>
+            <p className="text-xs">Sök efter vänner för att komma igång.</p>
+          </div>
+        ) : (
+          <>
+            {renderContactGroup("online", "Online", onlineCount)}
+            {renderContactGroup("away", "Borta", awayCount)}
+            {renderContactGroup("busy", "Upptagen", busyCount)}
+            {renderContactGroup("offline", "Offline", offlineCount)}
+          </>
+        )}
       </div>
 
-      {/* Footer Actions */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-2 flex justify-around">
-        <Button variant="ghost" size="icon" className="h-8 w-8" title="Lägg till kontakt">
-          <Plus className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" title="E-post">
-          <Mail className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" title="Inställningar">
-          <Settings className="w-4 h-4" />
-        </Button>
+      {/* Status bar */}
+      <div className="p-2 border-t border-border bg-muted/30">
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <StatusIndicator status="online" size="sm" />
+          <span>{contacts.length} kontakter ({onlineCount} online)</span>
+        </div>
       </div>
     </div>
   );
