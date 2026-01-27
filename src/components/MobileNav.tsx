@@ -40,8 +40,8 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const activeDropdownItem = dropdownItems.find(item => item.id === activeTab);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark">
-      <div className="flex items-center justify-around py-2 px-1 safe-area-inset-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
+      <div className="flex items-center justify-around py-3 px-2">
         {/* Dropdown menu button */}
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
@@ -87,6 +87,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
         {/* Main profile-relevant nav items */}
         {mainNavItems.map((item) => {
           const hasNotification = item.badge && item.badge > 0;
+          const isInactive = !hasNotification;
           
           return (
             <button
@@ -94,15 +95,19 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
               onClick={() => onTabChange(item.id)}
               className={cn(
                 "mobile-nav-item",
-                activeTab === item.id && "active"
+                activeTab === item.id && "active",
+                isInactive && activeTab !== item.id && "inactive"
               )}
             >
               <div className="relative">
-                <span className={cn("mobile-nav-icon", item.animationClass)}>
+                <span className={cn(
+                  "mobile-nav-icon",
+                  hasNotification && item.animationClass
+                )}>
                   {item.emoji}
                 </span>
                 {hasNotification && (
-                  <span className="mobile-nav-badge">
+                  <span className="mobile-nav-badge-corner">
                     {item.badge}
                   </span>
                 )}

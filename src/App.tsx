@@ -10,7 +10,6 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
-import { RadioSidebar } from "@/components/RadioSidebar";
 import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
 
 const queryClient = new QueryClient();
@@ -32,7 +31,6 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-          <RadioSidebar />
           <GlobalLajvTicker />
         </LajvProvider>
       </RadioProvider>
