@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
+import { HeaderRadio } from "./HeaderRadio";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -142,6 +143,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               )}
             </>
           )}
+
+          {/* Radio control */}
+          <HeaderRadio />
 
           {/* Status Box */}
           <div className="status-box-dark">
