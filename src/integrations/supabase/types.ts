@@ -227,6 +227,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_visits: {
+        Row: {
+          id: string
+          profile_owner_id: string
+          visited_at: string
+          visitor_id: string
+        }
+        Insert: {
+          id?: string
+          profile_owner_id: string
+          visited_at?: string
+          visitor_id: string
+        }
+        Update: {
+          id?: string
+          profile_owner_id?: string
+          visited_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null

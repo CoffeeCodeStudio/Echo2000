@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
 import type { UserStatus } from "./StatusIndicator";
+import { useNavigate } from "react-router-dom";
 
 interface FriendItemProps {
   name: string;
+  username?: string;
   avatar?: string;
   status: UserStatus;
   statusMessage?: string;
@@ -13,12 +15,22 @@ interface FriendItemProps {
 
 export function FriendItem({
   name,
+  username,
   avatar,
   status,
   statusMessage,
   isActive = false,
   onClick,
 }: FriendItemProps) {
+  const navigate = useNavigate();
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (username) {
+      navigate(`/profile/${encodeURIComponent(username)}`);
+    }
+  };
+
   return (
     <button
       onClick={onClick}
@@ -28,9 +40,16 @@ export function FriendItem({
         isActive && "bg-muted/70 glow-primary"
       )}
     >
-      <Avatar src={avatar} name={name} status={status} size="md" />
+      <div onClick={handleProfileClick} className="cursor-pointer">
+        <Avatar src={avatar} name={name} status={status} size="md" />
+      </div>
       <div className="flex-1 min-w-0 text-left">
-        <p className="font-medium text-sm truncate">{name}</p>
+        <p 
+          className="font-medium text-sm truncate hover:text-primary transition-colors cursor-pointer"
+          onClick={handleProfileClick}
+        >
+          {name}
+        </p>
         {statusMessage && (
           <p className="text-xs text-muted-foreground truncate italic">
             {statusMessage}

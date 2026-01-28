@@ -246,9 +246,9 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
                   <Avatar name={profile.username} src={profile.avatar_url} size="md" />
                   <div 
                     className="flex-1 min-w-0 cursor-pointer"
-                    onClick={() => onViewProfile?.(profile.user_id)}
+                    onClick={() => navigate(`/profile/${encodeURIComponent(profile.username)}`)}
                   >
-                    <span className="font-semibold text-sm block">{profile.username}</span>
+                    <span className="font-semibold text-sm block hover:text-primary transition-colors">{profile.username}</span>
                     <span className="text-xs text-muted-foreground">
                       {profile.gender && `${profile.gender}`}
                       {profile.age && `, ${profile.age} år`}
