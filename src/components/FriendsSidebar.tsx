@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface Friend {
   id: string;
   name: string;
+  username: string;
   avatar?: string;
   status: UserStatus;
   statusMessage?: string;
@@ -69,6 +70,7 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
           return {
             id: friendUserId,
             name: profile?.username || "Okänd",
+            username: profile?.username || "okand",
             avatar: profile?.avatar_url || undefined,
             status: "online" as UserStatus, // TODO: Real online status
             statusMessage: profile?.status_message || "",
@@ -148,6 +150,7 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
                 <FriendItem
                   key={friend.id}
                   name={friend.name}
+                  username={friend.username}
                   avatar={friend.avatar}
                   status={friend.status}
                   statusMessage={friend.statusMessage}
@@ -168,6 +171,7 @@ export function FriendsSidebar({ selectedFriendId, onSelectFriend, className }: 
                 <FriendItem
                   key={friend.id}
                   name={friend.name}
+                  username={friend.username}
                   avatar={friend.avatar}
                   status={friend.status}
                   statusMessage={friend.statusMessage}

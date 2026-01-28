@@ -2,6 +2,7 @@ import { Avatar } from './Avatar';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface Visitor {
   id: string;
@@ -17,9 +18,10 @@ interface VisitorLogProps {
 
 /**
  * Shows the 5 most recent profile visitors
- * Note: Requires a profile_visitors table to be created
  */
 export function VisitorLog({ visitors, className }: VisitorLogProps) {
+  const navigate = useNavigate();
+
   if (visitors.length === 0) {
     return (
       <div className={cn("p-3 bg-card rounded-lg border border-border", className)}>
@@ -43,6 +45,7 @@ export function VisitorLog({ visitors, className }: VisitorLogProps) {
           <div 
             key={visitor.id} 
             className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => navigate(`/profile/${encodeURIComponent(visitor.username)}`)}
           >
             <Avatar
               name={visitor.username}
@@ -50,7 +53,7 @@ export function VisitorLog({ visitors, className }: VisitorLogProps) {
               size="sm"
             />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium truncate block">
+              <span className="text-sm font-medium truncate block hover:text-primary transition-colors">
                 {visitor.username}
               </span>
               <span className="text-[10px] text-muted-foreground">

@@ -386,10 +386,20 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
                   key={friend.id}
                   className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
                 >
-                  <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
+                  >
+                    <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{friend.name}</span>
+                      <span 
+                        className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
+                      >
+                        {friend.name}
+                      </span>
                       {friend.isBestFriend && (
                         <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                       )}

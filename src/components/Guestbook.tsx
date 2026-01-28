@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { GoodVibe } from "./GoodVibe";
 import { EmotePicker, replaceEmoteCodes } from "./PixelEmotes";
+import { ClickableUsername } from "./ClickableUsername";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -267,10 +268,18 @@ export function Guestbook() {
             entries.map((entry) => (
               <div key={entry.id} className="nostalgia-card p-4">
                 <div className="flex gap-3">
-                  <Avatar name={entry.author_name} src={entry.author_avatar || undefined} size="md" status="online" />
+                  <ClickableUsername 
+                    username={entry.author_name} 
+                    avatarUrl={entry.author_avatar}
+                    showAvatar
+                    avatarSize="md"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-sm">{entry.author_name}</span>
+                      <ClickableUsername 
+                        username={entry.author_name} 
+                        nameClassName="font-semibold text-sm"
+                      />
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
                           {formatTimestamp(entry.created_at)}
