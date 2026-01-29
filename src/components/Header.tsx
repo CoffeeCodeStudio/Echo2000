@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { HeaderRadio } from "./HeaderRadio";
+import { GlobalSearch } from "./GlobalSearch";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -101,6 +102,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
           {/* ALPHA Badge */}
           <span className="alpha-badge">ALPHA</span>
+        </div>
+
+        {/* Global Search */}
+        <div className="hidden sm:block">
+          <GlobalSearch />
         </div>
 
         {/* Right side - Auth & Status */}
