@@ -1,6 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { Header } from "@/components/Header";
-import { MobileNav } from "@/components/MobileNav";
+import { useState, useEffect } from "react";
+import { useOutletContext, useLocation } from "react-router-dom";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
 import { WelcomeHero } from "@/components/WelcomeHero";
@@ -14,12 +13,10 @@ import { GamesSection } from "@/components/GamesSection";
 import { MeetupsSection } from "@/components/MeetupsSection";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
-import { UnreadMailBar } from "@/components/UnreadMailBar";
-import { UserSearch } from "@/components/UserSearch";
 import { OnboardingModal } from "@/components/OnboardingModal";
-import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -59,14 +56,30 @@ const communities = [
 ];
 
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<Tab>("hem");
+  const location = useLocation();
+  const context = useOutletContext<LayoutContext>();
+  
+  // Use context from SharedLayout
+  const { activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange } = context || {
+    activeTab: "hem" as Tab,
+    setActiveTab: () => {},
+    sidebarOpen: false,
+    setSidebarOpen: () => {},
+    handleUnreadCountChange: () => {},
+  };
+
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unreadMailCount, setUnreadMailCount] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
+
+  // Handle tab from navigation state
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state, setActiveTab]);
 
   // Check if onboarding is needed (missing required profile fields)
   useEffect(() => {
@@ -77,10 +90,6 @@ export default function Index() {
       setShowOnboarding(false);
     }
   }, [user, profile, profileLoading]);
-
-  const handleUnreadCountChange = useCallback((count: number) => {
-    setUnreadMailCount(count);
-  }, []);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
@@ -182,33 +191,13 @@ export default function Index() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+    <>
       {/* Onboarding Modal */}
       {showOnboarding && user && (
         <OnboardingModal userId={user.id} onComplete={handleOnboardingComplete} />
       )}
 
-      <Header 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
-      />
-
-      {/* Lajv ticker - inline row below navbar */}
-      <GlobalLajvTicker />
-      
-      {/* Unread mail notification bar - only shows when logged in with unread mail */}
-      <UnreadMailBar 
-        unreadCount={unreadMailCount} 
-        onTabChange={(tab) => setActiveTab(tab as Tab)} 
-      />
-
-      <main className="flex-1 flex overflow-hidden pb-16 md:pb-0">
-        {renderContent()}
-      </main>
-
-      {/* Mobile bottom navigation */}
-      <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
+      {renderContent()}
+    </>
   );
 }
