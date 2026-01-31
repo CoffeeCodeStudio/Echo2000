@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { MapPin, Calendar, Heart, MessageCircle, Star, Edit2, Save, X, Ban, FileText, Crown, Loader2 } from "lucide-react";
+import { MapPin, Calendar, Star, Edit2, Save, X, Crown, Loader2 } from "lucide-react";
+import { FriendActionButtons } from "./FriendActionButtons";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
@@ -682,29 +683,9 @@ export function ProfilePage({ userId }: ProfilePageProps) {
             </div>
 
             {/* Action Buttons Bar - LunarStorm Style */}
-            {!isOwnProfile && (
+            {!isOwnProfile && userId && (
               <div className="bg-gradient-to-r from-muted/50 via-muted to-muted/50 border-t border-border px-4 py-2">
-                <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-                  <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
-                    <Heart className="w-3 h-3 mr-1" />
-                    Skapa Relation
-                  </Button>
-                  <span className="text-muted-foreground">|</span>
-                  <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
-                    <MessageCircle className="w-3 h-3 mr-1" />
-                    Skicka Mess
-                  </Button>
-                  <span className="text-muted-foreground">|</span>
-                  <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
-                    <Ban className="w-3 h-3 mr-1" />
-                    Blockera
-                  </Button>
-                  <span className="text-muted-foreground">|</span>
-                  <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
-                    <FileText className="w-3 h-3 mr-1" />
-                    Anteckningar
-                  </Button>
-                </div>
+                <FriendActionButtons targetUserId={userId} targetUsername={displayData.username} />
               </div>
             )}
 

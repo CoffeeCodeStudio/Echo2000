@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SharedLayout } from "@/components/SharedLayout";
 import Index from "./pages/Index";
 import Room from "./pages/Room";
 import Auth from "./pages/Auth";
@@ -11,7 +12,6 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
-import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
 
 const queryClient = new QueryClient();
 
@@ -24,16 +24,21 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/rum" element={<Room />} />
+              {/* Shared layout wraps all main routes */}
+              <Route element={<SharedLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/rum" element={<Room />} />
+                <Route path="/profile/:username" element={<Profile />} />
+              </Route>
+              
+              {/* Auth page without shared layout (full-page login) */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/profile/:username" element={<Profile />} />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-          <GlobalLajvTicker />
         </LajvProvider>
       </RadioProvider>
     </TooltipProvider>
