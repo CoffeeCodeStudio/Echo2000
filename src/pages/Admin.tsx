@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, User, Shield, ArrowLeft, UserPlus } from "lucide-react";
+import { Loader2, Mail, Lock, User, Shield, ArrowLeft, UserPlus, Search, Users, Activity, Trash2, Ban, Edit2 } from "lucide-react";
 import { z } from "zod";
+import { Avatar } from "@/components/Avatar";
 
 const createUserSchema = z.object({
   username: z.string().trim().min(2, { message: "Namn måste vara minst 2 tecken" }).max(50),
@@ -20,6 +21,9 @@ interface Profile {
   username: string;
   user_id: string;
   created_at: string;
+  avatar_url: string | null;
+  city: string | null;
+  status_message: string | null;
 }
 
 export default function Admin() {
@@ -30,7 +34,10 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
+  const [userSearch, setUserSearch] = useState("");
   const [errors, setErrors] = useState<{ username?: string; email?: string; password?: string }>({});
+  const [activeTab, setActiveTab] = useState<"create" | "list" | "stats">("list");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -68,7 +75,7 @@ export default function Admin() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, username, user_id, created_at, avatar_url, city, status_message")
         .order("created_at", { ascending: false });
 
       if (!error && data) {
@@ -102,7 +109,6 @@ export default function Admin() {
     setIsLoading(true);
 
     try {
-      // Create user via signUp (admin creates account for friend)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -132,7 +138,6 @@ export default function Admin() {
       }
 
       if (data.user) {
-        // Assign 'user' role to the new user
         await supabase.from("user_roles").insert({
           user_id: data.user.id,
           role: 'user',
@@ -143,15 +148,13 @@ export default function Admin() {
           description: `${username} kan nu logga in med ${email}`,
         });
 
-        // Reset form
         setUsername("");
         setEmail("");
         setPassword("");
 
-        // Refresh user list
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, username, user_id, created_at, avatar_url, city, status_message")
           .order("created_at", { ascending: false });
 
         if (profiles) {
@@ -167,6 +170,45 @@ export default function Admin() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDeleteGuestbookEntries = async (userId: string, username: string) => {
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase
+        .from("guestbook_entries")
+        .delete()
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Inlägg raderade",
+        description: `Alla gästboksinlägg från ${username} har raderats`,
+      });
+    } catch (error) {
+      toast({
+        title: "Kunde inte radera",
+        description: "Något gick fel",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const filteredUsers = users.filter((u) =>
+    u.username.toLowerCase().includes(userSearch.toLowerCase())
+  );
+
+  const stats = {
+    totalUsers: users.length,
+    newThisMonth: users.filter((u) => {
+      const created = new Date(u.created_at);
+      const now = new Date();
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length,
+    onlineNow: 35, // Placeholder - would need realtime presence
   };
 
   if (loading || checkingAdmin) {
@@ -212,16 +254,16 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-display font-bold text-2xl flex items-center gap-2">
               <Shield className="w-6 h-6 text-primary" />
               Admin-panel
             </h1>
             <p className="text-muted-foreground text-sm">
-              Hantera användare och inställningar
+              Hantera användare och innehåll
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/")}>
@@ -230,9 +272,133 @@ export default function Admin() {
           </Button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Create User Form */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="nostalgia-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.totalUsers}</p>
+              <p className="text-sm text-muted-foreground">Totalt medlemmar</p>
+            </div>
+          </div>
+          <div className="nostalgia-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-accent" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.newThisMonth}</p>
+              <p className="text-sm text-muted-foreground">Nya denna månad</p>
+            </div>
+          </div>
+          <div className="nostalgia-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+              <Activity className="w-6 h-6 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.onlineNow}</p>
+              <p className="text-sm text-muted-foreground">Online just nu</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={activeTab === "list" ? "default" : "outline"}
+            onClick={() => setActiveTab("list")}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Medlemmar
+          </Button>
+          <Button
+            variant={activeTab === "create" ? "default" : "outline"}
+            onClick={() => setActiveTab("create")}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Skapa användare
+          </Button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "list" && (
           <div className="nostalgia-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-lg">Alla medlemmar</h2>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  placeholder="Sök användare..."
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-[500px] overflow-y-auto scrollbar-nostalgic">
+              {filteredUsers.length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-8">
+                  Inga användare hittades
+                </p>
+              ) : (
+                filteredUsers.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <Avatar 
+                      name={profile.username} 
+                      src={profile.avatar_url} 
+                      size="md" 
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p 
+                        className="font-medium text-sm truncate cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => navigate(`/profile/${encodeURIComponent(profile.username)}`)}
+                      >
+                        {profile.username}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {profile.city && `${profile.city} • `}
+                        Registrerad {new Date(profile.created_at).toLocaleDateString("sv-SE")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => navigate(`/profile/${encodeURIComponent(profile.username)}`)}
+                        title="Visa profil"
+                      >
+                        <User className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteGuestbookEntries(profile.user_id, profile.username)}
+                        disabled={actionLoading === profile.user_id}
+                        title="Radera användarens gästboksinlägg"
+                      >
+                        {actionLoading === profile.user_id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "create" && (
+          <div className="nostalgia-card p-6 max-w-md">
             <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-primary" />
               Skapa ny användare
@@ -311,37 +477,7 @@ export default function Admin() {
               </Button>
             </form>
           </div>
-
-          {/* User List */}
-          <div className="nostalgia-card p-6">
-            <h2 className="font-semibold text-lg mb-4">Registrerade användare</h2>
-
-            <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-nostalgic">
-              {users.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-4">
-                  Inga användare ännu
-                </p>
-              ) : (
-                users.map((profile) => (
-                  <div
-                    key={profile.id}
-                    className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{profile.username}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Registrerad {new Date(profile.created_at).toLocaleDateString("sv-SE")}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

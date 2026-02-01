@@ -119,12 +119,9 @@ export function ProfileGuestbook({
                       })}
                     </span>
                   </div>
-                  <p
-                    className="text-sm text-foreground/90"
-                    dangerouslySetInnerHTML={{
-                      __html: replaceEmoteCodes(entry.message),
-                    }}
-                  />
+                  <p className="text-sm text-gray-900 dark:text-foreground/90">
+                    {replaceEmoteCodes(entry.message)}
+                  </p>
                 </div>
                 {/* Delete button for author or profile owner */}
                 {user &&
