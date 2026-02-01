@@ -75,20 +75,51 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     }
   };
 
-  // All nav items in one row for desktop
-  const allNavItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+  // Private zone items (left group)
+  const privateZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "hem", label: "HEM", emoji: "🏠", animationClass: "scale-in" },
-    { id: "gastbok", label: "GÄSTBOK", emoji: "👣", animationClass: "footsteps" },
+    { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
     { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen" },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
     { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+  ];
+
+  // Community zone items (right group)
+  const communityZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
     { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
     { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
     { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
     { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" },
   ];
+
+  // Render nav item helper
+  const renderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }) => {
+    const hasNotice = getHasNotice(item.id);
+    return (
+      <div
+        key={item.id}
+        onClick={() => onTabChange?.(item.id)}
+        className={cn(
+          "nav-item-grouped shrink-0",
+          activeTab === item.id && "active",
+          hasNotice ? "has-notice" : "inactive"
+        )}
+        role="button"
+        tabIndex={0}
+        aria-label={item.label}
+      >
+        <span className={cn(
+          "icon-grouped",
+          hasNotice && item.animationClass
+        )}>
+          {item.emoji}
+        </span>
+        <span className="label-grouped">{item.label}</span>
+      </div>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-50">
@@ -162,33 +193,19 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
       </div>
 
-      {/* Single Nav Row - All items (hidden on mobile) */}
-      <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 xl:gap-10 py-2.5 px-4 navbar-single-row overflow-x-auto scrollbar-hide">
-        {allNavItems.map((item) => {
-          const hasNotice = getHasNotice(item.id);
-          return (
-            <div
-              key={item.id}
-              onClick={() => onTabChange?.(item.id)}
-              className={cn(
-                "nav-item-single shrink-0",
-                activeTab === item.id && "active",
-                hasNotice ? "has-notice" : "inactive"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-label={item.label}
-            >
-              <span className={cn(
-                "icon-single",
-                hasNotice && item.animationClass
-              )}>
-                {item.emoji}
-              </span>
-              <span className="label-single">{item.label}</span>
-            </div>
-          );
-        })}
+      {/* Grouped Nav Row - Two zones (hidden on mobile) */}
+      <nav className="hidden md:flex navbar-grouped">
+        {/* Private Zone - Left Group */}
+        <div className="nav-group-box private-zone">
+          <span className="nav-zone-label">Privat</span>
+          {privateZoneItems.map(renderNavItem)}
+        </div>
+
+        {/* Community Zone - Right Group */}
+        <div className="nav-group-box community-zone">
+          <span className="nav-zone-label">Community</span>
+          {communityZoneItems.map(renderNavItem)}
+        </div>
       </nav>
     </header>
   );

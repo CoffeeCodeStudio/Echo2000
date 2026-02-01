@@ -75,22 +75,29 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
     };
   }, [user]);
 
-  // Realtime search with debounce
+  // Realtime fuzzy search with debounce - search ALL users
   useEffect(() => {
-    if (!searchQuery.trim() || !user) {
+    if (!user) {
       setResults([]);
       return;
     }
 
+    // Show all users if search is empty, or filter by search query
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from("profiles")
           .select("id, user_id, username, avatar_url, city, gender, age")
-          .ilike("username", `%${searchQuery.trim()}%`)
           .neq("user_id", user.id)
-          .limit(20);
+          .limit(50);
+
+        // Fuzzy search - case insensitive, works with single character
+        if (searchQuery.trim()) {
+          query = query.ilike("username", `%${searchQuery.trim()}%`);
+        }
+
+        const { data, error } = await query.order("username", { ascending: true });
 
         if (error) throw error;
         setResults(data || []);
@@ -104,7 +111,7 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
       } finally {
         setIsSearching(false);
       }
-    }, 300); // 300ms debounce for realtime feel
+    }, 150); // Fast 150ms debounce for realtime feel
 
     return () => clearTimeout(timer);
   }, [searchQuery, user, toast]);
@@ -194,9 +201,9 @@ export function UserSearch({ onViewProfile }: UserSearchProps) {
 
         {/* Header */}
         <div className="nostalgia-card p-4 mb-6">
-          <h1 className="font-display font-bold text-xl mb-1">🔍 Sök Användare</h1>
+          <h1 className="font-display font-bold text-xl mb-1">🔍 Hitta Vänner</h1>
           <p className="text-sm text-muted-foreground">
-            Hitta nya vänner i communityt
+            Sök bland alla medlemmar i communityt. Börja skriva för att hitta någon!
           </p>
         </div>
 
