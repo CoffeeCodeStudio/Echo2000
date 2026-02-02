@@ -119,7 +119,7 @@ export function ProfileGuestbook({
                       })}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-900 dark:text-foreground/90">
+                  <p className="text-sm text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
                     {replaceEmoteCodes(entry.message)}
                   </p>
                 </div>

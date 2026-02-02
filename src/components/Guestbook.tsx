@@ -296,7 +296,7 @@ export function Guestbook() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm mt-1 text-gray-900 dark:text-foreground/90">{replaceEmoteCodes(entry.message)}</p>
+                    <p className="text-sm mt-1 text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{replaceEmoteCodes(entry.message)}</p>
 
                     {/* Actions - Good-Vibe replaces likes */}
                     <div className="flex items-center gap-4 mt-3">

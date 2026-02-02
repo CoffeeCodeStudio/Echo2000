@@ -139,7 +139,7 @@ export function LajvSection() {
                   <span className="font-semibold text-sm truncate">{msg.username}</span>
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
-                <p className="text-sm break-words text-gray-900 dark:text-foreground">{msg.message}</p>
+                <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
                 <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
                   <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
