@@ -75,9 +75,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     }
   };
 
-  // Private zone items (left group)
+  // Home button (separate zone)
+  const homeItem = { id: "hem" as Tab, label: "HEM", emoji: "🏠", animationClass: "scale-in" };
+
+  // Private zone items (middle group)
   const privateZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
-    { id: "hem", label: "HEM", emoji: "🏠", animationClass: "scale-in" },
     { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
     { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen" },
@@ -95,28 +97,29 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   ];
 
   // Render nav item helper
-  const renderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }) => {
+  const renderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }, isHome = false) => {
     const hasNotice = getHasNotice(item.id);
     return (
       <div
         key={item.id}
         onClick={() => onTabChange?.(item.id)}
         className={cn(
-          "nav-item-grouped shrink-0",
+          isHome ? "nav-item-home" : "nav-item-grouped",
+          "shrink-0",
           activeTab === item.id && "active",
-          hasNotice ? "has-notice" : "inactive"
+          !isHome && (hasNotice ? "has-notice" : "inactive")
         )}
         role="button"
         tabIndex={0}
         aria-label={item.label}
       >
         <span className={cn(
-          "icon-grouped",
+          isHome ? "icon-home" : "icon-grouped",
           hasNotice && item.animationClass
         )}>
           {item.emoji}
         </span>
-        <span className="label-grouped">{item.label}</span>
+        <span className={isHome ? "label-home" : "label-grouped"}>{item.label}</span>
       </div>
     );
   };
@@ -193,18 +196,21 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
       </div>
 
-      {/* Grouped Nav Row - Two zones (hidden on mobile) */}
-      <nav className="hidden md:flex navbar-grouped">
-        {/* Private Zone - Left Group */}
-        <div className="nav-group-box private-zone">
-          <span className="nav-zone-label">Privat</span>
-          {privateZoneItems.map(renderNavItem)}
+      {/* Three-Zone Nav Row (hidden on mobile, only lg and up) */}
+      <nav className="hidden lg:flex navbar-three-zone">
+        {/* Zone 1: Home (Left) */}
+        <div className="nav-zone-home">
+          {renderNavItem(homeItem, true)}
         </div>
 
-        {/* Community Zone - Right Group */}
+        {/* Zone 2: Private Tools (Middle) */}
+        <div className="nav-group-box private-zone">
+          {privateZoneItems.map(item => renderNavItem(item))}
+        </div>
+
+        {/* Zone 3: Community (Right) */}
         <div className="nav-group-box community-zone">
-          <span className="nav-zone-label">Community</span>
-          {communityZoneItems.map(renderNavItem)}
+          {communityZoneItems.map(item => renderNavItem(item))}
         </div>
       </nav>
     </header>
