@@ -53,7 +53,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const activeDropdownItem = dropdownItems.find(item => item.id === activeTab);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
       <div className="flex items-center justify-around py-3 px-2">
         {/* Dropdown menu button */}
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>

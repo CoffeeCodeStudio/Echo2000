@@ -63,23 +63,23 @@ export function GlobalLajvTicker() {
       </div>
 
       {/* Message display area */}
-      <div className="flex-1 min-w-0 mx-3">
+      <div className="flex-1 min-w-0">
         {messages.length === 0 ? (
           <span className="text-sm text-muted-foreground italic">
             Just nu finns inga aktiva lajvsändningar
           </span>
         ) : currentMessage ? (
-          <div className="flex items-center gap-2 text-sm animate-fade-in">
+          <div className="flex items-center gap-3 text-sm animate-fade-in">
             <Avatar
               name={currentMessage.username}
               src={currentMessage.avatar_url || undefined}
               size="sm"
-              className="w-5 h-5"
+              className="w-6 h-6 shrink-0"
             />
-            <span className="font-semibold text-foreground truncate max-w-[100px]">
+            <span className="font-semibold text-foreground shrink-0 max-w-[100px] truncate">
               {currentMessage.username}:
             </span>
-            <span className="text-foreground/90 truncate flex-1">
+            <span className="text-foreground truncate flex-1 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
               {replaceEmoteCodes(currentMessage.message)}
             </span>
             {messages.length > 1 && (

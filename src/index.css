@@ -965,14 +965,26 @@ html, body {
   .lajv-ticker-row {
     display: flex;
     align-items: center;
+    gap: 12px;
     padding: 8px 16px;
     background: linear-gradient(90deg, hsl(230 35% 10%) 0%, hsl(230 30% 14%) 50%, hsl(230 35% 10%) 100%);
     border-bottom: 1px solid hsl(var(--primary) / 0.3);
-    min-height: 40px;
+    min-height: 44px;
+    flex-wrap: nowrap;
+  }
+
+  .lajv-ticker-row > * {
+    flex-shrink: 0;
+  }
+
+  .lajv-ticker-row > .flex-1 {
+    flex-shrink: 1;
+    min-width: 0;
   }
 
   @media (min-width: 768px) {
     .lajv-ticker-row {
+      gap: 16px;
       padding: 10px 24px;
     }
   }

@@ -22,29 +22,8 @@ interface Message {
   senderName: string;
 }
 
-const getInitialMessages = (friendName: string): Message[] => [
-  {
-    id: "1",
-    content: "Hej! Minns du när vi brukade chatta på MSN? :D",
-    timestamp: "14:30",
-    isSelf: false,
-    senderName: friendName,
-  },
-  {
-    id: "2",
-    content: "Ja! De gamla goda tiderna med egna smileys och displaynamn (L)",
-    timestamp: "14:31",
-    isSelf: true,
-    senderName: "Du",
-  },
-  {
-    id: "3",
-    content: "Och de där ~*glittriga*~ namnen som alla hade lol :P",
-    timestamp: "14:32",
-    isSelf: false,
-    senderName: friendName,
-  },
-];
+// No demo messages - start with empty conversation
+const getInitialMessages = (_friendName: string): Message[] => [];
 
 const autoResponses = [
   "Haha, visst! :D",
@@ -285,9 +264,9 @@ export function ChatWindow({ className }: ChatWindowProps) {
                       )}>
                         {message.senderName} säger:
                       </span>
-                      <span className="text-[10px] text-gray-400">({message.timestamp})</span>
+                      <span className="text-[10px] text-gray-500">({message.timestamp})</span>
                     </div>
-                    <p className="ml-0 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-sm">
+                    <p className="ml-0 text-gray-900 whitespace-pre-wrap leading-relaxed text-sm">
                       {convertMsnEmoticons(message.content)}
                     </p>
                   </div>
