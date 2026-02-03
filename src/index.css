@@ -769,7 +769,7 @@ html, body {
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 2px solid hsl(var(--primary) / 0.5);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
-    display: flex;
+    /* display controlled by Tailwind: hidden lg:flex */
     justify-content: space-between;
     align-items: center;
     gap: 24px;
