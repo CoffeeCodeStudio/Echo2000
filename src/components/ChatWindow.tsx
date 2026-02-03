@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { 
   Smile, Image, Gift, 
   Mic, Video, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
-  Users, Gamepad2, Phone, MoreVertical
+  Users, Gamepad2, Phone, MoreVertical, ArrowLeft
 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
@@ -13,6 +13,7 @@ import { MsnLogin } from "./MsnLogin";
 import { MsnEmoticonPicker, quickEmoticons, convertMsnEmoticons } from "./MsnEmoticons";
 import { MsnContactList, type MsnContact } from "./MsnContactList";
 import { MsnLogo, MsnLogoWithText } from "./MsnLogo";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -53,8 +54,10 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showContactList, setShowContactList] = useState(true);
+  const [mobileShowChat, setMobileShowChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { playSound } = useMsnSounds();
+  const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,6 +79,10 @@ export function ChatWindow({ className }: ChatWindowProps) {
 
   const handleSelectContact = (contact: MsnContact) => {
     setSelectedContact(contact);
+    // On mobile, switch to chat view
+    if (isMobile) {
+      setMobileShowChat(true);
+    }
     // Initialize conversation if it doesn't exist
     if (!conversations[contact.id]) {
       setConversations(prev => ({
@@ -85,6 +92,9 @@ export function ChatWindow({ className }: ChatWindowProps) {
     }
   };
 
+  const handleBackToContacts = () => {
+    setMobileShowChat(false);
+  };
   const handleSend = () => {
     if (!inputMessage.trim() || !selectedContact) return;
 
@@ -186,9 +196,12 @@ export function ChatWindow({ className }: ChatWindowProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Contact List */}
-        {showContactList && (
-          <div className="w-60 border-r border-gray-300 dark:border-gray-700 flex-shrink-0">
+        {/* Contact List - Hidden on mobile when chat is open */}
+        {showContactList && (!isMobile || !mobileShowChat) && (
+          <div className={cn(
+            "border-r border-gray-300 dark:border-gray-700 flex-shrink-0",
+            isMobile ? "w-full" : "w-60"
+          )}>
             <MsnContactList
               onSelectContact={handleSelectContact}
               selectedContactId={selectedContact?.id}
@@ -197,56 +210,72 @@ export function ChatWindow({ className }: ChatWindowProps) {
           </div>
         )}
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {selectedContact ? (
-            <>
-              {/* Chat Window Header */}
-              <div 
-                id="msn-chat-window"
-                className="bg-gradient-to-r from-[hsl(220,80%,50%)] to-[hsl(200,80%,60%)] text-white"
-              >
-                <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-b from-white/20 to-transparent">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="relative">
-                      <Avatar name={selectedContact.name} size="sm" />
-                      <div className="absolute -bottom-0.5 -right-0.5">
-                        <StatusIndicator status={selectedContact.status} size="sm" />
+        {/* Chat Area - Full width on mobile when visible */}
+        {(!isMobile || mobileShowChat) && (
+          <div className="flex-1 flex flex-col min-w-0">
+            {selectedContact ? (
+              <>
+                {/* Chat Window Header - Cleaner layout */}
+                <div 
+                  id="msn-chat-window"
+                  className="bg-gradient-to-r from-[hsl(220,80%,50%)] to-[hsl(200,80%,60%)] text-white"
+                >
+                  <div className="flex items-center justify-between px-2 py-2 bg-gradient-to-b from-white/20 to-transparent gap-2">
+                    {/* Back button on mobile */}
+                    {isMobile && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-white hover:bg-white/20 flex-shrink-0"
+                        onClick={handleBackToContacts}
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </Button>
+                    )}
+                    
+                    {/* Contact info */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <Avatar name={selectedContact.name} size="sm" />
+                        <div className="absolute -bottom-0.5 -right-0.5">
+                          <StatusIndicator status={selectedContact.status} size="sm" />
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="font-bold text-sm truncate">{selectedContact.name}</h2>
+                        <p className="text-[11px] text-white/80 truncate">
+                          {selectedContact.statusMessage || selectedContact.email}
+                        </p>
                       </div>
                     </div>
-                    <div className="min-w-0">
-                      <h2 className="font-semibold text-sm truncate">{selectedContact.name}</h2>
-                      <p className="text-[10px] text-white/80 truncate">
-                        {selectedContact.statusMessage || selectedContact.email}
-                      </p>
+                    
+                    {/* Action buttons - hidden on very small screens */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex">
+                        <Phone className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex">
+                        <Video className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20" onClick={nudge}>
+                        <Bell className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/10">
-                      <Phone className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/10">
-                      <Video className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/10" onClick={nudge}>
-                      <Bell className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/10">
-                      <MoreVertical className="w-3 h-3" />
-                    </Button>
+
+                  {/* Toolbar - Hidden on mobile */}
+                  <div className="hidden md:flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-transparent to-black/10">
+                    <ToolbarButton icon={<Users className="w-4 h-4" />} label="Bjud in" />
+                    <ToolbarButton icon={<Mic className="w-4 h-4" />} label="Röst" />
+                    <ToolbarButton icon={<Video className="w-4 h-4" />} label="Video" />
+                    <ToolbarButton icon={<Gamepad2 className="w-4 h-4" />} label="Spel" />
+                    <div className="h-4 w-px bg-white/30 mx-1" />
+                    <ToolbarButton icon={<Bell className="w-4 h-4" />} label="Nudge" onClick={nudge} />
                   </div>
                 </div>
-
-                {/* Toolbar */}
-                <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-transparent to-black/10">
-                  <ToolbarButton icon={<Users className="w-4 h-4" />} label="Bjud in" />
-                  <ToolbarButton icon={<Mic className="w-4 h-4" />} label="Röst" />
-                  <ToolbarButton icon={<Video className="w-4 h-4" />} label="Video" />
-                  <ToolbarButton icon={<Gamepad2 className="w-4 h-4" />} label="Spel" />
-                  <div className="h-4 w-px bg-white/30 mx-1" />
-                  <ToolbarButton icon={<Bell className="w-4 h-4" />} label="Nudge" onClick={nudge} />
-                </div>
-              </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
@@ -368,6 +397,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
             </div>
           )}
         </div>
+        )}
 
         {/* Right Panel - Avatars (Desktop only) */}
         {selectedContact && (
