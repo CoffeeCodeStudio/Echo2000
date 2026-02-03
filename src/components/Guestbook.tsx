@@ -266,19 +266,22 @@ export function Guestbook() {
             </div>
           ) : (
             entries.map((entry) => (
-              <div key={entry.id} className="nostalgia-card p-4">
+              <div key={entry.id} className="nostalgia-card p-3">
                 <div className="flex gap-3">
-                  <ClickableUsername 
-                    username={entry.author_name} 
-                    avatarUrl={entry.author_avatar}
-                    showAvatar
-                    avatarSize="md"
+                  {/* Avatar only */}
+                  <Avatar 
+                    src={entry.author_avatar || undefined}
+                    name={entry.author_name}
+                    size="md"
+                    showStatus={false}
+                    className="flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
+                    {/* Header row with name and timestamp */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
                       <ClickableUsername 
                         username={entry.author_name} 
-                        nameClassName="font-semibold text-sm"
+                        nameClassName="font-semibold text-sm text-primary"
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
@@ -296,10 +299,11 @@ export function Guestbook() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm mt-1 text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{replaceEmoteCodes(entry.message)}</p>
+                    {/* Message with high contrast */}
+                    <p className="text-sm text-foreground/95 leading-relaxed">{replaceEmoteCodes(entry.message)}</p>
 
-                    {/* Actions - Good-Vibe replaces likes */}
-                    <div className="flex items-center gap-4 mt-3">
+                    {/* Actions */}
+                    <div className="flex items-center gap-4 mt-2">
                       <GoodVibe targetType="guestbook" targetId={entry.id} />
                       <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                         <MessageCircle className="w-4 h-4" />
