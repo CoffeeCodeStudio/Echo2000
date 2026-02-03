@@ -156,8 +156,8 @@ export function MsnContactList({
         <button
           onClick={() => toggleGroup(status)}
           className={cn(
-            "w-full flex items-center gap-2 px-2 py-1.5 text-xs font-semibold rounded transition-colors",
-            "hover:bg-muted/50 text-muted-foreground"
+            "w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded transition-colors",
+            "hover:bg-muted/50 text-foreground"
           )}
         >
           {expandedGroups[status] ? (
@@ -167,7 +167,7 @@ export function MsnContactList({
           )}
           <StatusIndicator status={status} size="sm" />
           <span>{label}</span>
-          <span className="ml-auto text-[10px] opacity-75">({count})</span>
+          <span className="ml-auto text-[11px] text-muted-foreground font-medium">({count})</span>
         </button>
         
         {expandedGroups[status] && (
@@ -194,8 +194,8 @@ export function MsnContactList({
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-1">
                     <span className={cn(
-                      "text-sm font-medium truncate",
-                      contact.status === "offline" && "text-muted-foreground"
+                      "text-sm font-semibold truncate",
+                      contact.status === "offline" ? "text-muted-foreground" : "text-foreground"
                     )}>
                       {contact.name}
                     </span>
@@ -206,7 +206,7 @@ export function MsnContactList({
                     )}
                   </div>
                   {contact.statusMessage && (
-                    <p className="text-[11px] text-muted-foreground truncate italic">
+                    <p className="text-[11px] text-foreground/70 truncate italic">
                       {contact.statusMessage}
                     </p>
                   )}
