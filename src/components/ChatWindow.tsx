@@ -249,9 +249,9 @@ export function ChatWindow({ className }: ChatWindowProps) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
+              <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
                 {/* Conversation header */}
-                <div className="text-center text-[10px] text-gray-400 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <div className="text-center text-[11px] text-gray-600 dark:text-gray-400 mb-4 pb-2 border-b border-gray-300 dark:border-gray-700">
                   Du har startat en konversation med {selectedContact.name}
                 </div>
                 
@@ -266,7 +266,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
                       </span>
                       <span className="text-[10px] text-gray-500">({message.timestamp})</span>
                     </div>
-                    <p className="ml-0 text-gray-900 whitespace-pre-wrap leading-relaxed text-sm">
+                    <p className="ml-0 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-sm font-medium">
                       {convertMsnEmoticons(message.content)}
                     </p>
                   </div>
@@ -334,7 +334,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
                     onKeyDown={handleKeyPress}
                     placeholder="Skriv ett meddelande..."
                     rows={2}
-                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-sans"
+                    className="flex-1 bg-white dark:bg-gray-800 border-2 border-gray-400 dark:border-gray-500 rounded px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 font-sans"
                   />
                   <div className="flex flex-col gap-1">
                     <Button 
