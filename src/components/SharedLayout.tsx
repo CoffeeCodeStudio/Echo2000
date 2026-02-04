@@ -10,6 +10,7 @@ type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotter
 export function SharedLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMailCount, setUnreadMailCount] = useState(0);
+  const [hideNavbar, setHideNavbar] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,11 +56,11 @@ export function SharedLayout() {
 
       {/* Main content outlet */}
       <main className="flex-1 flex overflow-hidden pb-16 md:pb-0">
-        <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange }} />
+        <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
       </main>
 
-      {/* Mobile bottom navigation - always visible */}
-      <MobileNav activeTab={activeTab} onTabChange={handleTabChange} />
+      {/* Mobile bottom navigation - hidden when input is focused */}
+      {!hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} />}
     </div>
   );
 }
@@ -71,4 +72,6 @@ export interface LayoutContext {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   handleUnreadCountChange: (count: number) => void;
+  hideNavbar: boolean;
+  setHideNavbar: (hide: boolean) => void;
 }

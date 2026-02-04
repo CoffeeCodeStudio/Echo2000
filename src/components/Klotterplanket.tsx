@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Eraser, Palette, Trash2, Download, Undo, Redo, Minus, Plus, Send, X, MessageSquare } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { LayoutContext } from "./SharedLayout";
 
 interface DrawPoint {
   x: number;
@@ -74,10 +76,24 @@ export function Klotterplanket() {
   const [publishedKlotter, setPublishedKlotter] = useState<PublishedKlotter[]>(demoKlotter);
   const [activeTab, setActiveTab] = useState<"draw" | "gallery">("draw");
 
+  // Get layout context for hiding navbar
+  const context = useOutletContext<LayoutContext>();
+  const setHideNavbar = context?.setHideNavbar;
+  
+  // Hide navbar when publish modal is open on mobile
+  useEffect(() => {
+    if (isMobile && setHideNavbar) {
+      setHideNavbar(showPublishModal);
+    }
+    return () => {
+      if (setHideNavbar) setHideNavbar(false);
+    };
+  }, [showPublishModal, isMobile, setHideNavbar]);
+
   // Simplified mobile colors
   const mobileColors = [COLORS[0], COLORS[1], COLORS[2], COLORS[4], COLORS[7]];
 
-  // Initialize canvas
+  // Initialize canvas with proper DPI scaling
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,11 +103,17 @@ export function Klotterplanket() {
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Set canvas internal size to match display size * DPR for sharp rendering
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      // Scale the context to handle DPR
+      ctx.scale(dpr, dpr);
       
       ctx.fillStyle = "#1e2540";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, rect.width, rect.height);
       
       redrawCanvas();
     };
@@ -107,8 +129,15 @@ export function Klotterplanket() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Reset transform and clear
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    
     ctx.fillStyle = "#1e2540";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
 
     for (let i = 0; i <= historyIndex; i++) {
       const action = history[i];
@@ -134,14 +163,29 @@ export function Klotterplanket() {
     redrawCanvas();
   }, [historyIndex, redrawCanvas]);
 
-  const getPointerPosition = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  // Get accurate pointer position using getBoundingClientRect
+  const getPointerPosition = (e: React.PointerEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     
     const rect = canvas.getBoundingClientRect();
+    
+    // Handle both pointer events and touch events
+    let clientX: number, clientY: number;
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (!touch) return null;
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    // Calculate position relative to canvas using getBoundingClientRect for accuracy
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: clientX - rect.left,
+      y: clientY - rect.top,
     };
   };
 
