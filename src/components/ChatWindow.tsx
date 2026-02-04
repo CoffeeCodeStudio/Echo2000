@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import { 
   Smile, Image, Gift, 
   Mic, Video, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
@@ -14,6 +15,7 @@ import { MsnEmoticonPicker, quickEmoticons, convertMsnEmoticons } from "./MsnEmo
 import { MsnContactList, type MsnContact } from "./MsnContactList";
 import { MsnLogo, MsnLogoWithText } from "./MsnLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { LayoutContext } from "./SharedLayout";
 
 interface Message {
   id: string;
@@ -55,9 +57,24 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showContactList, setShowContactList] = useState(true);
   const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { playSound } = useMsnSounds();
   const isMobile = useIsMobile();
+  
+  // Get layout context for hiding navbar
+  const context = useOutletContext<LayoutContext>();
+  const setHideNavbar = context?.setHideNavbar;
+  
+  // Hide navbar when input is focused on mobile
+  useEffect(() => {
+    if (isMobile && setHideNavbar) {
+      setHideNavbar(inputFocused);
+    }
+    return () => {
+      if (setHideNavbar) setHideNavbar(false);
+    };
+  }, [inputFocused, isMobile, setHideNavbar]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -361,6 +378,8 @@ export function ChatWindow({ className }: ChatWindowProps) {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
                     placeholder="Skriv ett meddelande..."
                     rows={2}
                     className="flex-1 bg-white dark:bg-gray-800 border-2 border-gray-400 dark:border-gray-500 rounded px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 font-sans"
