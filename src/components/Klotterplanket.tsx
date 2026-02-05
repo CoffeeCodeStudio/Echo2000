@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useKlotter } from "@/hooks/useKlotter";
+import { useAuth } from "@/hooks/useAuth";
 import type { LayoutContext } from "./SharedLayout";
 
 interface DrawPoint {
@@ -16,14 +18,6 @@ interface DrawPoint {
 
 interface DrawAction {
   points: DrawPoint[];
-}
-
-interface PublishedKlotter {
-  id: string;
-  imageData: string;
-  comment?: string;
-  author: string;
-  timestamp: Date;
 }
 
 const COLORS = [
@@ -40,24 +34,6 @@ const COLORS = [
 
 const BRUSH_SIZES = [4, 8, 14, 22, 32];
 
-// Demo published klotter
-const demoKlotter: PublishedKlotter[] = [
-  {
-    id: "demo1",
-    imageData: "",
-    comment: "Mitt första klotter! 🎨",
-    author: "Emma",
-    timestamp: new Date(Date.now() - 3600000),
-  },
-  {
-    id: "demo2", 
-    imageData: "",
-    comment: "Throwback till 2004 vibes ✨",
-    author: "Marcus",
-    timestamp: new Date(Date.now() - 7200000),
-  },
-];
-
 export function Klotterplanket() {
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,22 +49,36 @@ export function Klotterplanket() {
   // Publishing state
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishComment, setPublishComment] = useState("");
-  const [publishedKlotter, setPublishedKlotter] = useState<PublishedKlotter[]>(demoKlotter);
   const [activeTab, setActiveTab] = useState<"draw" | "gallery">("draw");
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  // Database integration
+  const { klotter, loading: klotterLoading, uploadAndSaveKlotter } = useKlotter();
+  const { user } = useAuth();
 
   // Get layout context for hiding navbar
   const context = useOutletContext<LayoutContext>();
   const setHideNavbar = context?.setHideNavbar;
   
-  // Hide navbar when publish modal is open on mobile
+  // Hide navbar when drawing on mobile OR when publish modal is open
   useEffect(() => {
     if (isMobile && setHideNavbar) {
-      setHideNavbar(showPublishModal);
+      // Hide navbar when actively drawing OR when publish modal is open
+      setHideNavbar(showPublishModal || (activeTab === "draw" && isDrawing));
     }
     return () => {
       if (setHideNavbar) setHideNavbar(false);
     };
-  }, [showPublishModal, isMobile, setHideNavbar]);
+  }, [showPublishModal, isMobile, setHideNavbar, activeTab, isDrawing]);
+
+  // Also hide navbar when drawing tab is active on mobile
+  useEffect(() => {
+    if (isMobile && setHideNavbar && activeTab === "draw") {
+      setHideNavbar(true);
+    } else if (isMobile && setHideNavbar && activeTab === "gallery") {
+      setHideNavbar(false);
+    }
+  }, [activeTab, isMobile, setHideNavbar]);
 
   // Simplified mobile colors
   const mobileColors = [COLORS[0], COLORS[1], COLORS[2], COLORS[4], COLORS[7]];
@@ -291,28 +281,26 @@ export function Klotterplanket() {
     setBrushSize(BRUSH_SIZES[newIndex]);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !user) return;
     
+    setIsPublishing(true);
     const imageData = canvas.toDataURL("image/png");
     
-    const newKlotter: PublishedKlotter = {
-      id: Date.now().toString(),
-      imageData,
-      comment: publishComment.trim() || undefined,
-      author: "Du",
-      timestamp: new Date(),
-    };
+    const success = await uploadAndSaveKlotter(imageData, publishComment);
     
-    setPublishedKlotter(prev => [newKlotter, ...prev]);
-    setShowPublishModal(false);
-    setPublishComment("");
-    clearCanvas();
-    setActiveTab("gallery");
+    if (success) {
+      setShowPublishModal(false);
+      setPublishComment("");
+      clearCanvas();
+      setActiveTab("gallery");
+    }
+    setIsPublishing(false);
   };
 
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
     if (seconds < 60) return "just nu";
     const minutes = Math.floor(seconds / 60);
@@ -436,28 +424,30 @@ export function Klotterplanket() {
           ) : (
             /* Mobile Gallery */
             <div className="flex-1 overflow-y-auto p-2 scrollbar-nostalgic">
-              {publishedKlotter.length === 0 ? (
+              {klotter.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Inga klotter än!</p>
-                  <Button 
-                    onClick={() => setActiveTab("draw")} 
-                    variant="link" 
-                    className="text-primary text-sm"
-                  >
-                    Bli först att rita
-                  </Button>
+                  <p className="text-sm">{klotterLoading ? "Laddar..." : "Inga klotter än!"}</p>
+                  {!klotterLoading && (
+                    <Button 
+                      onClick={() => setActiveTab("draw")} 
+                      variant="link" 
+                      className="text-primary text-sm"
+                    >
+                      Bli först att rita
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  {publishedKlotter.map((klotter) => (
+                  {klotter.map((item) => (
                     <div 
-                      key={klotter.id} 
+                      key={item.id} 
                       className="bg-card rounded-lg overflow-hidden border border-border"
                     >
                       <div className="aspect-video bg-[#1e2540] relative">
-                        {klotter.imageData ? (
+                        {item.image_url ? (
                           <img 
-                            src={klotter.imageData} 
+                            src={item.image_url} 
                             alt="Klotter" 
                             className="w-full h-full object-cover"
                           />
@@ -469,8 +459,8 @@ export function Klotterplanket() {
                       </div>
                       <div className="p-2">
                         <div className="flex items-center gap-1">
-                          <Avatar name={klotter.author} size="sm" />
-                          <span className="text-xs font-medium truncate">{klotter.author}</span>
+                          <Avatar name={item.author_name} size="sm" />
+                          <span className="text-xs font-medium truncate">{item.author_name}</span>
                         </div>
                       </div>
                     </div>
@@ -504,10 +494,11 @@ export function Klotterplanket() {
               />
               <Button
                 onClick={handlePublish}
+                disabled={isPublishing || !user}
                 className="w-full mt-3 bg-primary"
               >
                 <Send className="w-4 h-4 mr-2" />
-                Publicera
+                {isPublishing ? "Publicerar..." : !user ? "Logga in först" : "Publicera"}
               </Button>
             </div>
           </div>
@@ -547,7 +538,7 @@ export function Klotterplanket() {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Galleri ({publishedKlotter.length})
+                Galleri ({klotter.length})
               </button>
             </div>
           </div>
@@ -699,29 +690,31 @@ export function Klotterplanket() {
         ) : (
           /* Gallery */
           <div className="flex-1 overflow-y-auto p-4 scrollbar-nostalgic">
-            {publishedKlotter.length === 0 ? (
+            {klotter.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>Inga klotter publicerade än!</p>
-                <Button 
-                  onClick={() => setActiveTab("draw")} 
-                  variant="link" 
-                  className="text-primary"
-                >
-                  Bli först att rita något
-                </Button>
+                <p>{klotterLoading ? "Laddar klotter..." : "Inga klotter publicerade än!"}</p>
+                {!klotterLoading && (
+                  <Button 
+                    onClick={() => setActiveTab("draw")} 
+                    variant="link" 
+                    className="text-primary"
+                  >
+                    Bli först att rita något
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {publishedKlotter.map((klotter) => (
+                {klotter.map((item) => (
                   <div 
-                    key={klotter.id} 
+                    key={item.id} 
                     className="bg-card rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
                   >
                     {/* Image or placeholder */}
                     <div className="aspect-video bg-[#1e2540] relative">
-                      {klotter.imageData ? (
+                      {item.image_url ? (
                         <img 
-                          src={klotter.imageData} 
+                          src={item.image_url} 
                           alt="Klotter" 
                           className="w-full h-full object-cover"
                         />
@@ -735,18 +728,18 @@ export function Klotterplanket() {
                     {/* Info */}
                     <div className="p-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <Avatar name={klotter.author} size="sm" />
+                        <Avatar name={item.author_name} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{klotter.author}</p>
+                          <p className="font-medium text-sm truncate">{item.author_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatTimeAgo(klotter.timestamp)}
+                            {formatTimeAgo(item.created_at)}
                           </p>
                         </div>
                       </div>
-                      {klotter.comment && (
+                      {item.comment && (
                         <p className="text-sm text-foreground/80 flex items-start gap-1.5">
                           <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0 text-muted-foreground" />
-                          {klotter.comment}
+                          {item.comment}
                         </p>
                       )}
                     </div>
@@ -820,9 +813,10 @@ export function Klotterplanket() {
                 <Button
                   className="flex-1 gap-1.5"
                   onClick={handlePublish}
+                  disabled={isPublishing || !user}
                 >
                   <Send className="w-4 h-4" />
-                  Publicera
+                  {isPublishing ? "Publicerar..." : !user ? "Logga in först" : "Publicera"}
                 </Button>
               </div>
             </div>
