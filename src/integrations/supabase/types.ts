@@ -128,6 +128,36 @@ export type Database = {
         }
         Relationships: []
       }
+      klotter: {
+        Row: {
+          author_avatar: string | null
+          author_name: string
+          comment: string | null
+          created_at: string
+          id: string
+          image_url: string
+          user_id: string
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_name: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          user_id: string
+        }
+        Update: {
+          author_avatar?: string | null
+          author_name?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lajv_messages: {
         Row: {
           avatar_url: string | null
