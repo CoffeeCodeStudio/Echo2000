@@ -22,6 +22,7 @@ import { ProfileGuestbook } from "./ProfileGuestbook";
 import { VisitorLog } from "./VisitorLog";
 import { useProfileVisits } from "@/hooks/useProfileVisits";
 import { ClickableUsername } from "./ClickableUsername";
+import { ProfileFriendsTab } from "./ProfileFriendsTab";
 import { supabase } from "@/integrations/supabase/client";
 
 const occupationOptions = [
@@ -148,7 +149,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
   const { visitors } = useProfileVisits(userId);
-  const [friends, setFriends] = useState<Array<{ id: string; username: string; avatar_url: string | null }>>([]);
   
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -207,45 +207,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
     }
   }, [profile]);
 
-  // Fetch friends for the profile
-  useEffect(() => {
-    const fetchFriends = async () => {
-      if (!userId) return;
-      
-      const { data, error } = await supabase
-        .from('friends')
-        .select('friend_id, user_id')
-        .eq('status', 'accepted')
-        .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
-        .limit(10);
-
-      if (error) {
-        console.error('Error fetching friends:', error);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        setFriends([]);
-        return;
-      }
-
-      // Get the "other" user ID for each friendship
-      const friendIds = data.map(f => f.user_id === userId ? f.friend_id : f.user_id);
-      
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('user_id, username, avatar_url')
-        .in('user_id', friendIds);
-
-      setFriends(profileData?.map(p => ({
-        id: p.user_id,
-        username: p.username,
-        avatar_url: p.avatar_url
-      })) || []);
-    };
-
-    fetchFriends();
-  }, [userId]);
+  // Friends are now handled by ProfileFriendsTab component
 
   const handleSave = async () => {
     await updateProfile(editData);
@@ -759,28 +721,15 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           </div>
         )}
 
-        {activeTab === "vanner" && (
+        {activeTab === "vanner" && userId && (
           <div className="bg-card rounded-lg border border-border p-4">
-            {friends.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                🌟 Inga vänner ännu
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {friends.map((friend) => (
-                  <div 
-                    key={friend.id}
-                    className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
-                  >
-                    <Avatar name={friend.username} src={friend.avatar_url || undefined} size="md" />
-                    <span className="text-sm font-medium mt-2 text-center truncate w-full">
-                      {friend.username}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <ProfileFriendsTab userId={userId} />
+          </div>
+        )}
+
+        {activeTab === "vanner" && !userId && (
+          <div className="bg-card rounded-lg border border-border p-8 text-center">
+            <p className="text-muted-foreground">🌟 Inga vänner ännu</p>
           </div>
         )}
 
