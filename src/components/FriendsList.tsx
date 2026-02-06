@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserPlus, MessageSquare, Star, Info, Check, X, Loader2, UserMinus } from "lucide-react";
-import { Avatar } from "./Avatar";
-import { StatusIndicator, type UserStatus } from "./StatusIndicator";
+import { Search, UserPlus, Info, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
@@ -9,21 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Friend {
-  id: string;
-  name: string;
-  username: string;
-  avatar?: string;
-  status: UserStatus;
-  statusMessage?: string;
-  isBestFriend: boolean;
-  friendshipId: string;
-  friendshipStatus: string;
-  isIncoming: boolean;
-}
-
-// No demo data - only real users from database
+import { FriendCard, FRIEND_CATEGORIES, type FriendData, type FriendCategory } from "./FriendCard";
+import type { UserStatus } from "./StatusIndicator";
 
 interface FriendsListProps {
   onSendMessage?: (userId: string) => void;
@@ -32,10 +17,11 @@ interface FriendsListProps {
 export function FriendsList({ onSendMessage }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "online" | "best" | "pending">("all");
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<FriendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,7 +39,6 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
     const fetchFriends = async () => {
       setLoading(true);
       try {
-        // Get all friendships where user is involved
         const { data: friendships, error } = await supabase
           .from("friends")
           .select("*")
@@ -67,12 +52,10 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
           return;
         }
 
-        // Get all friend user IDs
         const friendUserIds = friendships.map((f) =>
           f.user_id === user.id ? f.friend_id : f.user_id
         );
 
-        // Fetch profiles for these users
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("user_id, username, avatar_url, status_message")
@@ -80,8 +63,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
 
         if (profilesError) throw profilesError;
 
-        // Map profiles to friends
-        const friendsList: Friend[] = friendships.map((friendship) => {
+        const friendsList: FriendData[] = friendships.map((friendship) => {
           const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
           const profile = profiles?.find((p) => p.user_id === friendUserId);
           const isIncoming = friendship.friend_id === user.id && friendship.status === "pending";
@@ -91,12 +73,13 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
             name: profile?.username || "Okänd",
             username: profile?.username || "okand",
             avatar: profile?.avatar_url || undefined,
-            status: "online" as UserStatus, // TODO: Real online status
+            status: "online" as UserStatus,
             statusMessage: profile?.status_message || "",
             isBestFriend: friendship.is_best_friend,
             friendshipId: friendship.id,
             friendshipStatus: friendship.status,
             isIncoming,
+            category: (friendship.category || 'Nätvän') as FriendCategory,
           };
         });
 
@@ -115,20 +98,9 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
 
     fetchFriends();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel("friends-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "friends",
-        },
-        () => {
-          fetchFriends();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "friends" }, () => fetchFriends())
       .subscribe();
 
     return () => {
@@ -139,26 +111,12 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const handleAccept = async (friendshipId: string) => {
     if (!user) return;
     setActionLoading(friendshipId);
-
     try {
-      const { error } = await supabase
-        .from("friends")
-        .update({ status: "accepted" })
-        .eq("id", friendshipId);
-
+      const { error } = await supabase.from("friends").update({ status: "accepted" }).eq("id", friendshipId);
       if (error) throw error;
-
-      toast({
-        title: "Vänförfrågan accepterad!",
-        description: "Ni är nu vänner",
-      });
-    } catch (error) {
-      console.error("Error accepting friend request:", error);
-      toast({
-        title: "Kunde inte acceptera",
-        description: "Försök igen",
-        variant: "destructive",
-      });
+      toast({ title: "Vänförfrågan accepterad!" });
+    } catch {
+      toast({ title: "Kunde inte acceptera", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -167,25 +125,12 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const handleReject = async (friendshipId: string) => {
     if (!user) return;
     setActionLoading(friendshipId);
-
     try {
-      const { error } = await supabase
-        .from("friends")
-        .delete()
-        .eq("id", friendshipId);
-
+      const { error } = await supabase.from("friends").delete().eq("id", friendshipId);
       if (error) throw error;
-
-      toast({
-        title: "Vänförfrågan avvisad",
-      });
-    } catch (error) {
-      console.error("Error rejecting friend request:", error);
-      toast({
-        title: "Kunde inte avvisa",
-        description: "Försök igen",
-        variant: "destructive",
-      });
+      toast({ title: "Vänförfrågan avvisad" });
+    } catch {
+      toast({ title: "Kunde inte avvisa", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -194,22 +139,14 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const handleToggleBestFriend = async (friendshipId: string, currentValue: boolean) => {
     if (!user) return;
     setActionLoading(friendshipId);
-
     try {
-      const { error } = await supabase
-        .from("friends")
-        .update({ is_best_friend: !currentValue })
-        .eq("id", friendshipId);
-
+      const { error } = await supabase.from("friends").update({ is_best_friend: !currentValue }).eq("id", friendshipId);
       if (error) throw error;
-
       setFriends((prev) =>
-        prev.map((f) =>
-          f.friendshipId === friendshipId ? { ...f, isBestFriend: !currentValue } : f
-        )
+        prev.map((f) => (f.friendshipId === friendshipId ? { ...f, isBestFriend: !currentValue } : f))
       );
-    } catch (error) {
-      console.error("Error toggling best friend:", error);
+    } catch {
+      console.error("Error toggling best friend");
     } finally {
       setActionLoading(null);
     }
@@ -218,30 +155,27 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const handleRemoveFriend = async (friendshipId: string) => {
     if (!user) return;
     setActionLoading(friendshipId);
-
     try {
-      const { error } = await supabase
-        .from("friends")
-        .delete()
-        .eq("id", friendshipId);
-
+      const { error } = await supabase.from("friends").delete().eq("id", friendshipId);
       if (error) throw error;
-
-      toast({
-        title: "Vän borttagen",
-      });
-    } catch (error) {
-      console.error("Error removing friend:", error);
-      toast({
-        title: "Kunde inte ta bort vän",
-        description: "Försök igen",
-        variant: "destructive",
-      });
+      toast({ title: "Vän borttagen" });
+    } catch {
+      toast({ title: "Kunde inte ta bort vän", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
   };
 
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  };
+
+  // Filter friends
   const filteredFriends = friends.filter((friend) => {
     const matchesSearch =
       friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -254,14 +188,24 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
     return matchesSearch;
   });
 
+  // Group friends by category
+  const groupedFriends = FRIEND_CATEGORIES.reduce<Record<string, FriendData[]>>((acc, cat) => {
+    const inCat = filteredFriends.filter((f) => f.category === cat);
+    if (inCat.length > 0) acc[cat] = inCat;
+    return acc;
+  }, {});
+
+  // Pending friends shown separately
+  const pendingFriends = friends.filter((f) => f.friendshipStatus === "pending" && f.isIncoming);
+
   const onlineCount = friends.filter((f) => f.status !== "offline" && f.friendshipStatus === "accepted").length;
   const acceptedCount = friends.filter((f) => f.friendshipStatus === "accepted").length;
-  const pendingCount = friends.filter((f) => f.friendshipStatus === "pending" && f.isIncoming).length;
+  const pendingCount = pendingFriends.length;
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
-        {/* Login prompt for logged out users */}
+        {/* Login prompt */}
         {isLoggedOut && (
           <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
             <div className="flex items-center gap-2 text-sm">
@@ -310,47 +254,29 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
 
         {/* Filter tabs */}
         <div className="flex gap-2 mb-4 flex-wrap">
-          <button
-            onClick={() => setFilter("all")}
-            className={cn(
-              "px-3 py-1.5 text-xs font-semibold rounded transition-colors",
-              filter === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Alla ({acceptedCount})
-          </button>
-          <button
-            onClick={() => setFilter("online")}
-            className={cn(
-              "px-3 py-1.5 text-xs font-semibold rounded transition-colors",
-              filter === "online"
-                ? "bg-online text-white"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Online ({onlineCount})
-          </button>
-          <button
-            onClick={() => setFilter("best")}
-            className={cn(
-              "px-3 py-1.5 text-xs font-semibold rounded transition-colors flex items-center gap-1",
-              filter === "best"
-                ? "bg-accent text-accent-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Star className="w-3 h-3" />
-            Bästa vänner
-          </button>
+          {([
+            { key: "all", label: `Alla (${acceptedCount})`, activeClass: "bg-primary text-primary-foreground" },
+            { key: "online", label: `Online (${onlineCount})`, activeClass: "bg-primary text-primary-foreground" },
+            { key: "best", label: "⭐ Bästa vänner", activeClass: "bg-accent text-accent-foreground" },
+          ] as const).map(({ key, label, activeClass }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-semibold rounded transition-colors",
+                filter === key ? activeClass : "bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {label}
+            </button>
+          ))}
           {pendingCount > 0 && (
             <button
               onClick={() => setFilter("pending")}
               className={cn(
                 "px-3 py-1.5 text-xs font-semibold rounded transition-colors",
                 filter === "pending"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-accent text-accent-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
@@ -359,122 +285,78 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
           )}
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && !isLoggedOut && (
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         )}
 
-        {/* Friends list */}
+        {/* Friends grouped by category */}
         {!loading && (
-          <div className="nostalgia-card overflow-hidden divide-y divide-border">
-            {filteredFriends.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
+          <div className="space-y-4">
+            {filter === "pending" ? (
+              <div className="nostalgia-card overflow-hidden">
+                {pendingFriends.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <p className="text-sm">Inga väntande vänförfrågningar</p>
+                  </div>
+                ) : (
+                  pendingFriends.map((friend) => (
+                    <FriendCard
+                      key={friend.id}
+                      friend={friend}
+                      isLoggedOut={isLoggedOut}
+                      actionLoading={actionLoading}
+                      onAccept={handleAccept}
+                      onReject={handleReject}
+                      onToggleBestFriend={handleToggleBestFriend}
+                      onRemove={handleRemoveFriend}
+                      onSendMessage={onSendMessage}
+                    />
+                  ))
+                )}
+              </div>
+            ) : Object.keys(groupedFriends).length === 0 ? (
+              <div className="nostalgia-card p-8 text-center text-muted-foreground">
                 <p className="text-lg mb-2">🌟 Här var det tomt!</p>
                 {friends.length === 0 && !isLoggedOut ? (
                   <p className="text-sm">Sök efter vänner för att komma igång.</p>
-                ) : filter === "pending" ? (
-                  <p className="text-sm">Inga väntande vänförfrågningar</p>
                 ) : (
                   <p className="text-sm">Inga vänner hittades</p>
                 )}
               </div>
             ) : (
-              filteredFriends.map((friend) => (
-                <div
-                  key={friend.id}
-                  className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
-                >
-                  <div 
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
+              Object.entries(groupedFriends).map(([category, categoryFriends]) => (
+                <div key={category} className="nostalgia-card overflow-hidden">
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm font-bold bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
-                    <Avatar name={friend.name} src={friend.avatar} status={friend.status} size="md" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span 
-                        className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
-                      >
-                        {friend.name}
-                      </span>
-                      {friend.isBestFriend && (
-                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <StatusIndicator status={friend.status} size="sm" />
-                      <span className="text-xs text-muted-foreground">
-                        {friend.statusMessage || friend.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Pending actions */}
-                  {friend.friendshipStatus === "pending" && friend.isIncoming ? (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                        onClick={() => handleAccept(friend.friendshipId)}
-                        disabled={actionLoading === friend.friendshipId}
-                      >
-                        {actionLoading === friend.friendshipId ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Check className="w-4 h-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                        onClick={() => handleReject(friend.friendshipId)}
-                        disabled={actionLoading === friend.friendshipId}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={isLoggedOut}
-                        onClick={() => onSendMessage?.(friend.id)}
-                        title="Skicka meddelande"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "h-8 w-8",
-                          friend.isBestFriend && "text-yellow-500"
-                        )}
-                        disabled={isLoggedOut}
-                        onClick={() => handleToggleBestFriend(friend.friendshipId, friend.isBestFriend)}
-                        title={friend.isBestFriend ? "Ta bort som bästis" : "Markera som bästis"}
-                      >
-                        <Star className={cn("w-4 h-4", friend.isBestFriend && "fill-current")} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        disabled={isLoggedOut}
-                        onClick={() => handleRemoveFriend(friend.friendshipId)}
-                        title="Ta bort vän"
-                      >
-                        <UserMinus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
+                    {collapsedCategories.has(category) ? (
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span>{category}</span>
+                    <span className="ml-auto text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                      {categoryFriends.length}
+                    </span>
+                  </button>
+                  {!collapsedCategories.has(category) &&
+                    categoryFriends.map((friend) => (
+                      <FriendCard
+                        key={friend.id}
+                        friend={friend}
+                        isLoggedOut={isLoggedOut}
+                        actionLoading={actionLoading}
+                        onAccept={handleAccept}
+                        onReject={handleReject}
+                        onToggleBestFriend={handleToggleBestFriend}
+                        onRemove={handleRemoveFriend}
+                        onSendMessage={onSendMessage}
+                      />
+                    ))}
                 </div>
               ))
             )}

@@ -14,8 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      friend_votes: {
+        Row: {
+          created_at: string
+          id: string
+          target_user_id: string
+          vote_category: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_user_id: string
+          vote_category: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_user_id?: string
+          vote_category?: string
+          voter_id?: string
+        }
+        Relationships: []
+      }
       friends: {
         Row: {
+          category: string
           created_at: string
           friend_id: string
           id: string
@@ -25,6 +50,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string
           created_at?: string
           friend_id: string
           id?: string
@@ -34,6 +60,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string
           created_at?: string
           friend_id?: string
           id?: string
