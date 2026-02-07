@@ -7,13 +7,16 @@ export function WelcomeHero() {
     <section className="relative overflow-hidden py-12 md:py-20">
       {/* Animated starry background */}
       <StarryBackground />
-      
+
       {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))]" />
-      
+
       {/* Soft gradient orbs */}
       <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/15 rounded-full blur-[100px] animate-float" />
-      <div className="absolute bottom-10 right-1/4 w-72 h-72 bg-accent/15 rounded-full blur-[100px] animate-float" style={{ animationDelay: "-1.5s" }} />
+      <div
+        className="absolute bottom-10 right-1/4 w-72 h-72 bg-accent/15 rounded-full blur-[100px] animate-float"
+        style={{ animationDelay: "-1.5s" }}
+      />
 
       <div className="relative container px-4">
         <div className="max-w-2xl mx-auto text-center">
@@ -33,7 +36,7 @@ export function WelcomeHero() {
 
           {/* Subheading */}
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto mb-8 animate-fade-in">
-            En nostalgisk chatt-community inspirerad av MSN Messenger, LunarStorm och Playahead, 
+            En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead,
             återuppbyggd med modern design och funktioner.
           </p>
 
@@ -61,15 +64,7 @@ export function WelcomeHero() {
   );
 }
 
-function StatItem({ 
-  icon, 
-  value, 
-  label 
-}: { 
-  icon: React.ReactNode; 
-  value: string; 
-  label: string;
-}) {
+function StatItem({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="text-primary">{icon}</div>
