@@ -10,7 +10,18 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { HeaderRadio } from "./HeaderRadio";
 import { GlobalSearch } from "./GlobalSearch";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
+type Tab =
+  | "hem"
+  | "chatt"
+  | "gastbok"
+  | "mejl"
+  | "vanner"
+  | "profil"
+  | "klotterplanket"
+  | "spel"
+  | "traffar"
+  | "lajv"
+  | "faq";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -30,11 +41,16 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Determine which nav items have notifications
   const getHasNotice = (id: Tab): boolean => {
     switch (id) {
-      case 'mejl': return counts.unreadMail > 0;
-      case 'vanner': return counts.pendingFriends > 0;
-      case 'gastbok': return counts.guestbookNew > 0;
-      case 'lajv': return counts.lajvActive > 0;
-      default: return false;
+      case "mejl":
+        return counts.unreadMail > 0;
+      case "vanner":
+        return counts.pendingFriends > 0;
+      case "gastbok":
+        return counts.guestbookNew > 0;
+      case "lajv":
+        return counts.lajvActive > 0;
+      default:
+        return false;
     }
   };
 
@@ -46,9 +62,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       }
 
       try {
-        const { data } = await supabase.rpc('has_role', { 
-          _user_id: user.id, 
-          _role: 'admin' 
+        const { data } = await supabase.rpc("has_role", {
+          _user_id: user.id,
+          _role: "admin",
         });
         setIsAdmin(data === true);
       } catch {
@@ -82,7 +98,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const privateZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
-    { id: "chatt", label: "DISKUS", emoji: "🖊️", animationClass: "writing-pen" },
+    { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
     { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
   ];
@@ -107,16 +123,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           isHome ? "nav-item-home" : "nav-item-grouped",
           "shrink-0",
           activeTab === item.id && "active",
-          !isHome && (hasNotice ? "has-notice" : "inactive")
+          !isHome && (hasNotice ? "has-notice" : "inactive"),
         )}
         role="button"
         tabIndex={0}
         aria-label={item.label}
       >
-        <span className={cn(
-          isHome ? "icon-home" : "icon-grouped",
-          hasNotice && item.animationClass
-        )}>
+        <span className={cn(isHome ? "icon-home" : "icon-grouped", hasNotice && item.animationClass)}>
           {item.emoji}
         </span>
         <span className={isHome ? "label-home" : "label-grouped"}>{item.label}</span>
@@ -199,19 +212,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       {/* Three-Zone Nav Row (hidden on mobile, only lg and up) */}
       <nav className="hidden lg:flex navbar-three-zone">
         {/* Zone 1: Home (Left) */}
-        <div className="nav-zone-home">
-          {renderNavItem(homeItem, true)}
-        </div>
+        <div className="nav-zone-home">{renderNavItem(homeItem, true)}</div>
 
         {/* Zone 2: Private Tools (Middle) */}
-        <div className="nav-group-box private-zone">
-          {privateZoneItems.map(item => renderNavItem(item))}
-        </div>
+        <div className="nav-group-box private-zone">{privateZoneItems.map((item) => renderNavItem(item))}</div>
 
         {/* Zone 3: Community (Right) */}
-        <div className="nav-group-box community-zone">
-          {communityZoneItems.map(item => renderNavItem(item))}
-        </div>
+        <div className="nav-group-box community-zone">{communityZoneItems.map((item) => renderNavItem(item))}</div>
       </nav>
     </header>
   );
