@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 
 interface AuthDialogProps {
   open: boolean;
@@ -13,40 +13,22 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (mode === 'login') {
-      const { error } = await signIn(email, password);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Välkommen tillbaka!');
-        onOpenChange(false);
-        resetForm();
-      }
+    const { error } = await signIn(email, password);
+    if (error) {
+      toast.error(error.message);
     } else {
-      if (!username.trim()) {
-        toast.error('Ange ett användarnamn');
-        setLoading(false);
-        return;
-      }
-      const { error } = await signUp(email, password, username);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Konto skapat! Du är nu inloggad.');
-        onOpenChange(false);
-        resetForm();
-      }
+      toast.success('Välkommen tillbaka!');
+      onOpenChange(false);
+      resetForm();
     }
 
     setLoading(false);
@@ -55,7 +37,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setUsername('');
   };
 
   return (
@@ -63,29 +44,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader>
           <DialogTitle className="font-display text-xl text-center">
-            {mode === 'login' ? 'Välkommen tillbaka!' : 'Skapa konto'}
+            Välkommen tillbaka!
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {mode === 'signup' && (
-            <div className="space-y-2">
-              <Label htmlFor="username" className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                Användarnamn
-              </Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ditt användarnamn"
-                className="bg-input border-border input-glow"
-                required={mode === 'signup'}
-              />
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-muted-foreground" />
@@ -126,24 +89,14 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
-            ) : mode === 'login' ? (
-              'Logga in'
             ) : (
-              'Skapa konto'
+              'Logga in'
             )}
           </Button>
         </form>
 
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            className="text-sm text-primary hover:underline"
-          >
-            {mode === 'login'
-              ? 'Har du inget konto? Skapa ett!'
-              : 'Har du redan ett konto? Logga in!'}
-          </button>
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          Nya konton skapas av administratörer.
         </div>
       </DialogContent>
     </Dialog>
