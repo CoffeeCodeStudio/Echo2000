@@ -29,6 +29,33 @@ const RADIO_STATIONS: Record<string, { streamUrl: string; metadataUrl?: string }
   },
 };
 
+// Simple in-memory rate limiter
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(identifier: string, limit: number = 20): boolean {
+  const now = Date.now();
+  const record = requestCounts.get(identifier);
+
+  if (!record || now > record.resetAt) {
+    requestCounts.set(identifier, { count: 1, resetAt: now + 60000 });
+    return true;
+  }
+
+  if (record.count >= limit) return false;
+  record.count++;
+  return true;
+}
+
+// Periodically clean up expired entries to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of requestCounts) {
+    if (now > value.resetAt) {
+      requestCounts.delete(key);
+    }
+  }
+}, 120000);
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -45,6 +72,18 @@ serve(async (req) => {
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" }, 
         status: 401 
+      }
+    );
+  }
+
+  // SECURITY: Rate limiting - 20 requests per minute per IP
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!checkRateLimit(clientIp, 20)) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Try again in a minute." }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
       }
     );
   }

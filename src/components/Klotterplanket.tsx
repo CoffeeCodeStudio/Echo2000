@@ -445,9 +445,9 @@ export function Klotterplanket() {
                       className="bg-card rounded-lg overflow-hidden border border-border"
                     >
                       <div className="aspect-video bg-[#1e2540] relative">
-                        {item.image_url ? (
+                        {(item.signed_url || item.image_url) ? (
                           <img 
-                            src={item.image_url} 
+                            src={item.signed_url || item.image_url} 
                             alt="Klotter" 
                             className="w-full h-full object-cover"
                           />
@@ -712,9 +712,9 @@ export function Klotterplanket() {
                   >
                     {/* Image or placeholder */}
                     <div className="aspect-video bg-[#1e2540] relative">
-                      {item.image_url ? (
+                      {(item.signed_url || item.image_url) ? (
                         <img 
-                          src={item.image_url} 
+                          src={item.signed_url || item.image_url} 
                           alt="Klotter" 
                           className="w-full h-full object-cover"
                         />
