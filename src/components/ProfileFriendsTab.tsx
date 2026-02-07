@@ -8,6 +8,7 @@ import { FRIEND_CATEGORIES } from "./FriendCard";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { usePresence } from "@/hooks/usePresence";
 
 interface ProfileFriend {
   id: string;
@@ -28,6 +29,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   const [expandedFriend, setExpandedFriend] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
+  const { getUserStatus } = usePresence();
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -147,6 +149,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                   onNavigate={() =>
                     navigate(`/profile/${encodeURIComponent(friend.username)}`)
                   }
+                  getUserStatus={getUserStatus}
                 />
               ))}
             </div>
@@ -162,11 +165,13 @@ function ProfileFriendRow({
   isExpanded,
   onToggleExpand,
   onNavigate,
+  getUserStatus,
 }: {
   friend: ProfileFriend;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onNavigate: () => void;
+  getUserStatus: (userId: string) => import("./StatusIndicator").UserStatus;
 }) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } =
     useFriendVotes(isExpanded ? friend.id : undefined);
@@ -174,8 +179,11 @@ function ProfileFriendRow({
   return (
     <div>
       <div className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors">
-        <div className="cursor-pointer" onClick={onNavigate}>
+        <div className="cursor-pointer relative" onClick={onNavigate}>
           <Avatar name={friend.username} src={friend.avatar_url || undefined} size="md" />
+          <div className="absolute -bottom-0.5 -right-0.5">
+            <StatusIndicator status={getUserStatus(friend.id)} size="sm" />
+          </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">

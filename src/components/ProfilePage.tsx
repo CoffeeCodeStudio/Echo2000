@@ -24,6 +24,7 @@ import { useProfileVisits } from "@/hooks/useProfileVisits";
 import { ClickableUsername } from "./ClickableUsername";
 import { ProfileFriendsTab } from "./ProfileFriendsTab";
 import { supabase } from "@/integrations/supabase/client";
+import { usePresence } from "@/hooks/usePresence";
 
 const occupationOptions = [
   "Student",
@@ -149,6 +150,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
   const { visitors } = useProfileVisits(userId);
+  const { getUserStatus } = usePresence();
   
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -315,7 +317,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           spanar_in: profile?.spanar_in || "",
         };
 
-  const userStatus: UserStatus = "online";
+  const userStatus: UserStatus = userId ? getUserStatus(userId) : (user ? getUserStatus(user.id) : "offline");
   const memberSince = profile 
     ? new Date(profile.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })
     : "December 2025";
@@ -489,8 +491,13 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <StatusIndicator status={userStatus} size="sm" />
-                      <span className="text-xs uppercase text-[hsl(var(--online-green))] font-medium">
-                        ONLINE
+                      <span className={cn(
+                        "text-xs uppercase font-medium",
+                        userStatus === "online" && "text-[hsl(var(--online-green))]",
+                        userStatus === "away" && "text-yellow-500",
+                        userStatus === "offline" && "text-muted-foreground"
+                      )}>
+                        {userStatus === "online" ? "ONLINE" : userStatus === "away" ? "BORTA" : "OFFLINE"}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         - spanar in{" "}
