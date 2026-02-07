@@ -226,7 +226,7 @@ export function Header({
       </div>
 
       {/* Three-Zone Nav Row (hidden on mobile, only lg and up) */}
-      <nav className="justify-start">
+      <nav className="">
         {/* Zone 1: Home (Left) */}
         <div className="nav-zone-home">{renderNavItem(homeItem, true)}</div>
 
