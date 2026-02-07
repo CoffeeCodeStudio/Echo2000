@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight, Search, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePresence } from "@/hooks/usePresence";
 
 export interface MsnContact {
   id: string;
@@ -43,6 +44,7 @@ export function MsnContactList({
   const [searchQuery, setSearchQuery] = useState("");
   const { playSound } = useMsnSounds();
   const { user } = useAuth();
+  const { getUserStatus } = usePresence();
 
   // Fetch real friends from database
   useEffect(() => {
@@ -94,16 +96,17 @@ export function MsnContactList({
           unreadCounts[msg.sender_id] = (unreadCounts[msg.sender_id] || 0) + 1;
         });
 
-        // Map to contacts
+        // Map to contacts with real presence status
         const contactsList: MsnContact[] = friendships.map((friendship) => {
           const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
           const profile = profiles?.find((p) => p.user_id === friendUserId);
+          const presenceStatus = getUserStatus(friendUserId);
 
           return {
             id: friendUserId,
             name: profile?.username || "Okänd",
             email: `${profile?.username || "user"}@echo2000.se`,
-            status: "online" as UserStatus, // TODO: Real online status
+            status: presenceStatus,
             statusMessage: profile?.status_message || "",
             avatar: profile?.avatar_url || undefined,
             unreadCount: unreadCounts[friendUserId] || 0,
@@ -130,7 +133,7 @@ export function MsnContactList({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, getUserStatus]);
 
   const toggleGroup = (group: string) => {
     setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));

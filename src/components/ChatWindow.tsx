@@ -28,19 +28,6 @@ interface Message {
 // No demo messages - start with empty conversation
 const getInitialMessages = (_friendName: string): Message[] => [];
 
-const autoResponses = [
-  "Haha, visst! :D",
-  "Det var bättre förr honestly... :(",
-  "OMG ja! Minns du *nudge*? (H)",
-  "Nostalgitrippen är på riktigt (L)",
-  "Ska vi spela något sen? :)",
-  "Måste kolla, brb! (Y)",
-  "Lol, klassiskt! :P",
-  "Facts! De gamla messenger-tiderna :D",
-  "Jag saknar wizz-funktionen ;)",
-  "Ska vi lägga till fler i chatten? :O",
-];
-
 interface ChatWindowProps {
   className?: string;
 }
@@ -53,7 +40,6 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const [conversations, setConversations] = useState<Record<string, Message[]>>({});
   const [inputMessage, setInputMessage] = useState("");
   const [showEmojis, setShowEmojis] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showContactList, setShowContactList] = useState(true);
   const [mobileShowChat, setMobileShowChat] = useState(false);
@@ -132,30 +118,6 @@ export function ChatWindow({ className }: ChatWindowProps) {
     
     if (soundEnabled) {
       playSound("send");
-    }
-
-    // Simulate typing indicator and auto-reply
-    if (selectedContact.status !== "offline") {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        const randomResponse = autoResponses[Math.floor(Math.random() * autoResponses.length)];
-        const replyMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: randomResponse,
-          timestamp: new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }),
-          isSelf: false,
-          senderName: selectedContact.name,
-        };
-        setConversations(prev => ({
-          ...prev,
-          [selectedContact.id]: [...(prev[selectedContact.id] || []), replyMessage]
-        }));
-        
-        if (soundEnabled) {
-          playSound("message");
-        }
-      }, 1500 + Math.random() * 2000);
     }
   };
 
@@ -318,16 +280,6 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   </div>
                 ))}
                 
-                {isTyping && (
-                  <div className="mb-1 text-gray-500 italic flex items-center gap-2 text-xs">
-                    <span>{selectedContact.name} skriver ett meddelande</span>
-                    <span className="flex gap-0.5">
-                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
-                    </span>
-                  </div>
-                )}
                 <div ref={messagesEndRef} />
               </div>
 

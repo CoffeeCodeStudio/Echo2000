@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FriendCard, FRIEND_CATEGORIES, type FriendData, type FriendCategory } from "./FriendCard";
 import type { UserStatus } from "./StatusIndicator";
+import { usePresence } from "@/hooks/usePresence";
 
 interface FriendsListProps {
   onSendMessage?: (userId: string) => void;
@@ -25,6 +26,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { getUserStatus } = usePresence();
 
   const isLoggedOut = !authLoading && !user;
 
@@ -73,7 +75,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
             name: profile?.username || "Okänd",
             username: profile?.username || "okand",
             avatar: profile?.avatar_url || undefined,
-            status: "online" as UserStatus,
+            status: getUserStatus(friendUserId),
             statusMessage: profile?.status_message || "",
             isBestFriend: friendship.is_best_friend,
             friendshipId: friendship.id,
