@@ -137,17 +137,46 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     );
   };
 
+  // Render compact header nav item
+  const renderHeaderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }) => {
+    const hasNotice = getHasNotice(item.id);
+    return (
+      <div
+        key={item.id}
+        onClick={() => onTabChange?.(item.id)}
+        className={cn(
+          "header-nav-item",
+          activeTab === item.id && "active",
+          hasNotice && "has-notice",
+        )}
+        role="button"
+        tabIndex={0}
+        aria-label={item.label}
+      >
+        <span className={cn("header-nav-icon", hasNotice && item.animationClass)}>
+          {item.emoji}
+        </span>
+        <span className="header-nav-label">{item.label}</span>
+        {hasNotice && <span className="header-nav-dot" />}
+      </div>
+    );
+  };
+
   return (
     <header className="sticky top-0 z-50">
-      {/* Top bar - Logo, Auth & Status */}
+      {/* Single compact header bar */}
       <div className="navbar-dark">
-        {/* ECHO2000 Logo - Always visible */}
+        {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight">
+          <div
+            className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight cursor-pointer"
+            onClick={() => onTabChange?.("hem")}
+            role="button"
+            tabIndex={0}
+          >
             <span className="text-foreground">ECHO</span>
             <span className="text-primary-foreground bg-primary px-1 rounded">2000</span>
           </div>
-          {/* ALPHA Badge */}
           <span className="alpha-badge">ALPHA</span>
         </div>
 
@@ -156,8 +185,20 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <GlobalSearch />
         </div>
 
+        {/* Private Nav Items - inline in header (desktop only) */}
+        {user && (
+          <nav className="hidden lg:flex items-center gap-0.5 mx-2">
+            {privateZoneItems.map((item) => renderHeaderNavItem(item))}
+          </nav>
+        )}
+
+        {/* Community Nav Items (desktop only) */}
+        <nav className="hidden lg:flex items-center gap-0.5">
+          {[homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item))}
+        </nav>
+
         {/* Right side - Auth & Status */}
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 ml-auto">
           {!loading && (
             <>
               {user ? (
@@ -208,18 +249,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
-
-      {/* Three-Zone Nav Row (hidden on mobile, only lg and up) */}
-      <nav className="hidden lg:flex navbar-three-zone">
-        {/* Zone 1: Home (Left) */}
-        <div className="nav-zone-home">{renderNavItem(homeItem, true)}</div>
-
-        {/* Zone 2: Private Tools (Middle) */}
-        <div className="nav-group-box private-zone">{privateZoneItems.map((item) => renderNavItem(item))}</div>
-
-        {/* Zone 3: Community (Right) */}
-        <div className="nav-group-box community-zone">{communityZoneItems.map((item) => renderNavItem(item))}</div>
-      </nav>
     </header>
   );
 }
