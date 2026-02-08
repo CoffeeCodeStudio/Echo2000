@@ -259,7 +259,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
     { id: "blog", label: "BLOG" },
     { id: "vanner", label: "VÄNNER" },
     { id: "album", label: "ALBUM" },
-    { id: "besokare", label: "BESÖKARE" },
+    ...(isOwnProfile ? [{ id: "besokare" as const, label: "BESÖKARE" }] : []),
   ] as const;
 
   // Dr. Love compatibility score (mock)
@@ -722,7 +722,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           </div>
         )}
 
-        {activeTab === "besokare" && (
+        {activeTab === "besokare" && isOwnProfile && (
           <div className="bg-card rounded-lg border border-border p-4">
             <VisitorLog visitors={visitors} />
           </div>
