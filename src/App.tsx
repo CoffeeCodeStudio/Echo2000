@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SharedLayout } from "@/components/SharedLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Room from "./pages/Room";
 import Auth from "./pages/Auth";
@@ -27,8 +28,8 @@ const App = () => (
               {/* Shared layout wraps all main routes */}
               <Route element={<SharedLayout />}>
                 <Route path="/" element={<Index />} />
-                <Route path="/rum" element={<Room />} />
-                <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/rum" element={<ProtectedRoute><Room /></ProtectedRoute>} />
+                <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               </Route>
               
               {/* Auth page without shared layout (full-page login) */}

@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
@@ -18,8 +19,26 @@ interface MobileNavProps {
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { counts } = useNotifications();
+  const { user } = useAuth();
 
-  // Get badge count for each tab from real database
+  // If not logged in, show only HEM
+  if (!user) {
+    return (
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
+        <div className="flex items-center justify-center py-3 px-2">
+          <button
+            onClick={() => onTabChange("hem")}
+            className={cn("mobile-nav-item", activeTab === "hem" && "active")}
+          >
+            <span className="mobile-nav-icon">🏠</span>
+            <span className="mobile-nav-label">HEM</span>
+            {activeTab === "hem" && <div className="mobile-nav-indicator" />}
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
   const getBadge = (id: Tab): number | undefined => {
     switch (id) {
       case 'mejl': return counts.unreadMail > 0 ? counts.unreadMail : undefined;
@@ -30,7 +49,6 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
     }
   };
 
-  // Profile-relevant nav items (main row) - reduced for mobile
   const mainNavItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
@@ -38,7 +56,6 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
     { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
   ];
 
-  // Secondary items for dropdown (includes profile now)
   const dropdownItems: { id: Tab; label: string; emoji: string }[] = [
     { id: "hem", label: "Hem", emoji: "🏠" },
     { id: "profil", label: "Min Profil", emoji: "👤" },
@@ -55,40 +72,22 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
       <div className="flex items-center justify-around py-3 px-2">
-        {/* Dropdown menu button */}
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                "mobile-nav-item",
-                isDropdownItemActive && "active"
-              )}
-            >
+            <button className={cn("mobile-nav-item", isDropdownItemActive && "active")}>
               <div className="relative">
                 <span className="mobile-nav-icon">{isDropdownItemActive ? activeDropdownItem?.emoji : "☰"}</span>
               </div>
               <span className="mobile-nav-label">{isDropdownItemActive ? activeDropdownItem?.label?.slice(0, 4).toUpperCase() : "MER"}</span>
-              {isDropdownItemActive && (
-                <div className="mobile-nav-indicator" />
-              )}
+              {isDropdownItemActive && <div className="mobile-nav-indicator" />}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            side="top" 
-            align="start" 
-            className="bg-card border-border mb-2 min-w-[160px]"
-          >
+          <DropdownMenuContent side="top" align="start" className="bg-card border-border mb-2 min-w-[160px]">
             {dropdownItems.map((item) => (
               <DropdownMenuItem
                 key={item.id}
-                onClick={() => {
-                  onTabChange(item.id);
-                  setMenuOpen(false);
-                }}
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer",
-                  activeTab === item.id && "bg-primary/20 text-primary"
-                )}
+                onClick={() => { onTabChange(item.id); setMenuOpen(false); }}
+                className={cn("flex items-center gap-2 cursor-pointer", activeTab === item.id && "bg-primary/20 text-primary")}
               >
                 <span>{item.emoji}</span>
                 <span>{item.label}</span>
@@ -97,39 +96,22 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Main profile-relevant nav items */}
         {mainNavItems.map((item) => {
           const badge = getBadge(item.id);
           const hasNotification = badge !== undefined && badge > 0;
           const isInactive = !hasNotification;
-          
           return (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={cn(
-                "mobile-nav-item",
-                activeTab === item.id && "active",
-                isInactive && activeTab !== item.id && "inactive"
-              )}
+              className={cn("mobile-nav-item", activeTab === item.id && "active", isInactive && activeTab !== item.id && "inactive")}
             >
               <div className="relative">
-                <span className={cn(
-                  "mobile-nav-icon",
-                  hasNotification && item.animationClass
-                )}>
-                  {item.emoji}
-                </span>
-                {hasNotification && (
-                  <span className="mobile-nav-badge-corner">
-                    {badge}
-                  </span>
-                )}
+                <span className={cn("mobile-nav-icon", hasNotification && item.animationClass)}>{item.emoji}</span>
+                {hasNotification && <span className="mobile-nav-badge-corner">{badge}</span>}
               </div>
               <span className="mobile-nav-label">{item.label}</span>
-              {activeTab === item.id && (
-                <div className="mobile-nav-indicator" />
-              )}
+              {activeTab === item.id && <div className="mobile-nav-indicator" />}
             </button>
           );
         })}
