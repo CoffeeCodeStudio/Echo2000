@@ -185,16 +185,19 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <GlobalSearch />
         </div>
 
-        {/* Private Nav Items - inline in header (desktop only) */}
+        {/* Private Nav Items - inline in header (desktop only, logged in only) */}
         {user && (
           <nav className="hidden lg:flex items-center gap-0.5 mx-2">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         )}
 
-        {/* Community Nav Items (desktop only) */}
+        {/* Community Nav Items (desktop only) - show all for logged in, only HEM for logged out */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          {[homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item))}
+          {user
+            ? [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item))
+            : renderHeaderNavItem(homeItem)
+          }
         </nav>
 
         {/* Right side - Auth & Status */}

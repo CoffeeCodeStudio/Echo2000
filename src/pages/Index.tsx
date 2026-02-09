@@ -97,6 +97,14 @@ export default function Index() {
   };
 
   const renderContent = () => {
+    // Protected tabs require login
+    const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv"];
+    if (!user && protectedTabs.includes(activeTab)) {
+      // Redirect to auth for non-logged-in users trying to access protected tabs
+      window.location.href = "/auth";
+      return null;
+    }
+
     switch (activeTab) {
       case "hem":
         return (
@@ -125,7 +133,6 @@ export default function Index() {
       case "chatt":
         return (
           <div className="flex-1 flex overflow-hidden">
-            {/* Desktop Sidebar */}
             <FriendsSidebar
               selectedFriendId={selectedFriendId}
               onSelectFriend={(id) => {
@@ -134,8 +141,6 @@ export default function Index() {
               }}
               className="hidden md:flex w-72 border-r border-border"
             />
-
-            {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
               <>
                 <div
@@ -152,8 +157,6 @@ export default function Index() {
                 />
               </>
             )}
-
-            {/* Chat Area */}
             <ChatWindow className="flex-1" />
           </div>
         );
