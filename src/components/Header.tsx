@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
+import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
 import { GlobalSearch } from "./GlobalSearch";
 
@@ -30,13 +31,15 @@ interface HeaderProps {
 }
 
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
-  const [onlineCount] = useState(35);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { counts } = useNotifications();
+  const { onlineUsers } = usePresence();
+
+  const onlineCount = onlineUsers.size;
 
   // Determine which nav items have notifications
   const getHasNotice = (id: Tab): boolean => {
