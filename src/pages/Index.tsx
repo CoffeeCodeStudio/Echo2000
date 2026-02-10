@@ -8,9 +8,10 @@ import { CommunityCard } from "@/components/CommunityCard";
 import { Guestbook } from "@/components/Guestbook";
 import { Mailbox } from "@/components/Mailbox";
 import { FriendsList } from "@/components/FriendsList";
+import { MemberGrid } from "@/components/MemberGrid";
 import { Klotterplanket } from "@/components/Klotterplanket";
 import { GamesSection } from "@/components/GamesSection";
-import { MeetupsSection } from "@/components/MeetupsSection";
+import { LockedMeetups } from "@/components/LockedMeetups";
 import { LajvSection } from "@/components/LajvSection";
 import { FAQSection } from "@/components/FAQSection";
 import { OnboardingModal } from "@/components/OnboardingModal";
@@ -168,7 +169,14 @@ export default function Index() {
         return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
 
       case "vanner":
-        return <FriendsList />;
+        return (
+          <div className="flex-1 flex flex-col overflow-y-auto scrollbar-nostalgic">
+            <div className="shrink-0">
+              <FriendsList />
+            </div>
+            <MemberGrid />
+          </div>
+        );
 
       case "klotterplanket":
         return <Klotterplanket />;
@@ -177,7 +185,7 @@ export default function Index() {
         return <GamesSection />;
 
       case "traffar":
-        return <MeetupsSection />;
+        return <LockedMeetups />;
 
       case "lajv":
         return <LajvSection />;
