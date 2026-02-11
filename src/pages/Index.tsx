@@ -9,6 +9,7 @@ import { Guestbook } from "@/components/Guestbook";
 import { Mailbox } from "@/components/Mailbox";
 import { FriendsList } from "@/components/FriendsList";
 import { MemberGrid } from "@/components/MemberGrid";
+import { RecentlyOnline } from "@/components/RecentlyOnline";
 import { Klotterplanket } from "@/components/Klotterplanket";
 import { GamesSection } from "@/components/GamesSection";
 import { LockedMeetups } from "@/components/LockedMeetups";
@@ -111,6 +112,9 @@ export default function Index() {
         return (
           <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
             <WelcomeHero />
+
+            {/* Recently Online */}
+            {user && <RecentlyOnline />}
 
             {/* Communities Section */}
             <section className="container px-4 py-8">

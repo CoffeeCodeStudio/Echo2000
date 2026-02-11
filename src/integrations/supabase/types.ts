@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      avatar_uploads: {
+        Row: {
+          created_at: string
+          denial_reason: string | null
+          id: string
+          image_url: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          image_url: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          image_url?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friend_votes: {
         Row: {
           created_at: string
@@ -320,6 +353,7 @@ export type Database = {
           id: string
           interests: string | null
           is_admin: boolean
+          last_seen: string | null
           likes: string | null
           listens_to: string | null
           looking_for: string[] | null
@@ -347,6 +381,7 @@ export type Database = {
           id?: string
           interests?: string | null
           is_admin?: boolean
+          last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
           looking_for?: string[] | null
@@ -374,6 +409,7 @@ export type Database = {
           id?: string
           interests?: string | null
           is_admin?: boolean
+          last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
           looking_for?: string[] | null

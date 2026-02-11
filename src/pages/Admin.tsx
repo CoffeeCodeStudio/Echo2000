@@ -4,10 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity } from "lucide-react";
+import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { AdminCreateUser } from "@/components/admin/AdminCreateUser";
 import { AdminContentModeration } from "@/components/admin/AdminContentModeration";
+import { AdminImageReview } from "@/components/admin/AdminImageReview";
 
 interface Profile {
   id: string;
@@ -29,7 +30,7 @@ export default function Admin() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [activeTab, setActiveTab] = useState<"list" | "create" | "moderate">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "moderate" | "images">("list");
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -134,11 +135,15 @@ export default function Admin() {
           <Button variant={activeTab === "moderate" ? "default" : "outline"} onClick={() => setActiveTab("moderate")}>
             <Activity className="w-4 h-4 mr-2" />Moderering
           </Button>
+          <Button variant={activeTab === "images" ? "default" : "outline"} onClick={() => setActiveTab("images")}>
+            <ImageIcon className="w-4 h-4 mr-2" />Bildgranskning
+          </Button>
         </div>
 
         {activeTab === "list" && <AdminUserList users={users} userRoles={userRoles} onRefresh={fetchData} />}
         {activeTab === "create" && <AdminCreateUser onUserCreated={fetchData} />}
         {activeTab === "moderate" && <AdminContentModeration />}
+        {activeTab === "images" && <AdminImageReview />}
       </div>
     </div>
   );
