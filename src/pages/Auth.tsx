@@ -15,8 +15,13 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Lösenord måste vara minst 6 tecken" }),
 });
 
+const usernameRegex = /^[a-zA-Z0-9_\-.\[\]()*åäöÅÄÖ]+$/;
+
 const registerSchema = z.object({
-  username: z.string().trim().min(2, { message: "Namn måste vara minst 2 tecken" }).max(50),
+  username: z.string().trim()
+    .min(2, { message: "Namn måste vara minst 2 tecken" })
+    .max(50)
+    .regex(usernameRegex, { message: "Tillåtna tecken: bokstäver, siffror, _ - . [ ] ( ) *" }),
   email: z.string().trim().email({ message: "Ogiltig e-postadress" }),
   password: z.string().min(6, { message: "Lösenord måste vara minst 6 tecken" }),
 });
@@ -97,6 +102,19 @@ export default function Auth() {
           toast({ title: "Välkommen tillbaka!", description: "Du är nu inloggad" });
         }
       } else {
+        // Case-insensitive username check
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("id")
+          .ilike("username", username)
+          .maybeSingle();
+
+        if (existingUser) {
+          toast({ title: "Registrering misslyckades", description: "Användarnamnet är redan taget.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
         const { data, error } = await signUp(email, password, username);
         if (error) {
           toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });

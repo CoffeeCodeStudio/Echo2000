@@ -64,7 +64,7 @@ export function usePresence() {
         }
       });
 
-    // Periodically update last_active to reflect activity
+    // Periodically update last_active to reflect activity + update last_seen in DB
     const activityInterval = setInterval(async () => {
       if (!channelRef.current) return;
       
@@ -77,6 +77,13 @@ export function usePresence() {
         user_id: user.id,
         last_active: new Date(lastActivityRef.current).toISOString(),
       });
+
+      // Update last_seen in profiles for "recently online" feature
+      supabase
+        .from("profiles")
+        .update({ last_seen: new Date().toISOString() })
+        .eq("user_id", user.id)
+        .then(() => {});
     }, ACTIVITY_THROTTLE_MS);
 
     // Listen for user activity

@@ -167,6 +167,14 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
   return (
     <header className="sticky top-0 z-50">
+      {/* Marquee ticker */}
+      <div className="bg-primary/10 border-b border-border overflow-hidden">
+        <div className="marquee-container">
+          <span className="marquee-text text-xs text-primary font-medium">
+            ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Alpha-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
+          </span>
+        </div>
+      </div>
       {/* Single compact header bar */}
       <div className="navbar-dark">
         {/* ECHO2000 Logo */}

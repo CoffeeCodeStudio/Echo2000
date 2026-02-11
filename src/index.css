@@ -13,6 +13,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 4px 0;
+}
+
+.marquee-text {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+}
+
 /* Prevent horizontal scroll globally */
 html, body {
   overflow-x: hidden;

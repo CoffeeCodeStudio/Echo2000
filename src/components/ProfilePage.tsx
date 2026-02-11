@@ -15,6 +15,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 import { AvatarPicker, avatarOptions, type AvatarOption } from "./AvatarPicker";
+import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
 import { useProfile, type ProfileData } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -441,11 +442,14 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                   
                   {/* Avatar Picker (only in edit mode) */}
                   {isEditing && (
-                    <AvatarPicker
-                      selectedAvatarId={editData.avatar_url ? avatarOptions.find(a => a.src === editData.avatar_url)?.id : undefined}
-                      onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar_url: avatar.src })}
-                      className="mt-3 max-w-[140px]"
-                    />
+                    <>
+                      <AvatarPicker
+                        selectedAvatarId={editData.avatar_url ? avatarOptions.find(a => a.src === editData.avatar_url)?.id : undefined}
+                        onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar_url: avatar.src })}
+                        className="mt-3 max-w-[140px]"
+                      />
+                      <ProfilePhotoUpload onUploadComplete={() => {}} />
+                    </>
                   )}
                 </div>
 
