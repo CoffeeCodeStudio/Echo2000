@@ -73,15 +73,11 @@ export function ProfilePhotoUpload({ onUploadComplete }: ProfilePhotoUploadProps
   };
 
   return (
-    <div className="space-y-3">
-      <div className="p-3 rounded-lg bg-accent/10 border border-accent/30">
-        <div className="flex items-start gap-2">
-          <Info className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Din bild måste vara en <strong>ansiktsbild</strong> och kommer att granskas av en moderator innan den syns för andra.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-2">
+      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <Info className="w-3 h-3 text-accent shrink-0" />
+        Måste vara en <strong>ansiktsbild</strong> – granskas av moderator.
+      </p>
 
       <input
         ref={fileInputRef}
@@ -92,11 +88,9 @@ export function ProfilePhotoUpload({ onUploadComplete }: ProfilePhotoUploadProps
       />
 
       <Button
-        variant="outline"
-        size="sm"
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
-        className="w-full"
+        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
       >
         {uploading ? (
           <>
