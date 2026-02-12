@@ -83,16 +83,15 @@ export function MsnContactList({
           .select("user_id, username, avatar_url, status_message")
           .in("user_id", friendUserIds);
 
-        // Get unread message counts per sender
-        const { data: unreadMessages } = await supabase
-          .from("messages")
+        // Get unread chat message counts per sender
+        const { data: unreadChatMessages } = await supabase
+          .from("chat_messages")
           .select("sender_id")
           .eq("recipient_id", user.id)
-          .eq("is_read", false)
-          .eq("deleted_by_recipient", false);
+          .eq("is_read", false);
 
         const unreadCounts: Record<string, number> = {};
-        unreadMessages?.forEach(msg => {
+        unreadChatMessages?.forEach(msg => {
           unreadCounts[msg.sender_id] = (unreadCounts[msg.sender_id] || 0) + 1;
         });
 
@@ -203,7 +202,7 @@ export function MsnContactList({
                       {contact.name}
                     </span>
                     {contact.unreadCount && contact.unreadCount > 0 && (
-                      <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                      <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center animate-pulse">
                         {contact.unreadCount}
                       </span>
                     )}
