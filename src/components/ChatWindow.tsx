@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { 
   Smile, Image, Gift, 
   Mic, Video, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
-  Users, Gamepad2, Phone, MoreVertical, ArrowLeft
+  Users, Gamepad2, Phone, MoreVertical, ArrowLeft, Loader2
 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
@@ -15,18 +15,9 @@ import { MsnEmoticonPicker, quickEmoticons, convertMsnEmoticons } from "./MsnEmo
 import { MsnContactList, type MsnContact } from "./MsnContactList";
 import { MsnLogo, MsnLogoWithText } from "./MsnLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { useChatMessages } from "@/hooks/useChatMessages";
 import type { LayoutContext } from "./SharedLayout";
-
-interface Message {
-  id: string;
-  content: string;
-  timestamp: string;
-  isSelf: boolean;
-  senderName: string;
-}
-
-// No demo messages - start with empty conversation
-const getInitialMessages = (_friendName: string): Message[] => [];
 
 interface ChatWindowProps {
   className?: string;
@@ -37,7 +28,6 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const [userDisplayName, setUserDisplayName] = useState("");
   const [userStatus, setUserStatus] = useState<UserStatus>("online");
   const [selectedContact, setSelectedContact] = useState<MsnContact | null>(null);
-  const [conversations, setConversations] = useState<Record<string, Message[]>>({});
   const [inputMessage, setInputMessage] = useState("");
   const [showEmojis, setShowEmojis] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -47,6 +37,10 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { playSound } = useMsnSounds();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  
+  // Persistent chat messages from database
+  const { messages: dbMessages, loading: messagesLoading, sendMessage: sendDbMessage } = useChatMessages(selectedContact?.id || null);
   
   // Get layout context for hiding navbar
   const context = useOutletContext<LayoutContext>();
@@ -66,13 +60,18 @@ export function ChatWindow({ className }: ChatWindowProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const currentMessages = selectedContact 
-    ? conversations[selectedContact.id] || [] 
-    : [];
+  // Map DB messages to display format
+  const currentMessages = dbMessages.map(msg => ({
+    id: msg.id,
+    content: msg.content,
+    timestamp: new Date(msg.created_at).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }),
+    isSelf: msg.sender_id === user?.id,
+    senderName: msg.sender_id === user?.id ? (userDisplayName || "Du") : (selectedContact?.name || ""),
+  }));
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentMessages]);
+  }, [currentMessages.length]);
 
   const handleLogin = (displayName: string, status: string) => {
     setUserDisplayName(displayName);
@@ -86,39 +85,23 @@ export function ChatWindow({ className }: ChatWindowProps) {
     if (isMobile) {
       setMobileShowChat(true);
     }
-    // Initialize conversation if it doesn't exist
-    if (!conversations[contact.id]) {
-      setConversations(prev => ({
-        ...prev,
-        [contact.id]: getInitialMessages(contact.name)
-      }));
-    }
   };
 
   const handleBackToContacts = () => {
     setMobileShowChat(false);
   };
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputMessage.trim() || !selectedContact) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage,
-      timestamp: new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }),
-      isSelf: true,
-      senderName: userDisplayName || "Du",
-    };
-    
-    setConversations(prev => ({
-      ...prev,
-      [selectedContact.id]: [...(prev[selectedContact.id] || []), newMessage]
-    }));
+    const msg = inputMessage;
     setInputMessage("");
     setShowEmojis(false);
     
     if (soundEnabled) {
       playSound("send");
     }
+
+    await sendDbMessage(msg);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -262,6 +245,12 @@ export function ChatWindow({ className }: ChatWindowProps) {
                 <div className="text-center text-[11px] text-gray-600 dark:text-gray-400 mb-4 pb-2 border-b border-gray-300 dark:border-gray-700">
                   Du har startat en konversation med {selectedContact.name}
                 </div>
+                
+                {messagesLoading && (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
                 
                 {currentMessages.map((message) => (
                   <div key={message.id} className="mb-2 animate-fade-in">
