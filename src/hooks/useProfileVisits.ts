@@ -11,12 +11,13 @@ interface Visitor {
 
 export function useProfileVisits(profileOwnerId: string | undefined) {
   const { user } = useAuth();
+  const effectiveOwnerId = profileOwnerId || user?.id;
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Log visit when viewing someone else's profile
   const logVisit = useCallback(async () => {
-    if (!user || !profileOwnerId || user.id === profileOwnerId) return;
+    if (!user || !effectiveOwnerId || user.id === effectiveOwnerId) return;
 
     try {
       // Upsert: insert or update if already visited
@@ -24,7 +25,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
         .from('profile_visits')
         .upsert(
           {
-            profile_owner_id: profileOwnerId,
+            profile_owner_id: effectiveOwnerId,
             visitor_id: user.id,
             visited_at: new Date().toISOString(),
           },
@@ -37,11 +38,11 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
     } catch (err) {
       console.error('Error logging visit:', err);
     }
-  }, [user, profileOwnerId]);
+  }, [user, effectiveOwnerId]);
 
   // Fetch visitors for a profile
   const fetchVisitors = useCallback(async () => {
-    if (!profileOwnerId) {
+    if (!effectiveOwnerId) {
       setVisitors([]);
       setLoading(false);
       return;
@@ -52,7 +53,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
       const { data: visitData, error: visitError } = await supabase
         .from('profile_visits')
         .select('id, visitor_id, visited_at')
-        .eq('profile_owner_id', profileOwnerId)
+        .eq('profile_owner_id', effectiveOwnerId)
         .order('visited_at', { ascending: false })
         .limit(5);
 
@@ -101,7 +102,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [profileOwnerId]);
+  }, [effectiveOwnerId]);
 
   // Log visit on mount (when viewing other's profile)
   useEffect(() => {
