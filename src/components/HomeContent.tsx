@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, MessageCircle, Wifi, Gamepad2, Palette, Heart, Radio, Music, ExternalLink } from "lucide-react";
+import { Users, MessageCircle, Wifi, Gamepad2, Palette, Heart, Radio, Music, ExternalLink, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
@@ -13,23 +13,32 @@ import { AuthDialog } from "./AuthDialog";
 
 function StatsBox() {
   const [stats, setStats] = useState({ members: 0, online: 0, messages: 0 });
+  const { user } = useAuth();
+  const { onlineUsers } = usePresence();
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: memberCount }, { count: msgCount }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("chat_messages").select("*", { count: "exact", head: true }),
-      ]);
-      setStats({
-        members: memberCount ?? 0,
-        online: 0, // will be updated by presence
-        messages: msgCount ?? 0,
-      });
+      if (user) {
+        const [{ count: memberCount }, { count: msgCount }] = await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+        ]);
+        setStats({ members: memberCount ?? 0, online: 0, messages: msgCount ?? 0 });
+      } else {
+        try {
+          const res = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-stats`,
+            { headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            setStats({ members: data.stats.members, online: 0, messages: data.stats.messages });
+          }
+        } catch {}
+      }
     };
     fetchStats();
-  }, []);
-
-  const { onlineUsers } = usePresence();
+  }, [user]);
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
@@ -64,6 +73,16 @@ function VisionBox() {
         <VisionItem icon={<Gamepad2 className="w-4 h-4 text-primary" />} text="Spel & Tävlingar" />
         <VisionItem icon={<Palette className="w-4 h-4 text-accent" />} text="Konst & Kreativitet" />
         <VisionItem icon={<Heart className="w-4 h-4 text-destructive" />} text="Gemenskap & Vänskap" />
+        {/* Pixel robot mascot */}
+        <div className="flex items-start gap-2 pt-2 mt-2 border-t border-border">
+          <div className="flex-shrink-0">
+            <Bot className="w-8 h-8 text-primary" />
+          </div>
+          <div className="relative bg-muted/60 border border-border rounded-lg px-3 py-1.5 text-xs text-muted-foreground">
+            <div className="absolute -left-1.5 top-2 w-0 h-0 border-t-[5px] border-t-transparent border-r-[6px] border-r-border border-b-[5px] border-b-transparent" />
+            Vad väntar du på? Inget MSN-virus här inte!
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -106,20 +125,34 @@ function SocialLink({ label }: { label: string }) {
 
 function RecentOnlineBox() {
   const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const { user } = useAuth();
   const { getUserStatus } = usePresence();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRecent = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url")
-        .order("last_seen", { ascending: false })
-        .limit(10);
-      if (data) setMembers(data);
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url")
+          .order("last_seen", { ascending: false })
+          .limit(10);
+        if (data) setMembers(data);
+      } else {
+        try {
+          const res = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-stats`,
+            { headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.recentMembers) setMembers(data.recentMembers);
+          }
+        } catch {}
+      }
     };
     fetchRecent();
-  }, []);
+  }, [user]);
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
