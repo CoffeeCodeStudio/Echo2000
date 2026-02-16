@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import { useOutletContext, useLocation } from "react-router-dom";
 import { FriendsSidebar } from "@/components/FriendsSidebar";
 import { ChatWindow } from "@/components/ChatWindow";
-import { WelcomeHero } from "@/components/WelcomeHero";
+import { HomeContent } from "@/components/HomeContent";
 import { ProfilePage } from "@/components/ProfilePage";
-import { CommunityCard } from "@/components/CommunityCard";
 import { Guestbook } from "@/components/Guestbook";
 import { Mailbox } from "@/components/Mailbox";
 import { FriendsList } from "@/components/FriendsList";
 import { MemberGrid } from "@/components/MemberGrid";
-import { RecentlyOnline } from "@/components/RecentlyOnline";
 import { Klotterplanket } from "@/components/Klotterplanket";
 import { GamesSection } from "@/components/GamesSection";
 import { LockedMeetups } from "@/components/LockedMeetups";
@@ -109,31 +107,7 @@ export default function Index() {
 
     switch (activeTab) {
       case "hem":
-        return (
-          <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-            <WelcomeHero />
-
-            {/* Recently Online */}
-            {user && <RecentlyOnline />}
-
-            {/* Communities Section */}
-            <section className="container px-4 py-8">
-              <h2 className="font-display font-bold text-xl mb-4">Aktiva Gemenskaper</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {communities.map((community) => (
-                  <CommunityCard
-                    key={community.id}
-                    name={community.name}
-                    description={community.description}
-                    memberCount={community.memberCount}
-                    messageCount={community.messageCount}
-                    isActive={community.isActive}
-                  />
-                ))}
-              </div>
-            </section>
-          </div>
-        );
+        return <HomeContent />;
 
       case "chatt":
         return (
