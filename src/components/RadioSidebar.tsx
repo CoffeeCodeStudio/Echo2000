@@ -3,8 +3,10 @@ import { Radio, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight } from 
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
+import { useAuth } from "@/hooks/useAuth";
 
 export function RadioSidebar() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const {
     isPlaying,
@@ -19,6 +21,8 @@ export function RadioSidebar() {
     toggleMute,
     selectStation,
   } = useRadio();
+
+  if (!user) return null;
 
   return (
     <>
