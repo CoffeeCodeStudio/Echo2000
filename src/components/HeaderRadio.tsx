@@ -3,8 +3,10 @@ import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
+import { useAuth } from "@/hooks/useAuth";
 
 export function HeaderRadio() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -35,6 +37,8 @@ export function HeaderRadio() {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
+
+  if (!user) return null;
 
   return (
     <div className="relative" ref={dropdownRef}>
