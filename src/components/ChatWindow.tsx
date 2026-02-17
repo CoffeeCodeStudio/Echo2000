@@ -17,6 +17,11 @@ import { MsnLogo, MsnLogoWithText } from "./MsnLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages } from "@/hooks/useChatMessages";
+import { useWebRTC } from "@/hooks/useWebRTC";
+import { CallWindow } from "./CallWindow";
+import { IncomingCallDialog } from "./IncomingCallDialog";
+import { InviteToCallDialog } from "./InviteToCallDialog";
+import { VideoCallMenu } from "./VideoCallMenu";
 import type { LayoutContext } from "./SharedLayout";
 
 interface ChatWindowProps {
@@ -38,9 +43,16 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const { playSound } = useMsnSounds();
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   
   // Persistent chat messages from database
   const { messages: dbMessages, loading: messagesLoading, sendMessage: sendDbMessage } = useChatMessages(selectedContact?.id || null);
+  
+  // WebRTC for calls
+  const webrtc = useWebRTC({
+    userId: user?.id || "",
+    contactId: selectedContact?.id || "",
+  });
   
   // Get layout context for hiding navbar
   const context = useOutletContext<LayoutContext>();
@@ -192,6 +204,40 @@ export function ChatWindow({ className }: ChatWindowProps) {
           <div className="flex-1 flex flex-col min-w-0">
             {selectedContact ? (
               <>
+                {/* Call overlays */}
+                {webrtc.callActive && (
+                  <CallWindow
+                    callType={webrtc.callType}
+                    localStream={webrtc.localStream}
+                    remoteStreams={webrtc.remoteStreams}
+                    isMuted={webrtc.isMuted}
+                    isVideoOff={webrtc.isVideoOff}
+                    contactName={selectedContact.name}
+                    participants={webrtc.participants}
+                    onToggleMute={webrtc.toggleMute}
+                    onToggleVideo={webrtc.toggleVideo}
+                    onEndCall={webrtc.endCall}
+                    onInvite={() => setShowInviteDialog(true)}
+                  />
+                )}
+
+                {webrtc.incomingCall && !webrtc.callActive && (
+                  <IncomingCallDialog
+                    callerName={selectedContact.name}
+                    callType={webrtc.incomingCall.callType}
+                    onAccept={() => webrtc.answerCall(webrtc.incomingCall!.channelName, webrtc.incomingCall!.callType)}
+                    onDecline={webrtc.declineCall}
+                  />
+                )}
+
+                {showInviteDialog && webrtc.callActive && (
+                  <InviteToCallDialog
+                    currentParticipants={webrtc.participants}
+                    maxParticipants={4}
+                    onInvite={(userId) => webrtc.inviteUser(userId)}
+                    onClose={() => setShowInviteDialog(false)}
+                  />
+                )}
                 {/* Chat Window Header - Cleaner layout */}
                 <div 
                   id="msn-chat-window"
@@ -228,12 +274,34 @@ export function ChatWindow({ className }: ChatWindowProps) {
                     
                     {/* Action buttons - hidden on very small screens */}
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex"
+                        onClick={() => {
+                          if (user && selectedContact) {
+                            webrtc.startCall("voice");
+                            webrtc.ringContact(selectedContact.id, "voice");
+                          }
+                        }}
+                      >
                         <Phone className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex">
-                        <Video className="w-4 h-4" />
-                      </Button>
+                      <VideoCallMenu
+                        onSelectCamera={() => {
+                          if (user && selectedContact) {
+                            webrtc.startCall("video", "camera");
+                            webrtc.ringContact(selectedContact.id, "video");
+                          }
+                        }}
+                        onSelectScreen={() => {
+                          if (user && selectedContact) {
+                            webrtc.startCall("screenshare", "screen");
+                            webrtc.ringContact(selectedContact.id, "screenshare");
+                          }
+                        }}
+                      >
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20 hidden sm:flex">
+                          <Video className="w-4 h-4" />
+                        </Button>
+                      </VideoCallMenu>
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20" onClick={nudge}>
                         <Bell className="w-4 h-4" />
                       </Button>
@@ -245,9 +313,49 @@ export function ChatWindow({ className }: ChatWindowProps) {
 
                   {/* Toolbar - Hidden on mobile */}
                   <div className="hidden md:flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-transparent to-black/10">
-                    <ToolbarButton icon={<Users className="w-4 h-4" />} label="Bjud in" />
-                    <ToolbarButton icon={<Mic className="w-4 h-4" />} label="Röst" />
-                    <ToolbarButton icon={<Video className="w-4 h-4" />} label="Video" />
+                    <ToolbarButton 
+                      icon={<Users className="w-4 h-4" />} 
+                      label="Bjud in" 
+                      onClick={() => {
+                        if (webrtc.callActive) {
+                          setShowInviteDialog(true);
+                        }
+                      }}
+                      isActive={showInviteDialog}
+                    />
+                    <ToolbarButton 
+                      icon={<Mic className="w-4 h-4" />} 
+                      label="Röst" 
+                      onClick={() => {
+                        if (user && selectedContact && !webrtc.callActive) {
+                          webrtc.startCall("voice");
+                          webrtc.ringContact(selectedContact.id, "voice");
+                        }
+                      }}
+                      isActive={webrtc.callActive && webrtc.callType === "voice"}
+                    />
+                    <VideoCallMenu
+                      onSelectCamera={() => {
+                        if (user && selectedContact && !webrtc.callActive) {
+                          webrtc.startCall("video", "camera");
+                          webrtc.ringContact(selectedContact.id, "video");
+                        }
+                      }}
+                      onSelectScreen={() => {
+                        if (user && selectedContact && !webrtc.callActive) {
+                          webrtc.startCall("screenshare", "screen");
+                          webrtc.ringContact(selectedContact.id, "screenshare");
+                        }
+                      }}
+                    >
+                      <div>
+                        <ToolbarButton 
+                          icon={<Video className="w-4 h-4" />} 
+                          label="Video" 
+                          isActive={webrtc.callActive && (webrtc.callType === "video" || webrtc.callType === "screenshare")}
+                        />
+                      </div>
+                    </VideoCallMenu>
                     <ToolbarButton icon={<Gamepad2 className="w-4 h-4" />} label="Spel" />
                     <div className="h-4 w-px bg-white/30 mx-1" />
                     <ToolbarButton icon={<Bell className="w-4 h-4" />} label="Nudge" onClick={nudge} />

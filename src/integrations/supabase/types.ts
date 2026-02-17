@@ -47,6 +47,65 @@ export type Database = {
         }
         Relationships: []
       }
+      call_participants: {
+        Row: {
+          call_id: string
+          id: string
+          joined_at: string
+          left_at: string | null
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_participants_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "call_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_sessions: {
+        Row: {
+          call_type: string
+          caller_id: string
+          channel_name: string
+          created_at: string
+          ended_at: string | null
+          id: string
+        }
+        Insert: {
+          call_type?: string
+          caller_id: string
+          channel_name: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+        }
+        Update: {
+          call_type?: string
+          caller_id?: string
+          channel_name?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
