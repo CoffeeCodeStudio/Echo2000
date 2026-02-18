@@ -511,6 +511,124 @@ export type Database = {
         }
         Relationships: []
       }
+      scribble_guesses: {
+        Row: {
+          created_at: string
+          guess: string
+          id: string
+          is_correct: boolean
+          lobby_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          guess: string
+          id?: string
+          is_correct?: boolean
+          lobby_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          guess?: string
+          id?: string
+          is_correct?: boolean
+          lobby_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scribble_guesses_lobby_id_fkey"
+            columns: ["lobby_id"]
+            isOneToOne: false
+            referencedRelation: "scribble_lobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scribble_lobbies: {
+        Row: {
+          created_at: string
+          creator_id: string
+          creator_username: string
+          current_drawer_id: string | null
+          current_word: string | null
+          description: string | null
+          id: string
+          round_number: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          creator_username: string
+          current_drawer_id?: string | null
+          current_word?: string | null
+          description?: string | null
+          id?: string
+          round_number?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          creator_username?: string
+          current_drawer_id?: string | null
+          current_word?: string | null
+          description?: string | null
+          id?: string
+          round_number?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scribble_players: {
+        Row: {
+          avatar_url: string | null
+          id: string
+          joined_at: string
+          lobby_id: string
+          score: number
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          id?: string
+          joined_at?: string
+          lobby_id: string
+          score?: number
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          id?: string
+          joined_at?: string
+          lobby_id?: string
+          score?: number
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scribble_players_lobby_id_fkey"
+            columns: ["lobby_id"]
+            isOneToOne: false
+            referencedRelation: "scribble_lobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
