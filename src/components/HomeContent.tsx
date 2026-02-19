@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, MessageCircle, Wifi, Gamepad2, Palette, Heart, Radio, Music, ExternalLink, Bot } from "lucide-react";
+import { NewsFeed } from "./NewsFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
@@ -282,6 +283,7 @@ export function HomeContent() {
           {/* Center Column */}
           <div className="space-y-4">
             <RecentOnlineBox />
+            <NewsFeed />
             <LajvBox />
           </div>
 
