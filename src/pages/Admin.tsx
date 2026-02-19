@@ -4,11 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon } from "lucide-react";
+import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { AdminCreateUser } from "@/components/admin/AdminCreateUser";
 import { AdminContentModeration } from "@/components/admin/AdminContentModeration";
 import { AdminImageReview } from "@/components/admin/AdminImageReview";
+import { AdminBotManager } from "@/components/admin/AdminBotManager";
+import { AdminNewsManager } from "@/components/admin/AdminNewsManager";
 
 interface Profile {
   id: string;
@@ -30,7 +32,7 @@ export default function Admin() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [activeTab, setActiveTab] = useState<"list" | "create" | "moderate" | "images">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "moderate" | "images" | "bots" | "news">("list");
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -138,12 +140,20 @@ export default function Admin() {
           <Button variant={activeTab === "images" ? "default" : "outline"} onClick={() => setActiveTab("images")}>
             <ImageIcon className="w-4 h-4 mr-2" />Bildgranskning
           </Button>
+          <Button variant={activeTab === "bots" ? "default" : "outline"} onClick={() => setActiveTab("bots")}>
+            <Bot className="w-4 h-4 mr-2" />AI-Botar
+          </Button>
+          <Button variant={activeTab === "news" ? "default" : "outline"} onClick={() => setActiveTab("news")}>
+            <Newspaper className="w-4 h-4 mr-2" />Nyheter
+          </Button>
         </div>
 
         {activeTab === "list" && <AdminUserList users={users} userRoles={userRoles} onRefresh={fetchData} />}
         {activeTab === "create" && <AdminCreateUser onUserCreated={fetchData} />}
         {activeTab === "moderate" && <AdminContentModeration />}
         {activeTab === "images" && <AdminImageReview />}
+        {activeTab === "bots" && <AdminBotManager />}
+        {activeTab === "news" && <AdminNewsManager />}
       </div>
     </div>
   );
