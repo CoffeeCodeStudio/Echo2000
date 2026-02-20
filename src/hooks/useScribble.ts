@@ -47,10 +47,28 @@ export function useScribbleLobbies() {
 
   const fetchLobbies = useCallback(async () => {
     if (!user) return;
+
+    // Clean up finished or stale lobbies (inactive > 5 min)
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    // Delete finished lobbies
+    await supabase
+      .from('scribble_lobbies')
+      .delete()
+      .eq('status', 'finished');
+
+    // Delete stale waiting lobbies (no activity for 5+ min)
+    await supabase
+      .from('scribble_lobbies')
+      .delete()
+      .eq('status', 'waiting')
+      .lt('updated_at', fiveMinAgo);
+
     const { data, error } = await supabase
       .from('scribble_lobbies')
       .select('*')
       .in('status', ['waiting', 'playing'])
+      .gte('updated_at', fiveMinAgo)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -155,6 +173,18 @@ export function useScribbleGame(lobbyId: string | null) {
 
     return () => { supabase.removeChannel(channel); };
   }, [fetchGame, lobbyId]);
+
+  // Heartbeat: update lobby's updated_at every 60s to keep it alive
+  useEffect(() => {
+    if (!lobbyId || !user) return;
+    const interval = setInterval(async () => {
+      await supabase
+        .from('scribble_lobbies')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', lobbyId);
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [lobbyId, user]);
 
   const joinLobby = async () => {
     if (!lobbyId || !user || !profile) return;
