@@ -376,6 +376,42 @@ export type Database = {
         }
         Relationships: []
       }
+      memory_highscores: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          difficulty: string
+          id: string
+          moves: number
+          score: number
+          time_seconds: number
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          moves: number
+          score: number
+          time_seconds: number
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          moves?: number
+          score?: number
+          time_seconds?: number
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
