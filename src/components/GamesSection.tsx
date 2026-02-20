@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ScribbleLobbyList } from "@/components/ScribbleLobbyList";
 import { ScribbleGame } from "@/components/ScribbleGame";
+import { MemoryGame } from "@/components/MemoryGame";
 import { Gamepad2, User, Users, Info, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,13 @@ const SINGLE_PLAYER_GAMES = [
     icon: "🧠",
     description: "Hitta matchande par av kort. Klassiskt minnesspel!",
     players: "1 spelare",
-    available: false,
+    available: true,
+    rules: [
+      "Vänd två kort i taget för att hitta par.",
+      "Matchar korten? De försvinner!",
+      "Färre drag och snabbare tid = högre poäng.",
+      "Bästa poäng sparas lokalt.",
+    ],
   },
   {
     id: "snake",
@@ -61,7 +68,11 @@ const MULTI_PLAYER_GAMES = [
 
 export function GamesSection() {
   const [activeLobbyId, setActiveLobbyId] = useState<string | null>(null);
-  const [view, setView] = useState<"list" | "scribble-lobbies">("list");
+  const [view, setView] = useState<"list" | "scribble-lobbies" | "memory">("list");
+
+  if (view === "memory") {
+    return <MemoryGame onBack={() => setView("list")} />;
+  }
 
   if (activeLobbyId) {
     return <ScribbleGame lobbyId={activeLobbyId} onLeave={() => { setActiveLobbyId(null); setView("scribble-lobbies"); }} />;
@@ -119,7 +130,7 @@ export function GamesSection() {
           </div>
           <div className="space-y-3">
             {SINGLE_PLAYER_GAMES.map(game => (
-              <GameCard key={game.id} game={game} />
+              <GameCard key={game.id} game={game} onPlay={game.id === "memory" ? () => setView("memory") : undefined} />
             ))}
           </div>
         </section>
