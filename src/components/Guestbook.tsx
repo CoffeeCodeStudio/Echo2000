@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, MessageCircle, Loader2, Info, Trash2 } from "lucide-react";
+import { Send, MessageCircle, Loader2, Info, Trash2, AlertTriangle } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -195,16 +196,61 @@ export function Guestbook() {
     }
   };
 
+  const handleClearAll = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("guestbook_entries")
+        .delete()
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setEntries((prev) => prev.filter((e) => e.user_id !== user.id));
+      toast({ title: "Gästboken rensad", description: "Alla dina inlägg har raderats." });
+    } catch (error) {
+      console.error("Error clearing guestbook:", error);
+      toast({ title: "Kunde inte rensa", description: "Något gick fel, försök igen", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <section className="container px-4 py-6 max-w-2xl mx-auto">
-        {/* No demo mode - always show real data */}
-
         <div className="nostalgia-card p-4 mb-6">
-          <h1 className="font-display font-bold text-xl mb-1">📖 Min Gästbok</h1>
-          <p className="text-sm text-muted-foreground">
-            Lämna ett meddelande så svarar jag så fort jag kan!
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display font-bold text-xl mb-1">📖 Min Gästbok</h1>
+              <p className="text-sm text-muted-foreground">
+                Lämna ett meddelande så svarar jag så fort jag kan!
+              </p>
+            </div>
+            {user && entries.some(e => e.user_id === user.id) && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="flex items-center gap-1.5">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Rensa mina inlägg
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                      Rensa gästboken
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Är du säker på att du vill radera ALLA dina inlägg i gästboken? Detta går inte att ångra.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Ja, radera allt
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
 
         {/* Write new entry */}

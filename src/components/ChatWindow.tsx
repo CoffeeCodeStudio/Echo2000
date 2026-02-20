@@ -3,20 +3,23 @@ import { useOutletContext } from "react-router-dom";
 import { 
   Smile, Image, Gift, 
   Mic, Video, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
-  Users, Gamepad2, Phone, MoreVertical, ArrowLeft, Loader2
+  Users, Gamepad2, Phone, MoreVertical, ArrowLeft, Loader2, Trash2, AlertTriangle
 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
 import { MsnLogin } from "./MsnLogin";
+import { useToast } from "@/hooks/use-toast";
 import { MsnEmoticonPicker, quickEmoticons, convertMsnEmoticons } from "./MsnEmoticons";
 import { MsnContactList, type MsnContact } from "./MsnContactList";
 import { MsnLogo, MsnLogoWithText } from "./MsnLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages } from "@/hooks/useChatMessages";
+import { supabase } from "@/integrations/supabase/client";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { CallWindow } from "./CallWindow";
 import { IncomingCallDialog } from "./IncomingCallDialog";
@@ -44,6 +47,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const { toast } = useToast();
   
   // Persistent chat messages from database
   const { messages: dbMessages, loading: messagesLoading, sendMessage: sendDbMessage } = useChatMessages(selectedContact?.id || null);
@@ -152,6 +156,30 @@ export function ChatWindow({ className }: ChatWindowProps) {
     if (chatWindow) {
       chatWindow.classList.add("animate-shake");
       setTimeout(() => chatWindow.classList.remove("animate-shake"), 500);
+    }
+  };
+
+  const handleClearAllMessages = async () => {
+    if (!user) return;
+    try {
+      // Delete sent messages
+      const { error: e1 } = await supabase
+        .from("chat_messages")
+        .delete()
+        .eq("sender_id", user.id);
+      if (e1) throw e1;
+      // Delete received messages
+      const { error: e2 } = await supabase
+        .from("chat_messages")
+        .delete()
+        .eq("recipient_id", user.id);
+      if (e2) throw e2;
+      toast({ title: "Meddelanden raderade", description: "Alla dina chattmeddelanden har raderats." });
+      // Force reload to clear state
+      window.location.reload();
+    } catch (error) {
+      console.error("Error clearing messages:", error);
+      toast({ title: "Kunde inte radera", description: "Något gick fel, försök igen", variant: "destructive" });
     }
   };
 
@@ -539,6 +567,33 @@ export function ChatWindow({ className }: ChatWindowProps) {
       <div className="bg-gradient-to-r from-[#1e4c8a] to-[#2d5aa0] px-3 py-1 text-[10px] text-white/60 flex items-center justify-between">
         <span>Echo Messenger © 2025 - Nostalgi på riktigt!</span>
         <div className="flex items-center gap-3">
+          {user && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="flex items-center gap-1 text-red-300 hover:text-red-200 transition-colors">
+                  <Trash2 className="w-3 h-3" />
+                  Töm alla meddelanden
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                    Töm alla meddelanden
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Vill du verkligen radera ALLA dina privata meddelanden? Detta går inte att ångra.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAllMessages} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Ja, radera allt
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <span className="flex items-center gap-1">
             {soundEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
             {soundEnabled ? "Ljud på" : "Ljud av"}
