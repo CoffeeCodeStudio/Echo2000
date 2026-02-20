@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Loader2, Trash2, Send } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Loader2, Trash2, Send, MessageSquare, X } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -10,6 +10,19 @@ import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { replaceEmoteCodes } from './PixelEmotes';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 
 interface ProfileGuestbookProps {
   profileOwnerId: string;
@@ -23,15 +36,59 @@ export function ProfileGuestbook({
   className,
 }: ProfileGuestbookProps) {
   const { user } = useAuth();
-  const { entries, loading, posting, postEntry, deleteEntry } =
+  const { entries, loading, posting, postEntry, deleteEntry, refetch } =
     useProfileGuestbook(profileOwnerId);
   const [newMessage, setNewMessage] = useState('');
+  const [clearing, setClearing] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!newMessage.trim()) return;
     const success = await postEntry(newMessage);
     if (success) {
       setNewMessage('');
+    }
+  };
+
+  const handleReply = useCallback((authorName: string) => {
+    setNewMessage((prev) => {
+      const mention = `@${authorName} `;
+      if (prev.includes(mention)) return prev;
+      return mention + prev;
+    });
+    // Scroll to form and focus textarea
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      textareaRef.current?.focus();
+    }, 100);
+  }, []);
+
+  const handleClearAll = async () => {
+    if (!user) return;
+    setClearing(true);
+    try {
+      const { error } = await supabase
+        .from('profile_guestbook')
+        .delete()
+        .eq('profile_owner_id', profileOwnerId);
+
+      if (error) {
+        console.error('Error clearing guestbook:', error);
+        toast({
+          title: 'Kunde inte rensa gästboken',
+          description: 'Försök igen senare',
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Gästboken rensad!' });
+        refetch();
+      }
+    } catch (err) {
+      console.error('Error in handleClearAll:', err);
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -50,8 +107,9 @@ export function ProfileGuestbook({
     <div className={cn('space-y-4', className)}>
       {/* Post form (only if logged in and viewing someone else's profile) */}
       {user && !isOwnProfile && (
-        <div className="bg-muted/30 rounded-lg p-4 border border-border">
+        <div ref={formRef} className="bg-muted/30 rounded-lg p-4 border border-border">
           <Textarea
+            ref={textareaRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Skriv något trevligt i gästboken..."
@@ -77,6 +135,43 @@ export function ProfileGuestbook({
               Skicka
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Clear all button for profile owner */}
+      {isOwnProfile && user && entries.length > 0 && (
+        <div className="flex justify-end">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-muted-foreground hover:text-destructive"
+                disabled={clearing}
+              >
+                {clearing ? (
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                ) : (
+                  <Trash2 className="w-3 h-3 mr-1" />
+                )}
+                Rensa min gästbok
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Rensa gästboken?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Alla inlägg i din gästbok kommer att raderas permanent. Detta går inte att ångra.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearAll}>
+                  Ja, rensa allt
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
 
@@ -108,34 +203,45 @@ export function ProfileGuestbook({
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <ClickableUsername
-                      username={entry.author_name}
-                      nameClassName="text-sm font-semibold"
-                    />
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(entry.created_at), {
                         addSuffix: true,
                         locale: sv,
                       })}
                     </span>
+                    <div className="flex items-center gap-1">
+                      {/* Reply button */}
+                      {user && !isOwnProfile && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-primary"
+                          onClick={() => handleReply(entry.author_name)}
+                          title="Svara"
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {/* Delete button for author or profile owner */}
+                      {user &&
+                        (entry.author_id === user.id ||
+                          (isOwnProfile && profileOwnerId === user.id)) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteEntry(entry.id)}
+                            title="Radera"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                    </div>
                   </div>
                   <p className="text-sm text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
                     {replaceEmoteCodes(entry.message)}
                   </p>
                 </div>
-                {/* Delete button for author or profile owner */}
-                {user &&
-                  (entry.author_id === user.id ||
-                    (isOwnProfile && profileOwnerId === user.id)) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteEntry(entry.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
               </div>
             </div>
           ))}
