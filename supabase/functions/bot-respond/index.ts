@@ -144,14 +144,14 @@ REGLER:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content?.trim() || "";
 
-    // Persist the response
-    if (action === "chat_reply" && target_id) {
+    // Persist the response — with self-message guard
+    if (action === "chat_reply" && target_id && target_id !== bot.user_id) {
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
         recipient_id: target_id,
         content: reply,
       });
-    } else if (action === "inactive_outreach" && target_id) {
+    } else if (action === "inactive_outreach" && target_id && target_id !== bot.user_id) {
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
         recipient_id: target_id,
@@ -164,7 +164,8 @@ REGLER:
         author_avatar: bot.avatar_url,
         message: reply,
       });
-    } else if (action === "profile_guestbook_reply" && profile_owner_id) {
+    } else if (action === "profile_guestbook_reply" && profile_owner_id && profile_owner_id !== bot.user_id) {
+      // Post in the TARGET user's profile guestbook, not the bot's own
       await supabase.from("profile_guestbook").insert({
         profile_owner_id: profile_owner_id,
         author_id: bot.user_id,

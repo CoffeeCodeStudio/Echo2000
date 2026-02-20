@@ -209,12 +209,14 @@ async function handleBotProfileGuestbookReplies(
       .map(e => `- ${e.author_name}: "${e.message}"`)
       .join("\n");
 
+    // Reply in the AUTHOR's profile guestbook (not the bot's own)
     const res = await callBotRespond(supabaseUrl, {
       action: "profile_guestbook_reply",
       bot_id: bot.id,
       context: conversationContext,
       target_username: targetEntry.author_name,
-      profile_owner_id: bot.user_id,
+      target_id: targetEntry.author_id,
+      profile_owner_id: targetEntry.author_id,
       reply_type: replyType,
     });
 
@@ -248,7 +250,9 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
-    const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))];
+    // Filter out messages from the bot itself (prevent self-chat)
+    const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
+    if (senderIds.length === 0) return false;
     const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
     const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
 
