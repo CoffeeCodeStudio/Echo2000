@@ -54,23 +54,27 @@ serve(async (req) => {
             .from("guestbook_entries")
             .select("author_name, message")
             .order("created_at", { ascending: false })
-            .limit(5);
+            .limit(10);
 
-          const contextStr = recentEntries && recentEntries.length > 0
-            ? `\n\nSenaste inläggen i gästboken:\n${recentEntries.map(e => `- ${e.author_name}: "${e.message}"`).join("\n")}`
+          // Filter out bot's own entries to avoid self-replies
+          const othersEntries = recentEntries?.filter(e => e.author_name !== bot.name) || [];
+
+          const contextStr = othersEntries.length > 0
+            ? `\n\nSenaste inläggen i gästboken från andra användare:\n${othersEntries.map(e => `- ${e.author_name}: "${e.message}"`).join("\n")}`
             : "";
 
           const res = await callBotRespond(supabaseUrl, {
             action: "guestbook_post",
             bot_id: bot.id,
             context: contextStr,
+            // No target_id — guestbook posts are public
           });
           results[bot.name].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
         } catch (e) {
           results[bot.name].push(`Guestbook error: ${e.message}`);
         }
       } else if (chosenContext === "chat") {
-        // Look for unread messages from ANY user, not just one specific person
+        // Look for unread messages from ANY user
         const { data: recentMsgs } = await supabase
           .from("chat_messages")
           .select("*")
@@ -80,30 +84,45 @@ serve(async (req) => {
           .limit(10);
 
         if (recentMsgs && recentMsgs.length > 0) {
-          // Reply to a random unread message (not always the latest)
-          const msg = recentMsgs[Math.floor(Math.random() * recentMsgs.length)];
+          // Group by sender to reply to different people
+          const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))];
+          // Pick a random sender to reply to
+          const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
+          const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
 
-          // Get sender profile for context
+          // Get sender profile
           const { data: senderProfile } = await supabase
             .from("profiles")
             .select("username")
-            .eq("user_id", msg.sender_id)
+            .eq("user_id", chosenSenderId)
             .single();
 
+          const senderName = senderProfile?.username || "en användare";
+
           try {
-            const contextStr = `Meddelande från ${senderProfile?.username || "en användare"}: "${msg.content}"`;
+            // Build context from ALL messages from this sender (for better conversation)
+            const messagesContext = senderMessages
+              .slice(0, 5)
+              .reverse()
+              .map(m => `"${m.content}"`)
+              .join(", ");
+
+            const contextStr = `Du chattar med ${senderName}. Deras senaste meddelanden: ${messagesContext}. Svara ${senderName} direkt.`;
             const res = await callBotRespond(supabaseUrl, {
               action: "chat_reply",
               bot_id: bot.id,
               context: contextStr,
-              target_id: msg.sender_id,
+              target_id: chosenSenderId,  // Reply to the actual sender
+              target_username: senderName,
             });
-            // Mark this message as read
-            await supabase
-              .from("chat_messages")
-              .update({ is_read: true })
-              .eq("id", msg.id);
-            results[bot.name].push(`Chat reply to ${senderProfile?.username || msg.sender_id}: ${res.reply || res.error || "unknown"}`);
+            // Mark ALL messages from this sender as read
+            for (const m of senderMessages) {
+              await supabase
+                .from("chat_messages")
+                .update({ is_read: true })
+                .eq("id", m.id);
+            }
+            results[bot.name].push(`Chat reply to ${senderName}: ${res.reply || res.error || "unknown"}`);
           } catch (e) {
             results[bot.name].push(`Chat error: ${e.message}`);
           }
@@ -121,12 +140,12 @@ serve(async (req) => {
 
         if (latestNews && latestNews.length > 0) {
           const article = latestNews[Math.floor(Math.random() * latestNews.length)];
-          // Post a guestbook entry referencing the news
           try {
             const res = await callBotRespond(supabaseUrl, {
               action: "guestbook_post",
               bot_id: bot.id,
               context: `Kommentera den senaste nyheten "${article.title}". Referera till innehållet: "${article.content.substring(0, 200)}"`,
+              // No target_id — news comments are public guestbook posts
             });
             results[bot.name].push(`News comment about "${article.title}": ${res.reply || res.error || "unknown"}`);
           } catch (e) {
