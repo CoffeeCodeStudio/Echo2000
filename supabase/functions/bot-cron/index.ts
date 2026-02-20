@@ -183,11 +183,12 @@ async function handleBotProfileGuestbookReplies(
 
     const targetEntry = recentEntries[0];
 
+    // Check if bot already replied in the TARGET USER's guestbook (not the bot's own)
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
       .select("id")
       .eq("author_id", bot.user_id)
-      .eq("profile_owner_id", bot.user_id)
+      .eq("profile_owner_id", targetEntry.author_id)
       .gte("created_at", targetEntry.created_at)
       .limit(1);
 
