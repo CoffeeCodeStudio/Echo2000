@@ -10,7 +10,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { replaceEmoteCodes } from './PixelEmotes';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -36,7 +35,7 @@ export function ProfileGuestbook({
   className,
 }: ProfileGuestbookProps) {
   const { user } = useAuth();
-  const { entries, loading, posting, postEntry, deleteEntry, refetch } =
+  const { entries, loading, posting, postEntry, deleteEntry, clearAll } =
     useProfileGuestbook(profileOwnerId);
   const [newMessage, setNewMessage] = useState('');
   const [clearing, setClearing] = useState(false);
@@ -68,29 +67,17 @@ export function ProfileGuestbook({
   const handleClearAll = async () => {
     if (!user) return;
     setClearing(true);
-    try {
-      const { error } = await supabase
-        .from('profile_guestbook')
-        .delete()
-        .eq('profile_owner_id', profileOwnerId);
-
-      if (error) {
-        console.error('Error clearing guestbook:', error);
-        toast({
-          title: 'Kunde inte rensa gästboken',
-          description: error.message || 'Försök igen senare',
-          variant: 'destructive',
-        });
-      } else {
-        toast({ title: 'Gästboken rensad!' });
-        // Force immediate refetch to update UI
-        await refetch();
-      }
-    } catch (err) {
-      console.error('Error in handleClearAll:', err);
-    } finally {
-      setClearing(false);
+    const success = await clearAll();
+    if (success) {
+      toast({ title: 'Gästboken rensad!' });
+    } else {
+      toast({
+        title: 'Kunde inte rensa gästboken',
+        description: 'Försök igen senare',
+        variant: 'destructive',
+      });
     }
+    setClearing(false);
   };
 
   if (loading) {
@@ -211,10 +198,8 @@ export function ProfileGuestbook({
                       })}
                     </span>
                     <div className="flex items-center gap-1">
-                      {/* Delete button for author or profile owner */}
-                      {user &&
-                        (entry.author_id === user.id ||
-                          (isOwnProfile && profileOwnerId === user.id)) && (
+                      {/* Delete button - only for profile owner */}
+                      {user && isOwnProfile && profileOwnerId === user.id && (
                           <Button
                             variant="ghost"
                             size="icon"
