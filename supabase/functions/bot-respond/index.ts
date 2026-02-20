@@ -17,7 +17,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, bot_id, context, target_id } = await req.json();
+    const { action, bot_id, context, target_id, target_username } = await req.json();
 
     // Fetch bot settings
     const { data: bot, error: botError } = await supabase
@@ -55,15 +55,17 @@ serve(async (req) => {
     const realityRules = `\n\nVIKTIGA REGLER:
 - Hitta ALDRIG på funktioner som inte finns på Echo2000 (t.ex. musik, video, spel som inte existerar).
 - Referera gärna till riktiga nyheter på sidan.
-- Var personlig och nämn andra användare vid namn om du kan.
+- KRITISKT: Adressera BARA den person du pratar med. Nämn INTE andra användare vid namn om du inte pratar med dem.
 - Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}`;
 
     let userPrompt = "";
     if (action === "chat_reply") {
-      userPrompt = `Du har fått följande meddelande i en chatt. Svara kort och naturligt (max 200 tecken).${realityRules}\n\n${context || "Hej!"}`;
+      // Include target username so AI addresses the RIGHT person
+      const addressee = target_username || "användaren";
+      userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Adressera BARA ${addressee}, ingen annan.${realityRules}\n\n${context || "Hej!"}`;
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
-      userPrompt = `Skriv ett kort, trevligt inlägg i gästboken (max 280 tecken). Var kreativ och personlig.${realityRules}${extraContext}`;
+      userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken). Det här är ett offentligt inlägg — rikta det INTE till en specifik person med namn om du inte refererar till ett inlägg de skrivit i gästboken. Var kreativ och personlig.${realityRules}${extraContext}`;
     } else if (action === "klotter_comment") {
       userPrompt = `Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.${realityRules}`;
     } else {
@@ -108,12 +110,14 @@ serve(async (req) => {
 
     // Perform the action with the bot's user_id
     if (action === "chat_reply" && target_id) {
+      // target_id is the person the bot is replying TO — verified by cron to be the actual sender
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
         recipient_id: target_id,
         content: reply,
       });
     } else if (action === "guestbook_post") {
+      // Guestbook posts are PUBLIC — user_id is the AUTHOR (the bot), no recipient
       await supabase.from("guestbook_entries").insert({
         user_id: bot.user_id,
         author_name: bot.name,
