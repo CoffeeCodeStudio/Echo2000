@@ -223,7 +223,7 @@ export function Guestbook() {
                 Lämna ett meddelande så svarar jag så fort jag kan!
               </p>
             </div>
-            {user && entries.some(e => e.user_id === user.id) && (
+            {user && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm" className="flex items-center gap-1.5">
