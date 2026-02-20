@@ -17,7 +17,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, bot_id, context, target_id, target_username } = await req.json();
+    const { action, bot_id, context, target_id, target_username, reply_type } = await req.json();
 
     // Fetch bot settings
     const { data: bot, error: botError } = await supabase
@@ -59,10 +59,28 @@ serve(async (req) => {
 - Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}`;
 
     let userPrompt = "";
+
     if (action === "chat_reply") {
-      // Include target username so AI addresses the RIGHT person
       const addressee = target_username || "användaren";
       userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Adressera BARA ${addressee}, ingen annan.${realityRules}\n\n${context || "Hej!"}`;
+    } else if (action === "guestbook_reply") {
+      // REACTIVE REPLY: Someone mentioned the bot or asked a question
+      const addressee = target_username || "någon";
+      const replyStyle = reply_type === "mention"
+        ? `Någon har nämnt dig vid namn i gästboken! Svara ${addressee} personligt och trevligt.`
+        : `Någon har ställt en fråga i gästboken. Svara hjälpsamt (eller lite busigt) till ${addressee}.`;
+
+      userPrompt = `${replyStyle}
+
+Senaste inläggen i gästboken:
+${context || "(inga)"}
+
+REGLER FÖR DITT SVAR:
+- Rikta svaret till ${addressee} — du FÅR nämna deras namn.
+- Max 280 tecken.
+- Var personlig, varm och lite lekfull.
+- Om det var en fråga, ge ett kort och hjälpsamt (eller busigt) svar.
+- Om det var en hälsning eller omnämning, svara med charm.${realityRules}`;
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
       userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken).
@@ -116,14 +134,13 @@ KRITISKA REGLER FÖR GÄSTBOKEN:
 
     // Perform the action with the bot's user_id
     if (action === "chat_reply" && target_id) {
-      // target_id is the person the bot is replying TO — verified by cron to be the actual sender
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
         recipient_id: target_id,
         content: reply,
       });
-    } else if (action === "guestbook_post") {
-      // Guestbook posts are PUBLIC — user_id is the AUTHOR (the bot), no recipient
+    } else if (action === "guestbook_post" || action === "guestbook_reply") {
+      // Both autonomous posts and reactive replies go to the public guestbook
       await supabase.from("guestbook_entries").insert({
         user_id: bot.user_id,
         author_name: bot.name,
