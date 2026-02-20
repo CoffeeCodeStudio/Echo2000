@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Newspaper } from "lucide-react";
+import { Newspaper, ChevronRight } from "lucide-react";
 
 interface NewsArticle {
   id: string;
@@ -44,7 +45,11 @@ export function NewsFeed() {
       </div>
       <div className="bg-card divide-y divide-border">
         {articles.map((article) => (
-          <div key={article.id} className="p-3 flex gap-3 hover:bg-muted/30 transition-colors">
+          <Link
+            to={`/news/${article.id}`}
+            key={article.id}
+            className="p-3 flex gap-3 hover:bg-muted/30 transition-colors cursor-pointer block group"
+          >
             {article.image_url ? (
               <img
                 src={article.image_url}
@@ -59,16 +64,27 @@ export function NewsFeed() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{article.icon}</span>
-                <span className="font-bold text-sm truncate">{article.title}</span>
+                <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">{article.title}</span>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{article.content}</p>
-              <span className="text-[10px] text-muted-foreground/60 mt-1 block">
-                {formatDate(article.created_at)} · {article.author_name}
-              </span>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[10px] text-muted-foreground/60">
+                  {formatDate(article.created_at)} · {article.author_name}
+                </span>
+                <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                  Läs mer <ChevronRight className="w-3 h-3" />
+                </span>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
+      <Link
+        to="/news"
+        className="flex items-center justify-center gap-1 py-2 text-xs font-bold text-primary hover:bg-primary/10 transition-colors border-t border-border"
+      >
+        Visa alla nyheter <ChevronRight className="w-3 h-3" />
+      </Link>
     </div>
   );
 }
