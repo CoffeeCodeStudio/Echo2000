@@ -151,7 +151,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
   const { visitors } = useProfileVisits(userId);
-  const { getUserStatus } = usePresence();
+  const { getUserStatus, getUserActivity } = usePresence();
   
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -318,10 +318,18 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           spanar_in: profile?.spanar_in || "",
         };
 
-  const userStatus: UserStatus = userId ? getUserStatus(userId) : (user ? getUserStatus(user.id) : "offline");
+  const profileUserId = profile?.user_id || userId;
+  const userStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : (user ? getUserStatus(user.id) : "offline");
+  const userActivity = profileUserId ? getUserActivity(profileUserId) : undefined;
   const memberSince = profile 
     ? new Date(profile.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })
     : "December 2025";
+  const lastSeen = profile?.last_seen
+    ? new Date(profile.last_seen).toLocaleDateString('sv-SE', { 
+        year: 'numeric', month: 'short', day: 'numeric', 
+        hour: '2-digit', minute: '2-digit' 
+      })
+    : null;
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
@@ -517,6 +525,19 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                         )}
                       </span>
                     </div>
+                    {/* Activity & Last seen */}
+                    {userStatus !== "offline" && userActivity && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-xs text-muted-foreground">🎮 Just nu:</span>
+                        <span className="text-xs text-primary font-medium">{userActivity}</span>
+                      </div>
+                    )}
+                    {userStatus === "offline" && lastSeen && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-xs text-muted-foreground">🕐 Senast inloggad:</span>
+                        <span className="text-xs text-muted-foreground">{lastSeen}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* LunarStorm-style Fields Grid */}
