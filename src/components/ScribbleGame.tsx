@@ -40,6 +40,7 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const { toast } = useToast();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(6);
@@ -51,6 +52,7 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const [showWordPicker, setShowWordPicker] = useState(false);
   const guessEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lockRef = useRef(false);
 
   const isDrawer = lobby?.current_drawer_id === user?.id;
   const isCreator = lobby?.creator_id === user?.id;
@@ -66,12 +68,13 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     guessEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [guesses]);
 
-  // Init canvas
-  useEffect(() => {
+  // Init canvas with ResizeObserver for correct sizing
+  const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     const ctx = canvas.getContext("2d");
@@ -81,6 +84,15 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
       ctx.fillRect(0, 0, rect.width, rect.height);
     }
   }, []);
+
+  useEffect(() => {
+    resizeCanvas();
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver(() => resizeCanvas());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [resizeCanvas]);
 
   // Timer
   useEffect(() => {
@@ -144,11 +156,15 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     ctx.fillRect(0, 0, rect.width, rect.height);
   }, []);
 
-  const getPos = (e: React.PointerEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return { x: 0, y: 0 };
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  };
+  const getPos = useCallback((e: React.PointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  }, []);
 
   const startDrawing = (e: React.PointerEvent) => {
     if (!isDrawer) return;
@@ -420,7 +436,7 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
             )}
 
             {lobby?.status === "playing" && (
-              <div className="flex-1 relative">
+              <div className="flex-1 relative" ref={containerRef}>
                 <canvas
                   ref={canvasRef}
                   className="absolute inset-0 w-full h-full touch-none"
@@ -465,18 +481,24 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
               </div>
             </ScrollArea>
 
-            {!isDrawer && lobby?.status === "playing" && (
+            {lobby?.status === "playing" && (
               <div className="p-2 border-t border-border flex gap-2">
-                <Input
-                  value={guessText}
-                  onChange={(e) => setGuessText(e.target.value)}
-                  placeholder="Gissa..."
-                  className="text-sm h-8"
-                  onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-                />
-                <Button size="icon" onClick={handleGuess} className="h-8 w-8 shrink-0">
-                  <Send className="w-3 h-3" />
-                </Button>
+                {isDrawer ? (
+                  <p className="text-xs text-muted-foreground italic px-2 py-1">Du ritar — vänta på gissningar</p>
+                ) : (
+                  <>
+                    <Input
+                      value={guessText}
+                      onChange={(e) => setGuessText(e.target.value)}
+                      placeholder="Skriv din gissning..."
+                      className="text-sm h-8"
+                      onKeyDown={(e) => e.key === "Enter" && handleGuess()}
+                    />
+                    <Button size="icon" onClick={handleGuess} className="h-8 w-8 shrink-0">
+                      <Send className="w-3 h-3" />
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>
