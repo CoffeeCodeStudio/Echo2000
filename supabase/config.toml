@@ -1,5 +1,8 @@
 project_id = "fvmepxriuhmzcraeupjq"
 
+[functions.bot-cron]
+verify_jwt = false
+
 [functions.bot-respond]
 verify_jwt = false
 
