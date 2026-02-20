@@ -19,7 +19,6 @@ serve(async (req) => {
 
     const { action, bot_id, context, target_id, target_username, reply_type, profile_owner_id } = await req.json();
 
-    // Fetch bot settings
     const { data: bot, error: botError } = await supabase
       .from("bot_settings")
       .select("*")
@@ -38,7 +37,7 @@ serve(async (req) => {
       });
     }
 
-    // Fetch recent news for reality context
+    // Reality context
     const { data: recentNews } = await supabase
       .from("news_articles")
       .select("title")
@@ -53,60 +52,58 @@ serve(async (req) => {
     const dateContext = `\nDagens datum är ${new Date().toLocaleDateString("sv-SE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.`;
 
     const realityRules = `\n\nVIKTIGA REGLER:
-- Hitta ALDRIG på funktioner som inte finns på Echo2000 (t.ex. musik, video, spel som inte existerar).
+- Hitta ALDRIG på funktioner som inte finns på Echo2000.
 - Referera gärna till riktiga nyheter på sidan.
-- KRITISKT: Adressera BARA den person du pratar med. Nämn INTE andra användare vid namn om du inte pratar med dem.
+- Skriv som en människa, inte som en robot. Inga emojis i överflöd.
 - Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}`;
 
     let userPrompt = "";
 
     if (action === "chat_reply") {
       const addressee = target_username || "användaren";
-      userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Adressera BARA ${addressee}, ingen annan.${realityRules}\n\n${context || "Hej!"}`;
-    } else if (action === "guestbook_reply") {
-      const addressee = target_username || "någon";
-      const replyStyle = reply_type === "mention"
-        ? `Någon har nämnt dig vid namn i gästboken! Svara ${addressee} personligt och trevligt.`
-        : `Någon har ställt en fråga i gästboken. Svara hjälpsamt (eller lite busigt) till ${addressee}.`;
+      userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Var personlig och mänsklig.${realityRules}\n\n${context || "Hej!"}`;
 
-      userPrompt = `${replyStyle}
-
-Senaste inläggen i gästboken:
-${context || "(inga)"}
-
-REGLER FÖR DITT SVAR:
-- Rikta svaret till ${addressee} — du FÅR nämna deras namn.
-- Max 280 tecken.
-- Var personlig, varm och lite lekfull.
-- Om det var en fråga, ge ett kort och hjälpsamt (eller busigt) svar.
-- Om det var en hälsning eller omnämning, svara med charm.${realityRules}`;
     } else if (action === "profile_guestbook_reply") {
       const addressee = target_username || "någon";
-      const replyStyle = reply_type === "mention"
-        ? `Någon har nämnt dig vid namn i sin profilgästbok! Svara ${addressee} personligt.`
-        : `Någon har ställt en fråga i sin profilgästbok. Svara hjälpsamt till ${addressee}.`;
+      const style = reply_type === "question"
+        ? `${addressee} har ställt en fråga i din gästbok. Ge ett hjälpsamt och personligt svar.`
+        : `${addressee} har skrivit i din gästbok. Svara med värme, som att en vän hälsat på.`;
 
-      userPrompt = `${replyStyle}
+      userPrompt = `${style}
 
-Senaste inläggen i profilgästboken:
+Senaste inläggen i din gästbok:
 ${context || "(inga)"}
 
-REGLER FÖR DITT SVAR:
-- Rikta svaret till ${addressee} — du FÅR nämna deras namn.
+REGLER:
+- Rikta svaret till ${addressee}.
 - Max 280 tecken.
-- Det här är en personlig profilgästbok, inte den publika gästboken. Skriv som om du besöker deras profil.
-- Var personlig, varm och lite lekfull.${realityRules}`;
+- Skriv som en människa — varm, personlig, lite lekfull.
+- Om det var en fråga, ge ett kort och hjälpsamt svar.
+- Om det var en hälsning, svara som en vän.${realityRules}`;
+
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
       userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken).
 
-KRITISKA REGLER FÖR GÄSTBOKEN:
-- Rikta ALDRIG inlägget till en specifik person. Använd INGA namn, smeknamn eller "@"-omnämnanden.
-- Skriv som om du pratar till hela communityn, t.ex. "Hej alla!", "God morgon Echo2000!" etc.
-- Nämn ALDRIG enskilda användare — varken i hälsningar, frågor eller kommentarer.
-- Det här är ett offentligt inlägg som alla ser. Var kreativ, nostalgisk och personlig men ALLMÄNT hållen.${realityRules}${extraContext}`;
+REGLER:
+- Rikta ALDRIG inlägget till en specifik person. Inga namn eller omnämnanden.
+- Skriv som om du pratar till hela communityn.
+- Var kreativ, nostalgisk och personlig men allmänt hållen.${realityRules}${extraContext}`;
+
+    } else if (action === "inactive_outreach") {
+      const addressee = target_username || "du";
+      userPrompt = `Du skickar ett privat meddelande till ${addressee} som inte har varit online på ett tag.
+
+REGLER:
+- Max 200 tecken.
+- Var varm och vänlig, inte påträngande.
+- Säg att du saknar dem eller att det hänt saker på Echo2000.
+- Skriv som en kompis som checkar läget, inte som en robot.
+- Nämn INTE hur länge de varit borta — det kan kännas övervakande.${realityRules}\n\n${context || ""}`;
+
     } else if (action === "klotter_comment") {
       userPrompt = `Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.${realityRules}`;
+
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -147,15 +144,20 @@ KRITISKA REGLER FÖR GÄSTBOKEN:
     const aiData = await aiResponse.json();
     const reply = aiData.choices?.[0]?.message?.content?.trim() || "";
 
-    // Perform the action with the bot's user_id
+    // Persist the response
     if (action === "chat_reply" && target_id) {
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
         recipient_id: target_id,
         content: reply,
       });
-    } else if (action === "guestbook_post" || action === "guestbook_reply") {
-      // Both autonomous posts and reactive replies go to the public guestbook
+    } else if (action === "inactive_outreach" && target_id) {
+      await supabase.from("chat_messages").insert({
+        sender_id: bot.user_id,
+        recipient_id: target_id,
+        content: reply,
+      });
+    } else if (action === "guestbook_post") {
       await supabase.from("guestbook_entries").insert({
         user_id: bot.user_id,
         author_name: bot.name,
@@ -163,7 +165,6 @@ KRITISKA REGLER FÖR GÄSTBOKEN:
         message: reply,
       });
     } else if (action === "profile_guestbook_reply" && profile_owner_id) {
-      // Reactive reply in someone's profile guestbook
       await supabase.from("profile_guestbook").insert({
         profile_owner_id: profile_owner_id,
         author_id: bot.user_id,
