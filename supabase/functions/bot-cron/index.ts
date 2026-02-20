@@ -49,6 +49,20 @@ serve(async (req) => {
 
       if (chosenContext === "guestbook") {
         try {
+          // Rate limit: max 1 guestbook post per hour per bot
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          const { data: recentBotPosts } = await supabase
+            .from("guestbook_entries")
+            .select("id")
+            .eq("user_id", bot.user_id)
+            .gte("created_at", oneHourAgo)
+            .limit(1);
+
+          if (recentBotPosts && recentBotPosts.length > 0) {
+            results[bot.name].push("Guestbook skipped: already posted within the last hour");
+            continue;
+          }
+
           // Fetch recent guestbook entries for context
           const { data: recentEntries } = await supabase
             .from("guestbook_entries")
