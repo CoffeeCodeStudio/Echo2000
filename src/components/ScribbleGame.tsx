@@ -163,10 +163,10 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    // Scale from viewport CSS pixels to canvas CSS coordinate space
-    // This handles zoom, DPR mismatches, and CSS scaling correctly
-    const scaleX = rect.width > 0 ? rect.width / rect.width : 1;
-    const scaleY = rect.height > 0 ? rect.height / rect.height : 1;
+    const dpr = window.devicePixelRatio || 1;
+    // Scale from CSS viewport pixels to canvas internal coordinates
+    const scaleX = rect.width > 0 ? canvas.width / rect.width / dpr : 1;
+    const scaleY = rect.height > 0 ? canvas.height / rect.height / dpr : 1;
     return {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY,
