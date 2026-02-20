@@ -78,12 +78,13 @@ export function ProfileGuestbook({
         console.error('Error clearing guestbook:', error);
         toast({
           title: 'Kunde inte rensa gästboken',
-          description: 'Försök igen senare',
+          description: error.message || 'Försök igen senare',
           variant: 'destructive',
         });
       } else {
         toast({ title: 'Gästboken rensad!' });
-        refetch();
+        // Force immediate refetch to update UI
+        await refetch();
       }
     } catch (err) {
       console.error('Error in handleClearAll:', err);
