@@ -9,10 +9,22 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Authentication: Only allow calls with service role key or from Supabase scheduler
+  const authHeader = req.headers.get("authorization") || "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
+  const isScheduler = req.headers.get("x-supabase-scheduler") !== null;
+
+  if (!isServiceRole && !isScheduler) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: bots, error: botsError } = await supabase
       .from("bot_settings")
@@ -33,7 +45,6 @@ serve(async (req) => {
 
       // =============================================
       // PRIORITY 1: Reply to entries in the BOT'S OWN profile guestbook
-      // No mention or @ needed — if someone writes on the bot's wall, the bot replies.
       // =============================================
       if (allowedContexts.includes("guestbook")) {
         const didProfileReply = await handleBotProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
@@ -149,7 +160,6 @@ serve(async (req) => {
 
 /**
  * Reply to entries posted on the BOT'S OWN profile guestbook.
- * No @ or # needed — any entry on the bot's profile triggers a reply.
  */
 async function handleBotProfileGuestbookReplies(
   supabase: ReturnType<typeof createClient>,
@@ -160,7 +170,6 @@ async function handleBotProfileGuestbookReplies(
   try {
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
-    // Only look at entries on THIS BOT'S profile, from other users
     const { data: recentEntries } = await supabase
       .from("profile_guestbook")
       .select("id, author_name, author_id, message, profile_owner_id, created_at")
@@ -174,7 +183,6 @@ async function handleBotProfileGuestbookReplies(
 
     const targetEntry = recentEntries[0];
 
-    // Check if bot already replied after this entry
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
       .select("id")
@@ -185,7 +193,6 @@ async function handleBotProfileGuestbookReplies(
 
     if (botRepliesAfter && botRepliesAfter.length > 0) return false;
 
-    // Rate limit: max 1 reply per 10 minutes
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentBotPosts } = await supabase
       .from("profile_guestbook")
@@ -199,7 +206,6 @@ async function handleBotProfileGuestbookReplies(
       return false;
     }
 
-    // Determine reply type naturally: is it a question or a greeting?
     const isQuestion = targetEntry.message.includes("?");
     const replyType = isQuestion ? "question" : "greeting";
 
@@ -209,7 +215,6 @@ async function handleBotProfileGuestbookReplies(
       .map(e => `- ${e.author_name}: "${e.message}"`)
       .join("\n");
 
-    // Reply in the AUTHOR's profile guestbook (not the bot's own)
     const res = await callBotRespond(supabaseUrl, {
       action: "profile_guestbook_reply",
       bot_id: bot.id,
@@ -250,7 +255,6 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
-    // Filter out messages from the bot itself (prevent self-chat)
     const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
     const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
@@ -293,7 +297,6 @@ async function handleChatReplies(
 
 /**
  * Send a friendly DM to users who have been inactive for 2+ weeks.
- * Max 1 outreach message per user per month.
  */
 async function handleInactiveUserOutreach(
   supabase: ReturnType<typeof createClient>,
@@ -302,13 +305,11 @@ async function handleInactiveUserOutreach(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    // Only attempt outreach 10% of the time to avoid spamming
     if (Math.random() > 0.1) return false;
 
     const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Find users who are friends with the bot but haven't been seen in 2+ weeks
     const { data: botFriends } = await supabase
       .from("friends")
       .select("friend_id")
@@ -319,7 +320,6 @@ async function handleInactiveUserOutreach(
 
     const friendIds = botFriends.map(f => f.friend_id);
 
-    // Find inactive friends (last_seen > 2 weeks ago)
     const { data: inactiveProfiles } = await supabase
       .from("profiles")
       .select("user_id, username, last_seen")
@@ -329,7 +329,6 @@ async function handleInactiveUserOutreach(
 
     if (!inactiveProfiles || inactiveProfiles.length === 0) return false;
 
-    // For each candidate, check if bot already sent a message in the last month
     for (const profile of inactiveProfiles) {
       const { data: recentOutreach } = await supabase
         .from("chat_messages")
@@ -339,9 +338,8 @@ async function handleInactiveUserOutreach(
         .gte("created_at", oneMonthAgo)
         .limit(1);
 
-      if (recentOutreach && recentOutreach.length > 0) continue; // Already messaged this month
+      if (recentOutreach && recentOutreach.length > 0) continue;
 
-      // Send outreach
       const res = await callBotRespond(supabaseUrl, {
         action: "inactive_outreach",
         bot_id: bot.id,
@@ -353,7 +351,7 @@ async function handleInactiveUserOutreach(
       results[bot.name as string].push(
         `Inactive outreach to ${profile.username}: ${res.reply || res.error || "unknown"}`
       );
-      return true; // Only one outreach per cron run
+      return true;
     }
 
     return false;
@@ -367,13 +365,13 @@ async function callBotRespond(
   supabaseUrl: string,
   body: Record<string, unknown>
 ) {
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   const res = await fetch(`${supabaseUrl}/functions/v1/bot-respond`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${anonKey}`,
+      Authorization: `Bearer ${serviceRoleKey}`,
     },
     body: JSON.stringify(body),
   });
