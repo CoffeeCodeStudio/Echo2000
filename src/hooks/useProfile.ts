@@ -28,6 +28,7 @@ export interface ProfileData {
   status_message: string;
   created_at: string;
   updated_at: string;
+  last_seen: string | null;
 }
 
 export function useProfile(userId?: string) {

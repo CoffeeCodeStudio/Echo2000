@@ -16,6 +16,7 @@ import { FAQSection } from "@/components/FAQSection";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { usePresence } from "@/hooks/usePresence";
 import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
@@ -73,6 +74,25 @@ export default function Index() {
 
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
+  const { setActivity } = usePresence();
+
+  // Update activity based on active tab
+  useEffect(() => {
+    const tabActivityMap: Record<string, string> = {
+      hem: 'Surfar runt',
+      chatt: 'Chattar',
+      gastbok: 'Kollar gästboken',
+      mejl: 'Läser mejl',
+      vanner: 'Kollar vänlistan',
+      profil: 'Kollar sin profil',
+      klotterplanket: 'Klottrar',
+      spel: 'Spelar spel',
+      traffar: 'Kollar träffar',
+      lajv: 'Lajvar',
+      faq: 'Läser FAQ',
+    };
+    setActivity(tabActivityMap[activeTab] || 'Surfar runt');
+  }, [activeTab, setActivity]);
 
   // Handle tab from navigation state
   useEffect(() => {
