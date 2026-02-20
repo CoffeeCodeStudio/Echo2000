@@ -366,6 +366,13 @@ export function Guestbook() {
                     {/* Actions */}
                     <div className="flex items-center gap-4 mt-2">
                       <GoodVibe targetType="guestbook" targetId={entry.id} />
+                      <button
+                        onClick={() => handleReply(entry.author_name)}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Svara
+                      </button>
                     </div>
                   </div>
                 </div>
