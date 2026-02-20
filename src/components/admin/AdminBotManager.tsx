@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Bot, Plus, Save, Trash2, Loader2, MessageCircle, BookOpen } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Bot, Plus, Save, Trash2, Loader2, MessageCircle, BookOpen, Settings2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface BotSetting {
   id: string;
@@ -18,7 +20,24 @@ interface BotSetting {
   is_active: boolean;
   user_id: string;
   created_at: string;
+  allowed_contexts: string[];
+  cron_interval: string;
 }
+
+const CONTEXT_OPTIONS = [
+  { value: "chat", label: "Svara i Chatten" },
+  { value: "guestbook", label: "Skriva i Gästboken" },
+  { value: "news", label: "Kommentera Nyheter" },
+];
+
+const CRON_OPTIONS = [
+  { value: "*/5 * * * *", label: "Var 5:e minut" },
+  { value: "*/15 * * * *", label: "Var 15:e minut" },
+  { value: "*/30 * * * *", label: "Var 30:e minut" },
+  { value: "0 * * * *", label: "Varje timme" },
+  { value: "0 */6 * * *", label: "Var 6:e timme" },
+  { value: "0 9 * * *", label: "En gång om dagen (09:00)" },
+];
 
 export function AdminBotManager() {
   const [bots, setBots] = useState<BotSetting[]>([]);
@@ -32,7 +51,11 @@ export function AdminBotManager() {
 
   const fetchBots = async () => {
     const { data } = await supabase.from("bot_settings").select("*").order("created_at");
-    if (data) setBots(data as BotSetting[]);
+    if (data) setBots(data.map((b: any) => ({
+      ...b,
+      allowed_contexts: b.allowed_contexts || ["chat", "guestbook"],
+      cron_interval: b.cron_interval || "*/5 * * * *",
+    })));
     setLoading(false);
   };
 
@@ -46,7 +69,9 @@ export function AdminBotManager() {
       system_prompt: bot.system_prompt,
       activity_level: bot.activity_level,
       is_active: bot.is_active,
-    }).eq("id", bot.id);
+      allowed_contexts: bot.allowed_contexts,
+      cron_interval: bot.cron_interval,
+    } as any).eq("id", bot.id);
     
     if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
     else toast({ title: "Sparat", description: `${bot.name} uppdaterad.` });
@@ -111,6 +136,16 @@ export function AdminBotManager() {
     setBots(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
   };
 
+  const toggleContext = (botId: string, context: string) => {
+    setBots(prev => prev.map(b => {
+      if (b.id !== botId) return b;
+      const contexts = b.allowed_contexts.includes(context)
+        ? b.allowed_contexts.filter(c => c !== context)
+        : [...b.allowed_contexts, context];
+      return { ...b, allowed_contexts: contexts };
+    }));
+  };
+
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
   return (
@@ -142,7 +177,8 @@ export function AdminBotManager() {
         </div>
       ) : (
         bots.map(bot => (
-          <div key={bot.id} className="nostalgia-card p-4 space-y-3">
+          <div key={bot.id} className="nostalgia-card p-4 space-y-4">
+            {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-primary" />
@@ -154,26 +190,72 @@ export function AdminBotManager() {
               <Switch checked={bot.is_active} onCheckedChange={v => updateBotField(bot.id, "is_active", v)} />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Namn</label>
-              <Input value={bot.name} onChange={e => updateBotField(bot.id, "name", e.target.value)} />
+            {/* Basic settings */}
+            <div className="grid gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Namn</label>
+                <Input value={bot.name} onChange={e => updateBotField(bot.id, "name", e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Avatar URL</label>
+                <Input value={bot.avatar_url || ""} onChange={e => updateBotField(bot.id, "avatar_url", e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">System Prompt (Personlighet)</label>
+                <Textarea value={bot.system_prompt} onChange={e => updateBotField(bot.id, "system_prompt", e.target.value)} rows={4} />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Avatar URL</label>
-              <Input value={bot.avatar_url || ""} onChange={e => updateBotField(bot.id, "avatar_url", e.target.value)} placeholder="https://..." />
+            {/* Automation section */}
+            <div className="border border-border rounded-lg p-3 space-y-4 bg-muted/20">
+              <h3 className="text-sm font-display font-bold flex items-center gap-2 text-primary">
+                <Settings2 className="w-4 h-4" /> Inställningar för automatisering
+              </h3>
+
+              {/* Activity level */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">
+                  Aktivitetsnivå: <span className="text-foreground font-bold">{bot.activity_level}%</span>
+                  <span className="ml-2 text-muted-foreground/70">
+                    ({bot.activity_level <= 20 ? "Sällan" : bot.activity_level <= 50 ? "Ibland" : bot.activity_level <= 80 ? "Ofta" : "Väldigt ofta"})
+                  </span>
+                </label>
+                <Slider value={[bot.activity_level]} onValueChange={v => updateBotField(bot.id, "activity_level", v[0])} max={100} step={1} />
+              </div>
+
+              {/* Allowed contexts */}
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Sammanhang (var får boten skriva?)</label>
+                <div className="flex flex-col gap-2">
+                  {CONTEXT_OPTIONS.map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={bot.allowed_contexts.includes(opt.value)}
+                        onCheckedChange={() => toggleContext(bot.id, opt.value)}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cron interval */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Tidsintervall (hur ofta körs automatiseringen?)</label>
+                <Select value={bot.cron_interval} onValueChange={v => updateBotField(bot.id, "cron_interval", v)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CRON_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">System Prompt (Personlighet)</label>
-              <Textarea value={bot.system_prompt} onChange={e => updateBotField(bot.id, "system_prompt", e.target.value)} rows={4} />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Aktivitetsnivå: {bot.activity_level}%</label>
-              <Slider value={[bot.activity_level]} onValueChange={v => updateBotField(bot.id, "activity_level", v[0])} max={100} step={1} />
-            </div>
-
+            {/* Actions */}
             <div className="flex gap-2 flex-wrap">
               <Button size="sm" onClick={() => updateBot(bot)} disabled={saving === bot.id}>
                 {saving === bot.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Save className="w-3 h-3 mr-1" />}

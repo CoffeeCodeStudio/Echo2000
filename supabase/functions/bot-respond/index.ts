@@ -38,13 +38,34 @@ serve(async (req) => {
       });
     }
 
+    // Fetch recent news for reality context
+    const { data: recentNews } = await supabase
+      .from("news_articles")
+      .select("title")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    const newsContext = recentNews && recentNews.length > 0
+      ? `\n\nAktuella nyheter på Echo2000 som du kan referera till: ${recentNews.map(n => `"${n.title}"`).join(", ")}`
+      : "";
+
+    const dateContext = `\nDagens datum är ${new Date().toLocaleDateString("sv-SE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}.`;
+
+    const realityRules = `\n\nVIKTIGA REGLER:
+- Hitta ALDRIG på funktioner som inte finns på Echo2000 (t.ex. musik, video, spel som inte existerar).
+- Referera gärna till riktiga nyheter på sidan.
+- Var personlig och nämn andra användare vid namn om du kan.
+- Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}`;
+
     let userPrompt = "";
     if (action === "chat_reply") {
-      userPrompt = `Du har fått följande meddelande i en chatt. Svara kort och naturligt (max 200 tecken):\n\n"${context}"`;
+      userPrompt = `Du har fått följande meddelande i en chatt. Svara kort och naturligt (max 200 tecken).${realityRules}\n\n${context || "Hej!"}`;
     } else if (action === "guestbook_post") {
-      userPrompt = "Skriv ett kort, trevligt inlägg i gästboken (max 280 tecken). Var kreativ och personlig.";
+      const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
+      userPrompt = `Skriv ett kort, trevligt inlägg i gästboken (max 280 tecken). Var kreativ och personlig.${realityRules}${extraContext}`;
     } else if (action === "klotter_comment") {
-      userPrompt = "Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.";
+      userPrompt = `Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.${realityRules}`;
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

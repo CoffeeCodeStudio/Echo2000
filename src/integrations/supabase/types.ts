@@ -50,8 +50,10 @@ export type Database = {
       bot_settings: {
         Row: {
           activity_level: number
+          allowed_contexts: string[]
           avatar_url: string | null
           created_at: string
+          cron_interval: string
           id: string
           is_active: boolean
           name: string
@@ -61,8 +63,10 @@ export type Database = {
         }
         Insert: {
           activity_level?: number
+          allowed_contexts?: string[]
           avatar_url?: string | null
           created_at?: string
+          cron_interval?: string
           id?: string
           is_active?: boolean
           name: string
@@ -72,8 +76,10 @@ export type Database = {
         }
         Update: {
           activity_level?: number
+          allowed_contexts?: string[]
           avatar_url?: string | null
           created_at?: string
+          cron_interval?: string
           id?: string
           is_active?: boolean
           name?: string

@@ -14,7 +14,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all active bots
+    // Fetch all active bots with their automation settings
     const { data: bots, error: botsError } = await supabase
       .from("bot_settings")
       .select("*")
@@ -30,59 +30,110 @@ serve(async (req) => {
 
     for (const bot of bots) {
       results[bot.name] = [];
+      const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
 
-      // Activity level determines probability (0-100 → 0-1)
-      // Each cron tick (every 5 min), roll the dice
+      // Activity level determines probability
       const roll = Math.random() * 100;
       if (roll > bot.activity_level) {
         results[bot.name].push(`Skipped (roll ${roll.toFixed(0)} > level ${bot.activity_level})`);
         continue;
       }
 
-      // Decide action: 60% guestbook, 40% chat reply to recent message
-      const actionRoll = Math.random();
+      if (allowedContexts.length === 0) {
+        results[bot.name].push("No allowed contexts configured");
+        continue;
+      }
 
-      if (actionRoll < 0.6) {
-        // Post to guestbook
+      // Pick a random allowed action
+      const chosenContext = allowedContexts[Math.floor(Math.random() * allowedContexts.length)];
+
+      if (chosenContext === "guestbook") {
         try {
-          const res = await callBotRespond(supabaseUrl, supabase, {
+          // Fetch recent guestbook entries for context
+          const { data: recentEntries } = await supabase
+            .from("guestbook_entries")
+            .select("author_name, message")
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          const contextStr = recentEntries && recentEntries.length > 0
+            ? `\n\nSenaste inläggen i gästboken:\n${recentEntries.map(e => `- ${e.author_name}: "${e.message}"`).join("\n")}`
+            : "";
+
+          const res = await callBotRespond(supabaseUrl, {
             action: "guestbook_post",
             bot_id: bot.id,
+            context: contextStr,
           });
           results[bot.name].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
         } catch (e) {
           results[bot.name].push(`Guestbook error: ${e.message}`);
         }
-      } else {
-        // Reply to a recent chat message sent TO the bot
-        const { data: recentMsg } = await supabase
+      } else if (chosenContext === "chat") {
+        // Look for unread messages from ANY user, not just one specific person
+        const { data: recentMsgs } = await supabase
           .from("chat_messages")
           .select("*")
           .eq("recipient_id", bot.user_id)
           .eq("is_read", false)
           .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+          .limit(10);
 
-        if (recentMsg) {
+        if (recentMsgs && recentMsgs.length > 0) {
+          // Reply to a random unread message (not always the latest)
+          const msg = recentMsgs[Math.floor(Math.random() * recentMsgs.length)];
+
+          // Get sender profile for context
+          const { data: senderProfile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("user_id", msg.sender_id)
+            .single();
+
           try {
-            const res = await callBotRespond(supabaseUrl, supabase, {
+            const contextStr = `Meddelande från ${senderProfile?.username || "en användare"}: "${msg.content}"`;
+            const res = await callBotRespond(supabaseUrl, {
               action: "chat_reply",
               bot_id: bot.id,
-              context: recentMsg.content,
-              target_id: recentMsg.sender_id,
+              context: contextStr,
+              target_id: msg.sender_id,
             });
-            // Mark original message as read
+            // Mark this message as read
             await supabase
               .from("chat_messages")
               .update({ is_read: true })
-              .eq("id", recentMsg.id);
-            results[bot.name].push(`Chat reply to ${recentMsg.sender_id}: ${res.reply || res.error || "unknown"}`);
+              .eq("id", msg.id);
+            results[bot.name].push(`Chat reply to ${senderProfile?.username || msg.sender_id}: ${res.reply || res.error || "unknown"}`);
           } catch (e) {
             results[bot.name].push(`Chat error: ${e.message}`);
           }
         } else {
           results[bot.name].push("No unread messages, skipping chat");
+        }
+      } else if (chosenContext === "news") {
+        // Fetch latest published news to comment on
+        const { data: latestNews } = await supabase
+          .from("news_articles")
+          .select("id, title, content")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (latestNews && latestNews.length > 0) {
+          const article = latestNews[Math.floor(Math.random() * latestNews.length)];
+          // Post a guestbook entry referencing the news
+          try {
+            const res = await callBotRespond(supabaseUrl, {
+              action: "guestbook_post",
+              bot_id: bot.id,
+              context: `Kommentera den senaste nyheten "${article.title}". Referera till innehållet: "${article.content.substring(0, 200)}"`,
+            });
+            results[bot.name].push(`News comment about "${article.title}": ${res.reply || res.error || "unknown"}`);
+          } catch (e) {
+            results[bot.name].push(`News error: ${e.message}`);
+          }
+        } else {
+          results[bot.name].push("No news to comment on");
         }
       }
     }
@@ -103,10 +154,8 @@ serve(async (req) => {
 
 async function callBotRespond(
   supabaseUrl: string,
-  _supabase: any,
   body: Record<string, unknown>
 ) {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
   const res = await fetch(`${supabaseUrl}/functions/v1/bot-respond`, {
