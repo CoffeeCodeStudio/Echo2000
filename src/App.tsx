@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import News from "./pages/News";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
 
@@ -30,6 +31,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/rum" element={<ProtectedRoute><Room /></ProtectedRoute>} />
                 <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/news" element={<News />} />
+                <Route path="/news/:id" element={<News />} />
               </Route>
               
               {/* Auth page without shared layout (full-page login) */}
