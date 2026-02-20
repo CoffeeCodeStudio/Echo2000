@@ -14,7 +14,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all active bots with their automation settings
     const { data: bots, error: botsError } = await supabase
       .from("bot_settings")
       .select("*")
@@ -33,93 +32,40 @@ serve(async (req) => {
       const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
 
       // =============================================
-      // PRIORITY 1: Reply to profile guestbook entries that mention the bot or contain questions
-      // These ALWAYS trigger, bypassing activity roll
+      // PRIORITY 1: Reply to entries in the BOT'S OWN profile guestbook
+      // No mention or @ needed — if someone writes on the bot's wall, the bot replies.
       // =============================================
       if (allowedContexts.includes("guestbook")) {
-        const didProfileReply = await handleReactiveProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
-        if (didProfileReply) {
-          continue;
-        }
-
-        // PRIORITY 1b: Reply to public guestbook entries
-        const didReply = await handleReactiveGuestbookReplies(supabase, supabaseUrl, bot, results);
-        if (didReply) {
-          continue;
-        }
+        const didProfileReply = await handleBotProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
+        if (didProfileReply) continue;
       }
 
       // =============================================
-      // PRIORITY 2: Reply to unread chat messages (always triggers if present)
+      // PRIORITY 2: Reply to unread chat/DM messages
       // =============================================
       if (allowedContexts.includes("chat")) {
-        const { data: recentMsgs } = await supabase
-          .from("chat_messages")
-          .select("*")
-          .eq("recipient_id", bot.user_id)
-          .eq("is_read", false)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        if (recentMsgs && recentMsgs.length > 0) {
-          const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))];
-          const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
-          const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
-
-          const { data: senderProfile } = await supabase
-            .from("profiles")
-            .select("username")
-            .eq("user_id", chosenSenderId)
-            .single();
-
-          const senderName = senderProfile?.username || "en användare";
-
-          try {
-            const messagesContext = senderMessages
-              .slice(0, 5)
-              .reverse()
-              .map(m => `"${m.content}"`)
-              .join(", ");
-
-            const contextStr = `Du chattar med ${senderName}. Deras senaste meddelanden: ${messagesContext}. Svara ${senderName} direkt.`;
-            const res = await callBotRespond(supabaseUrl, {
-              action: "chat_reply",
-              bot_id: bot.id,
-              context: contextStr,
-              target_id: chosenSenderId,
-              target_username: senderName,
-            });
-            for (const m of senderMessages) {
-              await supabase
-                .from("chat_messages")
-                .update({ is_read: true })
-                .eq("id", m.id);
-            }
-            results[bot.name].push(`Chat reply to ${senderName}: ${res.reply || res.error || "unknown"}`);
-          } catch (e) {
-            results[bot.name].push(`Chat error: ${e.message}`);
-          }
-          // Prioritize human replies — skip autonomous posts
-          continue;
-        }
+        const didChatReply = await handleChatReplies(supabase, supabaseUrl, bot, results);
+        if (didChatReply) continue;
       }
 
       // =============================================
-      // PRIORITY 3: Autonomous posting (activity roll applies)
+      // PRIORITY 3: Inactive user outreach (max 1 DM per user per month)
+      // =============================================
+      if (allowedContexts.includes("chat")) {
+        const didOutreach = await handleInactiveUserOutreach(supabase, supabaseUrl, bot, results);
+        if (didOutreach) continue;
+      }
+
+      // =============================================
+      // PRIORITY 4: Autonomous guestbook post (activity roll)
       // =============================================
       const roll = Math.random() * 100;
       if (roll > bot.activity_level) {
-        results[bot.name].push(`Skipped (roll ${roll.toFixed(0)} > level ${bot.activity_level})`);
+        results[bot.name].push(`Skipped autonomous (roll ${roll.toFixed(0)} > level ${bot.activity_level})`);
         continue;
       }
 
-      if (allowedContexts.length === 0) {
-        results[bot.name].push("No allowed contexts configured");
-        continue;
-      }
-
-      // Pick a random allowed action for autonomous posting
-      const autonomousContexts = allowedContexts.filter(c => c !== "chat"); // chat handled above
+      const autonomousContexts = allowedContexts.filter(c => c !== "chat");
       if (autonomousContexts.length === 0) {
         results[bot.name].push("No autonomous contexts left");
         continue;
@@ -128,7 +74,6 @@ serve(async (req) => {
 
       if (chosenContext === "guestbook") {
         try {
-          // Rate limit: max 1 guestbook post per hour per bot
           const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
           const { data: recentBotPosts } = await supabase
             .from("guestbook_entries")
@@ -149,7 +94,6 @@ serve(async (req) => {
             .limit(10);
 
           const othersEntries = recentEntries?.filter(e => e.author_name !== bot.name) || [];
-
           const contextStr = othersEntries.length > 0
             ? `\n\nSenaste inläggen i gästboken från andra användare:\n${othersEntries.map(e => `- ${e.author_name}: "${e.message}"`).join("\n")}`
             : "";
@@ -161,7 +105,7 @@ serve(async (req) => {
           });
           results[bot.name].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
         } catch (e) {
-          results[bot.name].push(`Guestbook error: ${e.message}`);
+          results[bot.name].push(`Guestbook error: ${(e as Error).message}`);
         }
       } else if (chosenContext === "news") {
         const { data: latestNews } = await supabase
@@ -181,7 +125,7 @@ serve(async (req) => {
             });
             results[bot.name].push(`News comment about "${article.title}": ${res.reply || res.error || "unknown"}`);
           } catch (e) {
-            results[bot.name].push(`News error: ${e.message}`);
+            results[bot.name].push(`News error: ${(e as Error).message}`);
           }
         } else {
           results[bot.name].push("No news to comment on");
@@ -204,10 +148,10 @@ serve(async (req) => {
 });
 
 /**
- * REACTIVE REPLIES for PROFILE GUESTBOOKS: Check if anyone mentioned the bot
- * or asked a question in any profile_guestbook (including the bot's own profile).
+ * Reply to entries posted on the BOT'S OWN profile guestbook.
+ * No @ or # needed — any entry on the bot's profile triggers a reply.
  */
-async function handleReactiveProfileGuestbookReplies(
+async function handleBotProfileGuestbookReplies(
   supabase: ReturnType<typeof createClient>,
   supabaseUrl: string,
   bot: Record<string, unknown>,
@@ -216,50 +160,32 @@ async function handleReactiveProfileGuestbookReplies(
   try {
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
-    // Look for recent profile guestbook entries from OTHER users
+    // Only look at entries on THIS BOT'S profile, from other users
     const { data: recentEntries } = await supabase
       .from("profile_guestbook")
       .select("id, author_name, author_id, message, profile_owner_id, created_at")
+      .eq("profile_owner_id", bot.user_id)
       .neq("author_id", bot.user_id)
       .gte("created_at", thirtyMinAgo)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(10);
 
     if (!recentEntries || recentEntries.length === 0) return false;
 
-    const botName = (bot.name as string).toLowerCase();
+    const targetEntry = recentEntries[0];
 
-    // Find entries that mention the bot OR contain a question
-    const mentionEntries = recentEntries.filter(e =>
-      e.message.toLowerCase().includes(botName)
-    );
-    const questionEntries = recentEntries.filter(e =>
-      !e.message.toLowerCase().includes(botName) && e.message.includes("?")
-    );
-
-    // Also check entries on the bot's OWN profile (always reply to those)
-    const botProfileEntries = recentEntries.filter(e =>
-      e.profile_owner_id === bot.user_id
-    );
-
-    // Prioritize: mentions > bot's own profile > questions
-    const targetEntry = mentionEntries[0] || botProfileEntries[0] || questionEntries[0];
-    if (!targetEntry) return false;
-
-    // Check if bot already replied in this profile guestbook after the target entry
+    // Check if bot already replied after this entry
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
       .select("id")
       .eq("author_id", bot.user_id)
-      .eq("profile_owner_id", targetEntry.profile_owner_id)
+      .eq("profile_owner_id", bot.user_id)
       .gte("created_at", targetEntry.created_at)
       .limit(1);
 
-    if (botRepliesAfter && botRepliesAfter.length > 0) {
-      return false; // Already replied
-    }
+    if (botRepliesAfter && botRepliesAfter.length > 0) return false;
 
-    // Rate limit: max 1 profile guestbook reply per 10 minutes
+    // Rate limit: max 1 reply per 10 minutes
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentBotPosts } = await supabase
       .from("profile_guestbook")
@@ -273,13 +199,11 @@ async function handleReactiveProfileGuestbookReplies(
       return false;
     }
 
-    const isMention = mentionEntries.length > 0;
-    const isBotProfile = !isMention && botProfileEntries.length > 0;
-    const replyType = isMention ? "mention" : (isBotProfile ? "mention" : "question");
+    // Determine reply type naturally: is it a question or a greeting?
+    const isQuestion = targetEntry.message.includes("?");
+    const replyType = isQuestion ? "question" : "greeting";
 
-    // Build context from entries in the same profile guestbook
-    const sameProfileEntries = recentEntries
-      .filter(e => e.profile_owner_id === targetEntry.profile_owner_id)
+    const conversationContext = recentEntries
       .slice(0, 10)
       .reverse()
       .map(e => `- ${e.author_name}: "${e.message}"`)
@@ -288,9 +212,9 @@ async function handleReactiveProfileGuestbookReplies(
     const res = await callBotRespond(supabaseUrl, {
       action: "profile_guestbook_reply",
       bot_id: bot.id,
-      context: sameProfileEntries,
+      context: conversationContext,
       target_username: targetEntry.author_name,
-      profile_owner_id: targetEntry.profile_owner_id,
+      profile_owner_id: bot.user_id,
       reply_type: replyType,
     });
 
@@ -305,92 +229,132 @@ async function handleReactiveProfileGuestbookReplies(
 }
 
 /**
- * REACTIVE REPLIES: Check if anyone mentioned the bot or asked a question in the guestbook.
- * Returns true if a reply was posted (so we skip autonomous actions).
+ * Reply to unread DMs/chat messages sent to the bot.
  */
-async function handleReactiveGuestbookReplies(
+async function handleChatReplies(
   supabase: ReturnType<typeof createClient>,
   supabaseUrl: string,
   bot: Record<string, unknown>,
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    // Look at recent guestbook entries (last 30 min) from OTHER users
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const { data: recentEntries } = await supabase
-      .from("guestbook_entries")
-      .select("id, author_name, message, user_id, created_at")
-      .neq("user_id", bot.user_id)
-      .gte("created_at", thirtyMinAgo)
+    const { data: recentMsgs } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("recipient_id", bot.user_id)
+      .eq("is_read", false)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(10);
 
-    if (!recentEntries || recentEntries.length === 0) return false;
+    if (!recentMsgs || recentMsgs.length === 0) return false;
 
-    const botName = (bot.name as string).toLowerCase();
+    const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))];
+    const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
+    const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
 
-    // Find entries that mention the bot OR contain a question
-    const mentionEntries = recentEntries.filter(e =>
-      e.message.toLowerCase().includes(botName)
-    );
-    const questionEntries = recentEntries.filter(e =>
-      !e.message.toLowerCase().includes(botName) && e.message.includes("?")
-    );
+    const { data: senderProfile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", chosenSenderId)
+      .single();
 
-    // Prioritize mentions over questions
-    const targetEntry = mentionEntries[0] || questionEntries[0];
-    if (!targetEntry) return false;
+    const senderName = senderProfile?.username || "en användare";
 
-    // Check if bot already replied to this entry (look for bot posts after target entry)
-    const { data: botRepliesAfter } = await supabase
-      .from("guestbook_entries")
-      .select("id")
-      .eq("user_id", bot.user_id)
-      .gte("created_at", targetEntry.created_at)
-      .limit(1);
-
-    if (botRepliesAfter && botRepliesAfter.length > 0) {
-      return false; // Already replied
-    }
-
-    // Rate limit: max 1 reply per 10 minutes
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const { data: recentBotPosts } = await supabase
-      .from("guestbook_entries")
-      .select("id")
-      .eq("user_id", bot.user_id)
-      .gte("created_at", tenMinAgo)
-      .limit(1);
-
-    if (recentBotPosts && recentBotPosts.length > 0) {
-      results[bot.name as string].push("Reactive reply skipped: rate limited (10 min cooldown)");
-      return false;
-    }
-
-    const isMention = mentionEntries.length > 0;
-    const replyType = isMention ? "mention" : "question";
-
-    // Build context with surrounding messages for better replies
-    const surroundingContext = recentEntries
-      .slice(0, 10)
+    const messagesContext = senderMessages
+      .slice(0, 5)
       .reverse()
-      .map(e => `- ${e.author_name}: "${e.message}"`)
-      .join("\n");
+      .map(m => `"${m.content}"`)
+      .join(", ");
 
+    const contextStr = `Du chattar med ${senderName}. Deras senaste meddelanden: ${messagesContext}. Svara ${senderName} direkt.`;
     const res = await callBotRespond(supabaseUrl, {
-      action: "guestbook_reply",
+      action: "chat_reply",
       bot_id: bot.id,
-      context: surroundingContext,
-      target_username: targetEntry.author_name,
-      reply_type: replyType,
+      context: contextStr,
+      target_id: chosenSenderId,
+      target_username: senderName,
     });
 
-    results[bot.name as string].push(
-      `Reactive ${replyType} reply to ${targetEntry.author_name}: ${res.reply || res.error || "unknown"}`
-    );
+    for (const m of senderMessages) {
+      await supabase.from("chat_messages").update({ is_read: true }).eq("id", m.id);
+    }
+
+    results[bot.name as string].push(`Chat reply to ${senderName}: ${res.reply || res.error || "unknown"}`);
     return true;
   } catch (e) {
-    results[bot.name as string].push(`Reactive reply error: ${(e as Error).message}`);
+    results[bot.name as string].push(`Chat error: ${(e as Error).message}`);
+    return false;
+  }
+}
+
+/**
+ * Send a friendly DM to users who have been inactive for 2+ weeks.
+ * Max 1 outreach message per user per month.
+ */
+async function handleInactiveUserOutreach(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  results: Record<string, string[]>
+): Promise<boolean> {
+  try {
+    // Only attempt outreach 10% of the time to avoid spamming
+    if (Math.random() > 0.1) return false;
+
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Find users who are friends with the bot but haven't been seen in 2+ weeks
+    const { data: botFriends } = await supabase
+      .from("friends")
+      .select("friend_id")
+      .eq("user_id", bot.user_id)
+      .eq("status", "accepted");
+
+    if (!botFriends || botFriends.length === 0) return false;
+
+    const friendIds = botFriends.map(f => f.friend_id);
+
+    // Find inactive friends (last_seen > 2 weeks ago)
+    const { data: inactiveProfiles } = await supabase
+      .from("profiles")
+      .select("user_id, username, last_seen")
+      .in("user_id", friendIds)
+      .lt("last_seen", twoWeeksAgo)
+      .limit(5);
+
+    if (!inactiveProfiles || inactiveProfiles.length === 0) return false;
+
+    // For each candidate, check if bot already sent a message in the last month
+    for (const profile of inactiveProfiles) {
+      const { data: recentOutreach } = await supabase
+        .from("chat_messages")
+        .select("id")
+        .eq("sender_id", bot.user_id)
+        .eq("recipient_id", profile.user_id)
+        .gte("created_at", oneMonthAgo)
+        .limit(1);
+
+      if (recentOutreach && recentOutreach.length > 0) continue; // Already messaged this month
+
+      // Send outreach
+      const res = await callBotRespond(supabaseUrl, {
+        action: "inactive_outreach",
+        bot_id: bot.id,
+        target_id: profile.user_id,
+        target_username: profile.username,
+        context: `${profile.username} har inte varit online på över två veckor. Senast sedd: ${profile.last_seen}.`,
+      });
+
+      results[bot.name as string].push(
+        `Inactive outreach to ${profile.username}: ${res.reply || res.error || "unknown"}`
+      );
+      return true; // Only one outreach per cron run
+    }
+
+    return false;
+  } catch (e) {
+    results[bot.name as string].push(`Outreach error: ${(e as Error).message}`);
     return false;
   }
 }
