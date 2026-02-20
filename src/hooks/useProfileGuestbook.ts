@@ -120,6 +120,9 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
     async (entryId: string) => {
       if (!user) return false;
 
+      // Optimistic: remove from UI immediately
+      setEntries((prev) => prev.filter((e) => e.id !== entryId));
+
       try {
         const { error } = await supabase
           .from('profile_guestbook')
@@ -133,17 +136,49 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
             description: 'Försök igen senare',
             variant: 'destructive',
           });
+          // Rollback: refetch on failure
+          await fetchEntries();
           return false;
         }
 
-        await fetchEntries();
         return true;
       } catch (err) {
         console.error('Error in deleteEntry:', err);
+        await fetchEntries();
         return false;
       }
     },
     [user, fetchEntries, toast]
+  );
+
+  const clearAll = useCallback(
+    async () => {
+      if (!user || !profileOwnerId) return false;
+
+      // Optimistic: clear UI immediately
+      const snapshot = entries;
+      setEntries([]);
+
+      try {
+        const { error } = await supabase
+          .from('profile_guestbook')
+          .delete()
+          .eq('profile_owner_id', profileOwnerId);
+
+        if (error) {
+          console.error('Error clearing guestbook:', error);
+          setEntries(snapshot); // Rollback
+          return false;
+        }
+
+        return true;
+      } catch (err) {
+        console.error('Error in clearAll:', err);
+        setEntries(snapshot); // Rollback
+        return false;
+      }
+    },
+    [user, profileOwnerId, entries]
   );
 
   useEffect(() => {
@@ -156,6 +191,7 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
     posting,
     postEntry,
     deleteEntry,
+    clearAll,
     refetch: fetchEntries,
   };
 }
