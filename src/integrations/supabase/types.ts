@@ -807,6 +807,7 @@ export type Database = {
         Returns: number
       }
       delete_expired_lajv_messages: { Args: never; Returns: undefined }
+      delete_user_cascade: { Args: { p_user_id: string }; Returns: undefined }
       give_good_vibe: {
         Args: { p_target_id: string; p_target_type: string }
         Returns: Json

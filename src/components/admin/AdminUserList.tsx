@@ -54,33 +54,12 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
   const handleDeleteUser = async (userId: string, username: string) => {
     setActionLoading(userId);
     try {
-      // Delete all user data from various tables
-      await Promise.all([
-        supabase.from("guestbook_entries").delete().eq("user_id", userId),
-        supabase.from("profile_guestbook").delete().eq("author_id", userId),
-        supabase.from("profile_guestbook").delete().eq("profile_owner_id", userId),
-        supabase.from("klotter").delete().eq("user_id", userId),
-        supabase.from("messages").delete().eq("sender_id", userId),
-        supabase.from("messages").delete().eq("recipient_id", userId),
-        supabase.from("friends").delete().eq("user_id", userId),
-        supabase.from("friends").delete().eq("friend_id", userId),
-        supabase.from("friend_votes").delete().eq("voter_id", userId),
-        supabase.from("friend_votes").delete().eq("target_user_id", userId),
-        supabase.from("good_vibes").delete().eq("giver_id", userId),
-        supabase.from("good_vibe_allowances").delete().eq("user_id", userId),
-        supabase.from("lajv_messages").delete().eq("user_id", userId),
-        supabase.from("profile_visits").delete().eq("visitor_id", userId),
-        supabase.from("profile_visits").delete().eq("profile_owner_id", userId),
-        supabase.from("user_roles").delete().eq("user_id", userId),
-      ]);
+      // Use transaction-safe database function for cascade deletion
+      const { error } = await supabase.rpc("delete_user_cascade", {
+        p_user_id: userId,
+      });
 
-      // Delete profile last
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("user_id", userId);
-
-      if (profileError) throw profileError;
+      if (error) throw error;
 
       toast({
         title: "Användare raderad",
