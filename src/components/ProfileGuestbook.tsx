@@ -210,18 +210,6 @@ export function ProfileGuestbook({
                       })}
                     </span>
                     <div className="flex items-center gap-1">
-                      {/* Reply button */}
-                      {user && !isOwnProfile && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-primary"
-                          onClick={() => handleReply(entry.author_name)}
-                          title="Svara"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                        </Button>
-                      )}
                       {/* Delete button for author or profile owner */}
                       {user &&
                         (entry.author_id === user.id ||
