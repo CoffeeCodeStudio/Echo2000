@@ -65,7 +65,13 @@ serve(async (req) => {
       userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Adressera BARA ${addressee}, ingen annan.${realityRules}\n\n${context || "Hej!"}`;
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
-      userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken). Det här är ett offentligt inlägg — rikta det INTE till en specifik person med namn om du inte refererar till ett inlägg de skrivit i gästboken. Var kreativ och personlig.${realityRules}${extraContext}`;
+      userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken).
+
+KRITISKA REGLER FÖR GÄSTBOKEN:
+- Rikta ALDRIG inlägget till en specifik person. Använd INGA namn, smeknamn eller "@"-omnämnanden.
+- Skriv som om du pratar till hela communityn, t.ex. "Hej alla!", "God morgon Echo2000!" etc.
+- Nämn ALDRIG enskilda användare — varken i hälsningar, frågor eller kommentarer.
+- Det här är ett offentligt inlägg som alla ser. Var kreativ, nostalgisk och personlig men ALLMÄNT hållen.${realityRules}${extraContext}`;
     } else if (action === "klotter_comment") {
       userPrompt = `Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.${realityRules}`;
     } else {
