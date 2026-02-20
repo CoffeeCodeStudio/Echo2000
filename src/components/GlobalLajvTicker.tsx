@@ -1,20 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from './Avatar';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Radio, Send, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-import { replaceEmoteCodes, EmotePicker } from './PixelEmotes';
+import { Radio } from 'lucide-react';
+import { replaceEmoteCodes } from './PixelEmotes';
 
 export function GlobalLajvTicker() {
-  const { messages, sendMessage, sending } = useLajv();
-  const { user } = useAuth();
-  const [newMessage, setNewMessage] = useState('');
+  const { messages } = useLajv();
   const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
-  const [showInput, setShowInput] = useState(false);
 
   // Rotate through messages every 5 seconds
   useEffect(() => {
@@ -33,19 +25,6 @@ export function GlobalLajvTicker() {
       setCurrentDisplayIndex(0);
     }
   }, [messages.length, currentDisplayIndex]);
-
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
-    
-    const success = await sendMessage(newMessage);
-    if (success) {
-      setNewMessage('');
-      setShowInput(false);
-      toast.success('Meddelande skickat!');
-    } else {
-      toast.error('Kunde inte skicka meddelandet');
-    }
-  };
 
   const currentMessage = messages[currentDisplayIndex];
 
@@ -91,69 +70,7 @@ export function GlobalLajvTicker() {
         ) : null}
       </div>
 
-      {/* Input area - inline */}
-      {user && (
-        <div className="flex items-center gap-2 shrink-0">
-          {showInput ? (
-            <div className="flex items-center gap-1">
-              <EmotePicker 
-                onSelect={(code) => setNewMessage(prev => prev + " " + code + " ")} 
-                className="scale-75"
-              />
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Skriv något..."
-                className="h-7 w-32 text-sm bg-background/50"
-                maxLength={280}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                  if (e.key === 'Escape') {
-                    setShowInput(false);
-                    setNewMessage('');
-                  }
-                }}
-                autoFocus
-              />
-              <Button
-                onClick={handleSend}
-                disabled={sending || !newMessage.trim()}
-                size="sm"
-                className="h-7 px-2"
-              >
-                {sending ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <Send className="w-3 h-3" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => {
-                  setShowInput(false);
-                  setNewMessage('');
-                }}
-              >
-                ✕
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-3 text-xs text-primary hover:text-primary hover:bg-primary/10"
-              onClick={() => setShowInput(true)}
-            >
-              Skriv
-            </Button>
-          )}
-        </div>
-      )}
+      {/* No input here — users post from the Lajv tab */}
     </div>
   );
 }
