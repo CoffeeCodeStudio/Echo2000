@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RotateCcw, Trophy, Clock, MousePointerClick } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, RotateCcw, Trophy, Clock, MousePointerClick, Medal, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const PIXEL_EMOJIS = [
   "🎮", "👾", "🕹️", "🤖", "💾", "📟", "🌟", "🎵",
@@ -53,11 +57,24 @@ function calcScore(moves: number, seconds: number, pairs: number): number {
   return Math.max(0, base - movePenalty - timePenalty);
 }
 
+interface HighscoreEntry {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  score: number;
+  moves: number;
+  time_seconds: number;
+  difficulty: string;
+  created_at: string;
+}
+
 interface Props {
   onBack: () => void;
 }
 
 export function MemoryGame({ onBack }: Props) {
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedIds, setFlippedIds] = useState<number[]>([]);
@@ -65,6 +82,10 @@ export function MemoryGame({ onBack }: Props) {
   const [matchedPairs, setMatchedPairs] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<HighscoreEntry[]>([]);
+  const [leaderboardDiff, setLeaderboardDiff] = useState<Difficulty>("medium");
+  const [scoreSaved, setScoreSaved] = useState(false);
   const [bestScores, setBestScores] = useState<Record<Difficulty, number>>(() => {
     try {
       return JSON.parse(localStorage.getItem("memory-best") || "{}");
@@ -83,8 +104,33 @@ export function MemoryGame({ onBack }: Props) {
     setMatchedPairs(0);
     setSeconds(0);
     setGameOver(false);
+    setScoreSaved(false);
     lockRef.current = false;
   }, []);
+
+  const fetchLeaderboard = useCallback(async (diff: Difficulty) => {
+    const { data } = await supabase
+      .from('memory_highscores')
+      .select('*')
+      .eq('difficulty', diff)
+      .order('score', { ascending: false })
+      .limit(20);
+    setLeaderboard((data as HighscoreEntry[]) || []);
+  }, []);
+
+  const saveScore = useCallback(async (score: number, movesCount: number, timeSec: number, diff: Difficulty) => {
+    if (!user || !profile || scoreSaved) return;
+    setScoreSaved(true);
+    await supabase.from('memory_highscores').insert({
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      score,
+      moves: movesCount,
+      time_seconds: timeSec,
+      difficulty: diff,
+    });
+  }, [user, profile, scoreSaved]);
 
   // Timer
   useEffect(() => {
@@ -107,9 +153,12 @@ export function MemoryGame({ onBack }: Props) {
           setBestScores(next);
           localStorage.setItem("memory-best", JSON.stringify(next));
         }
+        // Save to database
+        saveScore(score, moves, seconds, difficulty);
+        fetchLeaderboard(difficulty);
       }
     }
-  }, [matchedPairs, totalPairs]);
+  }, [matchedPairs, totalPairs]); // eslint-disable-line
 
   const handleCardClick = (id: number) => {
     if (lockRef.current || gameOver) return;
@@ -152,6 +201,59 @@ export function MemoryGame({ onBack }: Props) {
     }
   };
 
+  // Leaderboard view
+  if (showLeaderboard) {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+        <div className="container px-4 py-8 max-w-lg mx-auto space-y-4">
+          <Button variant="ghost" size="sm" onClick={() => setShowLeaderboard(false)} className="text-muted-foreground">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka
+          </Button>
+          <div className="text-center space-y-2">
+            <Medal className="w-10 h-10 mx-auto text-primary" />
+            <h1 className="font-display font-bold text-2xl">Topplista</h1>
+          </div>
+          <div className="flex gap-1 justify-center">
+            {(["easy", "medium", "hard"] as Difficulty[]).map(d => (
+              <Button
+                key={d}
+                size="sm"
+                variant={leaderboardDiff === d ? "default" : "outline"}
+                onClick={() => { setLeaderboardDiff(d); fetchLeaderboard(d); }}
+                className="font-display text-xs"
+              >
+                {DIFFICULTY_CONFIG[d].label.split(" ")[0]}
+              </Button>
+            ))}
+          </div>
+          <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2">
+              <span className="font-display font-bold text-white text-sm">{DIFFICULTY_CONFIG[leaderboardDiff].label}</span>
+            </div>
+            <ScrollArea className="max-h-96">
+              <div className="divide-y divide-border">
+                {leaderboard.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-8">Inga poäng ännu — bli den första!</p>
+                ) : leaderboard.map((entry, i) => (
+                  <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
+                    <span className="w-6 text-center font-display font-bold text-sm">
+                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-display font-bold text-sm truncate block">{entry.username}</span>
+                      <span className="text-xs text-muted-foreground">{entry.moves} drag · {formatTime(entry.time_seconds)}</span>
+                    </div>
+                    <span className="font-display font-bold text-primary text-sm">{entry.score}p</span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Difficulty selection screen
   if (!difficulty) {
     return (
@@ -182,7 +284,7 @@ export function MemoryGame({ onBack }: Props) {
                   </div>
                   {bestScores[key] ? (
                     <div className="text-right">
-                      <div className="text-xs text-muted-foreground">Bästa</div>
+                      <div className="text-xs text-muted-foreground">Ditt bästa</div>
                       <div className="font-display font-bold text-primary text-sm">{bestScores[key]}p</div>
                     </div>
                   ) : null}
@@ -191,6 +293,15 @@ export function MemoryGame({ onBack }: Props) {
             ))}
           </div>
 
+          {/* Leaderboard button */}
+          <Button
+            variant="outline"
+            className="w-full font-display gap-2"
+            onClick={() => { setShowLeaderboard(true); fetchLeaderboard(leaderboardDiff); }}
+          >
+            <Medal className="w-4 h-4" /> Visa topplista
+          </Button>
+
           {/* Rules */}
           <div className="rounded-xl border border-border bg-card/50 p-4 space-y-2">
             <h3 className="font-display font-bold text-sm flex items-center gap-1"><Trophy className="w-3 h-3 text-primary" /> Poängsystem</h3>
@@ -198,7 +309,7 @@ export function MemoryGame({ onBack }: Props) {
               <li>• Grundpoäng baserat på antal par</li>
               <li>• Färre drag = högre poäng</li>
               <li>• Snabbare tid = högre poäng</li>
-              <li>• Bästa poäng sparas lokalt</li>
+              <li>• Tävla mot andra på topplistan!</li>
             </ul>
           </div>
         </div>
@@ -244,9 +355,12 @@ export function MemoryGame({ onBack }: Props) {
             </div>
           )}
 
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center">
             <Button variant="outline" onClick={() => startGame(difficulty)} className="font-display gap-1">
               <RotateCcw className="w-4 h-4" /> Spela igen
+            </Button>
+            <Button variant="outline" onClick={() => { setShowLeaderboard(true); setLeaderboardDiff(difficulty); fetchLeaderboard(difficulty); }} className="font-display gap-1">
+              <Medal className="w-4 h-4" /> Topplista
             </Button>
             <Button variant="outline" onClick={() => setDifficulty(null)} className="font-display">
               Byt svårighet
