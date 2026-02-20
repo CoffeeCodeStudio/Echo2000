@@ -4,18 +4,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, Eraser, Paintbrush, Users, Trophy } from "lucide-react";
+import { ArrowLeft, Send, Eraser, Paintbrush, Users, Trophy, Timer, SkipForward } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface DrawPoint {
   x: number;
   y: number;
   color: string;
   size: number;
-}
-
-interface DrawAction {
-  points: DrawPoint[];
 }
 
 interface ScribbleGameProps {
@@ -25,6 +22,7 @@ interface ScribbleGameProps {
 
 const COLORS = ["#000000", "#ff0000", "#0066ff", "#00cc44", "#ff9900", "#9933ff", "#ff69b4", "#ffffff"];
 const BRUSH_SIZES = [3, 6, 10, 16];
+const ROUND_TIME = 60; // seconds
 
 const WORD_LIST = [
   "hund", "katt", "sol", "hus", "bil", "träd", "blomma", "fisk",
@@ -32,11 +30,14 @@ const WORD_LIST = [
   "kanin", "elefant", "cykel", "banan", "jordgubbe", "paraply",
   "robot", "raket", "fjäril", "snögubbe", "drake", "krona",
   "hjärta", "stjärna", "måne", "berg", "sjö", "båt", "flygplan",
+  "dator", "mus", "nycklar", "lampa", "klocka", "regnbåge",
+  "fotboll", "skateboard", "glass", "tårta", "clown", "dinosaurie",
 ];
 
 export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const { lobby, players, guesses, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -44,12 +45,16 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const [brushSize, setBrushSize] = useState(6);
   const [isEraser, setIsEraser] = useState(false);
   const [guessText, setGuessText] = useState("");
-  const [history, setHistory] = useState<DrawAction[]>([]);
   const [currentAction, setCurrentAction] = useState<DrawPoint[]>([]);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [wordChoices, setWordChoices] = useState<string[]>([]);
+  const [showWordPicker, setShowWordPicker] = useState(false);
   const guessEndRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isDrawer = lobby?.current_drawer_id === user?.id;
   const isCreator = lobby?.creator_id === user?.id;
+  const maxRounds = players.length > 0 ? players.length * 2 : 4;
 
   // Join lobby on mount
   useEffect(() => {
@@ -77,7 +82,24 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     }
   }, []);
 
-  // Broadcast drawing via Supabase Realtime
+  // Timer
+  useEffect(() => {
+    if (lobby?.status !== "playing") return;
+    setTimeLeft(ROUND_TIME);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // Time's up - advance turn if drawer
+          if (isDrawer) advanceTurn();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [lobby?.round_number, lobby?.status, lobby?.current_drawer_id]); // eslint-disable-line
+
+  // Broadcast drawing
   const broadcastChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
@@ -100,10 +122,8 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     if (!canvas || points.length < 2) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-
     for (let i = 1; i < points.length; i++) {
       ctx.beginPath();
       ctx.strokeStyle = points[i].color;
@@ -134,8 +154,7 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     if (!isDrawer) return;
     setIsDrawing(true);
     const pos = getPos(e);
-    const point: DrawPoint = { ...pos, color: isEraser ? "#ffffff" : color, size: brushSize };
-    setCurrentAction([point]);
+    setCurrentAction([{ ...pos, color: isEraser ? "#ffffff" : color, size: brushSize }]);
   };
 
   const draw = (e: React.PointerEvent) => {
@@ -144,8 +163,6 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     const point: DrawPoint = { ...pos, color: isEraser ? "#ffffff" : color, size: brushSize };
     const newAction = [...currentAction, point];
     setCurrentAction(newAction);
-
-    // Draw locally
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -165,8 +182,6 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     if (!isDrawing) return;
     setIsDrawing(false);
     if (currentAction.length > 1) {
-      setHistory(prev => [...prev, { points: currentAction }]);
-      // Broadcast
       broadcastChannel.current?.send({
         type: 'broadcast',
         event: 'draw',
@@ -178,28 +193,92 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
 
   const handleClear = () => {
     clearCanvas();
-    setHistory([]);
-    broadcastChannel.current?.send({
-      type: 'broadcast',
-      event: 'clear',
-      payload: {},
-    });
+    broadcastChannel.current?.send({ type: 'broadcast', event: 'clear', payload: {} });
   };
 
   const handleGuess = async () => {
     if (!guessText.trim()) return;
-    await submitGuess(guessText.trim());
+    const isCorrect = await submitGuess(guessText.trim());
+    if (isCorrect) {
+      toast({ title: "🎉 Rätt svar!" });
+      // Auto advance turn after correct guess
+      if (isDrawer || isCreator) {
+        setTimeout(() => advanceTurn(), 2000);
+      }
+    }
     setGuessText("");
   };
 
-  // Start game (creator picks word for themselves as drawer)
-  const handleStartRound = async () => {
-    const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+  const advanceTurn = async () => {
+    if (!lobby || players.length === 0) return;
+    const nextRound = (lobby.round_number || 0) + 1;
+
+    if (nextRound > maxRounds) {
+      // Game over - close lobby
+      await supabase.from('scribble_lobbies').update({
+        status: 'finished',
+        current_word: null,
+        current_drawer_id: null,
+      }).eq('id', lobbyId);
+      toast({ title: "🏆 Spelet är slut!", description: "Kolla poängtavlan!" });
+      return;
+    }
+
+    // Rotate drawer
+    const currentIdx = players.findIndex(p => p.user_id === lobby.current_drawer_id);
+    const nextIdx = (currentIdx + 1) % players.length;
+    const nextDrawer = players[nextIdx];
+
+    // If next drawer is me, show word picker
+    if (nextDrawer.user_id === user?.id) {
+      const choices = [];
+      const used = new Set<string>();
+      while (choices.length < 3) {
+        const w = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+        if (!used.has(w)) { choices.push(w); used.add(w); }
+      }
+      setWordChoices(choices);
+      setShowWordPicker(true);
+    }
+
+    await supabase.from('scribble_lobbies').update({
+      current_drawer_id: nextDrawer.user_id,
+      round_number: nextRound,
+      current_word: null, // Will be set when drawer picks
+      status: 'playing',
+    }).eq('id', lobbyId);
+
+    clearCanvas();
+  };
+
+  const pickWord = async (word: string) => {
+    setShowWordPicker(false);
+    setWordChoices([]);
+    await supabase.from('scribble_lobbies').update({
+      current_word: word,
+    }).eq('id', lobbyId);
+    clearCanvas();
+  };
+
+  const handleStartRound = () => {
+    const choices: string[] = [];
+    const used = new Set<string>();
+    while (choices.length < 3) {
+      const w = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+      if (!used.has(w)) { choices.push(w); used.add(w); }
+    }
+    setWordChoices(choices);
+    setShowWordPicker(true);
+  };
+
+  const startWithWord = async (word: string) => {
+    setShowWordPicker(false);
+    setWordChoices([]);
     await supabase.from('scribble_lobbies').update({
       status: 'playing',
       current_word: word,
       current_drawer_id: user?.id,
-      round_number: (lobby?.round_number || 0) + 1,
+      round_number: 1,
     }).eq('id', lobbyId);
     clearCanvas();
   };
@@ -208,6 +287,8 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     await leaveLobby();
     onLeave();
   };
+
+  const timerColor = timeLeft <= 10 ? "text-red-400" : timeLeft <= 20 ? "text-orange-400" : "text-white/80";
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -219,155 +300,188 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
           </Button>
           <h2 className="font-display font-bold text-white text-sm truncate">{lobby?.title || "Scribble"}</h2>
         </div>
-        <div className="flex items-center gap-2 text-white/80 text-xs">
-          <Users className="w-3 h-3" />
-          <span>{players.length} spelare</span>
+        <div className="flex items-center gap-3 text-white/80 text-xs">
           {lobby?.status === "playing" && (
-            <span className="ml-2 bg-white/20 px-2 py-0.5 rounded text-xs font-mono">
-              Runda {lobby.round_number}
+            <span className={`flex items-center gap-1 font-mono font-bold ${timerColor}`}>
+              <Timer className="w-3 h-3" />
+              {timeLeft}s
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Users className="w-3 h-3" />
+            {players.length}
+          </span>
+          {lobby?.status === "playing" && (
+            <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono">
+              {lobby.round_number}/{maxRounds}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left: Canvas */}
-        <div className="flex-1 flex flex-col bg-muted/30 min-w-0">
-          {/* Drawing toolbar (only for drawer) */}
-          {isDrawer && (
-            <div className="flex items-center gap-2 p-2 border-b border-border bg-card flex-wrap">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => { setColor(c); setIsEraser(false); }}
-                  className={`w-6 h-6 rounded-full border-2 transition-transform ${
-                    color === c && !isEraser ? "border-foreground scale-125" : "border-border"
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-              <div className="w-px h-6 bg-border mx-1" />
-              {BRUSH_SIZES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setBrushSize(s)}
-                  className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${
-                    brushSize === s ? "bg-primary/20 text-primary" : "hover:bg-muted"
-                  }`}
-                >
-                  <div className="rounded-full bg-current" style={{ width: s, height: s }} />
-                </button>
-              ))}
-              <div className="w-px h-6 bg-border mx-1" />
-              <Button
-                variant={isEraser ? "default" : "ghost"}
-                size="icon"
-                onClick={() => setIsEraser(!isEraser)}
-                className="h-7 w-7"
-              >
-                <Eraser className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleClear} className="h-7 w-7">
-                <Paintbrush className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-
-          {/* Word hint for drawer */}
-          {isDrawer && lobby?.current_word && (
-            <div className="text-center py-1 bg-primary/10 text-primary text-sm font-display font-bold">
-              Rita: {lobby.current_word}
-            </div>
-          )}
-
-          {/* Word hint for guessers */}
-          {!isDrawer && lobby?.status === "playing" && lobby?.current_word && (
-            <div className="text-center py-1 bg-muted text-muted-foreground text-sm font-display">
-              {lobby.current_word.replace(/./g, "_ ")}
-            </div>
-          )}
-
-          {/* Waiting / Start */}
-          {lobby?.status === "waiting" && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Paintbrush className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-muted-foreground mb-4">Väntar på att spelet ska starta...</p>
-                {isCreator && (
-                  <Button onClick={handleStartRound} className="font-display">
-                    Starta runda!
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Canvas */}
-          {lobby?.status === "playing" && (
-            <div className="flex-1 relative">
-              <canvas
-                ref={canvasRef}
-                className="absolute inset-0 w-full h-full touch-none"
-                style={{ cursor: isDrawer ? "crosshair" : "default" }}
-                onPointerDown={startDrawing}
-                onPointerMove={draw}
-                onPointerUp={stopDrawing}
-                onPointerLeave={stopDrawing}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Right: Chat & Players */}
-        <div className="w-64 lg:w-72 border-l border-border flex flex-col bg-card shrink-0">
-          {/* Players */}
-          <div className="border-b border-border">
-            <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/20 px-3 py-1.5 flex items-center gap-2">
-              <Trophy className="w-3 h-3 text-orange-500" />
-              <span className="text-xs font-display font-bold text-orange-600">Poäng</span>
-            </div>
-            <div className="p-2 space-y-1 max-h-32 overflow-y-auto">
-              {players.map((p) => (
-                <div key={p.id} className="flex items-center justify-between text-xs">
-                  <span className={`truncate ${p.user_id === lobby?.current_drawer_id ? "text-primary font-bold" : "text-foreground"}`}>
-                    {p.user_id === lobby?.current_drawer_id ? "🖌️ " : ""}{p.username}
-                  </span>
-                  <span className="font-mono text-muted-foreground">{p.score}p</span>
-                </div>
+      {/* Word picker overlay */}
+      {showWordPicker && (
+        <div className="absolute inset-0 z-50 bg-background/90 flex items-center justify-center">
+          <div className="nostalgia-card p-6 max-w-sm text-center space-y-4">
+            <h3 className="font-display font-bold text-lg">Välj ett ord att rita!</h3>
+            <div className="flex flex-col gap-2">
+              {wordChoices.map(w => (
+                <Button key={w} onClick={() => lobby?.status === "waiting" ? startWithWord(w) : pickWord(w)} className="font-display text-lg capitalize">
+                  {w}
+                </Button>
               ))}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Guesses */}
-          <ScrollArea className="flex-1">
-            <div className="p-3 space-y-2">
-              {guesses.map((g) => (
-                <div key={g.id} className={`text-xs ${g.is_correct ? "text-primary font-bold" : "text-foreground"}`}>
-                  <span className="font-bold">{g.username}:</span>{" "}
-                  {g.is_correct ? "✅ Rätt svar!" : g.guess}
+      {/* Game finished */}
+      {lobby?.status === "finished" && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="nostalgia-card p-8 text-center space-y-4 max-w-md">
+            <Trophy className="w-16 h-16 mx-auto text-primary" />
+            <h2 className="font-display font-bold text-2xl">Spelet är slut!</h2>
+            <div className="space-y-2">
+              {players.sort((a, b) => b.score - a.score).map((p, i) => (
+                <div key={p.id} className="flex items-center justify-between text-sm">
+                  <span>{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`} {p.username}</span>
+                  <span className="font-mono font-bold text-primary">{p.score}p</span>
                 </div>
               ))}
-              <div ref={guessEndRef} />
             </div>
-          </ScrollArea>
-
-          {/* Guess input (non-drawers only) */}
-          {!isDrawer && lobby?.status === "playing" && (
-            <div className="p-2 border-t border-border flex gap-2">
-              <Input
-                value={guessText}
-                onChange={(e) => setGuessText(e.target.value)}
-                placeholder="Gissa..."
-                className="text-sm h-8"
-                onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-              />
-              <Button size="icon" onClick={handleGuess} className="h-8 w-8 shrink-0">
-                <Send className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
+            <Button onClick={handleLeave} className="font-display">Tillbaka till lobbys</Button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {lobby?.status !== "finished" && (
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left: Canvas */}
+          <div className="flex-1 flex flex-col bg-muted/30 min-w-0">
+            {isDrawer && (
+              <div className="flex items-center gap-2 p-2 border-b border-border bg-card flex-wrap">
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setColor(c); setIsEraser(false); }}
+                    className={`w-6 h-6 rounded-full border-2 transition-transform ${color === c && !isEraser ? "border-foreground scale-125" : "border-border"}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+                <div className="w-px h-6 bg-border mx-1" />
+                {BRUSH_SIZES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setBrushSize(s)}
+                    className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${brushSize === s ? "bg-primary/20 text-primary" : "hover:bg-muted"}`}
+                  >
+                    <div className="rounded-full bg-current" style={{ width: s, height: s }} />
+                  </button>
+                ))}
+                <div className="w-px h-6 bg-border mx-1" />
+                <Button variant={isEraser ? "default" : "ghost"} size="icon" onClick={() => setIsEraser(!isEraser)} className="h-7 w-7">
+                  <Eraser className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleClear} className="h-7 w-7">
+                  <Paintbrush className="w-4 h-4" />
+                </Button>
+                {isDrawer && (
+                  <Button variant="ghost" size="sm" onClick={() => advanceTurn()} className="h-7 ml-auto text-xs">
+                    <SkipForward className="w-3 h-3 mr-1" /> Hoppa över
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {isDrawer && lobby?.current_word && (
+              <div className="text-center py-1 bg-primary/10 text-primary text-sm font-display font-bold">
+                Rita: {lobby.current_word}
+              </div>
+            )}
+
+            {!isDrawer && lobby?.status === "playing" && lobby?.current_word && (
+              <div className="text-center py-1 bg-muted text-muted-foreground text-sm font-display">
+                {lobby.current_word.replace(/./g, "_ ")}
+              </div>
+            )}
+
+            {lobby?.status === "waiting" && (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Paintbrush className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <p className="text-muted-foreground mb-4">Väntar på att spelet ska starta...</p>
+                  {isCreator && (
+                    <Button onClick={handleStartRound} className="font-display">
+                      Starta runda!
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {lobby?.status === "playing" && (
+              <div className="flex-1 relative">
+                <canvas
+                  ref={canvasRef}
+                  className="absolute inset-0 w-full h-full touch-none"
+                  style={{ cursor: isDrawer ? "crosshair" : "default" }}
+                  onPointerDown={startDrawing}
+                  onPointerMove={draw}
+                  onPointerUp={stopDrawing}
+                  onPointerLeave={stopDrawing}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Right: Chat & Players */}
+          <div className="w-64 lg:w-72 border-l border-border flex flex-col bg-card shrink-0">
+            <div className="border-b border-border">
+              <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/20 px-3 py-1.5 flex items-center gap-2">
+                <Trophy className="w-3 h-3 text-orange-500" />
+                <span className="text-xs font-display font-bold text-orange-600">Poäng</span>
+              </div>
+              <div className="p-2 space-y-1 max-h-32 overflow-y-auto">
+                {players.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between text-xs">
+                    <span className={`truncate ${p.user_id === lobby?.current_drawer_id ? "text-primary font-bold" : "text-foreground"}`}>
+                      {p.user_id === lobby?.current_drawer_id ? "🖌️ " : ""}{p.username}
+                    </span>
+                    <span className="font-mono text-muted-foreground">{p.score}p</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-3 space-y-2">
+                {guesses.map((g) => (
+                  <div key={g.id} className={`text-xs ${g.is_correct ? "text-primary font-bold" : "text-foreground"}`}>
+                    <span className="font-bold">{g.username}:</span>{" "}
+                    {g.is_correct ? "✅ Rätt svar!" : g.guess}
+                  </div>
+                ))}
+                <div ref={guessEndRef} />
+              </div>
+            </ScrollArea>
+
+            {!isDrawer && lobby?.status === "playing" && (
+              <div className="p-2 border-t border-border flex gap-2">
+                <Input
+                  value={guessText}
+                  onChange={(e) => setGuessText(e.target.value)}
+                  placeholder="Gissa..."
+                  className="text-sm h-8"
+                  onKeyDown={(e) => e.key === "Enter" && handleGuess()}
+                />
+                <Button size="icon" onClick={handleGuess} className="h-8 w-8 shrink-0">
+                  <Send className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
