@@ -139,7 +139,7 @@ export function ProfileGuestbook({
       )}
 
       {/* Clear all button for profile owner */}
-      {isOwnProfile && user && entries.length > 0 && (
+      {isOwnProfile && user && (
         <div className="flex justify-end">
           <AlertDialog>
             <AlertDialogTrigger asChild>

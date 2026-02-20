@@ -175,8 +175,8 @@ export function ChatWindow({ className }: ChatWindowProps) {
         .eq("recipient_id", user.id);
       if (e2) throw e2;
       toast({ title: "Meddelanden raderade", description: "Alla dina chattmeddelanden har raderats." });
-      // Force reload to clear state
-      window.location.reload();
+      // Reset selected contact to refresh view
+      setSelectedContact(null);
     } catch (error) {
       console.error("Error clearing messages:", error);
       toast({ title: "Kunde inte radera", description: "Något gick fel, försök igen", variant: "destructive" });
