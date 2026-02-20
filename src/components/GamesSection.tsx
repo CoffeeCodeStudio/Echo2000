@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScribbleLobbyList } from "@/components/ScribbleLobbyList";
 import { ScribbleGame } from "@/components/ScribbleGame";
 import { MemoryGame } from "@/components/MemoryGame";
+import { SnakeGame } from "@/components/SnakeGame";
 import { Gamepad2, User, Users, Info, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,13 @@ const SINGLE_PLAYER_GAMES = [
     icon: "🐍",
     description: "Styr ormen och ät så mycket du kan utan att krocka.",
     players: "1 spelare",
-    available: false,
+    available: true,
+    rules: [
+      "Styr ormen med piltangenter eller WASD.",
+      "Ät äpplen för att växa och få poäng.",
+      "Undvik väggar och din egen svans!",
+      "Ju fler äpplen, desto snabbare går det.",
+    ],
   },
   {
     id: "quiz",
@@ -68,10 +75,14 @@ const MULTI_PLAYER_GAMES = [
 
 export function GamesSection() {
   const [activeLobbyId, setActiveLobbyId] = useState<string | null>(null);
-  const [view, setView] = useState<"list" | "scribble-lobbies" | "memory">("list");
+  const [view, setView] = useState<"list" | "scribble-lobbies" | "memory" | "snake">("list");
 
   if (view === "memory") {
     return <MemoryGame onBack={() => setView("list")} />;
+  }
+
+  if (view === "snake") {
+    return <SnakeGame onBack={() => setView("list")} />;
   }
 
   if (activeLobbyId) {
@@ -130,7 +141,15 @@ export function GamesSection() {
           </div>
           <div className="space-y-3">
             {SINGLE_PLAYER_GAMES.map(game => (
-              <GameCard key={game.id} game={game} onPlay={game.id === "memory" ? () => setView("memory") : undefined} />
+              <GameCard
+                key={game.id}
+                game={game}
+                onPlay={
+                  game.id === "memory" ? () => setView("memory") :
+                  game.id === "snake" ? () => setView("snake") :
+                  undefined
+                }
+              />
             ))}
           </div>
         </section>

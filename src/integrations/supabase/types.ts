@@ -743,6 +743,39 @@ export type Database = {
           },
         ]
       }
+      snake_highscores: {
+        Row: {
+          apples_eaten: number
+          avatar_url: string | null
+          created_at: string
+          id: string
+          score: number
+          time_seconds: number
+          user_id: string
+          username: string
+        }
+        Insert: {
+          apples_eaten?: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          time_seconds?: number
+          user_id: string
+          username: string
+        }
+        Update: {
+          apples_eaten?: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          time_seconds?: number
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
