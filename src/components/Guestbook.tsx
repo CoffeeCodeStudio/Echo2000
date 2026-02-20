@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, MessageCircle, Loader2, Info, Trash2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { Button } from "./ui/button";
@@ -27,10 +27,24 @@ export function Guestbook() {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleReply = useCallback((authorName: string) => {
+    setNewMessage((prev) => {
+      const mention = `@${authorName} `;
+      if (prev.includes(mention)) return prev;
+      return mention + prev;
+    });
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      textareaRef.current?.focus();
+    }, 100);
+  }, []);
 
   const isLoggedOut = !authLoading && !user;
 
@@ -194,7 +208,7 @@ export function Guestbook() {
         </div>
 
         {/* Write new entry */}
-        <div className="nostalgia-card p-4 mb-6">
+        <div ref={formRef} className="nostalgia-card p-4 mb-6">
           <h2 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <MessageCircle className="w-4 h-4 text-primary" />
             Skriv i gästboken
@@ -213,6 +227,7 @@ export function Guestbook() {
             <>
               <div className="relative mb-3">
                 <Textarea
+                  ref={textareaRef}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Skriv ditt meddelande här... (använd t.ex. :fire: :love: :star:)"
@@ -305,7 +320,10 @@ export function Guestbook() {
                     {/* Actions */}
                     <div className="flex items-center gap-4 mt-2">
                       <GoodVibe targetType="guestbook" targetId={entry.id} />
-                      <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
+                      <button
+                        onClick={() => handleReply(entry.author_name)}
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
                         <MessageCircle className="w-4 h-4" />
                         Svara
                       </button>
