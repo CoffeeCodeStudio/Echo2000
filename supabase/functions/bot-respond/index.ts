@@ -17,7 +17,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, bot_id, context, target_id, target_username, reply_type } = await req.json();
+    const { action, bot_id, context, target_id, target_username, reply_type, profile_owner_id } = await req.json();
 
     // Fetch bot settings
     const { data: bot, error: botError } = await supabase
@@ -64,7 +64,6 @@ serve(async (req) => {
       const addressee = target_username || "användaren";
       userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Adressera BARA ${addressee}, ingen annan.${realityRules}\n\n${context || "Hej!"}`;
     } else if (action === "guestbook_reply") {
-      // REACTIVE REPLY: Someone mentioned the bot or asked a question
       const addressee = target_username || "någon";
       const replyStyle = reply_type === "mention"
         ? `Någon har nämnt dig vid namn i gästboken! Svara ${addressee} personligt och trevligt.`
@@ -81,6 +80,22 @@ REGLER FÖR DITT SVAR:
 - Var personlig, varm och lite lekfull.
 - Om det var en fråga, ge ett kort och hjälpsamt (eller busigt) svar.
 - Om det var en hälsning eller omnämning, svara med charm.${realityRules}`;
+    } else if (action === "profile_guestbook_reply") {
+      const addressee = target_username || "någon";
+      const replyStyle = reply_type === "mention"
+        ? `Någon har nämnt dig vid namn i sin profilgästbok! Svara ${addressee} personligt.`
+        : `Någon har ställt en fråga i sin profilgästbok. Svara hjälpsamt till ${addressee}.`;
+
+      userPrompt = `${replyStyle}
+
+Senaste inläggen i profilgästboken:
+${context || "(inga)"}
+
+REGLER FÖR DITT SVAR:
+- Rikta svaret till ${addressee} — du FÅR nämna deras namn.
+- Max 280 tecken.
+- Det här är en personlig profilgästbok, inte den publika gästboken. Skriv som om du besöker deras profil.
+- Var personlig, varm och lite lekfull.${realityRules}`;
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
       userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken).
@@ -143,6 +158,15 @@ KRITISKA REGLER FÖR GÄSTBOKEN:
       // Both autonomous posts and reactive replies go to the public guestbook
       await supabase.from("guestbook_entries").insert({
         user_id: bot.user_id,
+        author_name: bot.name,
+        author_avatar: bot.avatar_url,
+        message: reply,
+      });
+    } else if (action === "profile_guestbook_reply" && profile_owner_id) {
+      // Reactive reply in someone's profile guestbook
+      await supabase.from("profile_guestbook").insert({
+        profile_owner_id: profile_owner_id,
+        author_id: bot.user_id,
         author_name: bot.name,
         author_avatar: bot.avatar_url,
         message: reply,

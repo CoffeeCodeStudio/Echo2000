@@ -33,13 +33,18 @@ serve(async (req) => {
       const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
 
       // =============================================
-      // PRIORITY 1: Reply to guestbook entries that mention the bot or contain questions
+      // PRIORITY 1: Reply to profile guestbook entries that mention the bot or contain questions
       // These ALWAYS trigger, bypassing activity roll
       // =============================================
       if (allowedContexts.includes("guestbook")) {
+        const didProfileReply = await handleReactiveProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
+        if (didProfileReply) {
+          continue;
+        }
+
+        // PRIORITY 1b: Reply to public guestbook entries
         const didReply = await handleReactiveGuestbookReplies(supabase, supabaseUrl, bot, results);
         if (didReply) {
-          // Prioritize replies — skip autonomous posting this cycle
           continue;
         }
       }
@@ -197,6 +202,107 @@ serve(async (req) => {
     });
   }
 });
+
+/**
+ * REACTIVE REPLIES for PROFILE GUESTBOOKS: Check if anyone mentioned the bot
+ * or asked a question in any profile_guestbook (including the bot's own profile).
+ */
+async function handleReactiveProfileGuestbookReplies(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  results: Record<string, string[]>
+): Promise<boolean> {
+  try {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+
+    // Look for recent profile guestbook entries from OTHER users
+    const { data: recentEntries } = await supabase
+      .from("profile_guestbook")
+      .select("id, author_name, author_id, message, profile_owner_id, created_at")
+      .neq("author_id", bot.user_id)
+      .gte("created_at", thirtyMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (!recentEntries || recentEntries.length === 0) return false;
+
+    const botName = (bot.name as string).toLowerCase();
+
+    // Find entries that mention the bot OR contain a question
+    const mentionEntries = recentEntries.filter(e =>
+      e.message.toLowerCase().includes(botName)
+    );
+    const questionEntries = recentEntries.filter(e =>
+      !e.message.toLowerCase().includes(botName) && e.message.includes("?")
+    );
+
+    // Also check entries on the bot's OWN profile (always reply to those)
+    const botProfileEntries = recentEntries.filter(e =>
+      e.profile_owner_id === bot.user_id
+    );
+
+    // Prioritize: mentions > bot's own profile > questions
+    const targetEntry = mentionEntries[0] || botProfileEntries[0] || questionEntries[0];
+    if (!targetEntry) return false;
+
+    // Check if bot already replied in this profile guestbook after the target entry
+    const { data: botRepliesAfter } = await supabase
+      .from("profile_guestbook")
+      .select("id")
+      .eq("author_id", bot.user_id)
+      .eq("profile_owner_id", targetEntry.profile_owner_id)
+      .gte("created_at", targetEntry.created_at)
+      .limit(1);
+
+    if (botRepliesAfter && botRepliesAfter.length > 0) {
+      return false; // Already replied
+    }
+
+    // Rate limit: max 1 profile guestbook reply per 10 minutes
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: recentBotPosts } = await supabase
+      .from("profile_guestbook")
+      .select("id")
+      .eq("author_id", bot.user_id)
+      .gte("created_at", tenMinAgo)
+      .limit(1);
+
+    if (recentBotPosts && recentBotPosts.length > 0) {
+      results[bot.name as string].push("Profile guestbook reply skipped: rate limited (10 min cooldown)");
+      return false;
+    }
+
+    const isMention = mentionEntries.length > 0;
+    const isBotProfile = !isMention && botProfileEntries.length > 0;
+    const replyType = isMention ? "mention" : (isBotProfile ? "mention" : "question");
+
+    // Build context from entries in the same profile guestbook
+    const sameProfileEntries = recentEntries
+      .filter(e => e.profile_owner_id === targetEntry.profile_owner_id)
+      .slice(0, 10)
+      .reverse()
+      .map(e => `- ${e.author_name}: "${e.message}"`)
+      .join("\n");
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "profile_guestbook_reply",
+      bot_id: bot.id,
+      context: sameProfileEntries,
+      target_username: targetEntry.author_name,
+      profile_owner_id: targetEntry.profile_owner_id,
+      reply_type: replyType,
+    });
+
+    results[bot.name as string].push(
+      `Profile guestbook ${replyType} reply to ${targetEntry.author_name}: ${res.reply || res.error || "unknown"}`
+    );
+    return true;
+  } catch (e) {
+    results[bot.name as string].push(`Profile guestbook reply error: ${(e as Error).message}`);
+    return false;
+  }
+}
 
 /**
  * REACTIVE REPLIES: Check if anyone mentioned the bot or asked a question in the guestbook.
