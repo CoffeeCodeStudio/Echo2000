@@ -160,14 +160,20 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
+    // Scale from viewport CSS pixels to canvas CSS coordinate space
+    // This handles zoom, DPR mismatches, and CSS scaling correctly
+    const scaleX = rect.width > 0 ? rect.width / rect.width : 1;
+    const scaleY = rect.height > 0 ? rect.height / rect.height : 1;
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
   }, []);
 
   const startDrawing = (e: React.PointerEvent) => {
     if (!isDrawer) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     setIsDrawing(true);
     const pos = getPos(e);
     setCurrentAction([{ ...pos, color: isEraser ? "#ffffff" : color, size: brushSize }]);
@@ -471,12 +477,22 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
 
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-2">
-                {guesses.map((g) => (
-                  <div key={g.id} className={`text-xs ${g.is_correct ? "text-primary font-bold" : "text-foreground"}`}>
-                    <span className="font-bold">{g.username}:</span>{" "}
-                    {g.is_correct ? "✅ Rätt svar!" : g.guess}
-                  </div>
-                ))}
+                {guesses.map((g) => {
+                  // Hide the actual correct guess from the drawer to prevent cheating
+                  const showGuessText = g.is_correct
+                    ? (isDrawer ? "" : "")
+                    : g.guess;
+
+                  return (
+                    <div key={g.id} className={`text-xs ${g.is_correct ? "text-primary font-bold" : "text-foreground"}`}>
+                      <span className="font-bold">{g.username}:</span>{" "}
+                      {g.is_correct
+                        ? (isDrawer ? "✅ Någon gissade rätt!" : `✅ Rätt svar!`)
+                        : (isDrawer ? "••••••" : g.guess)
+                      }
+                    </div>
+                  );
+                })}
                 <div ref={guessEndRef} />
               </div>
             </ScrollArea>
