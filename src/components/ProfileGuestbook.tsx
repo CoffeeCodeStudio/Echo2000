@@ -35,29 +35,37 @@ export function ProfileGuestbook({
   className,
 }: ProfileGuestbookProps) {
   const { user } = useAuth();
-  const { entries, loading, posting, postEntry, deleteEntry, clearAll } =
+  const { entries, loading, posting, postEntry, postEntryTo, deleteEntry, clearAll } =
     useProfileGuestbook(profileOwnerId);
   const [newMessage, setNewMessage] = useState('');
   const [clearing, setClearing] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<{ name: string; id: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!newMessage.trim()) return;
-    const success = await postEntry(newMessage);
-    if (success) {
-      setNewMessage('');
+    if (replyTarget && replyTarget.id !== profileOwnerId) {
+      // Reply goes to the author's guestbook, not the current one
+      const success = await postEntryTo(replyTarget.id, newMessage);
+      if (success) {
+        setNewMessage('');
+        setReplyTarget(null);
+      }
+    } else {
+      const success = await postEntry(newMessage);
+      if (success) {
+        setNewMessage('');
+        setReplyTarget(null);
+      }
     }
   };
 
-  const handleReply = useCallback((authorName: string) => {
-    setNewMessage((prev) => {
-      // Clean reply - no @ or # prefixes
-      const prefix = `${authorName}: `;
-      if (prev.startsWith(prefix)) return prev;
-      return prefix + prev;
-    });
+  const handleReply = useCallback((authorName: string, authorId: string) => {
+    // Clean reply - no @ or # prefixes, clear textarea completely
+    setNewMessage('');
+    setReplyTarget({ name: authorName, id: authorId });
     // Scroll to form and focus textarea
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -101,7 +109,7 @@ export function ProfileGuestbook({
             ref={textareaRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={isOwnProfile ? "Skriv ett svar i din gästbok..." : "Skriv något trevligt i gästboken..."}
+            placeholder={replyTarget ? `Svara ${replyTarget.name}...` : isOwnProfile ? "Skriv ett svar i din gästbok..." : "Skriv något trevligt i gästboken..."}
             className="mb-2 resize-none"
             rows={3}
             maxLength={500}
@@ -205,7 +213,7 @@ export function ProfileGuestbook({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6 text-muted-foreground hover:text-primary"
-                          onClick={() => handleReply(entry.author_name)}
+                          onClick={() => handleReply(entry.author_name, entry.author_id)}
                           title="Svara"
                         >
                           <MessageSquare className="w-3 h-3" />

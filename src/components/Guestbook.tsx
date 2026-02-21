@@ -36,11 +36,8 @@ export function Guestbook() {
   const navigate = useNavigate();
 
   const handleReply = useCallback((authorName: string) => {
-    setNewMessage((prev) => {
-      const mention = `@${authorName} `;
-      if (prev.includes(mention)) return prev;
-      return mention + prev;
-    });
+    // Clean reply - no @ or # prefixes
+    setNewMessage('');
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       textareaRef.current?.focus();
