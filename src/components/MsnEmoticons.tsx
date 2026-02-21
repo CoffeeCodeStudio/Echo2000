@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-// Classic MSN-style emoticons mapped to emoji
-export const msnEmoticons: Record<string, { emoji: string; alt: string }> = {
-  ":)": { emoji: "😊", alt: "Leende" },
-  ":D": { emoji: "😃", alt: "Stort leende" },
-  ";)": { emoji: "😉", alt: "Blinkning" },
-  ":(": { emoji: "😞", alt: "Ledsen" },
+// Classic MSN-style emoticons mapped to emoji with optional animated GIF URLs
+export const msnEmoticons: Record<string, { emoji: string; alt: string; gif?: string }> = {
+  ":)": { emoji: "😊", alt: "Leende", gif: "https://emojis.slackmojis.com/emojis/images/1643514715/7862/smiley.gif" },
+  ":D": { emoji: "😃", alt: "Stort leende", gif: "https://emojis.slackmojis.com/emojis/images/1643514648/7340/bigsmile.gif" },
+  ";)": { emoji: "😉", alt: "Blinkning", gif: "https://emojis.slackmojis.com/emojis/images/1643514692/7724/wink.gif" },
+  ":(": { emoji: "😞", alt: "Ledsen", gif: "https://emojis.slackmojis.com/emojis/images/1643514711/7845/sad.gif" },
   ":O": { emoji: "😮", alt: "Förvånad" },
-  ":P": { emoji: "😛", alt: "Tungan ute" },
+  ":P": { emoji: "😛", alt: "Tungan ute", gif: "https://emojis.slackmojis.com/emojis/images/1643514693/7726/tongue.gif" },
   ":S": { emoji: "😕", alt: "Förvirrad" },
   ":'(": { emoji: "😢", alt: "Gråter" },
   ":@": { emoji: "😠", alt: "Arg" },
@@ -65,15 +65,66 @@ export const quickEmoticons = [
   { code: "(C)", emoji: "☕" },
 ];
 
-// Convert text with MSN emoticon codes to emoji
-export function convertMsnEmoticons(text: string): string {
-  let result = text;
-  Object.entries(msnEmoticons).forEach(([code, { emoji }]) => {
-    // Escape special regex characters
-    const escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    result = result.replace(new RegExp(escapedCode, 'g'), emoji);
-  });
-  return result;
+// Convert text with MSN emoticon codes to React nodes with animated GIFs where available
+export function convertMsnEmoticons(text: string): React.ReactNode {
+  // Build sorted codes (longest first to avoid partial matches)
+  const codes = Object.keys(msnEmoticons).sort((a, b) => b.length - a.length);
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let keyIdx = 0;
+
+  while (remaining.length > 0) {
+    let matched = false;
+    for (const code of codes) {
+      if (remaining.startsWith(code)) {
+        const emote = msnEmoticons[code];
+        if (emote.gif) {
+          parts.push(
+            <img
+              key={keyIdx++}
+              src={emote.gif}
+              alt={emote.alt}
+              title={`${code} ${emote.alt}`}
+              className="inline-block align-middle"
+              style={{ height: '22px', width: 'auto' }}
+              loading="lazy"
+            />
+          );
+        } else {
+          parts.push(
+            <span key={keyIdx++} title={`${code} ${emote.alt}`} className="inline align-middle">
+              {emote.emoji}
+            </span>
+          );
+        }
+        remaining = remaining.slice(code.length);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      // Accumulate plain text
+      const lastPart = parts[parts.length - 1];
+      if (typeof lastPart === 'string') {
+        parts[parts.length - 1] = lastPart + remaining[0];
+      } else {
+        parts.push(remaining[0]);
+      }
+      remaining = remaining.slice(1);
+    }
+  }
+
+  // Merge adjacent strings
+  const merged: React.ReactNode[] = [];
+  for (const part of parts) {
+    if (typeof part === 'string' && typeof merged[merged.length - 1] === 'string') {
+      merged[merged.length - 1] = (merged[merged.length - 1] as string) + part;
+    } else {
+      merged.push(part);
+    }
+  }
+
+  return merged.length === 1 && typeof merged[0] === 'string' ? merged[0] : <>{merged}</>;
 }
 
 interface MsnEmoticonPickerProps {

@@ -51,7 +51,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     
     if (source === "screen") {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 20 } },
         audio: true, // System audio
       });
       // Also get mic audio
@@ -75,7 +75,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     // Camera video
     return navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 },
-      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 20 } },
     });
   }, []);
 
@@ -84,10 +84,26 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     const remoteStream = new MediaStream();
 
-    // Add local tracks
+    // Add local tracks with bitrate optimization
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
-        pc.addTrack(track, localStreamRef.current!);
+        const sender = pc.addTrack(track, localStreamRef.current!);
+        // Set max bitrate for video senders
+        if (track.kind === 'video') {
+          setTimeout(async () => {
+            try {
+              const params = sender.getParameters();
+              if (!params.encodings) params.encodings = [{}];
+              params.encodings[0].maxBitrate = 3000000; // 3 Mbps
+              if ('latencyMode' in params.encodings[0]) {
+                (params.encodings[0] as any).latencyMode = 'realtime';
+              }
+              await sender.setParameters(params);
+            } catch (e) {
+              console.warn('Could not set bitrate params:', e);
+            }
+          }, 500);
+        }
       });
     }
 

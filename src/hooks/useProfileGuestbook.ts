@@ -116,6 +116,54 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
     [user, profileOwnerId, fetchEntries, toast]
   );
 
+  // Post an entry to a DIFFERENT user's guestbook (for reply feature)
+  const postEntryTo = useCallback(
+    async (targetOwnerId: string, message: string) => {
+      if (!user || !message.trim()) return false;
+
+      const trimmedMessage = message.trim();
+      if (trimmedMessage.length > 500) {
+        toast({ title: 'Meddelandet är för långt', description: 'Max 500 tecken', variant: 'destructive' });
+        return false;
+      }
+
+      setPosting(true);
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        const { error } = await supabase.from('profile_guestbook').insert({
+          profile_owner_id: targetOwnerId,
+          author_id: user.id,
+          author_name: profileData?.username || 'Anonym',
+          author_avatar: profileData?.avatar_url || null,
+          message: trimmedMessage,
+        });
+
+        if (error) {
+          toast({ title: 'Kunde inte skicka', description: 'Försök igen senare', variant: 'destructive' });
+          return false;
+        }
+
+        toast({ title: 'Svar skickat!', description: 'Ditt svar har lagts till i mottagarens gästbok' });
+        // If the target is the same profile we're viewing, refetch
+        if (targetOwnerId === profileOwnerId) {
+          await fetchEntries();
+        }
+        return true;
+      } catch {
+        toast({ title: 'Ett fel uppstod', description: 'Försök igen senare', variant: 'destructive' });
+        return false;
+      } finally {
+        setPosting(false);
+      }
+    },
+    [user, profileOwnerId, fetchEntries, toast]
+  );
+
   const deleteEntry = useCallback(
     async (entryId: string) => {
       if (!user) return false;
@@ -190,6 +238,7 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
     loading,
     posting,
     postEntry,
+    postEntryTo,
     deleteEntry,
     clearAll,
     refetch: fetchEntries,
