@@ -12,17 +12,17 @@ import { HeaderRadio } from "./HeaderRadio";
 import { GlobalSearch } from "./GlobalSearch";
 
 type Tab =
-  | "hem"
-  | "chatt"
-  | "gastbok"
-  | "mejl"
-  | "vanner"
-  | "profil"
-  | "klotterplanket"
-  | "spel"
-  | "traffar"
-  | "lajv"
-  | "faq";
+"hem" |
+"chatt" |
+"gastbok" |
+"mejl" |
+"vanner" |
+"profil" |
+"klotterplanket" |
+"spel" |
+"traffar" |
+"lajv" |
+"faq";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -67,7 +67,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       try {
         const { data } = await supabase.rpc("has_role", {
           _user_id: user.id,
-          _role: "admin",
+          _role: "admin"
         });
         setIsAdmin(data === true);
       } catch {
@@ -84,12 +84,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       toast({
         title: "Fel vid utloggning",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Du är utloggad",
-        description: "Ses snart igen!",
+        description: "Ses snart igen!"
       });
     }
   };
@@ -98,25 +98,25 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const homeItem = { id: "hem" as Tab, label: "HEM", emoji: "🏠", animationClass: "scale-in" };
 
   // Private zone items (middle group)
-  const privateZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
-    { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
-    { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
-    { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
-    { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
-    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
-  ];
+  const privateZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
+  { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
+  { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
+  { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
+  { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
+  { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" }];
+
 
   // Community zone items (right group)
-  const communityZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
-    { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
-    { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
-    { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
-    { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
-    { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" },
-  ];
+  const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
+  { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
+  { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
+  { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
+  { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
+  { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" }];
+
 
   // Render nav item helper
-  const renderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }, isHome = false) => {
+  const renderNavItem = (item: {id: Tab;label: string;emoji: string;animationClass: string;}, isHome = false) => {
     const hasNotice = getHasNotice(item.id);
     return (
       <div
@@ -126,22 +126,22 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           isHome ? "nav-item-home" : "nav-item-grouped",
           "shrink-0",
           activeTab === item.id && "active",
-          !isHome && (hasNotice ? "has-notice" : "inactive"),
+          !isHome && (hasNotice ? "has-notice" : "inactive")
         )}
         role="button"
         tabIndex={0}
-        aria-label={item.label}
-      >
+        aria-label={item.label}>
+
         <span className={cn(isHome ? "icon-home" : "icon-grouped", hasNotice && item.animationClass)}>
           {item.emoji}
         </span>
         <span className={isHome ? "label-home" : "label-grouped"}>{item.label}</span>
-      </div>
-    );
+      </div>);
+
   };
 
   // Render compact header nav item
-  const renderHeaderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }) => {
+  const renderHeaderNavItem = (item: {id: Tab;label: string;emoji: string;animationClass: string;}) => {
     const hasNotice = getHasNotice(item.id);
     return (
       <div
@@ -150,19 +150,19 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         className={cn(
           "header-nav-item",
           activeTab === item.id && "active",
-          hasNotice && "has-notice",
+          hasNotice && "has-notice"
         )}
         role="button"
         tabIndex={0}
-        aria-label={item.label}
-      >
+        aria-label={item.label}>
+
         <span className={cn("header-nav-icon", hasNotice && item.animationClass)}>
           {item.emoji}
         </span>
         <span className="header-nav-label">{item.label}</span>
         {hasNotice && <span className="header-nav-dot" />}
-      </div>
-    );
+      </div>);
+
   };
 
   return (
@@ -183,10 +183,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight cursor-pointer"
             onClick={() => onTabChange?.("hem")}
             role="button"
-            tabIndex={0}
-          >
-            <span className="text-foreground">ECHO</span>
-            <span className="text-primary-foreground bg-primary px-1 rounded">2000</span>
+            tabIndex={0}>
+
+            <span className="text-primary bg-accent">ECHO</span>
+            <span className="bg-primary px-1 rounded text-accent">2000</span>
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
@@ -197,60 +197,60 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
 
         {/* Private Nav Items - inline in header (desktop only, logged in only) */}
-        {user && (
-          <nav className="hidden lg:flex items-center gap-0.5 mx-2">
+        {user &&
+        <nav className="hidden lg:flex items-center gap-0.5 mx-2">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
-        )}
+        }
 
         {/* Community Nav Items (desktop only) - show all for logged in, only HEM for logged out */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          {user
-            ? [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item))
-            : renderHeaderNavItem(homeItem)
+          {user ?
+          [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
+          renderHeaderNavItem(homeItem)
           }
         </nav>
 
         {/* Right side - Auth & Status */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 ml-auto">
-          {!loading && (
+          {!loading &&
+          <>
+              {user ?
             <>
-              {user ? (
-                <>
-                  {isAdmin && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate("/admin")}
-                      className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
-                    >
+                  {isAdmin &&
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
                     </Button>
-                  )}
+              }
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
-                  >
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:inline">Logga ut</span>
                   </Button>
-                </>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/auth")}
-                  className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3"
-                >
+                </> :
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/auth")}
+              className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Logga in</span>
                 </Button>
-              )}
+            }
             </>
-          )}
+          }
 
           {/* Radio control */}
           <HeaderRadio />
@@ -263,6 +263,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 }
