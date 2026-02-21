@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { 
   Mic, MicOff, Video, VideoOff, PhoneOff, Monitor, Users,
   Maximize2, Minimize2
@@ -71,6 +71,32 @@ export function CallWindow({
   const hasVideo = callType === "video" || callType === "screenshare";
   const remoteEntries = Array.from(remoteStreams.entries());
 
+  // Detect if any stream has a screen share track (display surface)
+  const isScreenShare = callType === "screenshare";
+
+  // Find the screen share stream (first remote, or local if we're sharing)
+  const screenShareStream = useMemo(() => {
+    if (!isScreenShare) return null;
+    // Check remote streams for screen share
+    for (const [, stream] of remoteEntries) {
+      for (const track of stream.getVideoTracks()) {
+        // Remote screen shares will have video tracks
+        return { stream, isRemote: true };
+      }
+    }
+    // If no remote screen, we're the one sharing
+    if (localStream) return { stream: localStream, isRemote: false };
+    return null;
+  }, [isScreenShare, remoteEntries, localStream]);
+
+  // Webcam-only streams (not the main screen share)
+  const webcamEntries = useMemo(() => {
+    if (!isScreenShare) return remoteEntries;
+    // If remote is sharing screen, webcam entries = empty (all remote is screen)
+    // We show local as webcam thumbnail
+    return [];
+  }, [isScreenShare, remoteEntries]);
+
   return (
     <div
       ref={containerRef}
@@ -96,53 +122,88 @@ export function CallWindow({
       </div>
 
       {/* Video / Audio area */}
-      <div className="flex-1 flex items-center justify-center p-4 gap-3 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 gap-2 overflow-hidden relative">
         {hasVideo ? (
-          <div className={cn(
-            "grid gap-2 w-full h-full",
-            remoteEntries.length === 0 ? "grid-cols-1" :
-            remoteEntries.length === 1 ? "grid-cols-2" :
-            "grid-cols-2 grid-rows-2"
-          )}>
-            {/* Remote streams */}
-            {remoteEntries.map(([peerId, stream]) => (
-              <RemoteVideo key={peerId} stream={stream} />
-            ))}
-
-            {/* Local video (picture-in-picture style if there are remotes) */}
-            {remoteEntries.length > 0 ? (
-              <div className="absolute bottom-20 right-6 w-40 h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg z-10">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={cn("w-full h-full object-cover", isVideoOff && "hidden")}
-                />
-                {isVideoOff && (
-                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                    <VideoOff className="w-6 h-6 text-gray-500" />
-                  </div>
-                )}
+          isScreenShare && screenShareStream ? (
+            /* Screen share layout: main screen + small webcam strip */
+            <>
+              {/* Main screen share - fills the area */}
+              <div className="flex-1 w-full relative rounded-lg overflow-hidden bg-black">
+                <ScreenShareVideo stream={screenShareStream.stream} />
+                <span className="absolute top-2 left-2 text-xs text-white/80 bg-black/60 px-2 py-0.5 rounded flex items-center gap-1">
+                  <Monitor className="w-3 h-3" /> {screenShareStream.isRemote ? contactName : "Du"} delar skärm
+                </span>
               </div>
-            ) : (
-              <div className="relative rounded-lg overflow-hidden bg-gray-900">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={cn("w-full h-full object-cover", isVideoOff && "hidden")}
-                />
-                {isVideoOff && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Avatar name={contactName} size="xl" />
+              {/* Small webcam strip at the bottom */}
+              <div className="flex gap-2 w-full justify-end flex-shrink-0">
+                {/* Local webcam thumbnail */}
+                <div className="w-28 h-20 sm:w-36 sm:h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg bg-gray-900 flex-shrink-0">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={cn("w-full h-full object-cover", isVideoOff && "hidden")}
+                  />
+                  {isVideoOff && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Avatar name="Du" size="sm" />
+                    </div>
+                  )}
+                </div>
+                {/* Remote webcam thumbnails (if they also have camera) */}
+                {remoteEntries.map(([peerId, stream]) => (
+                  <div key={peerId} className="w-28 h-20 sm:w-36 sm:h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg bg-gray-900 flex-shrink-0">
+                    <RemoteVideo stream={stream} />
                   </div>
-                )}
-                <span className="absolute bottom-2 left-2 text-xs text-white/80 bg-black/40 px-2 py-0.5 rounded">Du</span>
+                ))}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            /* Normal video layout */
+            <div className={cn(
+              "grid gap-2 w-full h-full",
+              remoteEntries.length === 0 ? "grid-cols-1" :
+              remoteEntries.length === 1 ? "grid-cols-2" :
+              "grid-cols-2 grid-rows-2"
+            )}>
+              {remoteEntries.map(([peerId, stream]) => (
+                <RemoteVideo key={peerId} stream={stream} />
+              ))}
+              {remoteEntries.length > 0 ? (
+                <div className="absolute bottom-20 right-6 w-40 h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg z-10">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={cn("w-full h-full object-cover", isVideoOff && "hidden")}
+                  />
+                  {isVideoOff && (
+                    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                      <VideoOff className="w-6 h-6 text-gray-500" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="relative rounded-lg overflow-hidden bg-gray-900">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={cn("w-full h-full object-cover", isVideoOff && "hidden")}
+                  />
+                  {isVideoOff && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Avatar name={contactName} size="xl" />
+                    </div>
+                  )}
+                  <span className="absolute bottom-2 left-2 text-xs text-white/80 bg-black/40 px-2 py-0.5 rounded">Du</span>
+                </div>
+              )}
+            </div>
+          )
         ) : (
           /* Voice call - show avatars */
           <div className="flex flex-col items-center gap-6">
@@ -155,7 +216,6 @@ export function CallWindow({
               <h3 className="text-white font-bold text-lg">{contactName}</h3>
               <p className="text-white/60 text-sm">Röstsamtal pågår...</p>
             </div>
-            {/* Audio visualizer bars */}
             <div className="flex items-end gap-1 h-8">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div
@@ -214,9 +274,24 @@ function RemoteVideo({ stream }: { stream: MediaStream }) {
     if (ref.current) ref.current.srcObject = stream;
   }, [stream]);
   return (
-    <div className="relative rounded-lg overflow-hidden bg-gray-900">
+    <div className="relative rounded-lg overflow-hidden bg-gray-900 w-full h-full">
       <video ref={ref} autoPlay playsInline className="w-full h-full object-cover" />
     </div>
+  );
+}
+
+function ScreenShareVideo({ stream }: { stream: MediaStream }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+  }, [stream]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      className="w-full h-full object-contain"
+    />
   );
 }
 

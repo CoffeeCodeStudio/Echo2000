@@ -104,6 +104,31 @@ export function ChatWindow({ className }: ChatWindowProps) {
     scrollToBottom();
   }, [currentMessages.length]);
 
+  // Listen for incoming nudges via realtime broadcast
+  useEffect(() => {
+    if (!user) return;
+    const nudgeChannel = supabase.channel(`nudge-${user.id}`);
+    nudgeChannel
+      .on("broadcast", { event: "nudge" }, ({ payload }) => {
+        if (payload.from === user.id) return; // ignore own nudges
+        // Shake the chat window
+        const chatWindow = document.getElementById("msn-chat-window");
+        if (chatWindow) {
+          chatWindow.classList.add("animate-shake");
+          setTimeout(() => chatWindow.classList.remove("animate-shake"), 500);
+        }
+        // Play nudge sound
+        if (soundEnabled) {
+          playSound("nudge");
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(nudgeChannel);
+    };
+  }, [user, soundEnabled, playSound]);
+
   const handleLogin = (displayName: string, status: string) => {
     setUserDisplayName(displayName);
     setUserStatus(status as UserStatus);
@@ -147,16 +172,34 @@ export function ChatWindow({ className }: ChatWindowProps) {
     setShowEmojis(false);
   };
 
-  const nudge = () => {
+  const nudge = async () => {
+    if (!selectedContact || !user) return;
+
+    // Play sound locally
     if (soundEnabled) {
       playSound("nudge");
     }
     
+    // Shake local window
     const chatWindow = document.getElementById("msn-chat-window");
     if (chatWindow) {
       chatWindow.classList.add("animate-shake");
       setTimeout(() => chatWindow.classList.remove("animate-shake"), 500);
     }
+
+    // Save nudge as a special message in DB (will appear in chat history via realtime)
+    await sendDbMessage("🔔 skickade en nudge!");
+
+    // Broadcast nudge via realtime so the other person shakes + hears sound instantly
+    const nudgeChannel = supabase.channel(`nudge-${selectedContact.id}`);
+    nudgeChannel.subscribe(() => {
+      nudgeChannel.send({
+        type: "broadcast",
+        event: "nudge",
+        payload: { from: user.id, fromName: userDisplayName },
+      });
+      setTimeout(() => supabase.removeChannel(nudgeChannel), 1000);
+    });
   };
 
   const handleClearAllMessages = async () => {
@@ -421,20 +464,29 @@ export function ChatWindow({ className }: ChatWindowProps) {
                           <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
                         </div>
                       )}
-                      <div className="mb-2 animate-fade-in">
-                        <div className="flex items-start gap-2">
-                          <span className={cn(
-                            "font-bold text-xs whitespace-nowrap",
-                            message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-[#d4388c] dark:text-pink-400"
-                          )}>
-                            {message.senderName} säger:
+                      {message.content.includes("skickade en nudge!") ? (
+                        /* Nudge message - special styling */
+                        <div className="mb-2 animate-fade-in text-center">
+                          <span className="text-[11px] italic text-gray-500 dark:text-gray-400">
+                            🔔 {message.senderName} skickade en nudge! ({message.timestamp})
                           </span>
-                          <span className="text-[10px] text-gray-500">({message.timestamp})</span>
                         </div>
-                        <p className="ml-0 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-sm font-medium">
-                          {convertMsnEmoticons(message.content)}
-                        </p>
-                      </div>
+                      ) : (
+                        <div className="mb-2 animate-fade-in">
+                          <div className="flex items-start gap-2">
+                            <span className={cn(
+                              "font-bold text-xs whitespace-nowrap",
+                              message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-[#d4388c] dark:text-pink-400"
+                            )}>
+                              {message.senderName} säger:
+                            </span>
+                            <span className="text-[10px] text-gray-500">({message.timestamp})</span>
+                          </div>
+                          <p className="ml-0 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-sm font-medium">
+                            {convertMsnEmoticons(message.content)}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
