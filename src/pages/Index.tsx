@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, useLocation } from "react-router-dom";
-import { FriendsSidebar } from "@/components/FriendsSidebar";
+
 import { ChatWindow } from "@/components/ChatWindow";
 import { HomeContent } from "@/components/HomeContent";
 import { ProfilePage } from "@/components/ProfilePage";
@@ -130,35 +130,7 @@ export default function Index() {
         return <HomeContent />;
 
       case "chatt":
-        return (
-          <div className="flex-1 flex overflow-hidden">
-            <FriendsSidebar
-              selectedFriendId={selectedFriendId}
-              onSelectFriend={(id) => {
-                setSelectedFriendId(id);
-                setSidebarOpen(false);
-              }}
-              className="hidden md:flex w-72 border-r border-border"
-            />
-            {sidebarOpen && (
-              <>
-                <div
-                  className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
-                  onClick={() => setSidebarOpen(false)}
-                />
-                <FriendsSidebar
-                  selectedFriendId={selectedFriendId}
-                  onSelectFriend={(id) => {
-                    setSelectedFriendId(id);
-                    setSidebarOpen(false);
-                  }}
-                  className="fixed left-0 top-24 bottom-16 w-72 z-50 md:hidden animate-slide-in-right border-r border-border"
-                />
-              </>
-            )}
-            <ChatWindow className="flex-1" />
-          </div>
-        );
+        return <ChatWindow className="flex-1" />;
 
       case "gastbok":
         return <Guestbook />;
