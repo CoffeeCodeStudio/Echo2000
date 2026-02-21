@@ -51,8 +51,8 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     
     if (source === "screen") {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 20 } },
-        audio: true, // System audio
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60 } },
+        audio: true,
       });
       // Also get mic audio
       try {
@@ -75,7 +75,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     // Camera video
     return navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 },
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 20 } },
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
     });
   }, []);
 
@@ -88,16 +88,18 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
         const sender = pc.addTrack(track, localStreamRef.current!);
-        // Set max bitrate for video senders
         if (track.kind === 'video') {
           setTimeout(async () => {
             try {
               const params = sender.getParameters();
               if (!params.encodings) params.encodings = [{}];
-              params.encodings[0].maxBitrate = 3000000; // 3 Mbps
+              params.encodings[0].maxBitrate = 6_000_000; // 6 Mbps for 1080p60
+              params.encodings[0].maxFramerate = 60;
               if ('latencyMode' in params.encodings[0]) {
                 (params.encodings[0] as any).latencyMode = 'realtime';
               }
+              // Prefer hardware-accelerated VP9 or H264
+              params.encodings[0].scaleResolutionDownBy = 1.0;
               await sender.setParameters(params);
             } catch (e) {
               console.warn('Could not set bitrate params:', e);
