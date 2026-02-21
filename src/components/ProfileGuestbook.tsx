@@ -53,9 +53,10 @@ export function ProfileGuestbook({
 
   const handleReply = useCallback((authorName: string) => {
     setNewMessage((prev) => {
-      const mention = `@${authorName} `;
-      if (prev.includes(mention)) return prev;
-      return mention + prev;
+      // Clean reply - no @ or # prefixes
+      const prefix = `${authorName}: `;
+      if (prev.startsWith(prefix)) return prev;
+      return prefix + prev;
     });
     // Scroll to form and focus textarea
     setTimeout(() => {
@@ -93,14 +94,14 @@ export function ProfileGuestbook({
 
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Post form (only if logged in and viewing someone else's profile) */}
-      {user && !isOwnProfile && (
+      {/* Post form (logged in users can write in any guestbook including their own for replies) */}
+      {user && (
         <div ref={formRef} className="bg-muted/30 rounded-lg p-4 border border-border">
           <Textarea
             ref={textareaRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Skriv något trevligt i gästboken..."
+            placeholder={isOwnProfile ? "Skriv ett svar i din gästbok..." : "Skriv något trevligt i gästboken..."}
             className="mb-2 resize-none"
             rows={3}
             maxLength={500}
@@ -198,18 +199,30 @@ export function ProfileGuestbook({
                       })}
                     </span>
                     <div className="flex items-center gap-1">
+                      {/* Reply button */}
+                      {user && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-primary"
+                          onClick={() => handleReply(entry.author_name)}
+                          title="Svara"
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                        </Button>
+                      )}
                       {/* Delete button - only for profile owner */}
                       {user && isOwnProfile && profileOwnerId === user.id && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                            onClick={() => deleteEntry(entry.id)}
-                            title="Radera"
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onClick={() => deleteEntry(entry.id)}
+                          title="Radera inlägg"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <p className="text-sm text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
