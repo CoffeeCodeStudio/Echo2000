@@ -170,6 +170,7 @@ async function handleBotProfileGuestbookReplies(
   try {
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
+    // Only respond to entries on the bot's profile where the author is NOT writing in their own guestbook
     const { data: recentEntries } = await supabase
       .from("profile_guestbook")
       .select("id, author_name, author_id, message, profile_owner_id, created_at")
@@ -179,9 +180,12 @@ async function handleBotProfileGuestbookReplies(
       .order("created_at", { ascending: false })
       .limit(10);
 
-    if (!recentEntries || recentEntries.length === 0) return false;
+    // Filter out entries where author wrote in their own guestbook (shouldn't happen here since we check bot's profile, but guard anyway)
+    const filteredEntries = recentEntries?.filter(e => e.author_id !== e.profile_owner_id) || [];
 
-    const targetEntry = recentEntries[0];
+    if (filteredEntries.length === 0) return false;
+
+    const targetEntry = filteredEntries[0];
 
     // Check if bot already replied in the TARGET USER's guestbook (not the bot's own)
     const { data: botRepliesAfter } = await supabase
@@ -210,7 +214,7 @@ async function handleBotProfileGuestbookReplies(
     const isQuestion = targetEntry.message.includes("?");
     const replyType = isQuestion ? "question" : "greeting";
 
-    const conversationContext = recentEntries
+    const conversationContext = filteredEntries
       .slice(0, 10)
       .reverse()
       .map(e => `- ${e.author_name}: "${e.message}"`)
