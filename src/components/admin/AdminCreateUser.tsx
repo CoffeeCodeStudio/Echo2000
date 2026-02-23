@@ -46,37 +46,28 @@ export function AdminCreateUser({ onUserCreated }: AdminCreateUserProps) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { username },
-        },
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        body: { action: "create_user", email, password, username },
       });
 
-      if (error) {
-        toast({
-          title: error.message.includes("already registered") ? "E-post redan registrerad" : "Fel",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      if (data.user) {
-        await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
-        toast({
-          title: "Användare skapad!",
-          description: `${username} kan nu logga in med ${email}`,
-        });
-        setUsername("");
-        setEmail("");
-        setPassword("");
-        onUserCreated();
-      }
-    } catch {
-      toast({ title: "Något gick fel", description: "Kunde inte skapa användare", variant: "destructive" });
+      toast({
+        title: "Användare skapad!",
+        description: `${username} kan nu logga in med ${email} (godkänd direkt)`,
+      });
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      onUserCreated();
+    } catch (err: any) {
+      const msg = err.message || "Kunde inte skapa användare";
+      toast({
+        title: msg.includes("already") ? "E-post redan registrerad" : "Fel",
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

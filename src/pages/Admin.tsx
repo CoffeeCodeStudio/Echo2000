@@ -4,13 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper } from "lucide-react";
+import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper, Clock } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { AdminCreateUser } from "@/components/admin/AdminCreateUser";
 import { AdminContentModeration } from "@/components/admin/AdminContentModeration";
 import { AdminImageReview } from "@/components/admin/AdminImageReview";
 import { AdminBotManager } from "@/components/admin/AdminBotManager";
 import { AdminNewsManager } from "@/components/admin/AdminNewsManager";
+import { AdminPendingApprovals } from "@/components/admin/AdminPendingApprovals";
 
 interface Profile {
   id: string;
@@ -32,7 +33,7 @@ export default function Admin() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [activeTab, setActiveTab] = useState<"list" | "create" | "moderate" | "images" | "bots" | "news">("list");
+  const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news">("pending");
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -128,6 +129,9 @@ export default function Admin() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
+          <Button variant={activeTab === "pending" ? "default" : "outline"} onClick={() => setActiveTab("pending")}>
+            <Clock className="w-4 h-4 mr-2" />Väntande
+          </Button>
           <Button variant={activeTab === "list" ? "default" : "outline"} onClick={() => setActiveTab("list")}>
             <Users className="w-4 h-4 mr-2" />Medlemmar
           </Button>
@@ -148,6 +152,7 @@ export default function Admin() {
           </Button>
         </div>
 
+        {activeTab === "pending" && <AdminPendingApprovals onRefresh={fetchData} />}
         {activeTab === "list" && <AdminUserList users={users} userRoles={userRoles} onRefresh={fetchData} />}
         {activeTab === "create" && <AdminCreateUser onUserCreated={fetchData} />}
         {activeTab === "moderate" && <AdminContentModeration />}
