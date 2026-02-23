@@ -82,20 +82,35 @@ export default function Auth() {
       if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
-          // Check for banned user
           if (!error.message.includes("Invalid login credentials")) {
             toast({ title: "Fel", description: error.message, variant: "destructive" });
           } else {
             toast({ title: "Inloggning misslyckades", description: "Fel e-post eller lösenord", variant: "destructive" });
           }
         } else {
-          // Check if banned after login
+          // Check if banned or not approved after login
           const { data: { user: loggedInUser } } = await supabase.auth.getUser();
           if (loggedInUser) {
             const { data: isBanned } = await supabase.rpc('has_role', { _user_id: loggedInUser.id, _role: 'banned' });
             if (isBanned) {
               await supabase.auth.signOut();
               toast({ title: "Kontot är avstängt", description: "Ditt konto har blivit bannlyst.", variant: "destructive" });
+              return;
+            }
+            // Check approval status
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("is_approved")
+              .eq("user_id", loggedInUser.id)
+              .single();
+            if (profile && !(profile as any).is_approved) {
+              await supabase.auth.signOut();
+              toast({
+                title: "Väntar på godkännande",
+                description: "Ditt konto har inte godkänts av en administratör ännu. Försök igen senare.",
+                variant: "destructive",
+                duration: 8000,
+              });
               return;
             }
           }
@@ -123,7 +138,8 @@ export default function Auth() {
           await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
           toast({
             title: "Konto skapat!",
-            description: "Kolla din e-post för att verifiera ditt konto innan du loggar in.",
+            description: "Ditt konto har skapats och väntar på att godkännas av en administratör. Du får logga in när kontot är godkänt.",
+            duration: 10000,
           });
           setMode("login");
           setUsername("");

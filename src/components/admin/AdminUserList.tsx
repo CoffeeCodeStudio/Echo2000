@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/Avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Search, User, Trash2, Ban, Loader2 } from "lucide-react";
+import { Search, User, Trash2, Ban, Loader2, Mail, Lock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +45,8 @@ interface AdminUserListProps {
 export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProps) {
   const [userSearch, setUserSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editDialog, setEditDialog] = useState<{ type: "email" | "password"; userId: string; username: string } | null>(null);
+  const [editValue, setEditValue] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -54,25 +58,39 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
   const handleDeleteUser = async (userId: string, username: string) => {
     setActionLoading(userId);
     try {
-      // Use transaction-safe database function for cascade deletion
-      const { error } = await supabase.rpc("delete_user_cascade", {
-        p_user_id: userId,
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        body: { action: "delete_user", user_id: userId },
       });
-
       if (error) throw error;
-
-      toast({
-        title: "Användare raderad",
-        description: `${username} och all tillhörande data har raderats`,
-      });
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Användare raderad", description: `${username} och all data har raderats` });
       onRefresh();
-    } catch (error) {
-      console.error("Delete user error:", error);
+    } catch (error: any) {
+      toast({ title: "Kunde inte radera", description: error.message || "Något gick fel", variant: "destructive" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editDialog || !editValue.trim()) return;
+    setActionLoading(editDialog.userId);
+    try {
+      const action = editDialog.type === "email" ? "update_email" : "update_password";
+      const body = editDialog.type === "email"
+        ? { action, user_id: editDialog.userId, new_email: editValue }
+        : { action, user_id: editDialog.userId, new_password: editValue };
+      const { data, error } = await supabase.functions.invoke("admin-users", { body });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast({
-        title: "Kunde inte radera",
-        description: "Något gick fel vid radering",
-        variant: "destructive",
+        title: editDialog.type === "email" ? "E-post ändrad" : "Lösenord ändrat",
+        description: `Uppdaterat för ${editDialog.username}`,
       });
+      setEditDialog(null);
+      setEditValue("");
+    } catch (err: any) {
+      toast({ title: "Fel", description: err.message, variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -210,6 +228,28 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
                     <User className="w-4 h-4" />
                   </Button>
 
+                  {/* Edit email */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    onClick={() => { setEditDialog({ type: "email", userId: profile.user_id, username: profile.username }); setEditValue(""); }}
+                    title="Ändra e-post"
+                  >
+                    <Mail className="w-4 h-4" />
+                  </Button>
+
+                  {/* Edit password */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    onClick={() => { setEditDialog({ type: "password", userId: profile.user_id, username: profile.username }); setEditValue(""); }}
+                    title="Ändra lösenord"
+                  >
+                    <Lock className="w-4 h-4" />
+                  </Button>
+
                   {/* Ban button */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -280,6 +320,35 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
           })
         )}
       </div>
+
+      {/* Edit email/password dialog */}
+      <Dialog open={!!editDialog} onOpenChange={(open) => { if (!open) setEditDialog(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editDialog?.type === "email" ? "Ändra e-post" : "Ändra lösenord"} för {editDialog?.username}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{editDialog?.type === "email" ? "Ny e-postadress" : "Nytt lösenord"}</Label>
+              <Input
+                type={editDialog?.type === "email" ? "email" : "password"}
+                placeholder={editDialog?.type === "email" ? "ny@email.se" : "••••••••"}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(null)}>Avbryt</Button>
+            <Button onClick={handleEditSubmit} disabled={!editValue.trim() || actionLoading !== null}>
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Spara
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
