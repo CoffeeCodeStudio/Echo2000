@@ -145,9 +145,42 @@ Deno.serve(async (req) => {
 
       case "delete_user": {
         const { user_id } = body;
-        // Use cascade RPC first, then delete auth user
-        await adminClient.rpc("delete_user_cascade", { p_user_id: user_id });
-        await adminClient.auth.admin.deleteUser(user_id);
+        // Delete all user data from every table (service role bypasses RLS)
+        const tables = [
+          { table: "guestbook_entries", col: "user_id" },
+          { table: "profile_guestbook", col: "author_id" },
+          { table: "profile_guestbook", col: "profile_owner_id" },
+          { table: "klotter", col: "user_id" },
+          { table: "messages", col: "sender_id" },
+          { table: "messages", col: "recipient_id" },
+          { table: "chat_messages", col: "sender_id" },
+          { table: "chat_messages", col: "recipient_id" },
+          { table: "friends", col: "user_id" },
+          { table: "friends", col: "friend_id" },
+          { table: "friend_votes", col: "voter_id" },
+          { table: "friend_votes", col: "target_user_id" },
+          { table: "good_vibes", col: "giver_id" },
+          { table: "good_vibe_allowances", col: "user_id" },
+          { table: "lajv_messages", col: "user_id" },
+          { table: "profile_visits", col: "visitor_id" },
+          { table: "profile_visits", col: "profile_owner_id" },
+          { table: "avatar_uploads", col: "user_id" },
+          { table: "snake_highscores", col: "user_id" },
+          { table: "memory_highscores", col: "user_id" },
+          { table: "call_participants", col: "user_id" },
+          { table: "call_sessions", col: "caller_id" },
+          { table: "scribble_guesses", col: "user_id" },
+          { table: "scribble_players", col: "user_id" },
+          { table: "bot_settings", col: "user_id" },
+          { table: "user_roles", col: "user_id" },
+          { table: "profiles", col: "user_id" },
+        ];
+        for (const { table, col } of tables) {
+          await adminClient.from(table).delete().eq(col, user_id);
+        }
+        // Delete from auth
+        const { error: authErr } = await adminClient.auth.admin.deleteUser(user_id);
+        if (authErr) throw authErr;
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
