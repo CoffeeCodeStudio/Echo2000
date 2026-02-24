@@ -27,7 +27,9 @@ const registerSchema = z.object({
 });
 
 export default function Auth() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -175,7 +177,8 @@ export default function Auth() {
 
         {/* Login/Register Card */}
         <div className="nostalgia-card p-6">
-          {/* Tab switcher */}
+          {/* Tab switcher - hidden in forgot mode */}
+          {mode !== "forgot" && (
           <div className="flex mb-6 border-b border-border">
             <button
               onClick={() => setMode("login")}
@@ -194,6 +197,7 @@ export default function Auth() {
               Registrera
             </button>
           </div>
+          )}
 
           {/* Alpha warning for registration */}
           {mode === "register" && (
@@ -212,6 +216,7 @@ export default function Auth() {
             </div>
           )}
 
+          {mode !== "forgot" && (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username (register only) */}
             {mode === "register" && (
@@ -292,15 +297,74 @@ export default function Auth() {
               )}
             </Button>
           </form>
+          )}
 
           {mode === "login" && (
-            <div className="mt-6 p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-start gap-2 text-sm">
-                <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <p className="text-muted-foreground">
-                  Ny här? Klicka på "Registrera" ovan för att skapa ett konto.
-                </p>
+            <div className="mt-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => setMode("forgot")}
+                className="text-sm text-primary hover:underline w-full text-center"
+              >
+                Glömt lösenord?
+              </button>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-start gap-2 text-sm">
+                  <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <p className="text-muted-foreground">
+                    Ny här? Klicka på "Registrera" ovan för att skapa ett konto.
+                  </p>
+                </div>
               </div>
+            </div>
+          )}
+
+          {mode === "forgot" && (
+            <div className="mt-4">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setForgotLoading(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  setForgotLoading(false);
+                  if (error) {
+                    toast({ title: "Fel", description: error.message, variant: "destructive" });
+                  } else {
+                    toast({ title: "Skickat!", description: "Kolla din e-post för en återställningslänk." });
+                    setMode("login");
+                    setForgotEmail("");
+                  }
+                }}
+                className="space-y-3"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="forgotEmail">Din e-postadress</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="forgotEmail"
+                      type="email"
+                      placeholder="din@email.se"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className="pl-10"
+                      disabled={forgotLoading}
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={forgotLoading || !forgotEmail.trim()}>
+                  {forgotLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Skickar...</> : "Skicka återställningslänk"}
+                </Button>
+              </form>
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className="text-sm text-muted-foreground hover:text-primary mt-3 w-full text-center"
+              >
+                ← Tillbaka till inloggning
+              </button>
             </div>
           )}
 
