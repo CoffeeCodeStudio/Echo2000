@@ -1,4 +1,4 @@
-import { LogIn, LogOut, Shield } from "lucide-react";
+import { LogIn, LogOut, Shield, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -228,6 +228,14 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                       <span className="hidden sm:inline">Admin</span>
                     </Button>
               }
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/settings")}
+                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+                    <Settings className="w-4 h-4" />
+                    <span className="hidden sm:inline">Inställningar</span>
+                  </Button>
                   <Button
                 variant="ghost"
                 size="sm"
