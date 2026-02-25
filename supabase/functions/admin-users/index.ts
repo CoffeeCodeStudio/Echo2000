@@ -58,6 +58,53 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // Shared cascade delete helper
+    const cascadeDeleteUser = async (userId: string) => {
+      const tables = [
+        { table: "guestbook_entries", col: "user_id" },
+        { table: "profile_guestbook", col: "author_id" },
+        { table: "profile_guestbook", col: "profile_owner_id" },
+        { table: "klotter", col: "user_id" },
+        { table: "messages", col: "sender_id" },
+        { table: "messages", col: "recipient_id" },
+        { table: "chat_messages", col: "sender_id" },
+        { table: "chat_messages", col: "recipient_id" },
+        { table: "friends", col: "user_id" },
+        { table: "friends", col: "friend_id" },
+        { table: "friend_votes", col: "voter_id" },
+        { table: "friend_votes", col: "target_user_id" },
+        { table: "good_vibes", col: "giver_id" },
+        { table: "good_vibe_allowances", col: "user_id" },
+        { table: "lajv_messages", col: "user_id" },
+        { table: "profile_visits", col: "visitor_id" },
+        { table: "profile_visits", col: "profile_owner_id" },
+        { table: "avatar_uploads", col: "user_id" },
+        { table: "snake_highscores", col: "user_id" },
+        { table: "memory_highscores", col: "user_id" },
+        { table: "call_participants", col: "user_id" },
+        { table: "call_sessions", col: "caller_id" },
+        { table: "scribble_guesses", col: "user_id" },
+        { table: "scribble_players", col: "user_id" },
+        { table: "scribble_lobbies", col: "creator_id" },
+        { table: "bot_settings", col: "user_id" },
+        { table: "user_roles", col: "user_id" },
+        { table: "profiles", col: "user_id" },
+      ];
+      // Delete from all tables with user_id columns
+      for (const { table, col } of tables) {
+        const { error } = await adminClient.from(table).delete().eq(col, userId);
+        if (error) {
+          console.error(`Failed to delete from ${table}.${col}:`, error.message);
+          // Continue – best effort cleanup
+        }
+      }
+      // Finally delete from Supabase Auth
+      const { error: authErr } = await adminClient.auth.admin.deleteUser(userId);
+      if (authErr) {
+        throw new Error(`Auth delete failed: ${authErr.message}`);
+      }
+    };
+
     switch (action) {
       case "approve_user": {
         const { user_id } = body;
@@ -73,9 +120,7 @@ Deno.serve(async (req) => {
 
       case "deny_user": {
         const { user_id } = body;
-        // Delete auth user (cascades profile via trigger)
-        const { error } = await adminClient.auth.admin.deleteUser(user_id);
-        if (error) throw error;
+        await cascadeDeleteUser(user_id);
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -91,7 +136,6 @@ Deno.serve(async (req) => {
         });
         if (error) throw error;
 
-        // Set approved + role
         await adminClient
           .from("profiles")
           .update({ is_approved: true })
@@ -102,9 +146,7 @@ Deno.serve(async (req) => {
 
         return new Response(
           JSON.stringify({ success: true, user_id: data.user.id }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
@@ -145,42 +187,7 @@ Deno.serve(async (req) => {
 
       case "delete_user": {
         const { user_id } = body;
-        // Delete all user data from every table (service role bypasses RLS)
-        const tables = [
-          { table: "guestbook_entries", col: "user_id" },
-          { table: "profile_guestbook", col: "author_id" },
-          { table: "profile_guestbook", col: "profile_owner_id" },
-          { table: "klotter", col: "user_id" },
-          { table: "messages", col: "sender_id" },
-          { table: "messages", col: "recipient_id" },
-          { table: "chat_messages", col: "sender_id" },
-          { table: "chat_messages", col: "recipient_id" },
-          { table: "friends", col: "user_id" },
-          { table: "friends", col: "friend_id" },
-          { table: "friend_votes", col: "voter_id" },
-          { table: "friend_votes", col: "target_user_id" },
-          { table: "good_vibes", col: "giver_id" },
-          { table: "good_vibe_allowances", col: "user_id" },
-          { table: "lajv_messages", col: "user_id" },
-          { table: "profile_visits", col: "visitor_id" },
-          { table: "profile_visits", col: "profile_owner_id" },
-          { table: "avatar_uploads", col: "user_id" },
-          { table: "snake_highscores", col: "user_id" },
-          { table: "memory_highscores", col: "user_id" },
-          { table: "call_participants", col: "user_id" },
-          { table: "call_sessions", col: "caller_id" },
-          { table: "scribble_guesses", col: "user_id" },
-          { table: "scribble_players", col: "user_id" },
-          { table: "bot_settings", col: "user_id" },
-          { table: "user_roles", col: "user_id" },
-          { table: "profiles", col: "user_id" },
-        ];
-        for (const { table, col } of tables) {
-          await adminClient.from(table).delete().eq(col, user_id);
-        }
-        // Delete from auth
-        const { error: authErr } = await adminClient.auth.admin.deleteUser(user_id);
-        if (authErr) throw authErr;
+        await cascadeDeleteUser(user_id);
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
