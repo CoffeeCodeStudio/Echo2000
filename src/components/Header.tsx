@@ -167,8 +167,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Marquee ticker */}
-      <div className="bg-primary/10 border-b border-border overflow-hidden">
+      {/* Marquee ticker - hidden on very small screens to save space */}
+      <div className="hidden sm:block bg-primary/10 border-b border-border overflow-hidden">
         <div className="marquee-container">
           <span className="marquee-text text-xs text-primary font-medium">
             ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Alpha-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
@@ -222,7 +222,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/admin")}
-                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                aria-label="Admin">
 
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
@@ -232,7 +233,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate("/settings")}
-                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                    aria-label="Inställningar">
                     <Settings className="w-4 h-4" />
                     <span className="hidden sm:inline">Inställningar</span>
                   </Button>
@@ -240,7 +242,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                aria-label="Logga ut">
 
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:inline">Logga ut</span>
@@ -251,7 +254,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               variant="ghost"
               size="sm"
               onClick={() => navigate("/auth")}
-              className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3">
+              className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+              aria-label="Logga in">
 
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Logga in</span>
