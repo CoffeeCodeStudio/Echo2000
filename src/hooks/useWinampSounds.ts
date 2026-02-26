@@ -2,6 +2,14 @@ import { useCallback, useRef } from "react";
 
 type WinampSoundType = "startup" | "click" | "hover" | "play" | "stop" | "seek";
 
+/**
+ * Synthesises Winamp-inspired UI sounds via the Web Audio API.
+ *
+ * Supported sound types: `startup`, `click`, `hover`, `play`, `stop`, `seek`.
+ * Can be globally enabled/disabled via `setEnabled`.
+ *
+ * @returns `playSound(type)`, `setEnabled(bool)`, `isEnabled()`.
+ */
 export function useWinampSounds() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);

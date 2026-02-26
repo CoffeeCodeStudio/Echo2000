@@ -33,6 +33,15 @@ function extractStoragePath(imageUrl: string): string {
   return imageUrl;
 }
 
+/**
+ * Manages the "Klotterplanket" (graffiti wall) feature.
+ *
+ * Loads all klotter entries with signed storage URLs (1 h expiry), and
+ * provides helpers to upload a new drawing (data-URL → storage → DB row)
+ * and delete owned entries (removes both DB row and storage file).
+ *
+ * @returns `klotter` array, `loading`, `uploadAndSaveKlotter`, `deleteKlotter`, `refetch`.
+ */
 export function useKlotter() {
   const [klotter, setKlotter] = useState<Klotter[]>([]);
   const [loading, setLoading] = useState(true);

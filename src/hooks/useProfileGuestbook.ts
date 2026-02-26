@@ -12,6 +12,16 @@ interface GuestbookEntry {
   created_at: string;
 }
 
+/**
+ * CRUD operations for a user's profile guestbook.
+ *
+ * Loads the latest 50 entries for the given profile owner, supports posting
+ * (with 500-char validation), replying to another user's guestbook, and
+ * optimistic delete / clear-all with automatic rollback on failure.
+ *
+ * @param profileOwnerId - The `user_id` of the profile whose guestbook to manage.
+ * @returns Entries array, loading/posting states, and action callbacks.
+ */
 export function useProfileGuestbook(profileOwnerId: string | undefined) {
   const { user } = useAuth();
   const { toast } = useToast();

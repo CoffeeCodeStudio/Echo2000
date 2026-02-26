@@ -2,6 +2,14 @@ import { useCallback, useRef } from "react";
 
 type SoundType = "message" | "nudge" | "online" | "offline" | "send" | "error";
 
+/**
+ * Synthesises retro MSN Messenger-style notification sounds via the Web Audio API.
+ *
+ * Generates tones procedurally (no audio files required). Supported sound types:
+ * `message`, `send`, `nudge`, `online`, `offline`, `error`.
+ *
+ * @returns `playSound(type)` – trigger a sound effect by name.
+ */
 export function useMsnSounds() {
   const audioContextRef = useRef<AudioContext | null>(null);
 

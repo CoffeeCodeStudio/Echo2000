@@ -17,6 +17,16 @@ export interface UserVotes {
   [category: string]: boolean;
 }
 
+/**
+ * Manages "friend vote" categories (e.g. Bäst, Nörd, Cooling) for a target user.
+ *
+ * Fetches aggregated vote counts and the current user's own votes, and
+ * provides a `toggleVote` action that optimistically updates the UI with
+ * automatic re-sync on error.
+ *
+ * @param targetUserId - The user whose votes to load.
+ * @returns Vote counts, user votes, total, toggle callback, and loading state.
+ */
 export function useFriendVotes(targetUserId: string | undefined) {
   const { user } = useAuth();
   const { toast } = useToast();

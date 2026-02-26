@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * Manages authentication state and provides sign-up, sign-in, and sign-out methods.
+ *
+ * Listens for auth state changes via Supabase Realtime and exposes the current
+ * {@link User}, {@link Session}, and a `loading` flag that resolves after the
+ * initial session check.
+ *
+ * @returns An object containing:
+ *  - `user` – The currently authenticated user, or `null`.
+ *  - `session` – The active session, or `null`.
+ *  - `loading` – `true` until the initial session has been resolved.
+ *  - `signUp` – Register a new account (email + password + username).
+ *  - `signIn` – Log in with email + password.
+ *  - `signOut` – End the current session.
+ */
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);

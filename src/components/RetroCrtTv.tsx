@@ -1,3 +1,9 @@
+/**
+ * @module RetroCrtTv
+ * Renders an animated retro CRT television with a typing text effect,
+ * scanlines, and glitch animations. Used on the home page to add visual
+ * flair for visitors.
+ */
 import { useState, useEffect, useRef } from "react";
 
 const MESSAGES = [
