@@ -6,10 +6,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Dygnsrytm: reduce activity at night (Swedish time approx UTC+1)
+function getDygnsrytmMultiplier(): number {
+  const hour = new Date().getUTCHours() + 1;
+  if (hour >= 2 && hour <= 7) return 0.05; // Almost zero at night
+  if (hour >= 18 && hour <= 23) return 1.5; // Peak evening
+  if (hour >= 8 && hour <= 11) return 0.6; // Morning slow
+  return 1.0; // Normal
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Authentication: Only allow calls with service role key or from Supabase scheduler
   const authHeader = req.headers.get("authorization") || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
@@ -38,41 +46,47 @@ serve(async (req) => {
     }
 
     const results: Record<string, string[]> = {};
+    const dygnsMultiplier = getDygnsrytmMultiplier();
+
+    // =============================================
+    // NEW: Welcome new users (check for recently created profiles)
+    // =============================================
+    await handleNewUserWelcome(supabase, supabaseUrl, bots, results);
+
+    // =============================================
+    // NEW: Inter-bot banter (occasional fun debates)
+    // =============================================
+    if (bots.length >= 2 && Math.random() < 0.08 * dygnsMultiplier) {
+      await handleBotBanter(supabase, supabaseUrl, bots, results);
+    }
 
     for (const bot of bots) {
-      results[bot.name] = [];
+      results[bot.name] = results[bot.name] || [];
       const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
 
-      // =============================================
       // PRIORITY 1: Reply to entries in the BOT'S OWN profile guestbook
-      // =============================================
       if (allowedContexts.includes("guestbook")) {
         const didProfileReply = await handleBotProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
         if (didProfileReply) continue;
       }
 
-      // =============================================
-      // PRIORITY 2: Reply to unread chat/DM messages
-      // =============================================
+      // PRIORITY 2: Reply to unread chat/DM messages (with typing delay)
       if (allowedContexts.includes("chat")) {
         const didChatReply = await handleChatReplies(supabase, supabaseUrl, bot, results);
         if (didChatReply) continue;
       }
 
-      // =============================================
-      // PRIORITY 3: Inactive user outreach (max 1 DM per user per month)
-      // =============================================
+      // PRIORITY 3: Inactive user outreach
       if (allowedContexts.includes("chat")) {
         const didOutreach = await handleInactiveUserOutreach(supabase, supabaseUrl, bot, results);
         if (didOutreach) continue;
       }
 
-      // =============================================
-      // PRIORITY 4: Autonomous guestbook post (activity roll)
-      // =============================================
+      // PRIORITY 4: Autonomous guestbook post (activity roll × dygnsrytm)
+      const adjustedLevel = bot.activity_level * dygnsMultiplier;
       const roll = Math.random() * 100;
-      if (roll > bot.activity_level) {
-        results[bot.name].push(`Skipped autonomous (roll ${roll.toFixed(0)} > level ${bot.activity_level})`);
+      if (roll > adjustedLevel) {
+        results[bot.name].push(`Skipped autonomous (roll ${roll.toFixed(0)} > adjusted ${adjustedLevel.toFixed(0)})`);
         continue;
       }
 
@@ -158,6 +172,169 @@ serve(async (req) => {
   }
 });
 
+// =============================================
+// NEW: Welcome new users within the last 30 minutes
+// =============================================
+async function handleNewUserWelcome(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+
+    // Find recently created profiles (new users)
+    const { data: newUsers } = await supabase
+      .from("profiles")
+      .select("user_id, username")
+      .gte("created_at", thirtyMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (!newUsers || newUsers.length === 0) return;
+
+    // Get bot user_ids to filter them out
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+
+    for (const newUser of newUsers) {
+      // Skip if new user is a bot
+      if (botUserIds.has(newUser.user_id)) continue;
+
+      // Check if any bot already welcomed this user
+      const { data: existingWelcome } = await supabase
+        .from("chat_messages")
+        .select("id")
+        .in("sender_id", Array.from(botUserIds))
+        .eq("recipient_id", newUser.user_id)
+        .limit(1);
+
+      if (existingWelcome && existingWelcome.length > 0) continue;
+
+      // Pick a random bot to welcome them
+      const welcomeBot = bots[Math.floor(Math.random() * bots.length)];
+      const botName = welcomeBot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Broadcast typing indicator before responding
+      await broadcastTypingIndicator(supabase, welcomeBot.user_id as string, newUser.user_id);
+
+      const res = await callBotRespond(supabaseUrl, {
+        action: "welcome_new_user",
+        bot_id: welcomeBot.id,
+        target_id: newUser.user_id,
+        target_username: newUser.username,
+      });
+
+      results[botName].push(`Welcome to ${newUser.username}: ${res.reply || res.error || "unknown"}`);
+
+      // Auto-friend request from bot to new user
+      await supabase.from("friends").insert({
+        user_id: welcomeBot.user_id as string,
+        friend_id: newUser.user_id,
+        status: "accepted",
+        category: "Nätvän",
+      }).then(() => {});
+    }
+  } catch (e) {
+    console.error("New user welcome error:", e);
+  }
+}
+
+// =============================================
+// NEW: Inter-bot banter (fun debates)
+// =============================================
+const BANTER_TOPICS = [
+  "vilket godis var bäst 2004? polly eller ahlgrens bilar?",
+  "MSN eller ICQ — vad var egentligen bäst?",
+  "vem minns när man brände CD-skivor med Nero? bästa låtlistan nånsin",
+  "nokia 3310 eller sony ericsson t610? fight me",
+  "habbo hotel vs runescape — var spenderade ni mest tid?",
+  "limewire eller kazaa? (virus-roulettten lol)",
+  "var the OC bättre än one tree hill? discuss",
+  "bästa MSN-nicket ni haft? mitt var cringe haha",
+  "vem hade INTE en blogg på blogg.se typ 2005?",
+  "linkin park eller evanescence? den eviga frågan",
+];
+
+async function handleBotBanter(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    // Check cooldown: no banter in last 2 hours
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const botUserIds = bots.map(b => b.user_id as string);
+
+    // Pick 2 random different bots
+    const shuffled = [...bots].sort(() => Math.random() - 0.5);
+    const bot1 = shuffled[0];
+    const bot2 = shuffled[1];
+    if (!bot1 || !bot2) return;
+
+    const topic = BANTER_TOPICS[Math.floor(Math.random() * BANTER_TOPICS.length)];
+
+    // Bot 1 starts the debate
+    const res1 = await callBotRespond(supabaseUrl, {
+      action: "bot_banter",
+      bot_id: bot1.id,
+      context: `Starta en rolig debatt om: ${topic}. Du ska ta EN sida starkt.`,
+    });
+
+    results[bot1.name as string] = results[bot1.name as string] || [];
+    results[bot1.name as string].push(`Banter started: ${res1.reply || "unknown"}`);
+
+    // Small delay then bot 2 responds
+    await new Promise(r => setTimeout(r, 3000));
+
+    const res2 = await callBotRespond(supabaseUrl, {
+      action: "bot_banter",
+      bot_id: bot2.id,
+      context: `Svara på denna åsikt om "${topic}": "${res1.reply}". Ta MOTSATT sida! Var roligt oenig.`,
+    });
+
+    results[bot2.name as string] = results[bot2.name as string] || [];
+    results[bot2.name as string].push(`Banter reply: ${res2.reply || "unknown"}`);
+  } catch (e) {
+    console.error("Bot banter error:", e);
+  }
+}
+
+// =============================================
+// Typing indicator broadcast (Realtime)
+// =============================================
+async function broadcastTypingIndicator(
+  supabase: ReturnType<typeof createClient>,
+  botUserId: string,
+  targetUserId: string
+) {
+  try {
+    // Broadcast typing event on the chat channel
+    const channelName = `chat-typing-${[botUserId, targetUserId].sort().join('-')}`;
+    await supabase.channel(channelName).send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { user_id: botUserId, typing: true },
+    });
+
+    // Wait 5-10 seconds (simulated typing)
+    const delay = 5000 + Math.random() * 5000;
+    await new Promise(r => setTimeout(r, delay));
+
+    // Stop typing
+    await supabase.channel(channelName).send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { user_id: botUserId, typing: false },
+    });
+  } catch (e) {
+    // Non-critical, just log
+    console.error("Typing indicator error:", e);
+  }
+}
+
 /**
  * Reply to entries posted on the BOT'S OWN profile guestbook.
  */
@@ -170,7 +347,6 @@ async function handleBotProfileGuestbookReplies(
   try {
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
-    // Only respond to entries on the bot's profile where the author is NOT writing in their own guestbook
     const { data: recentEntries } = await supabase
       .from("profile_guestbook")
       .select("id, author_name, author_id, message, profile_owner_id, created_at")
@@ -180,14 +356,11 @@ async function handleBotProfileGuestbookReplies(
       .order("created_at", { ascending: false })
       .limit(10);
 
-    // Filter out entries where author wrote in their own guestbook (shouldn't happen here since we check bot's profile, but guard anyway)
     const filteredEntries = recentEntries?.filter(e => e.author_id !== e.profile_owner_id) || [];
-
     if (filteredEntries.length === 0) return false;
 
     const targetEntry = filteredEntries[0];
 
-    // Check if bot already replied in the TARGET USER's guestbook (not the bot's own)
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
       .select("id")
@@ -241,7 +414,7 @@ async function handleBotProfileGuestbookReplies(
 }
 
 /**
- * Reply to unread DMs/chat messages sent to the bot.
+ * Reply to unread DMs/chat messages sent to the bot (with typing indicator).
  */
 async function handleChatReplies(
   supabase: ReturnType<typeof createClient>,
@@ -278,6 +451,9 @@ async function handleChatReplies(
       .reverse()
       .map(m => `"${m.content}"`)
       .join(", ");
+
+    // Broadcast typing indicator before responding
+    await broadcastTypingIndicator(supabase, bot.user_id as string, chosenSenderId);
 
     const contextStr = `Du chattar med ${senderName}. Deras senaste meddelanden: ${messagesContext}. Svara ${senderName} direkt.`;
     const res = await callBotRespond(supabaseUrl, {
@@ -344,6 +520,9 @@ async function handleInactiveUserOutreach(
         .limit(1);
 
       if (recentOutreach && recentOutreach.length > 0) continue;
+
+      // Broadcast typing before outreach
+      await broadcastTypingIndicator(supabase, bot.user_id as string, profile.user_id);
 
       const res = await callBotRespond(supabaseUrl, {
         action: "inactive_outreach",

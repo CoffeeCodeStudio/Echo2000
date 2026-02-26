@@ -18,6 +18,7 @@ interface ChatMessagesProps {
   messages: DisplayMessage[];
   loading: boolean;
   contactName: string;
+  contactTyping?: boolean;
 }
 
 /** Format date separator labels (Idag / Igår / full date) */
@@ -34,7 +35,7 @@ function formatDateLabel(date: Date): string {
   return date.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" });
 }
 
-export function ChatMessages({ messages, loading, contactName }: ChatMessagesProps) {
+export function ChatMessages({ messages, loading, contactName, contactTyping }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,6 +127,27 @@ export function ChatMessages({ messages, loading, contactName }: ChatMessagesPro
           </div>
         );
       })}
+
+      {/* Typing indicator */}
+      {contactTyping && (
+        <div className="mb-2 animate-fade-in flex items-center gap-2 px-2">
+          <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+              {contactName.charAt(0).toUpperCase()}
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[11px] italic text-gray-500 dark:text-gray-400">
+              {contactName} skriver
+            </span>
+            <span className="flex gap-0.5">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+          </div>
+        </div>
+      )}
 
       <div ref={messagesEndRef} />
     </div>
