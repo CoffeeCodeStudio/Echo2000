@@ -16,7 +16,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   // If not logged in, show only HEM
   if (!user) {
     return (
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
         <div className="flex items-center justify-center py-3 px-2">
           <button
             onClick={() => onTabChange("hem")}
@@ -87,7 +87,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-dark pb-safe">
       {/* Secondary row - community items */}
       <div className="flex items-center justify-around px-1 py-1 border-b border-border/30">
         {bottomRowItems.map(renderItem)}
