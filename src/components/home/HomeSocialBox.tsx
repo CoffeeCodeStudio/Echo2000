@@ -11,11 +11,11 @@ function SocialLink({ label }: { label: string }) {
 
 export function HomeSocialBox() {
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden h-full flex flex-col">
       <div className="bg-primary/20 border-b border-primary/30 px-3 py-1.5">
         <h3 className="font-display font-bold text-sm text-primary">🌐 Sociala Medier</h3>
       </div>
-      <div className="p-3 bg-card flex flex-wrap gap-2">
+      <div className="p-3 bg-card flex flex-wrap gap-2 flex-1">
         <SocialLink label="Discord" />
         <SocialLink label="Instagram" />
         <SocialLink label="TikTok" />
