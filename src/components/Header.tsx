@@ -196,13 +196,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <GlobalSearch />
         </div>
 
-        {/* Desktop nav items moved to RetroSidebar – only show on mobile/tablet */}
+        {/* Desktop nav items – visible from md breakpoint */}
         {user &&
-        <nav className="hidden md:flex lg:hidden items-center gap-0.5 mx-2">
+        <nav className="hidden md:flex items-center gap-0.5 mx-2">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden md:flex lg:hidden items-center gap-0.5">
+        <nav className="hidden md:flex items-center gap-0.5">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
