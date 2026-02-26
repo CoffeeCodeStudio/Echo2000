@@ -158,6 +158,20 @@ serve(async (req) => {
       }
     }
 
+    // Update bot presence (last_seen) for all active bots
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/bot-manager`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({ action: "update_presence" }),
+      });
+    } catch (e) {
+      console.error("Bot presence update error:", e);
+    }
+
     console.log("Bot cron results:", JSON.stringify(results));
 
     return new Response(JSON.stringify({ success: true, results }), {

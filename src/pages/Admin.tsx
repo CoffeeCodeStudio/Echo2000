@@ -12,6 +12,7 @@ import { AdminImageReview } from "@/components/admin/AdminImageReview";
 import { AdminBotManager } from "@/components/admin/AdminBotManager";
 import { AdminNewsManager } from "@/components/admin/AdminNewsManager";
 import { AdminPendingApprovals } from "@/components/admin/AdminPendingApprovals";
+import { AdminBotSpawner } from "@/components/admin/AdminBotSpawner";
 
 interface Profile {
   id: string;
@@ -157,7 +158,12 @@ export default function Admin() {
         {activeTab === "create" && <AdminCreateUser onUserCreated={fetchData} />}
         {activeTab === "moderate" && <AdminContentModeration />}
         {activeTab === "images" && <AdminImageReview />}
-        {activeTab === "bots" && <AdminBotManager />}
+        {activeTab === "bots" && (
+          <>
+            <AdminBotSpawner />
+            <AdminBotManager />
+          </>
+        )}
         {activeTab === "news" && <AdminNewsManager />}
       </div>
     </div>
