@@ -54,7 +54,7 @@ export function ProfileAvatar({ displayData, editData, setEditData, isEditing }:
           <AvatarPicker
             selectedAvatarId={editData.avatar_url ? avatarOptions.find((a) => a.src === editData.avatar_url)?.id : undefined}
             onSelect={(avatar: AvatarOption) => setEditData({ ...editData, avatar_url: avatar.src })}
-            className="mt-3 max-w-[140px]"
+            className="mt-3 max-w-xs"
           />
           <ProfilePhotoUpload onUploadComplete={() => {}} />
         </>

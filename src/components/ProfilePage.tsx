@@ -132,7 +132,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
       <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={isOwnProfile} />
 
       {/* Tab content */}
-      <div className="container px-4 py-4">
+      <div className="container px-4 py-4 max-w-5xl mx-auto">
         {activeTab === "profil" && (
           <ProfileInfoSection
             displayData={displayData}
