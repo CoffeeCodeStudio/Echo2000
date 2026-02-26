@@ -89,8 +89,8 @@ export function ProfilePage({ userId }: ProfilePageProps) {
       ? editData
       : toEditableData(profile);
 
-  const profileUserId = profile?.user_id || userId;
-  const userStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : user ? getUserStatus(user.id) : "offline";
+  const profileUserId = profile?.user_id || userId || user?.id;
+  const userStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : "offline";
   const userActivity = profileUserId ? getUserActivity(profileUserId) : undefined;
   const memberSince = profile
     ? new Date(profile.created_at).toLocaleDateString("sv-SE", { year: "numeric", month: "long" })
@@ -148,25 +148,31 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           />
         )}
 
-        {activeTab === "gastbok" && userId && (
+        {activeTab === "gastbok" && profileUserId && (
           <div className="bg-card rounded-lg border border-border p-4">
-            <ProfileGuestbook profileOwnerId={userId} isOwnProfile={isOwnProfile} />
+            <ProfileGuestbook profileOwnerId={profileUserId} isOwnProfile={isOwnProfile} />
           </div>
         )}
 
-        {activeTab === "besokare" && isOwnProfile && (
+        {activeTab === "gastbok" && !profileUserId && (
+          <div className="bg-card rounded-lg border border-border p-8 text-center">
+            <p className="text-muted-foreground">📝 Här var det tomt! Skriv något vetja.</p>
+          </div>
+        )}
+
+        {activeTab === "besokare" && isOwnProfile && profileUserId && (
           <div className="bg-card rounded-lg border border-border p-4">
             <VisitorLog visitors={visitors} />
           </div>
         )}
 
-        {activeTab === "vanner" && userId && (
+        {activeTab === "vanner" && profileUserId && (
           <div className="bg-card rounded-lg border border-border p-4">
-            <ProfileFriendsTab userId={userId} />
+            <ProfileFriendsTab userId={profileUserId} />
           </div>
         )}
 
-        {activeTab === "vanner" && !userId && (
+        {activeTab === "vanner" && !profileUserId && (
           <div className="bg-card rounded-lg border border-border p-8 text-center">
             <p className="text-muted-foreground">🌟 Inga vänner ännu</p>
           </div>
