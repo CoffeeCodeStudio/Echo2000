@@ -215,7 +215,6 @@ async function updateBotPresence(supabase: ReturnType<typeof createClient>, head
 }
 
 async function exorcism(supabase: ReturnType<typeof createClient>, headers: Record<string, string>) {
-  // Get all bot user_ids
   const { data: botProfiles } = await supabase
     .from("profiles")
     .select("user_id, username")
@@ -228,42 +227,47 @@ async function exorcism(supabase: ReturnType<typeof createClient>, headers: Reco
   }
 
   const botUserIds = botProfiles.map(b => b.user_id);
-  let deleted = 0;
+  const orFilter = botUserIds.map(id => `user_id.eq.${id}`).join(",");
+  const orFilterSender = botUserIds.map(id => `sender_id.eq.${id}`).join(",");
+  const orFilterAuthor = botUserIds.map(id => `author_id.eq.${id}`).join(",");
+  const orFilterVisitor = botUserIds.map(id => `visitor_id.eq.${id}`).join(",");
+  const orFilterVoter = botUserIds.map(id => `voter_id.eq.${id}`).join(",");
+  const orFilterGiver = botUserIds.map(id => `giver_id.eq.${id}`).join(",");
+  const orFilterFriend = botUserIds.map(id => `friend_id.eq.${id}`).join(",");
+  const orFilterCaller = botUserIds.map(id => `caller_id.eq.${id}`).join(",");
+  const orFilterRecipient = botUserIds.map(id => `recipient_id.eq.${id}`).join(",");
+  const orFilterOwner = botUserIds.map(id => `profile_owner_id.eq.${id}`).join(",");
+  const orFilterTarget = botUserIds.map(id => `target_user_id.eq.${id}`).join(",");
 
-  for (const userId of botUserIds) {
-    // Delete bot_settings
-    await supabase.from("bot_settings").delete().eq("user_id", userId);
+  // Batch delete all related data in parallel
+  await Promise.all([
+    supabase.from("bot_settings").delete().or(orFilter),
+    supabase.from("guestbook_entries").delete().or(orFilter),
+    supabase.from("profile_guestbook").delete().or(`${orFilterAuthor},${orFilterOwner}`),
+    supabase.from("chat_messages").delete().or(`${orFilterSender},${orFilterRecipient}`),
+    supabase.from("friends").delete().or(`${orFilter},${orFilterFriend}`),
+    supabase.from("friend_votes").delete().or(`${orFilterVoter},${orFilterTarget}`),
+    supabase.from("good_vibes").delete().or(orFilterGiver),
+    supabase.from("lajv_messages").delete().or(orFilter),
+    supabase.from("profile_visits").delete().or(`${orFilterVisitor},${orFilterOwner}`),
+    supabase.from("messages").delete().or(`${orFilterSender},${orFilterRecipient}`),
+    supabase.from("user_roles").delete().or(orFilter),
+  ]);
 
-    // Delete all related data (same cascade as admin delete)
-    await supabase.from("guestbook_entries").delete().eq("user_id", userId);
-    await supabase.from("profile_guestbook").delete().or(`author_id.eq.${userId},profile_owner_id.eq.${userId}`);
-    await supabase.from("chat_messages").delete().or(`sender_id.eq.${userId},recipient_id.eq.${userId}`);
-    await supabase.from("friends").delete().or(`user_id.eq.${userId},friend_id.eq.${userId}`);
-    await supabase.from("friend_votes").delete().or(`voter_id.eq.${userId},target_user_id.eq.${userId}`);
-    await supabase.from("good_vibes").delete().eq("giver_id", userId);
-    await supabase.from("lajv_messages").delete().eq("user_id", userId);
-    await supabase.from("profile_visits").delete().or(`visitor_id.eq.${userId},profile_owner_id.eq.${userId}`);
-    await supabase.from("messages").delete().or(`sender_id.eq.${userId},recipient_id.eq.${userId}`);
-    await supabase.from("user_roles").delete().eq("user_id", userId);
-    
-    // Delete profile
-    await supabase.from("profiles").delete().eq("user_id", userId);
+  // Delete profiles
+  await supabase.from("profiles").delete().eq("is_bot", true);
 
-    // Delete auth user
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
+  // Delete auth users in parallel batches
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  await Promise.all(botUserIds.map(userId =>
+    fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${serviceRoleKey}`,
-        apikey: serviceRoleKey,
-      },
-    });
+      headers: { Authorization: `Bearer ${serviceRoleKey}`, apikey: serviceRoleKey },
+    })
+  ));
 
-    deleted++;
-  }
-
-  return new Response(JSON.stringify({ success: true, deleted, names: botProfiles.map(b => b.username) }), {
+  return new Response(JSON.stringify({ success: true, deleted: botProfiles.length, names: botProfiles.map(b => b.username) }), {
     headers: { ...headers, "Content-Type": "application/json" },
   });
 }
