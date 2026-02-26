@@ -38,11 +38,11 @@ export function HomeRecentOnline() {
   }, [user]);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden h-full flex flex-col">
       <div className="bg-primary/20 border-b border-primary/30 px-3 py-1.5">
         <h3 className="font-display font-bold text-sm text-primary">👥 Senaste Inloggade</h3>
       </div>
-      <div className="p-3 bg-card">
+      <div className="p-3 bg-card flex-1">
         {members.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
         ) : (
