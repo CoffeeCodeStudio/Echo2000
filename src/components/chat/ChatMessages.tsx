@@ -89,7 +89,7 @@ export function ChatMessages({ messages, loading, contactName }: ChatMessagesPro
                   {isNewBlock ? (
                     <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                       {message.senderAvatar ? (
-                        <img src={message.senderAvatar} alt={message.senderName} className="w-full h-full object-cover" />
+                        <img src={message.senderAvatar} alt={message.senderName} loading="lazy" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
                           {message.senderName.charAt(0).toUpperCase()}

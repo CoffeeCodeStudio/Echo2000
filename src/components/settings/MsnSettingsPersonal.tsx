@@ -61,7 +61,7 @@ export function MsnSettingsPersonal() {
         <div className="flex items-center gap-3">
           <div className="w-16 h-16 rounded-sm border-2 border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center overflow-hidden">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={profile.avatar_url} alt="Avatar" loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <span className="text-2xl font-bold text-gray-400">
                 {displayName?.charAt(0)?.toUpperCase() || "?"}

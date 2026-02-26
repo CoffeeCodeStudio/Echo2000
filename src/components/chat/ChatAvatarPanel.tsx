@@ -54,7 +54,7 @@ function AvatarSlot({
       <div className="relative mb-1.5">
         <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-sm flex items-center justify-center border-2 border-gray-400 dark:border-gray-600 overflow-hidden">
           {avatar ? (
-            <img src={avatar} alt={name} className="w-full h-full object-cover" />
+            <img src={avatar} alt={name} loading="lazy" className="w-full h-full object-cover" />
           ) : (
             <span className="text-3xl font-bold text-gray-400 dark:text-gray-500">
               {name.charAt(0).toUpperCase()}

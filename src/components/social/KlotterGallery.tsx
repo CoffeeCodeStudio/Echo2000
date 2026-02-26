@@ -40,7 +40,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
         <div key={item.id} className={`bg-card rounded-lg overflow-hidden border border-border ${isMobile ? "" : "hover:border-primary/50 transition-colors"}`}>
           <div className="aspect-video bg-[#1e2540] relative">
             {(item.signed_url || item.image_url) ? (
-              <img src={item.signed_url || item.image_url} alt="Klotter" className="w-full h-full object-cover" />
+              <img src={item.signed_url || item.image_url} alt="Klotter" loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className={isMobile ? "text-2xl" : "text-4xl"}>🎨</span>

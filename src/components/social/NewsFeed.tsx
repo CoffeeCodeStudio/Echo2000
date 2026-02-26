@@ -60,6 +60,7 @@ export function NewsFeed() {
               <img
                 src={article.image_url}
                 alt=""
+                loading="lazy"
                 className="w-14 h-14 rounded object-cover flex-shrink-0 border border-border"
               />
             ) : (
