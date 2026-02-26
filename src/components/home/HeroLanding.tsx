@@ -1,8 +1,7 @@
 /**
  * @module HeroLanding
- * Full-screen hero landing page for logged-out users.
- * Minimal, focused: headline → CTA → social proof.
- * Zero flicker, high contrast, accessibility-first.
+ * 2026 Premium Nostalgia hero for logged-out users.
+ * Kinetic typography, glassmorphism pills, refined CTA.
  */
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -17,22 +16,28 @@ interface MemberAvatar {
 }
 
 /* ── avatar with initial-letter fallback ── */
-function MemberBubble({ member }: { member: MemberAvatar }) {
+function MemberBubble({ member, index }: { member: MemberAvatar; index: number }) {
   const initial = member.username.charAt(0).toUpperCase();
   const hasAvatar = !!member.avatar_url;
+  const delay = `${index * 0.08}s`;
+
+  const baseClass =
+    "w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary/50 animate-kinetic-slide-up";
 
   return hasAvatar ? (
     <img
       src={member.avatar_url!}
       alt={member.username}
       title={member.username}
-      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary/60 object-cover bg-muted"
+      className={`${baseClass} object-cover bg-muted`}
+      style={{ animationDelay: delay }}
       loading="lazy"
     />
   ) : (
     <div
       title={member.username}
-      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary/60 bg-primary/20 flex items-center justify-center text-primary font-bold text-sm sm:text-base"
+      className={`${baseClass} bg-primary/15 flex items-center justify-center text-primary font-bold text-sm sm:text-base`}
+      style={{ animationDelay: delay }}
     >
       {initial}
     </div>
@@ -42,43 +47,36 @@ function MemberBubble({ member }: { member: MemberAvatar }) {
 /* ── skeleton while loading ── */
 function SocialProofSkeleton() {
   return (
-    <div className="flex flex-col items-center gap-3 mt-8 animate-pulse">
+    <div className="flex flex-col items-center gap-3 mt-10 animate-pulse">
       <div className="flex -space-x-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted/40 border-2 border-border"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted/30 border-2 border-border"
           />
         ))}
       </div>
-      <div className="h-4 w-48 rounded bg-muted/30" />
+      <div className="h-4 w-48 rounded-full bg-muted/20" />
     </div>
   );
 }
 
 /* ── social proof row ── */
-function SocialProof({
-  members,
-  loading,
-}: {
-  members: MemberAvatar[];
-  loading: boolean;
-}) {
+function SocialProof({ members, loading }: { members: MemberAvatar[]; loading: boolean }) {
   if (loading) return <SocialProofSkeleton />;
   if (members.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-3 mt-8">
+    <div className="flex flex-col items-center gap-3 mt-10">
       <div className="flex -space-x-3">
-        {members.map((m) => (
-          <MemberBubble key={m.id} member={m} />
+        {members.map((m, i) => (
+          <MemberBubble key={m.id} member={m} index={i} />
         ))}
       </div>
       <p className="text-muted-foreground text-sm flex items-center gap-1.5">
         <Users className="w-4 h-4" />
         <span>
-          <strong className="text-foreground">{members.length}+</strong>{" "}
-          medlemmar har redan gått med
+          <strong className="text-foreground">{members.length}+</strong> medlemmar har redan gått med
         </span>
       </p>
     </div>
@@ -118,49 +116,79 @@ export function HeroLanding() {
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 py-12 sm:py-20">
-        {/* Headline */}
-        <h1
-          className="font-display font-bold text-3xl sm:text-5xl md:text-6xl text-center leading-tight max-w-3xl"
-          style={{ lineHeight: 1.15, letterSpacing: "-0.02em" }}
-        >
-          <span className="text-foreground">Välkommen hem till</span>
-          <br />
-          <span className="text-primary">2000</span>
-          <span className="text-accent">-talet</span>
+      {/* Deep space gradient background */}
+      <div
+        className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative"
+        style={{
+          background: "radial-gradient(ellipse at 50% 30%, hsl(265 35% 15% / 0.5) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(28 100% 56% / 0.06) 0%, transparent 50%)",
+        }}
+      >
+        {/* Kinetic headline */}
+        <h1 className="font-display font-bold text-center max-w-4xl">
+          <span
+            className="kinetic-text block text-3xl sm:text-5xl md:text-7xl text-foreground animate-kinetic-slide-up"
+            style={{ lineHeight: 1.1, letterSpacing: "-0.03em" }}
+          >
+            Välkommen hem till
+          </span>
+          <span className="block mt-1 sm:mt-2">
+            <span
+              className="kinetic-text text-4xl sm:text-6xl md:text-8xl text-primary animate-kinetic-blur-in"
+              style={{ animationDelay: "0.2s", lineHeight: 1.1 }}
+            >
+              2000
+            </span>
+            <span
+              className="kinetic-text text-4xl sm:text-6xl md:text-8xl text-accent animate-kinetic-blur-in"
+              style={{ animationDelay: "0.35s", lineHeight: 1.1 }}
+            >
+              -talet
+            </span>
+          </span>
         </h1>
 
         <p
-          className="mt-4 sm:mt-6 text-muted-foreground text-base sm:text-lg text-center max-w-xl"
-          style={{ lineHeight: 1.6, letterSpacing: "0.3px" }}
+          className="mt-5 sm:mt-8 text-muted-foreground text-base sm:text-lg md:text-xl text-center max-w-2xl animate-kinetic-slide-up"
+          style={{ lineHeight: 1.65, letterSpacing: "0.3px", animationDelay: "0.3s" }}
         >
           En nostalgisk community inspirerad av MSN&nbsp;Messenger, LunarStorm
           och Playahead — fast med dagens teknik.
         </p>
 
-        {/* Vision pills */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-6">
+        {/* Glassmorphism vision pills */}
+        <div
+          className="flex flex-wrap justify-center gap-2.5 sm:gap-3 mt-7 animate-kinetic-slide-up"
+          style={{ animationDelay: "0.4s" }}
+        >
           {visionItems.map((v) => (
             <span
               key={v.text}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-muted/60 border border-border text-foreground select-none"
+              className="pressable inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-medium text-foreground select-none"
+              style={{
+                background: "hsl(var(--glass-bg))",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid hsl(var(--glass-border))",
+              }}
             >
               <span aria-hidden="true">{v.emoji}</span> {v.text}
             </span>
           ))}
         </div>
 
-        {/* CTA — min 44px touch target */}
+        {/* CTA — pressable micro-interaction */}
         <button
           onClick={() => navigate("/auth")}
-          className="hero-cta-button mt-8 sm:mt-10 px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl text-base sm:text-lg font-bold tracking-wide transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background min-h-[48px]"
+          className="hero-cta-button pressable mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 rounded-2xl text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background min-h-[52px] animate-kinetic-slide-up"
+          style={{ animationDelay: "0.5s" }}
         >
           Skapa din profil
         </button>
 
         <button
           onClick={() => navigate("/auth")}
-          className="mt-3 text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center"
+          className="pressable mt-4 text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center animate-kinetic-slide-up"
+          style={{ animationDelay: "0.55s" }}
         >
           Har du redan konto? Logga in
         </button>
