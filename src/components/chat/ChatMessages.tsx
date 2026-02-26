@@ -1,4 +1,4 @@
-/** Message list with date separators and nudge styling */
+/** Message list with date separators, nudge styling, and sender avatars */
 import { useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ interface DisplayMessage {
   timestamp: string;
   isSelf: boolean;
   senderName: string;
+  senderAvatar?: string;
   date: Date;
 }
 
@@ -41,9 +42,9 @@ export function ChatMessages({ messages, loading, contactName }: ChatMessagesPro
   }, [messages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
+    <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
       {/* Conversation header */}
-      <div className="text-center text-[11px] text-gray-600 dark:text-gray-400 mb-4 pb-2 border-b border-gray-300 dark:border-gray-700">
+      <div className="text-center text-[11px] text-gray-500 dark:text-gray-400 mb-4 pb-2 border-b border-gray-300 dark:border-gray-700">
         Du har startat en konversation med {contactName}
       </div>
 
@@ -58,12 +59,18 @@ export function ChatMessages({ messages, loading, contactName }: ChatMessagesPro
         const showDateSeparator = !prevMessage ||
           formatDateLabel(message.date) !== formatDateLabel(prevMessage.date);
 
+        // Determine if this is a new message block (different sender or date separator)
+        const isNewBlock = !prevMessage ||
+          showDateSeparator ||
+          prevMessage.isSelf !== message.isSelf ||
+          prevMessage.senderName !== message.senderName;
+
         return (
           <div key={message.id}>
             {showDateSeparator && (
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-slate-900 px-2">
+                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-white dark:bg-slate-900 px-2">
                   {formatDateLabel(message.date)}
                 </span>
                 <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
@@ -76,19 +83,44 @@ export function ChatMessages({ messages, loading, contactName }: ChatMessagesPro
                 </span>
               </div>
             ) : (
-              <div className="mb-2 animate-fade-in">
+              <div className="mb-1 animate-fade-in">
                 <div className="flex items-start gap-2">
-                  <span className={cn(
-                    "font-bold text-xs whitespace-nowrap",
-                    message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-[#d4388c] dark:text-pink-400"
-                  )}>
-                    {message.senderName} säger:
-                  </span>
-                  <span className="text-[10px] text-gray-500">({message.timestamp})</span>
+                  {/* Sender avatar - only show at start of new block */}
+                  {isNewBlock ? (
+                    <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                      {message.senderAvatar ? (
+                        <img src={message.senderAvatar} alt={message.senderName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                          {message.senderName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-8 flex-shrink-0" /> /* spacer for alignment */
+                  )}
+                  <div className="flex-1 min-w-0">
+                    {isNewBlock && (
+                      <div className="flex items-baseline gap-2">
+                        <span className={cn(
+                          "font-bold text-xs whitespace-nowrap",
+                          message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-[#d4388c] dark:text-pink-400"
+                        )}>
+                          {message.senderName} säger:
+                        </span>
+                        <span className="text-[10px] text-gray-400">({message.timestamp})</span>
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-[13px]">
+                        {convertMsnEmoticons(message.content)}
+                      </p>
+                      {!isNewBlock && (
+                        <span className="text-[9px] text-gray-400 flex-shrink-0">({message.timestamp})</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <p className="ml-0 text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-sm font-medium">
-                  {convertMsnEmoticons(message.content)}
-                </p>
               </div>
             )}
           </div>
