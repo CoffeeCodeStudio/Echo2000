@@ -554,6 +554,7 @@ export type Database = {
           interests: string | null
           is_admin: boolean
           is_approved: boolean
+          is_bot: boolean
           last_seen: string | null
           likes: string | null
           listens_to: string | null
@@ -583,6 +584,7 @@ export type Database = {
           interests?: string | null
           is_admin?: boolean
           is_approved?: boolean
+          is_bot?: boolean
           last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
@@ -612,6 +614,7 @@ export type Database = {
           interests?: string | null
           is_admin?: boolean
           is_approved?: boolean
+          is_bot?: boolean
           last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
