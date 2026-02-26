@@ -39,7 +39,7 @@ export function HomeContent() {
 
         {/* All widgets inside the TV */}
         <section className="px-2 sm:px-3 pb-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 auto-rows-fr">
             <HomeSocialBox />
             <HomeRecentOnline />
             <NewsFeed />
