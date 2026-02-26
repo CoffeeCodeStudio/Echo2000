@@ -46,7 +46,7 @@ export function AvatarPicker({ selectedAvatarId, onSelect, className }: AvatarPi
     : avatarOptions.filter(a => a.category === activeCategory);
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border p-4 w-full max-w-md mx-auto", className)}>
+    <div className={cn("bg-card rounded-xl border border-border p-4 w-full max-w-lg mx-auto", className)}>
       <h3 className="font-display font-bold text-lg mb-3 text-primary">Välj avatar</h3>
       
       {/* Category tabs */}
@@ -68,7 +68,7 @@ export function AvatarPicker({ selectedAvatarId, onSelect, className }: AvatarPi
       </div>
 
       {/* Avatar grid */}
-      <div className="grid grid-cols-4 gap-3 sm:gap-4 px-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 px-1">
         {filteredAvatars.map((avatar) => (
           <button
             key={avatar.id}
