@@ -19,11 +19,11 @@ export function HomeVisionBox() {
         <VisionItem icon={<Gamepad2 className="w-4 h-4 text-primary" />} text="Spel & Tävlingar" />
         <VisionItem icon={<Palette className="w-4 h-4 text-accent" />} text="Konst & Kreativitet" />
         <VisionItem icon={<Heart className="w-4 h-4 text-destructive" />} text="Gemenskap & Vänskap" />
-        <div className="flex items-start gap-2 pt-2 mt-2 border-t border-border">
+        <div className="flex items-start gap-2 pt-2 mt-2 border-t border-border min-w-0">
           <div className="flex-shrink-0">
             <Bot className="w-8 h-8 text-primary" />
           </div>
-          <div className="relative bg-muted/60 border border-border rounded-lg px-3 py-1.5 text-xs text-muted-foreground">
+          <div className="relative bg-muted/60 border border-border rounded-lg px-3 py-1.5 text-xs text-muted-foreground min-w-0 break-words">
             <div className="absolute -left-1.5 top-2 w-0 h-0 border-t-[5px] border-t-transparent border-r-[6px] border-r-border border-b-[5px] border-b-transparent" />
             Vad väntar du på? Inget MSN-virus här inte!
           </div>

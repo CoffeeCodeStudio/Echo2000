@@ -6,9 +6,9 @@ import { usePresence } from "@/hooks/usePresence";
 
 const StatRow = forwardRef<HTMLDivElement, { icon: React.ReactNode; label: string; value: number }>(
   ({ icon, label, value }, ref) => (
-    <div ref={ref} className="flex items-center justify-between text-sm">
-      <span className="flex items-center gap-2 text-muted-foreground">{icon} {label}</span>
-      <span className="font-bold text-foreground">{value.toLocaleString("sv-SE")}</span>
+    <div ref={ref} className="flex items-center justify-between gap-3 text-sm">
+      <span className="flex items-center gap-2 text-muted-foreground shrink-0">{icon} {label}</span>
+      <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
     </div>
   )
 );
