@@ -197,7 +197,7 @@ export function MsnContactList({
                 {/* 32x32 avatar */}
                 <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600">
                   {contact.avatar ? (
-                    <img src={contact.avatar} alt={contact.name} className="w-full h-full object-cover" />
+                    <img src={contact.avatar} alt={contact.name} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
                       {contact.name.charAt(0).toUpperCase()}
@@ -260,7 +260,7 @@ export function MsnContactList({
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-sm overflow-hidden border border-white/30 flex-shrink-0">
             {userAvatar ? (
-              <img src={userAvatar} alt={userDisplayName || "Du"} className="w-full h-full object-cover" />
+              <img src={userAvatar} alt={userDisplayName || "Du"} loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-300/50 to-blue-500/50 flex items-center justify-center text-white text-sm font-bold">
                 {(userDisplayName || "?").charAt(0).toUpperCase()}

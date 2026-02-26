@@ -25,7 +25,7 @@ export function ProfileAvatar({ displayData, editData, setEditData, isEditing }:
           <button onClick={() => {}} className="relative group">
             <div className="w-32 h-40 bg-muted rounded-lg overflow-hidden border-2 border-border group-hover:border-primary/50 transition-all">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                <img src={avatarUrl} alt={username} loading="lazy" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
                   INGET FOTO
@@ -39,7 +39,7 @@ export function ProfileAvatar({ displayData, editData, setEditData, isEditing }:
         ) : (
           <div className="w-32 h-40 bg-muted rounded-lg overflow-hidden border-2 border-border">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt={username} loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
                 INGET FOTO
