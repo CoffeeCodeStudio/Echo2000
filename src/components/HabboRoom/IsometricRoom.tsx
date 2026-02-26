@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Furniture, Position } from './types';
 import { PixelFurniture } from './PixelFurniture';
 

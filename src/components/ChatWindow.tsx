@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { 
   Smile, Image, Gift, 
-  Mic, Video, Bell, Volume2, VolumeX, X, Minimize2, Maximize2,
+  Mic, Video, Bell, Volume2, VolumeX, X,
   Users, Gamepad2, Phone, MoreVertical, ArrowLeft, Loader2, Trash2, AlertTriangle
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AvatarAction } from './types';
 
 interface PixelAvatarProps {
