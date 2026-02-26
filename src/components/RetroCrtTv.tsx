@@ -12,6 +12,11 @@ const MESSAGES = [
   "Välkommen till Echo 2000",
   "En algoritm-fri zon",
   "Där nostalgin hittar hem",
+  "Inga likes, bara vibes",
+  "MSN-ljud aktiverade",
+  "Logga in, häng med oss",
+  "Retro är det nya svarta",
+  "A/S/L?",
 ];
 
 const TYPING_SPEED = 70;
