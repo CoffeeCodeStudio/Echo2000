@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Calendar, Star, Edit2, Save, X, Crown, Loader2 } from "lucide-react";
+import { MapPin, Calendar, Edit2, Save, X, Crown, Loader2 } from "lucide-react";
 import { FriendActionButtons } from "./FriendActionButtons";
 import { Avatar } from "./Avatar";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";

@@ -21,9 +21,3 @@ export interface Furniture {
   label: string;
 }
 
-export interface RoomState {
-  isOpen: boolean;
-  currentAction: AvatarAction;
-  messages: ChatMessage[];
-  avatarPosition: Position;
-}
