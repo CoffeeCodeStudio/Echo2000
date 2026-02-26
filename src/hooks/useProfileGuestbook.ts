@@ -241,7 +241,30 @@ export function useProfileGuestbook(profileOwnerId: string | undefined) {
 
   useEffect(() => {
     fetchEntries();
-  }, [fetchEntries]);
+
+    if (!profileOwnerId) return;
+
+    // Subscribe to realtime changes for this profile's guestbook
+    const channel = supabase
+      .channel(`guestbook:${profileOwnerId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profile_guestbook',
+          filter: `profile_owner_id=eq.${profileOwnerId}`,
+        },
+        () => {
+          fetchEntries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchEntries, profileOwnerId]);
 
   return {
     entries,
