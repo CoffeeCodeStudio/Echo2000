@@ -1,20 +1,30 @@
 /**
  * @module HomeContent
  * Main home page layout – thin render shell.
- * All widget boxes live in src/components/home/.
+ * Shows HeroLanding for guests, full dashboard for logged-in users.
  */
 import "./retro-crt.css";
+import "./home/hero-landing.css";
+import { useAuth } from "@/hooks/useAuth";
+import { HeroLanding } from "./home/HeroLanding";
 import { NewsFeed } from "./social/NewsFeed";
 import { HomeStatsBox } from "./home/HomeStatsBox";
 import { HomeVisionBox } from "./home/HomeVisionBox";
 import { HomeSocialBox } from "./home/HomeSocialBox";
 import { HomeRecentOnline } from "./home/HomeRecentOnline";
 import { HomeLajvBox } from "./home/HomeLajvBox";
-import { HomeAuthBox } from "./home/HomeAuthBox";
 import { HomeDjBox } from "./home/HomeDjBox";
 import { CrtBackground } from "./CrtBackground";
 
 export function HomeContent() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+
+  /* ── Guest view: clean hero ── */
+  if (!user) return <HeroLanding />;
+
+  /* ── Logged-in view: full dashboard ── */
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       <CrtBackground>
@@ -45,7 +55,6 @@ export function HomeContent() {
             <NewsFeed />
             <HomeLajvBox />
             <div className="flex flex-col gap-2">
-              <HomeAuthBox />
               <HomeDjBox />
             </div>
           </div>
