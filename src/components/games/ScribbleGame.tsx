@@ -8,6 +8,8 @@ import { ArrowLeft, Send, Eraser, Paintbrush, Users, Trophy, Timer, SkipForward,
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInkParticles, hapticFeedback } from "./InkParticles";
+import { DailyChallenge, GameOverVibes } from "./DailyChallenge";
 
 interface DrawPoint {
   x: number;
@@ -56,6 +58,10 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const lockRef = useRef(false);
   const isMobile = useIsMobile();
   const [mobileTab, setMobileTab] = useState<"canvas" | "chat">("canvas");
+  const [hasVibedWinner, setHasVibedWinner] = useState(false);
+
+  // Ink particle system
+  const { onDrawMove, resetLastPos } = useInkParticles(containerRef);
 
   const isDrawer = lobby?.current_drawer_id === user?.id;
   const isCreator = lobby?.creator_id === user?.id;
@@ -185,7 +191,8 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const draw = (e: React.PointerEvent) => {
     if (!isDrawing || !isDrawer) return;
     const pos = getPos(e);
-    const point: DrawPoint = { ...pos, color: isEraser ? "#ffffff" : color, size: brushSize };
+    const drawColor = isEraser ? "#ffffff" : color;
+    const point: DrawPoint = { ...pos, color: drawColor, size: brushSize };
     const newAction = [...currentAction, point];
     setCurrentAction(newAction);
     const canvas = canvasRef.current;
@@ -201,11 +208,17 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
     ctx.moveTo(prev.x, prev.y);
     ctx.lineTo(point.x, point.y);
     ctx.stroke();
+
+    // Ink splatter particles on fast strokes
+    if (!isEraser) {
+      onDrawMove(pos.x, pos.y, drawColor, brushSize);
+    }
   };
 
   const stopDrawing = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
+    resetLastPos();
     if (currentAction.length > 1) {
       broadcastChannel.current?.send({
         type: 'broadcast',
@@ -361,23 +374,46 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
       )}
 
       {/* Game finished */}
-      {lobby?.status === "finished" && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="nostalgia-card p-8 text-center space-y-4 max-w-md">
-            <Trophy className="w-16 h-16 mx-auto text-primary" />
-            <h2 className="font-display font-bold text-2xl">Spelet är slut!</h2>
-            <div className="space-y-2">
-              {players.sort((a, b) => b.score - a.score).map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span>{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`} {p.username}</span>
-                  <span className="font-mono font-bold text-primary">{p.score}p</span>
-                </div>
-              ))}
+      {lobby?.status === "finished" && (() => {
+        const sorted = [...players].sort((a, b) => b.score - a.score);
+        const winner = sorted[0];
+        return (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="glass-card p-8 text-center space-y-4 max-w-md">
+              <Trophy className="w-16 h-16 mx-auto text-primary" />
+              <h2 className="font-display font-bold text-2xl">Spelet är slut!</h2>
+              <div className="space-y-2">
+                {sorted.map((p, i) => (
+                  <div key={p.id} className="flex items-center justify-between text-sm">
+                    <span>{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`} {p.username}</span>
+                    <span className="font-mono font-bold text-primary">{p.score}p</span>
+                  </div>
+                ))}
+              </div>
+              {winner && winner.user_id !== user?.id && (
+                <GameOverVibes
+                  winnerId={winner.user_id}
+                  winnerName={winner.username}
+                  hasVibed={hasVibedWinner}
+                  onGiveVibe={async () => {
+                    try {
+                      await supabase.rpc("give_good_vibe", {
+                        p_target_id: winner.user_id,
+                        p_target_type: "user",
+                      });
+                      setHasVibedWinner(true);
+                      toast({ title: "✨ Good Vibe skickad!" });
+                    } catch {
+                      toast({ title: "Kunde inte skicka vibe", variant: "destructive" });
+                    }
+                  }}
+                />
+              )}
+              <Button onClick={handleLeave} className="font-display pressable">Tillbaka till lobbys</Button>
             </div>
-            <Button onClick={handleLeave} className="font-display">Tillbaka till lobbys</Button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {lobby?.status !== "finished" && (
         <div className={`flex-1 flex overflow-hidden ${isMobile ? "flex-col" : "flex-row"}`}>
@@ -412,9 +448,10 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
                   {COLORS.map((c) => (
                     <button
                       key={c}
-                      onClick={() => { setColor(c); setIsEraser(false); }}
-                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform shrink-0 ${color === c && !isEraser ? "border-foreground scale-125" : "border-border"}`}
+                      onClick={() => { setColor(c); setIsEraser(false); hapticFeedback(); }}
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform shrink-0 pressable ${color === c && !isEraser ? "border-foreground scale-125" : "border-border"}`}
                       style={{ backgroundColor: c }}
+                      aria-label={`Färg ${c}`}
                     />
                   ))}
                 </div>
@@ -459,11 +496,12 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
 
             {lobby?.status === "waiting" && (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center space-y-4 max-w-sm mx-auto px-4">
                   <Paintbrush className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="text-muted-foreground mb-4">Väntar på att spelet ska starta...</p>
+                  <p className="text-muted-foreground">Väntar på att spelet ska starta...</p>
+                  <DailyChallenge />
                   {isCreator && (
-                    <Button onClick={handleStartRound} className="font-display">
+                    <Button onClick={handleStartRound} className="font-display pressable">
                       Starta runda!
                     </Button>
                   )}
