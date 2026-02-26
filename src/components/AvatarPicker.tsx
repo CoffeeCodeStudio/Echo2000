@@ -68,25 +68,30 @@ export function AvatarPicker({ selectedAvatarId, onSelect, className }: AvatarPi
       </div>
 
       {/* Avatar grid */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-3 px-1">
+      <div className="grid grid-cols-4 gap-3 sm:gap-4 px-1">
         {filteredAvatars.map((avatar) => (
           <button
             key={avatar.id}
             onClick={() => onSelect?.(avatar)}
             className={cn(
-              "relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105",
+              "relative flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 bg-muted/50",
               selectedAvatarId === avatar.id
-                ? "border-primary ring-2 ring-primary/30"
+                ? "border-primary ring-2 ring-primary/30 bg-primary/10"
                 : "border-border hover:border-primary/50"
             )}
           >
-            <img
-              src={avatar.src}
-              alt={avatar.name}
-              className="w-full h-full object-cover"
-            />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-background border border-border/50">
+              <img
+                src={avatar.src}
+                alt={avatar.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate w-full text-center">
+              {avatar.name}
+            </span>
             {selectedAvatarId === avatar.id && (
-              <div className="absolute bottom-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+              <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                 <Check className="w-3 h-3 text-primary-foreground" />
               </div>
             )}
@@ -97,7 +102,7 @@ export function AvatarPicker({ selectedAvatarId, onSelect, className }: AvatarPi
       {/* Selected info */}
       {selectedAvatarId && (
         <div className="mt-3 text-center text-sm text-muted-foreground">
-          Vald: <span className="text-foreground font-medium">
+          Vald: <span className="text-primary font-bold">
             {avatarOptions.find(a => a.id === selectedAvatarId)?.name}
           </span>
         </div>
