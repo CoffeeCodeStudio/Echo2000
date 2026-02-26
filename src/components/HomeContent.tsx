@@ -30,16 +30,16 @@ export function HomeContent() {
         </section>
 
         {/* Stats + Vision */}
-        <section className="px-4 pb-2">
-          <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+        <section className="px-3 pb-2">
+          <div className="grid grid-cols-2 gap-2">
             <HomeStatsBox />
             <HomeVisionBox />
           </div>
         </section>
 
         {/* All widgets inside the TV */}
-        <section className="px-4 pb-3">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-2 max-w-5xl mx-auto">
+        <section className="px-3 pb-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
             <HomeSocialBox />
             <HomeRecentOnline />
             <NewsFeed />
