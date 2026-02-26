@@ -164,14 +164,14 @@ function RecentOnlineBox() {
         {members.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
         ) : (
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {members.map((m) => {
               const status = getUserStatus(m.user_id);
               return (
                 <button
                   key={m.user_id}
                   onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-                  className="flex flex-col items-center gap-1 p-1 rounded hover:bg-muted/50 transition-colors"
+                  className="flex flex-col items-center gap-1 p-1 rounded hover:bg-muted/50 transition-colors min-h-[44px]"
                 >
                   <div className="relative">
                     <Avatar name={m.username} src={m.avatar_url} size="sm" />
@@ -261,11 +261,11 @@ export function HomeContent() {
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
       {/* H1 Hero – kept as-is */}
       <section className="py-6 md:py-10 text-center px-4">
-        <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl leading-tight text-glow mb-3">
+        <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-5xl leading-tight text-glow mb-3">
           <span className="text-primary">Echo</span>
           <span className="text-accent">2000</span>
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed">
           En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead, återuppbyggd med modern design och funktioner.
         </p>
       </section>

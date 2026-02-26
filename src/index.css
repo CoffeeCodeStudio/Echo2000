@@ -148,6 +148,14 @@ html, body {
     background-position: center;
     background-attachment: fixed;
     background-blend-mode: soft-light;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix background-attachment: fixed on iOS */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      background-attachment: scroll;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {

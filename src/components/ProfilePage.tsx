@@ -350,17 +350,17 @@ export function ProfilePage({ userId }: ProfilePageProps) {
       {/* LunarStorm-style Profile Header Bar */}
       <div className="bg-gradient-to-r from-primary via-primary/90 to-accent text-primary-foreground">
         <div className="container px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg uppercase">{displayData.username}</span>
-              <span className="text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="font-display font-bold text-base sm:text-lg uppercase truncate">{displayData.username}</span>
+              <span className="text-xs sm:text-sm whitespace-nowrap">
                 {displayData.gender && `- ${displayData.gender}`}
                 {displayData.age && `, ${displayData.age} ÅR`}
                 {displayData.city && `, ${displayData.city.toUpperCase()}`}
               </span>
             </div>
             {isOwnProfile && !showDemoMode && (
-              <div>
+              <div className="shrink-0">
                 {isEditing ? (
                   <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={handleSave} disabled={saving}>
@@ -380,7 +380,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
               </div>
             )}
             {showDemoMode && (
-              <Button size="sm" variant="secondary" onClick={() => navigate("/auth")}>
+              <Button size="sm" variant="secondary" onClick={() => navigate("/auth")} className="shrink-0">
                 Logga in för att skapa profil
               </Button>
             )}
@@ -391,13 +391,13 @@ export function ProfilePage({ userId }: ProfilePageProps) {
       {/* Profile Sub-navigation Tabs */}
       <div className="bg-card border-b border-border">
         <div className="container px-4">
-          <nav className="flex items-center gap-0.5 py-1 overflow-x-auto">
+          <nav className="flex items-center gap-0.5 py-1 overflow-x-auto scrollbar-hide -mx-4 px-4">
             {profileTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded transition-all whitespace-nowrap",
+                  "px-3 py-2 text-xs font-bold uppercase tracking-wide rounded transition-all whitespace-nowrap min-h-[40px]",
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -541,7 +541,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                   </div>
 
                   {/* LunarStorm-style Fields Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <ProfileField
                       label="Personlighet:"
                       value={displayData.personality}
