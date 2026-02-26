@@ -97,11 +97,20 @@
   letter-spacing: .5px;
   color: var(--crt-cyan);
   text-shadow:
-    0 0 6px rgba(0, 191, 223, .7),
-    0 0 14px rgba(0, 191, 223, .3);
+    0 0 4px rgba(0, 191, 223, .9),
+    0 0 11px rgba(0, 191, 223, .6),
+    0 0 22px rgba(0, 191, 223, .35),
+    0 0 44px rgba(0, 191, 223, .15),
+    0 0 1px rgba(255, 255, 255, .4);
   padding: 0 12px;
   text-align: center;
   line-height: 1.4;
+  animation: crt-phosphor-pulse 3s ease-in-out infinite;
+}
+
+@keyframes crt-phosphor-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.15); }
 }
 
 /* Blinking cursor */
