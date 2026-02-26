@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { replaceEmoteCodes } from './PixelEmotes';
+import { replaceEmoteCodes } from './social/PixelEmotes';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

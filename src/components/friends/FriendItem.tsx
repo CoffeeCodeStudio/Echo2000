@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Avatar } from "./Avatar";
-import type { UserStatus } from "./StatusIndicator";
+import { Avatar } from "../Avatar";
+import type { UserStatus } from "../StatusIndicator";
 import { useNavigate } from "react-router-dom";
 
 interface FriendItemProps {

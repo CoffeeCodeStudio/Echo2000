@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Users, UserPlus, X, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Avatar } from "./Avatar";
-import { StatusIndicator } from "./StatusIndicator";
+import { Button } from "../ui/button";
+import { Avatar } from "../Avatar";
+import { StatusIndicator } from "../StatusIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 

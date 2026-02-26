@@ -5,10 +5,10 @@ import {
   Mic, Video, Bell, Volume2, VolumeX, X,
   Users, Gamepad2, Phone, MoreVertical, ArrowLeft, Loader2, Trash2, AlertTriangle
 } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
-import { Avatar } from "./Avatar";
-import { StatusIndicator, type UserStatus } from "./StatusIndicator";
-import { Button } from "./ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { Avatar } from "../Avatar";
+import { StatusIndicator, type UserStatus } from "../StatusIndicator";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
 import { MsnLogin } from "./MsnLogin";
@@ -21,11 +21,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { supabase } from "@/integrations/supabase/client";
 import { useWebRTC } from "@/hooks/useWebRTC";
-import { CallWindow } from "./CallWindow";
-import { IncomingCallDialog } from "./IncomingCallDialog";
-import { InviteToCallDialog } from "./InviteToCallDialog";
-import { VideoCallMenu } from "./VideoCallMenu";
-import type { LayoutContext } from "./SharedLayout";
+import { CallWindow } from "../calls/CallWindow";
+import { IncomingCallDialog } from "../calls/IncomingCallDialog";
+import { InviteToCallDialog } from "../calls/InviteToCallDialog";
+import { VideoCallMenu } from "../calls/VideoCallMenu";
+import type { LayoutContext } from "../SharedLayout";
 
 interface ChatWindowProps {
   className?: string;

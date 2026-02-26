@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, MessageCircle, Loader2, Info, Trash2, AlertTriangle } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
-import { Avatar } from "./Avatar";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { Avatar } from "../Avatar";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 import { GoodVibe } from "./GoodVibe";
 import { EmotePicker, replaceEmoteCodes } from "./PixelEmotes";
-import { ClickableUsername } from "./ClickableUsername";
+import { ClickableUsername } from "../ClickableUsername";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";

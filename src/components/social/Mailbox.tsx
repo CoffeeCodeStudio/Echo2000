@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Mail, Send, Inbox, Star, Trash2, ArrowLeft, Reply, Info, Loader2, Users } from "lucide-react";
-import { Avatar } from "./Avatar";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { Avatar } from "../Avatar";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";

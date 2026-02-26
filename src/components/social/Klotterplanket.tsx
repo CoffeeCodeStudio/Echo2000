@@ -1,13 +1,13 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Eraser, Palette, Trash2, Download, Undo, Redo, Minus, Plus, Send, X, MessageSquare } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { Avatar } from "./Avatar";
+import { Avatar } from "../Avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKlotter } from "@/hooks/useKlotter";
 import { useAuth } from "@/hooks/useAuth";
-import type { LayoutContext } from "./SharedLayout";
+import type { LayoutContext } from "../SharedLayout";
 
 interface DrawPoint {
   x: number;

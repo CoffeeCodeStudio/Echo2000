@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Avatar } from "./Avatar";
-import { StatusIndicator, type UserStatus } from "./StatusIndicator";
+import { Avatar } from "../Avatar";
+import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
 import { ChevronDown, ChevronRight, Search, Loader2 } from "lucide-react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";

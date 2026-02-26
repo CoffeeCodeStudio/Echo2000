@@ -3,8 +3,8 @@ import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Monitor, Users,
   Maximize2, Minimize2
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Avatar } from "./Avatar";
+import { Button } from "../ui/button";
+import { Avatar } from "../Avatar";
 import { cn } from "@/lib/utils";
 import type { CallType } from "@/hooks/useWebRTC";
 
