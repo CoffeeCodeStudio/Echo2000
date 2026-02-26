@@ -1,10 +1,12 @@
 /**
  * @module RetroCrtTv
  * Renders an animated retro CRT television with a typing text effect,
- * scanlines, and glitch animations. Used on the home page to add visual
- * flair for visitors.
+ * scanlines, and glitch animations. Clickable for unauthenticated visitors,
+ * navigating them to the registration page.
  */
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const MESSAGES = [
   "Välkommen till Echo 2000",
@@ -17,6 +19,8 @@ const PAUSE_AFTER = 2200;
 const ERASE_SPEED = 30;
 
 export function RetroCrtTv() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [text, setText] = useState("");
   const [msgIdx, setMsgIdx] = useState(0);
   const [phase, setPhase] = useState<"typing" | "pause" | "erasing">("typing");
@@ -56,8 +60,19 @@ export function RetroCrtTv() {
     }
   }, [phase, text, msgIdx]);
 
+  const handleClick = () => {
+    if (!user) navigate("/auth");
+  };
+
   return (
-    <div className="retro-crt-tv mx-auto" aria-label="Retro CRT TV">
+    <div
+      className={`retro-crt-tv mx-auto${!user ? " cursor-pointer" : ""}`}
+      aria-label="Retro CRT TV"
+      onClick={handleClick}
+      role={!user ? "link" : undefined}
+      tabIndex={!user ? 0 : undefined}
+      onKeyDown={!user ? (e) => { if (e.key === "Enter") handleClick(); } : undefined}
+    >
       {/* Outer shell */}
       <div className="crt-body">
         {/* Screen bezel */}
