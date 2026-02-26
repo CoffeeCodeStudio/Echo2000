@@ -1,8 +1,9 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Globe } from "lucide-react";
+import { BentoCard } from "./BentoCard";
 
 function SocialLink({ label }: { label: string }) {
   return (
-    <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded border border-border hover:border-primary/40">
+    <button className="pressable flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full border border-[hsl(var(--glass-border))] hover:border-primary/40 bg-muted/20">
       <ExternalLink className="w-3 h-3" />
       {label}
     </button>
@@ -11,15 +12,12 @@ function SocialLink({ label }: { label: string }) {
 
 export function HomeSocialBox() {
   return (
-    <div className="border border-border rounded-lg overflow-hidden h-full flex flex-col">
-      <div className="bg-primary/20 border-b border-primary/30 px-3 py-1.5">
-        <h3 className="font-display font-bold text-sm text-primary">🌐 Sociala Medier</h3>
-      </div>
-      <div className="p-3 bg-card flex flex-wrap gap-2 flex-1">
+    <BentoCard title="Sociala Medier" icon={<Globe className="w-4 h-4" />}>
+      <div className="flex flex-wrap gap-2">
         <SocialLink label="Discord" />
         <SocialLink label="Instagram" />
         <SocialLink label="TikTok" />
       </div>
-    </div>
+    </BentoCard>
   );
 }

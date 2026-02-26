@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Newspaper, ChevronRight } from "lucide-react";
-import "@/components/retro-crt.css";
+import { BentoCard } from "../home/BentoCard";
 
 interface NewsArticle {
   id: string;
@@ -27,7 +27,7 @@ export function NewsFeed() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchArticles = async () => {
       const { data } = await supabase
         .from("news_articles")
         .select("id, title, content, image_url, icon, author_name, created_at")
@@ -36,20 +36,19 @@ export function NewsFeed() {
         .limit(2);
       if (data) setArticles(data as NewsArticle[]);
     };
-    fetch();
+    fetchArticles();
   }, []);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden h-full flex flex-col">
-      <div className="bg-primary/20 border-b border-primary/30 px-3 py-1.5">
-        <h3 className="font-display font-bold text-sm text-primary flex items-center gap-1">
-          <Newspaper className="w-4 h-4" /> Senaste Nytt
-        </h3>
+    <div className="glass-card flex flex-col h-full">
+      <div className="relative z-10 flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--glass-border))]">
+        <Newspaper className="w-4 h-4 text-primary" />
+        <h3 className="font-display font-bold text-sm text-foreground tracking-wide">Senaste Nytt</h3>
       </div>
-      <div className="bg-card divide-y divide-border flex-1">
+      <div className="relative z-10 divide-y divide-[hsl(var(--glass-border))] flex-1">
         {articles.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-6 text-muted-foreground">
-            <Newspaper className="w-8 h-8 mb-2 opacity-40" />
+            <Newspaper className="w-8 h-8 mb-2 opacity-30" />
             <span className="text-xs">Inga nyheter ännu</span>
           </div>
         ) : (
@@ -57,17 +56,17 @@ export function NewsFeed() {
             <Link
               to={`/news/${article.id}`}
               key={article.id}
-              className="p-3 flex gap-3 hover:bg-muted/30 transition-colors cursor-pointer block group"
+              className="pressable p-3.5 flex gap-3 hover:bg-muted/20 transition-colors cursor-pointer block group"
             >
               {article.image_url ? (
                 <img
                   src={article.image_url}
                   alt=""
                   loading="lazy"
-                  className="w-10 h-10 rounded object-cover flex-shrink-0 border border-border"
+                  className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-[hsl(var(--glass-border))]"
                 />
               ) : (
-                <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xl">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-xl">
                   {article.icon}
                 </div>
               )}
@@ -75,7 +74,9 @@ export function NewsFeed() {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">{article.icon}</span>
                   <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">{article.title}</span>
-                  {isRecent(article.created_at) && <span className="retro-new-badge">NY!</span>}
+                  {isRecent(article.created_at) && (
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-primary/20 text-primary rounded-full">NY!</span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{article.content}</p>
                 <div className="flex items-center justify-between mt-1">
@@ -93,7 +94,7 @@ export function NewsFeed() {
       </div>
       <Link
         to="/news"
-        className="flex items-center justify-center gap-1 py-2 text-xs font-bold text-primary hover:bg-primary/10 transition-colors border-t border-border"
+        className="pressable relative z-10 flex items-center justify-center gap-1 py-2.5 text-xs font-bold text-primary hover:bg-primary/10 transition-colors border-t border-[hsl(var(--glass-border))]"
       >
         Visa alla nyheter <ChevronRight className="w-3 h-3" />
       </Link>

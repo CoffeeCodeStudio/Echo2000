@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { Avatar } from "../Avatar";
 import { StatusIndicator } from "../StatusIndicator";
+import { Users } from "lucide-react";
+import { BentoCard } from "./BentoCard";
 
 export function HomeRecentOnline() {
   const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
@@ -38,36 +40,31 @@ export function HomeRecentOnline() {
   }, [user]);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden h-full flex flex-col">
-      <div className="bg-primary/20 border-b border-primary/30 px-3 py-1.5">
-        <h3 className="font-display font-bold text-sm text-primary">👥 Senaste Inloggade</h3>
-      </div>
-      <div className="p-3 bg-card flex-1">
-        {members.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
-        ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            {members.map((m) => {
-              const status = getUserStatus(m.user_id);
-              return (
-                <button
-                  key={m.user_id}
-                  onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-                  className="flex flex-col items-center gap-1 p-1 rounded hover:bg-muted/50 transition-colors min-h-[44px]"
-                >
-                  <div className="relative">
-                    <Avatar name={m.username} src={m.avatar_url} size="sm" />
-                    <div className="absolute -bottom-0.5 -right-0.5">
-                      <StatusIndicator status={status} size="sm" />
-                    </div>
+    <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />}>
+      {members.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
+      ) : (
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          {members.map((m) => {
+            const status = getUserStatus(m.user_id);
+            return (
+              <button
+                key={m.user_id}
+                onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
+                className="pressable flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-muted/30 transition-colors min-h-[44px]"
+              >
+                <div className="relative">
+                  <Avatar name={m.username} src={m.avatar_url} size="sm" />
+                  <div className="absolute -bottom-0.5 -right-0.5">
+                    <StatusIndicator status={status} size="sm" />
                   </div>
-                  <span className="text-[10px] truncate w-full text-center text-muted-foreground">{m.username}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+                </div>
+                <span className="text-[10px] truncate w-full text-center text-muted-foreground">{m.username}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </BentoCard>
   );
 }
