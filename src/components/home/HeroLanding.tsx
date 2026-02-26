@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
+import { Snowfall } from "./Snowfall";
 
 /* ── types ── */
 interface MemberAvatar {
@@ -123,6 +124,9 @@ export function HeroLanding() {
           background: "radial-gradient(ellipse at 50% 30%, hsl(265 35% 15% / 0.5) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(28 100% 56% / 0.06) 0%, transparent 50%)",
         }}
       >
+        {/* Snowfall layers */}
+        <Snowfall />
+
         {/* Kinetic headline */}
         <h1 className="font-display font-bold text-center max-w-4xl">
           <span
