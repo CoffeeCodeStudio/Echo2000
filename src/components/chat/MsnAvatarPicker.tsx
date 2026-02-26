@@ -1,52 +1,62 @@
 /**
  * @module MsnAvatarPicker
  * Classic MSN "Change Display Picture" dialog with grid + preview panel.
+ * Uses real cartoon-style avatar images instead of emoji placeholders.
  */
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import { Button } from "../ui/button";
 
-// Classic MSN default avatar presets (emoji-based placeholders)
+// Import avatar images
+import msnDuckImg from "@/assets/avatars/msn-duck.png";
+import msnCatImg from "@/assets/avatars/msn-cat.png";
+import msnDogImg from "@/assets/avatars/msn-dog.png";
+import msnFrogImg from "@/assets/avatars/msn-frog.png";
+import msnOwlImg from "@/assets/avatars/msn-owl.png";
+import msnPandaImg from "@/assets/avatars/msn-panda.png";
+import msnPenguinImg from "@/assets/avatars/msn-penguin.png";
+import msnMonkeyImg from "@/assets/avatars/msn-monkey.png";
+import msnBearImg from "@/assets/avatars/msn-bear.png";
+import msnRabbitImg from "@/assets/avatars/msn-rabbit.png";
+import msnFoxImg from "@/assets/avatars/msn-fox.png";
+import msnLionImg from "@/assets/avatars/msn-lion.png";
+import msnGuitarImg from "@/assets/avatars/msn-guitar.png";
+import msnSoccerImg from "@/assets/avatars/msn-soccer.png";
+import msnHeartImg from "@/assets/avatars/msn-heart.png";
+import msnStarImg from "@/assets/avatars/msn-star.png";
+import msnFlowerImg from "@/assets/avatars/msn-flower.png";
+import msnUnicornImg from "@/assets/avatars/msn-unicorn.png";
+import msnGhostImg from "@/assets/avatars/msn-ghost.png";
+import msnRobotImg from "@/assets/avatars/msn-robot2.png";
+
 const msnAvatarPresets = [
-  { id: "msn-duck", label: "Anka", emoji: "🦆" },
-  { id: "msn-cat", label: "Katt", emoji: "🐱" },
-  { id: "msn-dog", label: "Hund", emoji: "🐶" },
-  { id: "msn-frog", label: "Groda", emoji: "🐸" },
-  { id: "msn-owl", label: "Uggla", emoji: "🦉" },
-  { id: "msn-panda", label: "Panda", emoji: "🐼" },
-  { id: "msn-penguin", label: "Pingvin", emoji: "🐧" },
-  { id: "msn-monkey", label: "Apa", emoji: "🐵" },
-  { id: "msn-bear", label: "Björn", emoji: "🐻" },
-  { id: "msn-rabbit", label: "Kanin", emoji: "🐰" },
-  { id: "msn-fox", label: "Räv", emoji: "🦊" },
-  { id: "msn-lion", label: "Lejon", emoji: "🦁" },
-  { id: "msn-guitar", label: "Gitarr", emoji: "🎸" },
-  { id: "msn-soccer", label: "Fotboll", emoji: "⚽" },
-  { id: "msn-heart", label: "Hjärta", emoji: "❤️" },
-  { id: "msn-star", label: "Stjärna", emoji: "⭐" },
-  { id: "msn-flower", label: "Blomma", emoji: "🌸" },
-  { id: "msn-sun", label: "Sol", emoji: "☀️" },
-  { id: "msn-moon", label: "Måne", emoji: "🌙" },
-  { id: "msn-rainbow", label: "Regnbåge", emoji: "🌈" },
-  { id: "msn-coffee", label: "Kaffe", emoji: "☕" },
-  { id: "msn-pizza", label: "Pizza", emoji: "🍕" },
-  { id: "msn-game", label: "Spel", emoji: "🎮" },
-  { id: "msn-music", label: "Musik", emoji: "🎵" },
-  { id: "msn-camera", label: "Kamera", emoji: "📷" },
-  { id: "msn-crown", label: "Krona", emoji: "👑" },
-  { id: "msn-rocket", label: "Raket", emoji: "🚀" },
-  { id: "msn-butterfly", label: "Fjäril", emoji: "🦋" },
-  { id: "msn-ghost", label: "Spöke", emoji: "👻" },
-  { id: "msn-alien", label: "Alien", emoji: "👽" },
-  { id: "msn-robot", label: "Robot", emoji: "🤖" },
-  { id: "msn-unicorn", label: "Enhörning", emoji: "🦄" },
+  { id: "msn-duck", label: "Anka", src: msnDuckImg },
+  { id: "msn-cat", label: "Katt", src: msnCatImg },
+  { id: "msn-dog", label: "Hund", src: msnDogImg },
+  { id: "msn-frog", label: "Groda", src: msnFrogImg },
+  { id: "msn-owl", label: "Uggla", src: msnOwlImg },
+  { id: "msn-panda", label: "Panda", src: msnPandaImg },
+  { id: "msn-penguin", label: "Pingvin", src: msnPenguinImg },
+  { id: "msn-monkey", label: "Apa", src: msnMonkeyImg },
+  { id: "msn-bear", label: "Björn", src: msnBearImg },
+  { id: "msn-rabbit", label: "Kanin", src: msnRabbitImg },
+  { id: "msn-fox", label: "Räv", src: msnFoxImg },
+  { id: "msn-lion", label: "Lejon", src: msnLionImg },
+  { id: "msn-guitar", label: "Gitarr", src: msnGuitarImg },
+  { id: "msn-soccer", label: "Fotboll", src: msnSoccerImg },
+  { id: "msn-heart", label: "Hjärta", src: msnHeartImg },
+  { id: "msn-star", label: "Stjärna", src: msnStarImg },
+  { id: "msn-flower", label: "Blomma", src: msnFlowerImg },
+  { id: "msn-unicorn", label: "Enhörning", src: msnUnicornImg },
+  { id: "msn-ghost", label: "Spöke", src: msnGhostImg },
+  { id: "msn-robot", label: "Robot", src: msnRobotImg },
 ];
 
 interface MsnAvatarPickerProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (avatarId: string, emoji: string) => void;
+  onSelect: (avatarId: string, avatarSrc: string) => void;
   currentAvatarId?: string;
 }
 
@@ -76,20 +86,25 @@ export function MsnAvatarPicker({ open, onClose, onSelect, currentAvatarId }: Ms
           <div className="flex gap-3">
             {/* Avatar Grid */}
             <div className="flex-1 bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 rounded-sm p-2 overflow-y-auto max-h-[280px]">
-              <div className="grid grid-cols-6 gap-1">
+              <div className="grid grid-cols-5 gap-1.5">
                 {msnAvatarPresets.map((preset) => (
                   <button
                     key={preset.id}
                     onClick={() => setSelected(preset.id)}
                     className={cn(
-                      "w-10 h-10 rounded-sm flex items-center justify-center text-xl border transition-all hover:scale-110",
+                      "w-12 h-12 rounded-sm overflow-hidden border-2 transition-all hover:scale-105",
                       selected === preset.id
-                        ? "border-[#316ac5] bg-[#316ac5]/20 ring-1 ring-[#316ac5]"
+                        ? "border-[#316ac5] ring-1 ring-[#316ac5] shadow-md"
                         : "border-gray-200 dark:border-gray-700 hover:border-gray-400"
                     )}
                     title={preset.label}
                   >
-                    {preset.emoji}
+                    <img
+                      src={preset.src}
+                      alt={preset.label}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </button>
                 ))}
               </div>
@@ -97,10 +112,14 @@ export function MsnAvatarPicker({ open, onClose, onSelect, currentAvatarId }: Ms
 
             {/* Preview Panel */}
             <div className="w-28 flex flex-col items-center gap-2">
-              <div className="w-24 h-24 bg-white dark:bg-gray-900 border-2 border-gray-400 dark:border-gray-600 rounded-sm flex items-center justify-center text-5xl">
-                {selectedPreset.emoji}
+              <div className="w-24 h-24 bg-white dark:bg-gray-900 border-2 border-gray-400 dark:border-gray-600 rounded-sm overflow-hidden">
+                <img
+                  src={selectedPreset.src}
+                  alt={selectedPreset.label}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <span className="text-[10px] text-gray-600 dark:text-gray-400 text-center">
+              <span className="text-[10px] text-gray-600 dark:text-gray-400 text-center font-medium">
                 {selectedPreset.label}
               </span>
             </div>
@@ -111,7 +130,7 @@ export function MsnAvatarPicker({ open, onClose, onSelect, currentAvatarId }: Ms
         <div className="px-3 py-2 bg-[#ece9d8] dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700 flex justify-end gap-2 rounded-b-sm">
           <Button
             onClick={() => {
-              onSelect(selectedPreset.id, selectedPreset.emoji);
+              onSelect(selectedPreset.id, selectedPreset.src);
               onClose();
             }}
             className="bg-gradient-to-b from-[#f5f5f5] to-[#dcdcdc] hover:from-[#e8e8e8] hover:to-[#d0d0d0] text-gray-900 text-[11px] border border-gray-400 px-4 h-7 shadow-sm"
