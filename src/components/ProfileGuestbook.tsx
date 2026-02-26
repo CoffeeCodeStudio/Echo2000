@@ -176,12 +176,12 @@ export function ProfileGuestbook({
       {entries.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-lg font-semibold text-muted-foreground mb-1">
-            📝 Gästboken är tom
+            📝 Här var det tomt!
           </p>
           <p className="text-sm text-muted-foreground">
             {isOwnProfile
-              ? 'Inga har skrivit i din gästbok ännu'
-              : 'Var först att skriva!'}
+              ? 'Skriv något vetja.'
+              : 'Var först att skriva något vetja!'}
           </p>
         </div>
       ) : (
