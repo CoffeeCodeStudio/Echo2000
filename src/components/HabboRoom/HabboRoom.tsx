@@ -3,7 +3,7 @@ import { IsometricRoom } from './IsometricRoom';
 import { PixelAvatar } from './PixelAvatar';
 import { ActionButtons } from './ActionButtons';
 import { ChatBubble } from './ChatBubble';
-import { ClosedSign } from './ClosedSign';
+
 import { VibeWallet } from './VibeWallet';
 import { use8BitSounds } from './use8BitSounds';
 import { AvatarAction, ChatMessage, Furniture, Position } from './types';
@@ -21,39 +21,8 @@ const roomFurniture: Furniture[] = [
   { id: 'bookshelf1', type: 'bookshelf', position: { x: 88, y: 30 }, canSit: false, label: 'Bokhylla' },
 ];
 
-// Room is always open now
-const isRoomOpen = (): boolean => {
-  return true;
-};
-
-const getNextOpenTime = (): string => {
-  const now = new Date();
-  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
-  
-  // If it's Sunday but before 18:00
-  if (now.getDay() === 0 && now.getHours() < 18) {
-    return 'Idag kl 18:00';
-  }
-  
-  // If it's Sunday after 23:00
-  if (now.getDay() === 0 && now.getHours() >= 23) {
-    return 'Nästa söndag kl 18:00';
-  }
-  
-  const nextSunday = new Date(now);
-  nextSunday.setDate(now.getDate() + daysUntilSunday);
-  
-  const options: Intl.DateTimeFormatOptions = { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long' 
-  };
-  
-  return nextSunday.toLocaleDateString('sv-SE', options) + ' kl 18:00';
-};
 
 export const HabboRoom: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(isRoomOpen());
   const [currentAction, setCurrentAction] = useState<AvatarAction>('idle');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -63,12 +32,6 @@ export const HabboRoom: React.FC = () => {
   
   const { playSitSound, playWaveSound, playDanceSound, playChatSound } = use8BitSounds();
 
-  // Check room status every minute
-  useEffect(() => {
-    const checkStatus = () => setIsOpen(isRoomOpen());
-    const interval = setInterval(checkStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleAction = useCallback((action: AvatarAction) => {
     setCurrentAction(action);
@@ -179,13 +142,9 @@ export const HabboRoom: React.FC = () => {
           </div>
         </IsometricRoom>
 
-        {/* Closed overlay */}
-        {!isOpen && <ClosedSign nextOpenTime={getNextOpenTime()} />}
       </div>
 
-      {/* Controls - only show when open */}
-      {isOpen && (
-        <div className="habbo-controls">
+      <div className="habbo-controls">
           <ActionButtons 
             currentAction={currentAction} 
             onAction={handleAction} 
@@ -210,8 +169,7 @@ export const HabboRoom: React.FC = () => {
           <p className="furniture-hint">
             Klicka på möbler för att interagera
           </p>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
