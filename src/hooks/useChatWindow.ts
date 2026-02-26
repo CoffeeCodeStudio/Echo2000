@@ -9,6 +9,7 @@ import { useOutletContext } from "react-router-dom";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ export interface DisplayMessage {
   timestamp: string;
   isSelf: boolean;
   senderName: string;
+  senderAvatar?: string;
   date: Date;
 }
 
@@ -41,6 +43,7 @@ export function useChatWindow() {
   const { playSound } = useMsnSounds();
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
 
   const {
@@ -105,6 +108,10 @@ export function useChatWindow() {
       msg.sender_id === user?.id
         ? userDisplayName || "Du"
         : selectedContact?.name || "",
+    senderAvatar:
+      msg.sender_id === user?.id
+        ? profile?.avatar_url || undefined
+        : selectedContact?.avatar || undefined,
     date: new Date(msg.created_at),
   }));
 
@@ -116,6 +123,8 @@ export function useChatWindow() {
     setUserDisplayName(displayName);
     setUserStatus(status as UserStatus);
     setIsLoggedIn(true);
+    // Play sign-in sound
+    if (soundEnabled) playSound("online");
   };
 
   const handleSelectContact = (contact: MsnContact) => {

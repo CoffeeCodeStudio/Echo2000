@@ -51,6 +51,8 @@ export function ChatWindow({ className }: ChatWindowProps) {
               onSelectContact={chat.handleSelectContact}
               selectedContactId={chat.selectedContact?.id}
               soundEnabled={chat.soundEnabled}
+              userDisplayName={chat.userDisplayName}
+              userStatus={chat.userStatus}
             />
           </div>
         )}
@@ -103,6 +105,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   onSend={chat.handleSend}
                   onFocus={() => chat.setInputFocused(true)}
                   onBlur={() => chat.setInputFocused(false)}
+                  onNudge={chat.nudge}
                 />
               </>
             ) : (
