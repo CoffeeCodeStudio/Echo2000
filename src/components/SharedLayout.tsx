@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
+import { RetroSidebar } from "@/components/RetroSidebar";
 import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
 
@@ -54,12 +55,18 @@ export function SharedLayout() {
         onTabChange={(tab) => handleTabChange(tab as Tab)} 
       />
 
-      {/* Main content outlet */}
-      <main className="flex-1 flex overflow-hidden pb-24 md:pb-0">
-        <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
-      </main>
+      {/* Main content area with sidebar on desktop */}
+      <div className="flex-1 flex overflow-hidden pb-[120px] lg:pb-0">
+        {/* Retro sidebar - desktop only */}
+        <RetroSidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Mobile bottom navigation - hidden when input is focused */}
+        {/* Main content outlet */}
+        <main className="flex-1 flex overflow-hidden">
+          <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
+        </main>
+      </div>
+
+      {/* Mobile bottom navigation */}
       {!hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} />}
     </div>
   );

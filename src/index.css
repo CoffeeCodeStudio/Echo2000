@@ -668,13 +668,14 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 10px;
-    border-radius: 10px;
+    gap: 2px;
+    padding: 4px 6px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     position: relative;
-    min-width: 60px;
+    min-width: 48px;
     color: white;
+    font-size: 12px;
   }
 
   /* Inactive state for mobile nav items */
@@ -698,7 +699,7 @@ html, body {
   }
 
   .mobile-nav-icon {
-    font-size: 24px;
+    font-size: 20px;
     display: inline-block;
     transition: filter 0.3s ease;
   }
@@ -1093,5 +1094,140 @@ html, body {
     .header-nav-label {
       font-size: 9px;
     }
+  }
+
+  /* ========== RETRO SIDEBAR (Desktop) ========== */
+  .retro-sidebar {
+    flex-direction: column;
+    width: 200px;
+    min-width: 200px;
+    background: hsl(230 35% 10%);
+    border-right: 2px solid hsl(var(--primary) / 0.4);
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 1280px) {
+    .retro-sidebar {
+      width: 220px;
+      min-width: 220px;
+    }
+  }
+
+  .retro-sidebar-box {
+    border-bottom: 1px solid hsl(230 25% 20%);
+    padding: 10px;
+    background: hsl(230 30% 12%);
+  }
+
+  .retro-sidebar-box:hover {
+    background: hsl(230 30% 14%);
+  }
+
+  .retro-sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px 10px;
+    background: linear-gradient(135deg, hsl(230 30% 14%) 0%, hsl(var(--primary) / 0.08) 100%);
+    border-bottom: 2px solid hsl(var(--primary) / 0.3);
+  }
+
+  .retro-sidebar-user:hover {
+    background: linear-gradient(135deg, hsl(230 30% 16%) 0%, hsl(var(--primary) / 0.15) 100%);
+  }
+
+  .retro-sidebar-status {
+    padding: 8px 10px;
+    background: hsl(230 35% 8%);
+  }
+
+  .retro-sidebar-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: hsl(var(--primary));
+    margin-bottom: 6px;
+    padding: 0 4px;
+  }
+
+  .retro-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .retro-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: hsl(var(--foreground));
+    border: 1px solid transparent;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  .retro-sidebar-item.inactive {
+    opacity: 0.6;
+  }
+
+  .retro-sidebar-item:hover {
+    background: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary) / 0.25);
+    opacity: 1;
+  }
+
+  .retro-sidebar-item.active {
+    background: hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.4);
+    color: hsl(var(--primary));
+    opacity: 1;
+  }
+
+  .retro-sidebar-item.has-notice {
+    opacity: 1;
+    color: hsl(var(--foreground));
+  }
+
+  .retro-sidebar-emoji {
+    font-size: 16px;
+    display: inline-block;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .retro-sidebar-label {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .retro-sidebar-badge {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    background: hsl(var(--destructive));
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 0 6px hsl(var(--destructive) / 0.6);
+    flex-shrink: 0;
   }
 }

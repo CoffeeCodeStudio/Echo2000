@@ -196,15 +196,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <GlobalSearch />
         </div>
 
-        {/* Private Nav Items - inline in header (desktop only, logged in only) */}
+        {/* Desktop nav items moved to RetroSidebar – only show on mobile/tablet */}
         {user &&
-        <nav className="hidden lg:flex items-center gap-0.5 mx-2">
+        <nav className="hidden md:flex lg:hidden items-center gap-0.5 mx-2">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-
-        {/* Community Nav Items (desktop only) - show all for logged in, only HEM for logged out */}
-        <nav className="hidden lg:flex items-center gap-0.5">
+        <nav className="hidden md:flex lg:hidden items-center gap-0.5">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
