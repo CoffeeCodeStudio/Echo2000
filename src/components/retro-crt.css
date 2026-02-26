@@ -186,3 +186,90 @@
     font-size: 12px;
   }
 }
+
+/* ===== Pixel Welcome Banner ===== */
+
+.pixel-banner {
+  position: relative;
+  border: 2px solid hsl(32 95% 55% / .4);
+  border-radius: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(
+    90deg,
+    hsl(230 30% 16% / .9),
+    hsl(260 40% 20% / .6),
+    hsl(230 30% 16% / .9)
+  );
+  background-size: 200% 100%;
+  animation: pixel-banner-shift 4s ease-in-out infinite;
+  overflow: hidden;
+}
+
+.pixel-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(255 140 0 / .04) 3px,
+    rgba(255 140 0 / .04) 6px
+  );
+  pointer-events: none;
+}
+
+.pixel-banner-text {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: hsl(32 95% 55%);
+  text-shadow: 0 0 8px hsl(32 95% 55% / .5);
+  text-align: center;
+}
+
+@keyframes pixel-banner-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Star decoration */
+.pixel-star {
+  display: inline-block;
+  animation: pixel-star-spin 3s linear infinite;
+}
+
+@keyframes pixel-star-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ===== Blinking NEW Badge ===== */
+
+.retro-new-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  font-family: "Courier New", monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: hsl(230 35% 10%);
+  background: hsl(32 95% 55%);
+  border-radius: 3px;
+  border: 1px solid hsl(32 95% 70%);
+  box-shadow: 0 0 6px hsl(32 95% 55% / .6);
+  animation: retro-badge-blink 1.2s steps(1) infinite;
+  vertical-align: middle;
+  margin-left: 6px;
+  line-height: 1.4;
+}
+
+@keyframes retro-badge-blink {
+  0%, 70%  { opacity: 1; }
+  71%, 100% { opacity: 0; }
+}

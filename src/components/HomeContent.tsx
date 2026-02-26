@@ -261,7 +261,7 @@ function DjBox() {
 export function HomeContent() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      {/* H1 Hero – kept as-is */}
+      {/* H1 Hero */}
       <section className="py-6 md:py-10 text-center px-4">
         <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-5xl leading-tight text-glow mb-3">
           <span className="text-primary">Echo</span>
@@ -270,6 +270,15 @@ export function HomeContent() {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed">
           En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead, återuppbyggd med modern design och funktioner.
         </p>
+
+        {/* Pixel Welcome Banner */}
+        <div className="pixel-banner max-w-md mx-auto mt-4">
+          <p className="pixel-banner-text">
+            <span className="pixel-star">✦</span>
+            {" "}Välkommen till framtidens nostalgi{" "}
+            <span className="pixel-star">✦</span>
+          </p>
+        </div>
       </section>
 
       {/* Retro CRT TV */}

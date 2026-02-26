@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Newspaper, ChevronRight } from "lucide-react";
+import "@/components/retro-crt.css";
 
 interface NewsArticle {
   id: string;
@@ -11,6 +12,11 @@ interface NewsArticle {
   icon: string;
   author_name: string;
   created_at: string;
+}
+
+/** Returns true if the article was published within the last 48 hours. */
+function isRecent(dateStr: string) {
+  return Date.now() - new Date(dateStr).getTime() < 48 * 60 * 60 * 1000;
 }
 
 function formatDate(dateStr: string) {
@@ -65,6 +71,7 @@ export function NewsFeed() {
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{article.icon}</span>
                 <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">{article.title}</span>
+                {isRecent(article.created_at) && <span className="retro-new-badge">NY!</span>}
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{article.content}</p>
               <div className="flex items-center justify-between mt-1">
