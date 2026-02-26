@@ -9,6 +9,16 @@ interface Visitor {
   visited_at: string;
 }
 
+/**
+ * Tracks and displays profile visitors.
+ *
+ * Automatically logs a visit when the current user views another user's
+ * profile (uses upsert to prevent duplicates). Returns the 5 most recent
+ * visitors with their profile info.
+ *
+ * @param profileOwnerId - The `user_id` whose visitors to track/display.
+ * @returns `visitors` array, `loading` flag, and `refetch` callback.
+ */
 export function useProfileVisits(profileOwnerId: string | undefined) {
   const { user } = useAuth();
   const effectiveOwnerId = profileOwnerId || user?.id;

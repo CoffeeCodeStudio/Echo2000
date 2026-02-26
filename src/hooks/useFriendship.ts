@@ -5,6 +5,15 @@ import { useToast } from '@/hooks/use-toast';
 
 export type FriendshipStatus = 'none' | 'pending_sent' | 'pending_received' | 'accepted' | 'loading';
 
+/**
+ * Manages the friendship relationship between the current user and a target user.
+ *
+ * Tracks whether a friend request is pending, accepted, or non-existent and
+ * provides actions to send, accept, or remove friend requests.
+ *
+ * @param targetUserId - The user ID of the potential friend.
+ * @returns Friendship status, loading flag, and action callbacks.
+ */
 export function useFriendship(targetUserId: string | undefined) {
   const { user } = useAuth();
   const { toast } = useToast();

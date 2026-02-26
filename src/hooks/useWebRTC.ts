@@ -23,6 +23,17 @@ interface UseWebRTCOptions {
   contactId: string;
 }
 
+/**
+ * WebRTC peer-to-peer calling hook supporting voice, video, and screen-share.
+ *
+ * Uses Supabase Realtime broadcast channels for signaling (offer/answer/ICE)
+ * and stores call session metadata in the `call_sessions` / `call_participants`
+ * tables. Supports up to 4 participants with automatic bitrate tuning.
+ *
+ * @param options.userId - The local user's ID.
+ * @param options.contactId - The primary remote user's ID (used for channel naming).
+ * @returns Call state, media streams, and control callbacks.
+ */
 export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   const [callActive, setCallActive] = useState(false);
   const [callType, setCallType] = useState<CallType>("voice");

@@ -38,6 +38,14 @@ export interface ScribbleGuess {
   created_at: string;
 }
 
+/**
+ * Lists and creates Scribble game lobbies.
+ *
+ * Automatically cleans up finished or stale (>5 min inactive) lobbies,
+ * fetches player counts, and subscribes to real-time lobby changes.
+ *
+ * @returns `lobbies` array, `loading`, `createLobby`, and `refetch`.
+ */
 export function useScribbleLobbies() {
   const [lobbies, setLobbies] = useState<ScribbleLobby[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,6 +145,15 @@ export function useScribbleLobbies() {
   return { lobbies, loading, createLobby, refetch: fetchLobbies };
 }
 
+/**
+ * Manages the state of an active Scribble game session.
+ *
+ * Fetches lobby details, players, and guesses with real-time subscriptions.
+ * Sends a heartbeat every 60 s to keep the lobby alive.
+ *
+ * @param lobbyId - The lobby to join, or `null` if none is selected.
+ * @returns Lobby state, players, guesses, and action callbacks.
+ */
 export function useScribbleGame(lobbyId: string | null) {
   const [players, setPlayers] = useState<ScribblePlayer[]>([]);
   const [guesses, setGuesses] = useState<ScribbleGuess[]>([]);

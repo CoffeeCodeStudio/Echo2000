@@ -11,6 +11,16 @@ export interface ChatMessage {
   is_read: boolean;
 }
 
+/**
+ * Real-time chat message manager for a 1-on-1 conversation.
+ *
+ * Fetches the message history between the current user and `contactId`,
+ * subscribes to new inserts via Supabase Realtime, and auto-marks incoming
+ * messages as read.
+ *
+ * @param contactId - The other user's ID, or `null` if no conversation is selected.
+ * @returns `messages`, `loading`, and a `sendMessage` callback.
+ */
 export function useChatMessages(contactId: string | null) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);

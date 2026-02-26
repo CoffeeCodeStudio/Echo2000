@@ -9,6 +9,14 @@ export interface AudioData {
   average: number;
 }
 
+/**
+ * Connects a Web Audio API `AnalyserNode` to an `<audio>` element for real-time
+ * frequency and waveform analysis.
+ *
+ * Used by the WinampPlayer visualiser to render MilkDrop-style effects.
+ *
+ * @returns `initializeAnalyzer(el)`, `getAudioData()`, `resumeContext()`, `isInitialized`.
+ */
 export function useAudioAnalyzer() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);

@@ -31,6 +31,21 @@ export interface ProfileData {
   last_seen: string | null;
 }
 
+/**
+ * Fetches and manages a user's profile from the `profiles` table.
+ *
+ * If no `userId` is supplied the hook defaults to the currently authenticated
+ * user. When the profile does not yet exist for the current user it is
+ * automatically created with a default username.
+ *
+ * @param userId - Optional user ID to load. Defaults to `auth.user.id`.
+ * @returns An object with:
+ *  - `profile` – The loaded {@link ProfileData}, or `null`.
+ *  - `loading` / `saving` – Loading states.
+ *  - `isOwnProfile` – Whether the loaded profile belongs to the current user.
+ *  - `updateProfile` – Persist partial profile changes.
+ *  - `refetch` – Re-fetch the profile from the database.
+ */
 export function useProfile(userId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
