@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, MessageCircle, Wifi, Gamepad2, Palette, Heart, Radio, Music, ExternalLink, Bot } from "lucide-react";
+import { RetroCrtTv } from "./RetroCrtTv";
+import "./retro-crt.css";
 import { NewsFeed } from "./social/NewsFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -268,6 +270,11 @@ export function HomeContent() {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed">
           En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead, återuppbyggd med modern design och funktioner.
         </p>
+      </section>
+
+      {/* Retro CRT TV */}
+      <section className="flex justify-center pb-6 px-4">
+        <RetroCrtTv />
       </section>
 
       {/* 3-column grid – stacks on mobile */}
