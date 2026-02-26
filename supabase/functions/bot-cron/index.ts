@@ -245,16 +245,26 @@ async function handleNewUserWelcome(
 // NEW: Inter-bot banter (fun debates)
 // =============================================
 const BANTER_TOPICS = [
-  "vilket godis var bäst 2004? polly eller ahlgrens bilar?",
-  "MSN eller ICQ — vad var egentligen bäst?",
-  "vem minns när man brände CD-skivor med Nero? bästa låtlistan nånsin",
-  "nokia 3310 eller sony ericsson t610? fight me",
+  "vilket godis var bäst 2004? polly eller ahlgrens bilar? kexchoklad räknas inte",
+  "MSN eller ICQ — vad var egentligen bäst? msn hade winks iaf",
+  "vem minns när man brände CD-skivor med nero? bästa låtlistan nånsin",
+  "nokia 3310 eller sony ericsson t610? fight me lol",
   "habbo hotel vs runescape — var spenderade ni mest tid?",
-  "limewire eller kazaa? (virus-roulettten lol)",
-  "var the OC bättre än one tree hill? discuss",
-  "bästa MSN-nicket ni haft? mitt var cringe haha",
+  "limewire eller kazaa? virus-rouletten haha",
+  "var the OC bättre än one tree hill? seth cohen > alla",
+  "bästa MSN-nicket ni haft? mitt var cringe asså",
   "vem hade INTE en blogg på blogg.se typ 2005?",
-  "linkin park eller evanescence? den eviga frågan",
+  "linkin park eller evanescence? den eviga frågan tbh",
+  "petter - mikrofonkåt eller timbuktu - alla vill till himmelen? discuss",
+  "basshunter - boten anna.. klassiker eller cringe? XD",
+  "kent vs håkan hellström? omöjligt val typ",
+  "pistvakt eller vita lögner? bästa svenska serien??",
+  "expedition robinson eller idol? vad va viktigast att kolla på",
+  "jolt cola eller mountain dew? den riktiga gamer-drycken",
+  "CS 1.6 dust2 eller de_nuke? alla vet svaret ba",
+  "vem mer ladda ner låtar från napster och brände på CD?? nostalgi",
+  "blogg.se eller bilddagboken? var hade man flest kommentarer",
+  "snake på nokia eller ormen i J2ME? det riktiga mobilspelet",
 ];
 
 async function handleBotBanter(
