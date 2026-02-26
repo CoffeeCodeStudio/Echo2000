@@ -29,14 +29,6 @@ export function HomeContent() {
             En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead, återuppbyggd med modern design och funktioner.
           </p>
 
-          {/* Pixel Welcome Banner */}
-          <div className="pixel-banner max-w-md mx-auto mt-4">
-            <p className="pixel-banner-text">
-              <span className="pixel-star">✦</span>
-              {" "}Välkommen till framtidens nostalgi{" "}
-              <span className="pixel-star">✦</span>
-            </p>
-          </div>
         </section>
 
         {/* Stats + Vision inside the CRT screen */}
