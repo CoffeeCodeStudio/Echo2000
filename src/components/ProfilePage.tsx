@@ -27,9 +27,10 @@ import {
 
 interface ProfilePageProps {
   userId?: string;
+  initialTab?: ProfileTabId;
 }
 
-export function ProfilePage({ userId }: ProfilePageProps) {
+export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
@@ -40,8 +41,13 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const showDemoMode = !isLoggedIn && !userId;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<ProfileTabId>("profil");
+  const [activeTab, setActiveTab] = useState<ProfileTabId>(initialTab || "profil");
   const [editData, setEditData] = useState<EditableProfileData>(toEditableData(null));
+
+  // Sync initialTab when it changes from parent
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Sync editData when profile loads
   useEffect(() => {

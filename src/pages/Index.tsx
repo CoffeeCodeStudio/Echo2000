@@ -4,7 +4,7 @@ import { useOutletContext, useLocation } from "react-router-dom";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { HomeContent } from "@/components/HomeContent";
 import { ProfilePage } from "@/components/ProfilePage";
-import { Guestbook } from "@/components/social/Guestbook";
+// Guestbook import removed - unified into ProfilePage
 import { Mailbox } from "@/components/social/Mailbox";
 import { FriendsList } from "@/components/friends/FriendsList";
 import { MemberGrid } from "@/components/social/MemberGrid";
@@ -99,7 +99,7 @@ export default function Index() {
         return <ChatWindow className="flex-1" />;
 
       case "gastbok":
-        return <Guestbook />;
+        return <ProfilePage initialTab="gastbok" />;
 
       case "mejl":
         return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
