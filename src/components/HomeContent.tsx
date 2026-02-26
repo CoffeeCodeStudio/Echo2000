@@ -17,46 +17,34 @@ import { CrtBackground } from "./CrtBackground";
 export function HomeContent() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      {/* CRT TV Background Hero */}
+      {/* CRT TV Background Hero – compact */}
       <CrtBackground>
-        {/* H1 Hero */}
-        <section className="py-6 md:py-10 text-center px-4">
-          <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-5xl leading-tight text-glow mb-3">
+        <section className="py-3 md:py-4 text-center px-4">
+          <h1 className="font-display font-bold text-xl sm:text-2xl md:text-4xl leading-tight text-glow mb-1">
             <span className="text-primary">Echo</span>
             <span className="text-accent">2000</span>
           </h1>
-          <p className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
-            En nostalgisk chatt-community inspirerad av bland annat MSN Messenger, LunarStorm och Playahead, återuppbyggd med modern design och funktioner.
+          <p className="text-muted-foreground text-[11px] sm:text-xs md:text-sm max-w-lg mx-auto leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>
+            En nostalgisk chatt-community inspirerad av MSN Messenger, LunarStorm och Playahead.
           </p>
-
         </section>
 
-        {/* Stats + Vision inside the CRT screen */}
-        <section className="container px-4 pb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <section className="container px-4 pb-2">
+          <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
             <HomeStatsBox />
             <HomeVisionBox />
           </div>
         </section>
       </CrtBackground>
 
-      {/* 3-column grid – stacks on mobile */}
-      <section className="container px-4 pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Left Column */}
-          <div className="space-y-4">
-            <HomeSocialBox />
-          </div>
-
-          {/* Center Column */}
-          <div className="space-y-4">
-            <HomeRecentOnline />
-            <NewsFeed />
-            <HomeLajvBox />
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
+      {/* 5-column grid – compact, no scroll */}
+      <section className="container px-4 py-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <HomeSocialBox />
+          <HomeRecentOnline />
+          <NewsFeed />
+          <HomeLajvBox />
+          <div className="space-y-3">
             <HomeAuthBox />
             <HomeDjBox />
           </div>
