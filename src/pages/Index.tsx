@@ -21,40 +21,6 @@ import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
 
-const communities = [
-  {
-    id: "1",
-    name: "Retro Gaming Lounge",
-    description: "Diskutera klassiska spel från 90- och 2000-talet",
-    memberCount: 1234,
-    messageCount: 8765,
-    isActive: true,
-  },
-  {
-    id: "2",
-    name: "Musikminnen",
-    description: "Dela dina favorit nostalgiska låtar och spellistor",
-    memberCount: 892,
-    messageCount: 5432,
-    isActive: false,
-  },
-  {
-    id: "3",
-    name: "Tech Throwback",
-    description: "Minns du när telefoner hade knappar? Låt oss snacka!",
-    memberCount: 567,
-    messageCount: 3210,
-    isActive: true,
-  },
-  {
-    id: "4",
-    name: "Kreativa Hörnan",
-    description: "Dela konst, musik och kreativa projekt",
-    memberCount: 445,
-    messageCount: 2890,
-    isActive: false,
-  },
-];
 
 export default function Index() {
   const location = useLocation();
