@@ -34,7 +34,7 @@ export function NewsFeed() {
         .select("id, title, content, image_url, icon, author_name, created_at")
         .eq("is_published", true)
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(2);
       if (data) setArticles(data as NewsArticle[]);
     };
     fetch();
@@ -61,10 +61,10 @@ export function NewsFeed() {
                 src={article.image_url}
                 alt=""
                 loading="lazy"
-                className="w-14 h-14 rounded object-cover flex-shrink-0 border border-border"
+                className="w-10 h-10 rounded object-cover flex-shrink-0 border border-border"
               />
             ) : (
-              <div className="w-14 h-14 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-2xl">
+              <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xl">
                 {article.icon}
               </div>
             )}
