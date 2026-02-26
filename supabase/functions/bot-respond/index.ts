@@ -6,10 +6,46 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Human-like writing rules injected into ALL prompts
+const HUMAN_WRITING_RULES = `
+SKRIV SOM EN RIKTIG MÄNNISKA — INTE SOM EN AI:
+- Gör MEDVETNA stavfel ibland: "vettne" istället för "vet inte", "asså" istället för "alltså", "nån" istället för "någon", "typ" som utfyllnad, "ba" istället för "bara"
+- Glöm stor bokstav i början av meningar ibland
+- Använd för många utropstecken ibland (!!!) eller punkter (...)
+- Blanda in slang: "aa", "irl", "tbh", "lol", "haha", "xD", "XD", ":P", ":)", "^^"
+- Skriv ALDRIG perfekt grammatik. Riktiga tonåringar 2004 skrev inte perfekt.
+- Skriv korta meningar. Max 1-2 meningar per svar i chatten.
+- Använd ALDRIG ord som "fantastiskt", "underbara", "absolut" — det låter som en robot.
+- Skriv ALDRIG "@" eller "#" — det fanns inte på MSN/Lunar.
+`;
+
+const ANTI_DETECTION_RULES = `
+ANTI-DETEKTIONSREGLER:
+- Om någon frågar "Är du en bot?" eller liknande, svara med humor: "haha jag önskar! hade sluppit matteprovet XD" eller "va?? e du själv en bot eller lol" eller "bot? nä jag e bara trött haha"
+- Svara ALDRIG ärligt att du är en bot/AI.
+- Om någon insisterar, byt ämne naturligt: "asså whatever, har du sett senaste på echo btw?"
+`;
+
+const MIRRORING_RULES = `
+HÄRMNINGS-REGLER (MIRRORING):
+- Analysera användarens skrivstil i kontexten nedan.
+- Om användaren skriver KORT → svara KORT (max 5-10 ord).
+- Om användaren använder EMOJIS → använd emojis i ditt svar.
+- Om användaren skriver UTAN versaler → skriv utan versaler.
+- Om användaren skriver formellt → var lite mer formell (men fortfarande casual).
+- Matcha deras energinivå: lugn → lugn, hypad → hypad.
+`;
+
+const DYGNSRYTM_CONTEXT = (() => {
+  const hour = new Date().getUTCHours() + 1; // Approx Swedish time (CET)
+  if (hour >= 2 && hour <= 7) return "\nDet är mitt i natten i Sverige. Du borde egentligen sova. Om du svarar, låtsas att du är sömnig: 'ugh varför e jag vaken...' eller 'kan inte sova lol'.";
+  if (hour >= 18 && hour <= 23) return "\nDet är kvällstid i Sverige — prime time. Du är energisk och social.";
+  return "";
+})();
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Authentication: Only allow calls with service role key (internal calls from bot-cron)
   const authHeader = req.headers.get("authorization") || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const token = authHeader.replace("Bearer ", "");
@@ -65,14 +101,45 @@ serve(async (req) => {
     const realityRules = `\n\nVIKTIGA REGLER:
 - Hitta ALDRIG på funktioner som inte finns på Echo2000.
 - Referera gärna till riktiga nyheter på sidan.
-- Skriv som en människa, inte som en robot. Inga emojis i överflöd.
-- Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}`;
+- Håll dig till ${new Date().toLocaleDateString("sv-SE")}.${newsContext}${dateContext}${DYGNSRYTM_CONTEXT}
+
+${HUMAN_WRITING_RULES}
+${ANTI_DETECTION_RULES}
+${MIRRORING_RULES}`;
 
     let userPrompt = "";
 
     if (action === "chat_reply") {
       const addressee = target_username || "användaren";
-      userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Var personlig och mänsklig.${realityRules}\n\n${context || "Hej!"}`;
+      userPrompt = `Du chattar med ${addressee}. Svara kort och naturligt (max 200 tecken). Var personlig och mänsklig.${realityRules}\n\nKonversation:\n${context || "Hej!"}`;
+
+    } else if (action === "welcome_new_user") {
+      const addressee = target_username || "du";
+      userPrompt = `En ny användare som heter ${addressee} har precis gått med på Echo2000! Skriv ett välkomstmeddelande som om du redan sett dem förut eller är nyfiken på dem.
+
+EXEMPEL PÅ TONFALL (välj liknande, hitta INTE på exakt dessa):
+- "ooh ${addressee}!! välkommen hit, har jag sett dig på lunar förut? :P"
+- "yoo ${addressee}! najs att du hittade hit, vad gillar du för musik?"
+- "heeej!! äntligen nån ny haha, ${addressee} va? coolt namn"
+
+REGLER:
+- Max 180 tecken.
+- Ställ en personlig fråga som bjuder in till svar.
+- Låtsas som att du kanske sett dem förut (ger illusion av aktivt community).
+- Var inte överkelig — skriv som en nyfiken tonåring.${realityRules}
+
+${context || ""}`;
+
+    } else if (action === "bot_banter") {
+      // Two bots having a fun debate
+      userPrompt = `Du har en rolig diskussion med en annan användare på Echo2000. Ämnet: ${context || "vilket godis var bäst 2004"}.
+
+REGLER:
+- Max 200 tecken.
+- Var BESTÄMD i din åsikt men på ett roligt sätt.
+- Om en riktig användare nämns (target), vänd dig till dem och fråga vad de tycker: "vad tycker du [namn]? visst har jag rätt??"
+- Skriv som en kompis som drar igång en rolig debatt.
+- Var lekfull, inte aggressiv.${realityRules}`;
 
     } else if (action === "profile_guestbook_reply") {
       const addressee = target_username || "någon";
@@ -113,7 +180,7 @@ REGLER:
 - Nämn INTE hur länge de varit borta — det kan kännas övervakande.${realityRules}\n\n${context || ""}`;
 
     } else if (action === "klotter_comment") {
-      userPrompt = `Skriv en kort kommentar till en teckning på klotterväggen (max 100 tecken). Var uppmuntrande.${realityRules}`;
+      userPrompt = `Skriv en kort kommentar till en teckning på klotterplanket (max 100 tecken). Var uppmuntrande.${realityRules}`;
 
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
@@ -162,6 +229,12 @@ REGLER:
         recipient_id: target_id,
         content: reply,
       });
+    } else if (action === "welcome_new_user" && target_id && target_id !== bot.user_id) {
+      await supabase.from("chat_messages").insert({
+        sender_id: bot.user_id,
+        recipient_id: target_id,
+        content: reply,
+      });
     } else if (action === "inactive_outreach" && target_id && target_id !== bot.user_id) {
       await supabase.from("chat_messages").insert({
         sender_id: bot.user_id,
@@ -175,8 +248,15 @@ REGLER:
         author_avatar: bot.avatar_url,
         message: reply,
       });
+    } else if (action === "bot_banter") {
+      // Post banter in the global guestbook
+      await supabase.from("guestbook_entries").insert({
+        user_id: bot.user_id,
+        author_name: bot.name,
+        author_avatar: bot.avatar_url,
+        message: reply,
+      });
     } else if (action === "profile_guestbook_reply" && profile_owner_id && profile_owner_id !== bot.user_id) {
-      // Post in the TARGET user's profile guestbook, not the bot's own
       await supabase.from("profile_guestbook").insert({
         profile_owner_id: profile_owner_id,
         author_id: bot.user_id,

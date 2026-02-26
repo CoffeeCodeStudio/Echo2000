@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useChatMessages } from "@/hooks/useChatMessages";
+import { useChatTyping } from "@/hooks/useChatTyping";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +57,9 @@ export function useChatWindow() {
     userId: user?.id || "",
     contactId: selectedContact?.id || "",
   });
+
+  // Typing indicator from bots/other users
+  const contactTyping = useChatTyping(user?.id, selectedContact?.id || null);
 
   const context = useOutletContext<LayoutContext>();
   const setHideNavbar = context?.setHideNavbar;
@@ -230,6 +234,7 @@ export function useChatWindow() {
     // Messages
     currentMessages,
     messagesLoading,
+    contactTyping,
     inputMessage,
     setInputMessage,
     handleSend,

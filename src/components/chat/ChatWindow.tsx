@@ -97,6 +97,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   messages={chat.currentMessages}
                   loading={chat.messagesLoading}
                   contactName={chat.selectedContact.name}
+                  contactTyping={!!chat.contactTyping}
                 />
 
                 <ChatInputBar
