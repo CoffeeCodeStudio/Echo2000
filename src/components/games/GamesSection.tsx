@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ScribbleLobbyList } from "@/components/ScribbleLobbyList";
-import { ScribbleGame } from "@/components/ScribbleGame";
-import { MemoryGame } from "@/components/MemoryGame";
-import { SnakeGame } from "@/components/SnakeGame";
+import { ScribbleLobbyList } from "./ScribbleLobbyList";
+import { ScribbleGame } from "./ScribbleGame";
+import { MemoryGame } from "./MemoryGame";
+import { SnakeGame } from "./SnakeGame";
 import { Gamepad2, User, Users, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

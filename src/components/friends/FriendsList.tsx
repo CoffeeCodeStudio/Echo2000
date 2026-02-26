@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Search, UserPlus, Info, Loader2, ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FriendCard, FRIEND_CATEGORIES, type FriendData, type FriendCategory } from "./FriendCard";
-import type { UserStatus } from "./StatusIndicator";
+import type { UserStatus } from "../StatusIndicator";
 import { usePresence } from "@/hooks/usePresence";
 
 interface FriendsListProps {

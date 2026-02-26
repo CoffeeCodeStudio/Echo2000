@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLajv } from '@/contexts/LajvContext';
-import { Avatar } from './Avatar';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
+import { Avatar } from '../Avatar';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 import { Send, Radio, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AuthDialog } from './AuthDialog';
+import { AuthDialog } from '../auth/AuthDialog';
 import { toast } from 'sonner';
 
 export function LajvSection() {

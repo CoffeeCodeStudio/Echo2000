@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from './Avatar';
 import { Radio } from 'lucide-react';
-import { replaceEmoteCodes } from './PixelEmotes';
+import { replaceEmoteCodes } from './social/PixelEmotes';
 
 export function GlobalLajvTicker() {
   const { messages } = useLajv();

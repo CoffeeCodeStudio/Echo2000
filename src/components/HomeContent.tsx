@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, MessageCircle, Wifi, Gamepad2, Palette, Heart, Radio, Music, ExternalLink, Bot } from "lucide-react";
-import { NewsFeed } from "./NewsFeed";
+import { NewsFeed } from "./social/NewsFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { Avatar } from "./Avatar";
 import { StatusIndicator } from "./StatusIndicator";
 import { Button } from "./ui/button";
-import { AuthDialog } from "./AuthDialog";
+import { AuthDialog } from "./auth/AuthDialog";
 
 // --- Left Column Components ---
 

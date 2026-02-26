@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, Users } from "lucide-react";
-import { Avatar } from "./Avatar";
-import { StatusIndicator, type UserStatus } from "./StatusIndicator";
+import { Avatar } from "../Avatar";
+import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { usePresence } from "@/hooks/usePresence";
 import { useNavigate } from "react-router-dom";

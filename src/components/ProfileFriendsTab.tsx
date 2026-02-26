@@ -4,7 +4,7 @@ import { Avatar } from "./Avatar";
 import { StatusIndicator } from "./StatusIndicator";
 import { PersonalityMeter } from "./PersonalityMeter";
 import { useFriendVotes } from "@/hooks/useFriendVotes";
-import { FRIEND_CATEGORIES } from "./FriendCard";
+import { FRIEND_CATEGORIES } from "./friends/FriendCard";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";

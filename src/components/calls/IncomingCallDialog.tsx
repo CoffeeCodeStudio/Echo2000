@@ -1,6 +1,6 @@
 import { Phone, PhoneOff, Video, Monitor } from "lucide-react";
-import { Avatar } from "./Avatar";
-import { Button } from "./ui/button";
+import { Avatar } from "../Avatar";
+import { Button } from "../ui/button";
 import type { CallType } from "@/hooks/useWebRTC";
 
 interface IncomingCallDialogProps {

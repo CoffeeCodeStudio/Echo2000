@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { MessageSquare, Star, UserMinus, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
-import { Avatar } from "./Avatar";
-import { StatusIndicator, type UserStatus } from "./StatusIndicator";
-import { Button } from "./ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { PersonalityMeter } from "./PersonalityMeter";
+import { Avatar } from "../Avatar";
+import { StatusIndicator, type UserStatus } from "../StatusIndicator";
+import { Button } from "../ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { PersonalityMeter } from "../PersonalityMeter";
 import { useFriendVotes } from "@/hooks/useFriendVotes";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
