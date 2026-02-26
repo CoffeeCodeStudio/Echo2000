@@ -19,38 +19,40 @@ import { LajvProvider } from "@/contexts/LajvContext";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <RadioProvider>
-        <LajvProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Shared layout wraps all main routes */}
-              <Route element={<SharedLayout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/rum" element={<ProtectedRoute><Room /></ProtectedRoute>} />
-                <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/news" element={<News />} />
-                <Route path="/news/:id" element={<News />} />
-              </Route>
-              
-              {/* Auth page without shared layout (full-page login) */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/admin" element={<Admin />} />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </LajvProvider>
-      </RadioProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <RadioProvider>
+          <LajvProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Shared layout wraps all main routes */}
+                <Route element={<SharedLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/rum" element={<ProtectedRoute><Room /></ProtectedRoute>} />
+                  <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/news/:id" element={<News />} />
+                </Route>
+                
+                {/* Auth page without shared layout (full-page login) */}
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/admin" element={<Admin />} />
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </LajvProvider>
+        </RadioProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
