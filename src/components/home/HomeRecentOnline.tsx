@@ -5,11 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { Avatar } from "../Avatar";
 import { StatusIndicator } from "../StatusIndicator";
+import type { UserStatus } from "../StatusIndicator";
 import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 
+const BOT_ONLINE_THRESHOLD_MS = 10 * 60 * 1000; // 10 min
+
 export function HomeRecentOnline() {
-  const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null }[]>([]);
   const { user } = useAuth();
   const { getUserStatus } = usePresence();
   const navigate = useNavigate();
@@ -19,7 +22,7 @@ export function HomeRecentOnline() {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("user_id, username, avatar_url")
+          .select("user_id, username, avatar_url, is_bot, last_seen")
           .order("last_seen", { ascending: false })
           .limit(10);
         if (data) setMembers(data);
@@ -39,6 +42,16 @@ export function HomeRecentOnline() {
     fetchRecent();
   }, [user]);
 
+  const getMemberStatus = (m: typeof members[0]): UserStatus => {
+    // For bots, derive status from last_seen
+    if (m.is_bot && m.last_seen) {
+      const age = Date.now() - new Date(m.last_seen).getTime();
+      if (age < BOT_ONLINE_THRESHOLD_MS) return "online";
+      return "offline";
+    }
+    return getUserStatus(m.user_id);
+  };
+
   return (
     <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />}>
       {members.length === 0 ? (
@@ -46,7 +59,7 @@ export function HomeRecentOnline() {
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {members.map((m) => {
-            const status = getUserStatus(m.user_id);
+            const status = getMemberStatus(m);
             return (
               <button
                 key={m.user_id}

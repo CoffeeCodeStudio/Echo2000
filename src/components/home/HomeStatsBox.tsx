@@ -16,8 +16,25 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 export function HomeStatsBox() {
   const [stats, setStats] = useState({ members: 0, online: 0, messages: 0 });
+  const [onlineBotCount, setOnlineBotCount] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
+
+  // Fetch online bot count (bots with last_seen within 10 min)
+  useEffect(() => {
+    const fetchOnlineBots = async () => {
+      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_bot", true)
+        .gte("last_seen", tenMinAgo);
+      setOnlineBotCount(count ?? 0);
+    };
+    fetchOnlineBots();
+    const interval = setInterval(fetchOnlineBots, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -43,11 +60,14 @@ export function HomeStatsBox() {
     fetchStats();
   }, [user]);
 
+  // Combine real online users + online bots
+  const totalOnline = (onlineUsers?.size ?? 0) + onlineBotCount;
+
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-3">
         <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
-        <StatRow icon={<Wifi className="w-4 h-4 text-online" />} label="Online" value={onlineUsers?.size ?? 0} />
+        <StatRow icon={<Wifi className="w-4 h-4 text-online" />} label="Online" value={totalOnline} />
         <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
       </div>
     </BentoCard>

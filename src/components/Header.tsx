@@ -38,8 +38,25 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const { toast } = useToast();
   const { counts } = useNotifications();
   const { onlineUsers } = usePresence();
+  const [onlineBotCount, setOnlineBotCount] = useState(0);
 
-  const onlineCount = onlineUsers.size;
+  // Count bots with recent last_seen as "online"
+  useEffect(() => {
+    const fetchBotCount = async () => {
+      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_bot", true)
+        .gte("last_seen", tenMinAgo);
+      setOnlineBotCount(count ?? 0);
+    };
+    fetchBotCount();
+    const interval = setInterval(fetchBotCount, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const onlineCount = onlineUsers.size + onlineBotCount;
 
   // Determine which nav items have notifications
   const getHasNotice = (id: Tab): boolean => {
