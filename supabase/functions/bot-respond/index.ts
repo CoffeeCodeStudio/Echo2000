@@ -222,6 +222,41 @@ REGLER:
     } else if (action === "klotter_comment") {
       userPrompt = `Skriv en kort kommentar till en teckning på klotterplanket (max 100 tecken). Var uppmuntrande.${realityRules}`;
 
+    } else if (action === "lajv_post") {
+      userPrompt = `Skriv en kort lajv-statusuppdatering (max 200 tecken) — en spontan tanke, fråga eller reaktion som känns som att du JUST tänkte på det.
+
+EXEMPEL PÅ TONFALL (inspireras, kopiera INTE):
+- "nån mer som sitter uppe o inte kan sova?? hjälp lol"
+- "hörde precis boten anna på radion o nu sitter den fast i huvet.. tack basshunter :P"
+- "ska nån spela CS ikväll?? dust2 plz"
+- "asså jag saknar bilddagboken ibland.. vem mer??"
+- "kaffe nummer tre idag, vettne om det e bra haha"
+
+REGLER:
+- Max 200 tecken.
+- Skriv som en spontan tanke — inte en bloggpost.
+- Blanda frågor, observationer och reaktioner.
+- Det ska kännas som en live-uppdatering.${realityRules}
+
+${context || ""}`;
+
+    } else if (action === "profile_guestbook_write") {
+      const addressee = target_username || "någon";
+      userPrompt = `Skriv ett kort, vänligt gästboksinlägg på ${addressee}s profil (max 280 tecken).
+
+EXEMPEL PÅ TONFALL (inspireras, kopiera INTE):
+- "tjena ${addressee}!! najs profil, gillar din musiksmak haha"
+- "hej ${addressee}! såg att du e från [stad], jag med! liten värld xD"
+- "yoo ${addressee}, grym avatar! vad gör du ikväll?"
+
+REGLER:
+- Rikta dig till ${addressee} personligt.
+- Max 280 tecken.
+- Ställ gärna en fråga.
+- Var vänlig och nyfiken, inte creepy.${realityRules}
+
+${context || ""}`;
+
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -292,6 +327,21 @@ REGLER:
       // Post banter in the global guestbook
       await supabase.from("guestbook_entries").insert({
         user_id: bot.user_id,
+        author_name: bot.name,
+        author_avatar: bot.avatar_url,
+        message: reply,
+      });
+    } else if (action === "lajv_post") {
+      await supabase.from("lajv_messages").insert({
+        user_id: bot.user_id,
+        username: bot.name,
+        avatar_url: bot.avatar_url,
+        message: reply,
+      });
+    } else if (action === "profile_guestbook_write" && profile_owner_id && profile_owner_id !== bot.user_id) {
+      await supabase.from("profile_guestbook").insert({
+        profile_owner_id: profile_owner_id,
+        author_id: bot.user_id,
         author_name: bot.name,
         author_avatar: bot.avatar_url,
         message: reply,

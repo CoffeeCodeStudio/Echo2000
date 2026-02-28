@@ -60,6 +60,16 @@ serve(async (req) => {
       await handleBotBanter(supabase, supabaseUrl, bots, results);
     }
 
+    // =============================================
+    // Lajv posts: occasional spontaneous status updates
+    // =============================================
+    await handleLajvPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+
+    // =============================================
+    // Profile guestbook writing: bots visit and write in others' guestbooks
+    // =============================================
+    await handleProfileGuestbookWriting(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+
     for (const bot of bots) {
       results[bot.name] = results[bot.name] || [];
       const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
@@ -566,6 +576,153 @@ async function handleInactiveUserOutreach(
   } catch (e) {
     results[bot.name as string].push(`Outreach error: ${(e as Error).message}`);
     return false;
+  }
+}
+
+// =============================================
+// Lajv posts: bots post spontaneous status updates
+// =============================================
+async function handleLajvPosts(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // Only 1-2 bots post per cron cycle, with dygnsrytm
+    const chance = 0.06 * dygnsMultiplier;
+    
+    for (const bot of bots) {
+      if (Math.random() > chance) continue;
+      
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Cooldown: no lajv from this bot in last 30 min
+      const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const { data: recentLajv } = await supabase
+        .from("lajv_messages")
+        .select("id")
+        .eq("user_id", bot.user_id)
+        .gte("created_at", thirtyMinAgo)
+        .limit(1);
+
+      if (recentLajv && recentLajv.length > 0) {
+        results[botName].push("Lajv skipped: cooldown");
+        continue;
+      }
+
+      const res = await callBotRespond(supabaseUrl, {
+        action: "lajv_post",
+        bot_id: bot.id,
+        context: "",
+      });
+
+      results[botName].push(`Lajv post: ${res.reply || res.error || "unknown"}`);
+      
+      // Only one bot posts per cycle to keep it natural
+      break;
+    }
+  } catch (e) {
+    console.error("Lajv post error:", e);
+  }
+}
+
+// =============================================
+// Profile guestbook writing: bots write in others' guestbooks
+// =============================================
+async function handleProfileGuestbookWriting(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // ~5% chance per cycle × dygnsrytm
+    if (Math.random() > 0.05 * dygnsMultiplier) return;
+
+    // Pick a random bot as author
+    const authorBot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = authorBot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown: no profile guestbook write from this bot in last 2 hours
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data: recentWrites } = await supabase
+      .from("profile_guestbook")
+      .select("id")
+      .eq("author_id", authorBot.user_id)
+      .gte("created_at", twoHoursAgo)
+      .limit(1);
+
+    if (recentWrites && recentWrites.length > 0) {
+      results[botName].push("Profile guestbook write skipped: cooldown");
+      return;
+    }
+
+    // Pick a random target: either another bot or a real user
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+    
+    // 50/50 chance: write in another bot's or a real user's guestbook
+    let targetUserId: string | null = null;
+    let targetUsername: string | null = null;
+
+    if (Math.random() < 0.5) {
+      // Write in another bot's guestbook
+      const otherBots = bots.filter(b => (b.user_id as string) !== (authorBot.user_id as string));
+      if (otherBots.length > 0) {
+        const target = otherBots[Math.floor(Math.random() * otherBots.length)];
+        targetUserId = target.user_id as string;
+        targetUsername = target.name as string;
+      }
+    }
+
+    if (!targetUserId) {
+      // Write in a real user's guestbook (recently active, non-bot)
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: activeUsers } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .eq("is_bot", false)
+        .eq("is_approved", true)
+        .gte("last_seen", oneWeekAgo)
+        .limit(20);
+
+      if (!activeUsers || activeUsers.length === 0) {
+        results[botName].push("Profile guestbook write: no targets");
+        return;
+      }
+
+      const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+      targetUserId = target.user_id;
+      targetUsername = target.username;
+    }
+
+    // Get target's profile info for context
+    const { data: targetProfile } = await supabase
+      .from("profiles")
+      .select("city, interests, listens_to")
+      .eq("user_id", targetUserId)
+      .single();
+
+    const profileContext = targetProfile
+      ? `${targetUsername} bor i ${targetProfile.city || "okänt"}. Intressen: ${targetProfile.interests || "okänt"}. Lyssnar på: ${targetProfile.listens_to || "okänt"}.`
+      : "";
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "profile_guestbook_write",
+      bot_id: authorBot.id,
+      target_id: targetUserId,
+      target_username: targetUsername,
+      profile_owner_id: targetUserId,
+      context: profileContext,
+    });
+
+    results[botName].push(`Profile guestbook write to ${targetUsername}: ${res.reply || res.error || "unknown"}`);
+  } catch (e) {
+    console.error("Profile guestbook write error:", e);
   }
 }
 
