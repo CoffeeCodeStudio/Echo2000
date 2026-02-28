@@ -34,6 +34,8 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptedRules, setAcceptedRules] = useState(false);
+  const [confirmedAge, setConfirmedAge] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; email?: string; password?: string }>({});
 
@@ -69,10 +71,10 @@ export default function Auth() {
     
     if (!validateForm()) return;
 
-    if (mode === "register" && !acceptedRules) {
+    if (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms)) {
       toast({
-        title: "Godkänn reglerna",
-        description: "Du måste godkänna reglerna för att skapa ett konto.",
+        title: "Fyll i alla fält",
+        description: "Du måste bekräfta din ålder, godkänna villkoren och reglerna för att skapa ett konto.",
         variant: "destructive",
       });
       return;
@@ -148,6 +150,8 @@ export default function Auth() {
           setEmail("");
           setPassword("");
           setAcceptedRules(false);
+          setConfirmedAge(false);
+          setAcceptedTerms(false);
         }
       }
     } finally {
@@ -271,22 +275,46 @@ export default function Auth() {
               {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
             </div>
 
-            {/* Rules checkbox (register only) */}
+            {/* Checkboxes (register only) */}
             {mode === "register" && (
-              <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                <Checkbox
-                  id="rules"
-                  checked={acceptedRules}
-                  onCheckedChange={(checked) => setAcceptedRules(checked === true)}
-                  className="mt-0.5"
-                />
-                <label htmlFor="rules" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                  Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Alpha</span>.
-                </label>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+                  <Checkbox
+                    id="age"
+                    checked={confirmedAge}
+                    onCheckedChange={(checked) => setConfirmedAge(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <label htmlFor="age" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                    Jag bekräftar att jag är minst 15 år gammal
+                  </label>
+                </div>
+                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+                  <Checkbox
+                    id="terms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                    Jag har läst och godkänner <a href="/" className="text-primary hover:underline" onClick={(e) => { e.preventDefault(); window.open('/', '_blank'); }}>användarvillkoren</a>
+                  </label>
+                </div>
+                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+                  <Checkbox
+                    id="rules"
+                    checked={acceptedRules}
+                    onCheckedChange={(checked) => setAcceptedRules(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <label htmlFor="rules" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                    Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Alpha</span>.
+                  </label>
+                </div>
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading || (mode === "register" && !acceptedRules)}>
+            <Button type="submit" className="w-full" disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms))}>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
