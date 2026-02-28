@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun } from "lucide-react";
+import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun, Lock, Bot, FileWarning } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FAQItem {
@@ -173,6 +173,51 @@ export function FAQSection() {
           </div>
         </section>
 
+        {/* Integritetspolicy */}
+        <section className="mb-10">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-primary" />
+            Integritetspolicy
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
+            <p><strong className="text-foreground">Vad vi samlar in:</strong> Användarnamn, e-postadress och den profildata du själv väljer att fylla i (stad, ålder, intressen m.m.).</p>
+            <p><strong className="text-foreground">Lagring:</strong> All data lagras säkert via vår molntjänst med kryptering.</p>
+            <p><strong className="text-foreground">Radering:</strong> Du kan när som helst begära radering av ditt konto och all tillhörande data via Profil → Inställningar → Radera konto, eller genom att kontakta oss.</p>
+            <p><strong className="text-foreground">Cookies:</strong> Vi använder nödvändiga cookies för att hålla dig inloggad och förbättra upplevelsen. Inga tredjepartscookies för reklam.</p>
+            <p><strong className="text-foreground">Kontakt för datarättigheter:</strong>{" "}
+              <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>
+            </p>
+          </div>
+        </section>
+
+        {/* AI-profiler & bottar */}
+        <section className="mb-10">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <Bot className="w-5 h-5 text-primary" />
+            AI-profiler &amp; bottar
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 text-sm text-muted-foreground">
+            <p>
+              Echo2000 använder AI-genererade profiler under uppbyggnadsfasen för att skapa community-känsla. 
+              Detta är en vanlig och accepterad metod för nya communities och är helt transparent. 
+              AI-profiler är markerade internt och kommer gradvis att fasas ut i takt med att communityn växer.
+            </p>
+          </div>
+        </section>
+
+        {/* Ansvarsfriskrivning */}
+        <section className="mb-10">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <FileWarning className="w-5 h-5 text-primary" />
+            Ansvarsfriskrivning
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
+            <p>Echo2000 är <strong className="text-foreground">inte</strong> anslutet till, sponsrat av eller affilierat med LunarStorm, Microsoft, MSN eller något annat företag. Alla varumärken tillhör sina respektive ägare.</p>
+            <p>Echo2000 är i <strong className="text-destructive">alpha-fas</strong> och kan innehålla buggar, ofärdiga funktioner och oväntade ändringar. Data kan komma att återställas under utvecklingsperioden.</p>
+            <p>Plattformen förbehåller sig rätten att moderera och ta bort innehåll som bryter mot community-reglerna utan föregående varning.</p>
+          </div>
+        </section>
+
         {/* Contact Section */}
         <section className="mt-10 text-center">
           <div className="bg-card border border-border rounded-lg p-6">
@@ -190,6 +235,11 @@ export function FAQSection() {
             </a>
           </div>
         </section>
+
+        {/* Footer */}
+        <footer className="mt-8 pb-4 text-center text-xs text-muted-foreground space-y-1">
+          <p>© 2026 Echo2000 Alpha</p>
+        </footer>
       </div>
     </div>
   );

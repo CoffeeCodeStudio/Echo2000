@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SharedLayout } from "@/components/SharedLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { CookieBanner } from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
@@ -52,6 +53,7 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <CookieBanner />
             </BrowserRouter>
           </LajvProvider>
         </RadioProvider>
