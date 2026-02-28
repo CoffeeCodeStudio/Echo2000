@@ -20,10 +20,25 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
   const isScheduler = req.headers.get("x-supabase-scheduler") !== null;
 
-  if (!isServiceRole && !isScheduler) {
+  // Also allow authenticated admin users
+  let isAdmin = false;
+  if (!isServiceRole && !isScheduler && authHeader.startsWith("Bearer ")) {
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (user) {
+      const { data: hasAdmin } = await userClient.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      isAdmin = hasAdmin === true;
+    }
+  }
+
+  if (!isServiceRole && !isScheduler && !isAdmin) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -31,7 +46,6 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: bots, error: botsError } = await supabase
