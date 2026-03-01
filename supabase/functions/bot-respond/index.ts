@@ -124,6 +124,16 @@ serve(async (req) => {
       });
     }
 
+    // Resolve avatar from profile if bot_settings lacks it
+    if (!bot.avatar_url) {
+      const { data: bp } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("user_id", bot.user_id)
+        .single();
+      if (bp?.avatar_url) bot.avatar_url = bp.avatar_url;
+    }
+
     // Reality context
     const { data: recentNews } = await supabase
       .from("news_articles")
