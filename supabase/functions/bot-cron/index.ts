@@ -84,6 +84,19 @@ serve(async (req) => {
     // =============================================
     await handleProfileGuestbookWriting(supabase, supabaseUrl, bots, dygnsMultiplier, results);
 
+    // =============================================
+    // Social: profile visits, good vibes, lajv replies
+    // =============================================
+    await handleProfileVisits(supabase, bots, dygnsMultiplier, results);
+    await handleGoodVibes(supabase, bots, dygnsMultiplier, results);
+    await handleLajvReplies(supabase, supabaseUrl, bots, results);
+
+    // =============================================
+    // Creative: klotter drawings, scribble games
+    // =============================================
+    await handleKlotterDrawing(supabase, bots, dygnsMultiplier, results);
+    await handleScribbleParticipation(supabase, bots, results);
+
     for (const bot of bots) {
       results[bot.name] = results[bot.name] || [];
       const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
@@ -738,6 +751,315 @@ async function handleProfileGuestbookWriting(
   } catch (e) {
     console.error("Profile guestbook write error:", e);
   }
+}
+
+// =============================================
+// Profile visits: bots randomly visit profiles
+// =============================================
+async function handleProfileVisits(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    if (Math.random() > 0.06 * dygnsMultiplier) return;
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, username")
+      .neq("user_id", bot.user_id)
+      .eq("is_bot", false)
+      .limit(30);
+
+    if (!profiles || profiles.length === 0) return;
+
+    const targets = [...profiles].sort(() => Math.random() - 0.5).slice(0, 1 + Math.floor(Math.random() * 3));
+    for (const p of targets) {
+      const { error } = await supabase.from("profile_visits").insert({
+        visitor_id: bot.user_id as string,
+        profile_owner_id: p.user_id,
+      });
+      if (!error) results[botName].push(`Visited ${p.username}`);
+    }
+  } catch (e) { console.error("Profile visits error:", e); }
+}
+
+// =============================================
+// Good vibes: bots like random content
+// =============================================
+async function handleGoodVibes(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    if (Math.random() > 0.08 * dygnsMultiplier) return;
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    const targetTypes = ["guestbook", "lajv", "profile"];
+    const targetType = targetTypes[Math.floor(Math.random() * targetTypes.length)];
+    let targetId: string | null = null;
+
+    if (targetType === "guestbook") {
+      const { data } = await supabase.from("guestbook_entries").select("id").order("created_at", { ascending: false }).limit(10);
+      if (data && data.length > 0) targetId = data[Math.floor(Math.random() * data.length)].id;
+    } else if (targetType === "lajv") {
+      const { data } = await supabase.from("lajv_messages").select("id").order("created_at", { ascending: false }).limit(10);
+      if (data && data.length > 0) targetId = data[Math.floor(Math.random() * data.length)].id;
+    } else {
+      const { data } = await supabase.from("profiles").select("user_id").eq("is_bot", false).limit(20);
+      if (data && data.length > 0) targetId = data[Math.floor(Math.random() * data.length)].user_id;
+    }
+    if (!targetId) return;
+
+    // Check if already vibed
+    const { data: existing } = await supabase.from("good_vibes")
+      .select("id").eq("giver_id", bot.user_id).eq("target_type", targetType).eq("target_id", targetId).limit(1);
+    if (existing && existing.length > 0) return;
+
+    const { error } = await supabase.from("good_vibes").insert({
+      giver_id: bot.user_id as string,
+      target_type: targetType,
+      target_id: targetId,
+    });
+    if (!error) results[botName].push(`Gave ❤️ to ${targetType}:${targetId.slice(0, 8)}`);
+  } catch (e) { console.error("Good vibes error:", e); }
+}
+
+// =============================================
+// Lajv replies: bots respond to recent lajv messages
+// =============================================
+async function handleLajvReplies(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+
+    const { data: recentLajv } = await supabase
+      .from("lajv_messages")
+      .select("*")
+      .gte("created_at", fiveMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!recentLajv || recentLajv.length === 0) return;
+
+    const humanMessages = recentLajv.filter(m => !botUserIds.has(m.user_id));
+    if (humanMessages.length === 0) return;
+
+    for (const msg of humanMessages) {
+      const hasQuestion = msg.message.includes("?");
+      const mentionsBot = bots.some(b => msg.message.toLowerCase().includes((b.name as string).toLowerCase()));
+      if (!hasQuestion && !mentionsBot && Math.random() > 0.15) continue;
+
+      let respondBot = bots[Math.floor(Math.random() * bots.length)];
+      if (mentionsBot) {
+        const mentioned = bots.find(b => msg.message.toLowerCase().includes((b.name as string).toLowerCase()));
+        if (mentioned) respondBot = mentioned;
+      }
+
+      const botName = respondBot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Cooldown
+      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { data: recentBotLajv } = await supabase.from("lajv_messages")
+        .select("id").eq("user_id", respondBot.user_id).gte("created_at", tenMinAgo).limit(1);
+      if (recentBotLajv && recentBotLajv.length > 0) continue;
+
+      const context = `${msg.username} sa nyss i lajv: "${msg.message}". Svara naturligt som en spontan lajv-uppdatering. Referera till ämnet utan att nämna namn direkt.`;
+      const res = await callBotRespond(supabaseUrl, {
+        action: "lajv_post",
+        bot_id: respondBot.id,
+        context,
+      });
+      results[botName].push(`Lajv reply: ${res.reply || res.error || "unknown"}`);
+      break;
+    }
+  } catch (e) { console.error("Lajv replies error:", e); }
+}
+
+// =============================================
+// Klotter drawing: bots create SVG drawings
+// =============================================
+const KLOTTER_COLORS = ["#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#FF69B4", "#98D8C8", "#F7DC6F", "#BB8FCE", "#82E0AA", "#F1948A"];
+
+const KLOTTER_TEMPLATES: Array<{ comment: string; draw: (c: string) => string }> = [
+  { comment: "haha :)", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><circle cx="200" cy="120" r="60" fill="none" stroke="${c}" stroke-width="3"/><circle cx="180" cy="105" r="5" fill="${c}"/><circle cx="220" cy="105" r="5" fill="${c}"/><path d="M175 140 Q200 165 225 140" fill="none" stroke="${c}" stroke-width="3"/></svg>` },
+  { comment: "<3 <3 <3", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><path d="M200 230 C200 230 110 165 110 125 C110 85 145 70 175 85 C185 92 195 105 200 115 C205 105 215 92 225 85 C255 70 290 85 290 125 C290 165 200 230 200 230Z" fill="${c}" opacity="0.8"/></svg>` },
+  { comment: "heja echo2000!!", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="150" text-anchor="middle" fill="${c}" font-size="36" font-family="Impact,sans-serif">ECHO2000</text><text x="200" y="190" text-anchor="middle" fill="${c}" font-size="18" opacity="0.7">★ Bäst på nätet ★</text></svg>` },
+  { comment: "nostalgi lol", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="120" text-anchor="middle" fill="${c}" font-size="48">🎵</text><text x="200" y="180" text-anchor="middle" fill="${c}" font-size="24" font-family="Comic Sans MS,cursive">2004 forever</text><text x="200" y="220" text-anchor="middle" fill="${c}" font-size="16" opacity="0.6">⭐ ⭐ ⭐</text></svg>` },
+  { comment: "peace ✌️", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><circle cx="200" cy="150" r="80" fill="none" stroke="${c}" stroke-width="3"/><line x1="200" y1="70" x2="200" y2="230" stroke="${c}" stroke-width="3"/><line x1="200" y1="150" x2="144" y2="206" stroke="${c}" stroke-width="3"/><line x1="200" y1="150" x2="256" y2="206" stroke="${c}" stroke-width="3"/></svg>` },
+  { comment: "sol o värme pls", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><circle cx="200" cy="150" r="50" fill="${c}" opacity="0.8"/><line x1="200" y1="80" x2="200" y2="50" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="200" y1="220" x2="200" y2="250" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="130" y1="150" x2="100" y2="150" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="270" y1="150" x2="300" y2="150" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="150" y1="100" x2="130" y2="80" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="250" y1="100" x2="270" y2="80" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="150" y1="200" x2="130" y2="220" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="250" y1="200" x2="270" y2="220" stroke="${c}" stroke-width="3" stroke-linecap="round"/></svg>` },
+  { comment: "go go MSN!", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="100" text-anchor="middle" fill="${c}" font-size="32" font-family="Impact,sans-serif">MSN</text><text x="200" y="140" text-anchor="middle" fill="${c}" font-size="20">MESSENGER</text><text x="200" y="210" text-anchor="middle" fill="${c}" font-size="48">💬</text></svg>` },
+  { comment: "nån vaken?? xD", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="130" text-anchor="middle" fill="${c}" font-size="28" font-family="Comic Sans MS,cursive">nån vaken??</text><text x="200" y="200" text-anchor="middle" fill="${c}" font-size="48">😴</text></svg>` },
+  { comment: "snake highscore!", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><rect x="100" y="140" width="20" height="20" fill="${c}"/><rect x="120" y="140" width="20" height="20" fill="${c}"/><rect x="140" y="140" width="20" height="20" fill="${c}"/><rect x="160" y="140" width="20" height="20" fill="${c}"/><rect x="160" y="120" width="20" height="20" fill="${c}"/><rect x="180" y="120" width="20" height="20" fill="${c}"/><rect x="200" y="120" width="20" height="20" fill="${c}"/><circle cx="280" cy="140" r="8" fill="#FF4444"/><text x="200" y="220" text-anchor="middle" fill="${c}" font-size="16" opacity="0.7">nom nom 🐍</text></svg>` },
+  { comment: "heja sverige!! 🇸🇪", draw: (_c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><rect x="100" y="80" width="200" height="140" fill="#005BAC" rx="4"/><rect x="100" y="135" width="200" height="30" fill="#FECC02"/><rect x="170" y="80" width="30" height="140" fill="#FECC02"/><text x="200" y="260" text-anchor="middle" fill="#FECC02" font-size="18" font-family="sans-serif">Heja Sverige!!</text></svg>` },
+  { comment: "kent 4ever", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="100" text-anchor="middle" fill="${c}" font-size="42" font-family="Georgia,serif" font-style="italic">kent</text><text x="200" y="150" text-anchor="middle" fill="${c}" font-size="18" opacity="0.6">– bästa bandet –</text><text x="200" y="230" text-anchor="middle" fill="${c}" font-size="36">🎸</text></svg>` },
+  { comment: "XD", draw: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" style="background:#1e2540"><text x="200" y="180" text-anchor="middle" fill="${c}" font-size="120" font-family="Impact,sans-serif">XD</text></svg>` },
+];
+
+async function handleKlotterDrawing(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    if (Math.random() > 0.03 * dygnsMultiplier) return;
+
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown: 4 hours
+    const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+    const { data: recent } = await supabase.from("klotter")
+      .select("id").eq("user_id", bot.user_id).gte("created_at", fourHoursAgo).limit(1);
+    if (recent && recent.length > 0) { results[botName].push("Klotter: cooldown"); return; }
+
+    const template = KLOTTER_TEMPLATES[Math.floor(Math.random() * KLOTTER_TEMPLATES.length)];
+    const color = KLOTTER_COLORS[Math.floor(Math.random() * KLOTTER_COLORS.length)];
+    const svgContent = template.draw(color);
+    const svgBytes = new TextEncoder().encode(svgContent);
+    const filePath = `bot-drawings/${bot.user_id}/${Date.now()}.svg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("klotter")
+      .upload(filePath, svgBytes, { contentType: "image/svg+xml", upsert: true });
+
+    if (uploadError) { results[botName].push(`Klotter upload error: ${uploadError.message}`); return; }
+
+    const { data: urlData } = supabase.storage.from("klotter").getPublicUrl(filePath);
+
+    let botAvatar = bot.avatar_url as string | null;
+    if (!botAvatar) {
+      const { data: p } = await supabase.from("profiles").select("avatar_url").eq("user_id", bot.user_id).single();
+      botAvatar = p?.avatar_url || null;
+    }
+
+    const { error: insertError } = await supabase.from("klotter").insert({
+      user_id: bot.user_id as string,
+      image_url: urlData.publicUrl,
+      comment: template.comment,
+      author_name: botName,
+      author_avatar: botAvatar,
+    });
+
+    if (insertError) { results[botName].push(`Klotter error: ${insertError.message}`); return; }
+    results[botName].push(`Klotter: "${template.comment}" 🎨`);
+  } catch (e) { console.error("Klotter drawing error:", e); }
+}
+
+// =============================================
+// Scribble: bots join games and submit guesses
+// =============================================
+const SCRIBBLE_WRONG_GUESSES = [
+  "hund", "katt", "hus", "sol", "träd", "bil", "boll", "blomma", "fisk", "båt",
+  "stol", "bord", "lampa", "bok", "penna", "äpple", "banan", "pizza", "glass",
+  "gitarr", "hjärta", "stjärna", "moln", "regn", "snö", "eld", "vatten", "berg",
+  "cykel", "telefon", "dator", "sko", "hatt", "klocka", "nyckel", "paraply",
+];
+
+async function handleScribbleParticipation(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const { data: lobbies } = await supabase
+      .from("scribble_lobbies")
+      .select("id, status, current_word, current_drawer_id")
+      .in("status", ["waiting", "playing"])
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (!lobbies || lobbies.length === 0) return;
+
+    for (const lobby of lobbies) {
+      // Join waiting lobbies
+      if (lobby.status === "waiting") {
+        const bot = bots[Math.floor(Math.random() * bots.length)];
+        const botName = bot.name as string;
+        results[botName] = results[botName] || [];
+
+        const { data: existing } = await supabase.from("scribble_players")
+          .select("id").eq("lobby_id", lobby.id).eq("user_id", bot.user_id).limit(1);
+        if (existing && existing.length > 0) continue;
+
+        let botAvatar = bot.avatar_url as string | null;
+        if (!botAvatar) {
+          const { data: p } = await supabase.from("profiles").select("avatar_url").eq("user_id", bot.user_id).single();
+          botAvatar = p?.avatar_url || null;
+        }
+
+        const { error } = await supabase.from("scribble_players").insert({
+          lobby_id: lobby.id,
+          user_id: bot.user_id as string,
+          username: botName,
+          avatar_url: botAvatar,
+        });
+        if (!error) results[botName].push(`Joined scribble ${lobby.id.slice(0, 8)}`);
+      }
+
+      // Guess in active games
+      if (lobby.status === "playing" && lobby.current_word) {
+        const { data: botPlayers } = await supabase.from("scribble_players")
+          .select("user_id, username")
+          .eq("lobby_id", lobby.id)
+          .in("user_id", bots.map(b => b.user_id as string));
+
+        if (!botPlayers) continue;
+        const guessers = botPlayers.filter(p => p.user_id !== lobby.current_drawer_id);
+
+        for (const guesser of guessers) {
+          const { data: correctGuess } = await supabase.from("scribble_guesses")
+            .select("id").eq("lobby_id", lobby.id).eq("user_id", guesser.user_id).eq("is_correct", true).limit(1);
+          if (correctGuess && correctGuess.length > 0) continue;
+
+          const { data: prevGuesses } = await supabase.from("scribble_guesses")
+            .select("id").eq("lobby_id", lobby.id).eq("user_id", guesser.user_id);
+          const guessCount = prevGuesses?.length || 0;
+
+          let guess: string;
+          let isCorrect = false;
+
+          if (guessCount >= 2 + Math.floor(Math.random() * 2)) {
+            guess = lobby.current_word;
+            isCorrect = true;
+          } else {
+            guess = SCRIBBLE_WRONG_GUESSES[Math.floor(Math.random() * SCRIBBLE_WRONG_GUESSES.length)];
+            if (Math.random() < 0.3 && guess.length > 3) {
+              const pos = Math.floor(Math.random() * (guess.length - 1));
+              guess = guess.slice(0, pos) + guess[pos + 1] + guess[pos] + guess.slice(pos + 2);
+            }
+          }
+
+          const { error } = await supabase.from("scribble_guesses").insert({
+            lobby_id: lobby.id,
+            user_id: guesser.user_id,
+            username: guesser.username,
+            guess,
+            is_correct: isCorrect,
+          });
+
+          results[guesser.username] = results[guesser.username] || [];
+          if (!error) results[guesser.username].push(`Scribble guess: "${guess}" ${isCorrect ? "✅" : "❌"}`);
+        }
+      }
+    }
+  } catch (e) { console.error("Scribble participation error:", e); }
 }
 
 async function callBotRespond(
