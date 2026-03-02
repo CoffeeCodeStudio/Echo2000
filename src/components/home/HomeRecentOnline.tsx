@@ -9,7 +9,7 @@ import type { UserStatus } from "../StatusIndicator";
 import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 
-const BOT_ONLINE_THRESHOLD_MS = 10 * 60 * 1000; // 10 min
+const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000; // 8 min
 
 export function HomeRecentOnline() {
   const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null }[]>([]);

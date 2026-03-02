@@ -23,12 +23,12 @@ export function HomeStatsBox() {
   // Fetch online bot count (bots with last_seen within 10 min)
   useEffect(() => {
     const fetchOnlineBots = async () => {
-      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
       const { count } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .eq("is_bot", true)
-        .gte("last_seen", tenMinAgo);
+        .gte("last_seen", eightMinAgo);
       setOnlineBotCount(count ?? 0);
     };
     fetchOnlineBots();

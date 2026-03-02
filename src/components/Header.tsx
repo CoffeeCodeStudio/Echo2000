@@ -43,12 +43,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Count bots with recent last_seen as "online"
   useEffect(() => {
     const fetchBotCount = async () => {
-      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
       const { count } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .eq("is_bot", true)
-        .gte("last_seen", tenMinAgo);
+        .gte("last_seen", eightMinAgo);
       setOnlineBotCount(count ?? 0);
     };
     fetchBotCount();

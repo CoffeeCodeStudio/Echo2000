@@ -10,7 +10,7 @@ interface PresenceState {
   current_activity?: string;
 }
 
-const AWAY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const AWAY_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
 const ACTIVITY_THROTTLE_MS = 30 * 1000; // Throttle activity updates to every 30s
 const CHANNEL_NAME = 'echo2000-presence';
 
