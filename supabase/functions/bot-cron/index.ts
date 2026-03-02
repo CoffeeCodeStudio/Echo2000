@@ -80,6 +80,11 @@ serve(async (req) => {
     }
 
     // =============================================
+    // Lajv auto-fill: if lajv is empty for 10 min, force a bot post
+    // =============================================
+    await handleLajvAutoFill(supabase, supabaseUrl, bots, results);
+
+    // =============================================
     // Lajv posts: occasional spontaneous status updates
     // =============================================
     await handleLajvPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
@@ -117,10 +122,11 @@ serve(async (req) => {
     await handleCrossBotInteraction(supabase, supabaseUrl, bots, results);
 
     // =============================================
-    // Creative: klotter drawings, scribble games
+    // Creative: klotter drawings, scribble games, snake highscores
     // =============================================
     await handleKlotterDrawing(supabase, bots, dygnsMultiplier, results);
     await handleScribbleParticipation(supabase, bots, results);
+    await handleSnakeHighscores(supabase, bots, dygnsMultiplier, results);
 
     for (const bot of bots) {
       results[bot.name] = results[bot.name] || [];
@@ -220,30 +226,44 @@ serve(async (req) => {
       }
     }
 
-    // Update last_seen for ALL bots that did something this cycle
+    // =============================================
+    // 60% ONLINE RULE: Keep at least 60% of bots with recent last_seen
+    // =============================================
+    const totalBots = bots.length;
+    const targetOnline = Math.ceil(totalBots * 0.6);
+    const now = new Date();
+    
+    // Shuffle bots and pick 60%+ to be "online"
+    const shuffledBots = [...bots].sort(() => Math.random() - 0.5);
+    const onlineBots = shuffledBots.slice(0, targetOnline);
+    
+    for (const bot of onlineBots) {
+      // Set last_seen to now with slight random offset (0-2 min ago) for realism
+      const offset = Math.floor(Math.random() * 2 * 60 * 1000);
+      const lastSeen = new Date(now.getTime() - offset).toISOString();
+      await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
+    }
+    
+    // Remaining bots: some "away" (3-8 min ago), some truly offline
+    const remainingBots = shuffledBots.slice(targetOnline);
+    for (const bot of remainingBots) {
+      // 50% chance to be "away", 50% offline
+      if (Math.random() < 0.5) {
+        const awayOffset = 3 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000); // 3-8 min
+        const lastSeen = new Date(now.getTime() - awayOffset).toISOString();
+        await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
+      }
+      // else: leave their last_seen as-is (offline)
+    }
+
+    // Also update last_seen for bots that actually DID something this cycle
     const activeBotUserIds = Object.entries(results)
       .filter(([_, msgs]) => msgs.some(m => !m.includes("Skipped") && !m.includes("cooldown") && !m.includes("skipped")))
       .map(([name]) => bots.find(b => b.name === name)?.user_id)
       .filter(Boolean) as string[];
 
-    if (activeBotUserIds.length > 0) {
-      for (const uid of activeBotUserIds) {
-        await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", uid);
-      }
-    }
-
-    // Also update presence for all bots periodically
-    try {
-      await fetch(`${supabaseUrl}/functions/v1/bot-manager`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${serviceRoleKey}`,
-        },
-        body: JSON.stringify({ action: "update_presence" }),
-      });
-    } catch (e) {
-      console.error("Bot presence update error:", e);
+    for (const uid of activeBotUserIds) {
+      await supabase.from("profiles").update({ last_seen: now.toISOString() }).eq("user_id", uid);
     }
 
     console.log("Bot cron results:", JSON.stringify(results));
@@ -721,16 +741,16 @@ async function handleProfileGuestbookWriting(
   results: Record<string, string[]>
 ) {
   try {
-    // ~5% chance per cycle × dygnsrytm
-    if (Math.random() > 0.05 * dygnsMultiplier) return;
+    // ~12% chance per cycle × dygnsrytm (increased for more visibility)
+    if (Math.random() > 0.12 * dygnsMultiplier) return;
 
     // Pick a random bot as author
     const authorBot = bots[Math.floor(Math.random() * bots.length)];
     const botName = authorBot.name as string;
     results[botName] = results[botName] || [];
 
-    // Cooldown: no profile guestbook write from this bot in last 2 hours
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    // Cooldown: no profile guestbook write from this bot in last 45 min
+    const twoHoursAgo = new Date(Date.now() - 45 * 60 * 1000).toISOString();
     const { data: recentWrites } = await supabase
       .from("profile_guestbook")
       .select("id")
@@ -1414,6 +1434,143 @@ async function handleCrossBotInteraction(
     }
   } catch (e) {
     console.error("Cross-bot interaction error:", e);
+  }
+}
+
+// =============================================
+// Lajv Auto-Fill: if no lajv messages in 10 min, force a bot post
+// =============================================
+async function handleLajvAutoFill(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: recentLajv } = await supabase
+      .from("lajv_messages")
+      .select("id")
+      .gte("created_at", tenMinAgo)
+      .limit(1);
+
+    // If there ARE recent messages, skip
+    if (recentLajv && recentLajv.length > 0) return;
+
+    // Lajv is empty! Pick a random bot to fill the void
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Use topic_post with a random topic for variety
+    const fillTopics = [
+      "Tyst här... nån vaken?? 🌙",
+      "Asså jag scrollar bara... typ dead internet vibes",
+      "Minns ni flash-spel? Good times",
+      "Ingen online?? Jag sitter här iaf lol",
+      "Echo2000 > alla andra sidor. Just saying",
+      "Vad gör ni en sån här tid? Jag prokrastinerar",
+      "Nostalgi-tanke: MSN-ljud när nån loggade in = dopamin",
+      "Testar om nån ser det här... hallå?",
+      "Borde sova men scrollar istället. Klassiker",
+      "Finns det nån som fortfarande lyssnar på radio? 📻",
+    ];
+    const topic = fillTopics[Math.floor(Math.random() * fillTopics.length)];
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "topic_post",
+      bot_id: bot.id,
+      context: topic,
+    });
+
+    results[botName].push(`Lajv auto-fill: ${res.reply || res.error || "unknown"}`);
+  } catch (e) {
+    console.error("Lajv auto-fill error:", e);
+  }
+}
+
+// =============================================
+// Snake Highscores: bots submit realistic game scores
+// =============================================
+async function handleSnakeHighscores(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // ~3% chance per cycle × dygnsrytm
+    if (Math.random() > 0.03 * dygnsMultiplier) return;
+
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown: 6 hours per bot
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const { data: recentScores } = await supabase
+      .from("snake_highscores")
+      .select("id")
+      .eq("user_id", bot.user_id)
+      .gte("created_at", sixHoursAgo)
+      .limit(1);
+
+    if (recentScores && recentScores.length > 0) {
+      results[botName].push("Snake: cooldown");
+      return;
+    }
+
+    // Generate realistic, varied scores:
+    // 60% bad (5-30), 25% medium (30-80), 10% good (80-150), 5% great (150-250)
+    const roll = Math.random();
+    let score: number;
+    let apples: number;
+    let time: number;
+
+    if (roll < 0.60) {
+      // Bad scores — most common
+      score = 5 + Math.floor(Math.random() * 25);
+      apples = Math.floor(score / 5);
+      time = 10 + Math.floor(Math.random() * 30);
+    } else if (roll < 0.85) {
+      // Medium scores
+      score = 30 + Math.floor(Math.random() * 50);
+      apples = Math.floor(score / 5);
+      time = 30 + Math.floor(Math.random() * 60);
+    } else if (roll < 0.95) {
+      // Good scores
+      score = 80 + Math.floor(Math.random() * 70);
+      apples = Math.floor(score / 5);
+      time = 60 + Math.floor(Math.random() * 120);
+    } else {
+      // Great scores — rare
+      score = 150 + Math.floor(Math.random() * 100);
+      apples = Math.floor(score / 5);
+      time = 120 + Math.floor(Math.random() * 180);
+    }
+
+    let botAvatar = bot.avatar_url as string | null;
+    if (!botAvatar) {
+      const { data: p } = await supabase.from("profiles").select("avatar_url").eq("user_id", bot.user_id).single();
+      botAvatar = p?.avatar_url || null;
+    }
+
+    const { error } = await supabase.from("snake_highscores").insert({
+      user_id: bot.user_id as string,
+      username: botName,
+      avatar_url: botAvatar,
+      score,
+      apples_eaten: apples,
+      time_seconds: time,
+    });
+
+    if (!error) {
+      results[botName].push(`Snake score: ${score} pts (${apples} 🍎, ${time}s) 🐍`);
+    } else {
+      results[botName].push(`Snake error: ${error.message}`);
+    }
+  } catch (e) {
+    console.error("Snake highscores error:", e);
   }
 }
 
