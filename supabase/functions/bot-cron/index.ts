@@ -85,12 +85,17 @@ serve(async (req) => {
     await handleLajvPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
 
     // =============================================
-    // Interest-driven "web search" posts
+    // Topic-based posts from internal knowledge base
     // =============================================
-    await handleInterestSearchPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+    await handleTopicPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
 
     // =============================================
-    // Personality-driven news reactions
+    // Admin "Dagens Nyhet" — bots discuss admin-set topics
+    // =============================================
+    await handleDailyNewsPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+
+    // =============================================
+    // Personality-driven news reactions (from news_articles)
     // =============================================
     await handleNewsReactions(supabase, supabaseUrl, bots, dygnsMultiplier, results);
 
@@ -1186,7 +1191,7 @@ async function handleAutoAcceptFriendRequests(
 }
 
 // =============================================
-// Interest-driven "web search" posts: bots post about topics they care about
+// PERSONALITY_INTERESTS: maps personality → topic categories
 // =============================================
 const PERSONALITY_INTERESTS: Record<string, string[]> = {
   nostalgikern: ["musik", "teknik", "nostalgi"],
@@ -1196,7 +1201,10 @@ const PERSONALITY_INTERESTS: Record<string, string[]> = {
   filosofansen: ["dator", "teknik", "spel"],
 };
 
-async function handleInterestSearchPosts(
+// =============================================
+// Topic-based posts from internal knowledge base
+// =============================================
+async function handleTopicPosts(
   supabase: ReturnType<typeof createClient>,
   supabaseUrl: string,
   bots: Record<string, unknown>[],
@@ -1204,8 +1212,8 @@ async function handleInterestSearchPosts(
   results: Record<string, string[]>
 ) {
   try {
-    // ~6% chance per cycle × dygnsrytm
-    if (Math.random() > 0.06 * dygnsMultiplier) return;
+    // ~8% chance per cycle × dygnsrytm
+    if (Math.random() > 0.08 * dygnsMultiplier) return;
 
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
@@ -1221,38 +1229,73 @@ async function handleInterestSearchPosts(
       .limit(2);
 
     if (recentPosts && recentPosts.length >= 2) {
-      results[botName].push("Interest search skipped: cooldown");
+      results[botName].push("Topic post skipped: cooldown");
       return;
     }
 
-    // Build tagging context: list of active users/bots that could be tagged
-    const { data: activeProfiles } = await supabase
-      .from("profiles")
-      .select("username, interests, listens_to")
-      .neq("user_id", bot.user_id)
-      .gte("last_seen", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .limit(15);
+    // Interest matching: pick a topic that matches this bot's personality
+    const personality = bot.tone_of_voice as string || "nostalgikern";
+    const interests = PERSONALITY_INTERESTS[personality] || PERSONALITY_INTERESTS["nostalgikern"];
 
-    const taggableUsers = activeProfiles?.map(p =>
-      `@${p.username} (intressen: ${p.interests || "okänt"}, lyssnar: ${p.listens_to || "okänt"})`
-    ).join(", ") || "";
+    // Import TOPIC_LIBRARY inline (duplicated from bot-respond for independence)
+    const TOPICS = [
+      { text: "Minns ni när man brände CD-skivor åt varandra? Bästa mixtapen wins", categories: ["musik", "nostalgi"] },
+      { text: "Kent la ner... fortfarande inte över det tbh", categories: ["musik", "nostalgi"] },
+      { text: "Basshunter - Boten Anna. Det var PEAK internet", categories: ["musik", "nostalgi"] },
+      { text: "Evanescence var typ hela min personlighet 2004", categories: ["musik", "nostalgi"] },
+      { text: "Vem hade bäst MSN-nick med songlyrics?", categories: ["musik", "nostalgi"] },
+      { text: "Nokia 3310 var typ oförstörbar", categories: ["teknik", "nostalgi"] },
+      { text: "Minns ni LimeWire?", categories: ["teknik", "nostalgi"] },
+      { text: "MSN Messenger > alla moderna chattar", categories: ["teknik", "nostalgi"] },
+      { text: "Lunarstorm var typ svenska internet-hemmet", categories: ["teknik", "nostalgi"] },
+      { text: "CS 1.6 på datasal efter skolan", categories: ["spel", "nostalgi"] },
+      { text: "Habbo Hotel... 'bobba'", categories: ["spel", "nostalgi"] },
+      { text: "RuneScape tog ju typ hela ens barndom", categories: ["spel", "nostalgi"] },
+      { text: "Vilken musik streamar ni just nu?", categories: ["musik"] },
+      { text: "Robyn är fortfarande bäst", categories: ["musik"] },
+      { text: "Nya GTA-trailern ser fett ut tbh", categories: ["spel"] },
+      { text: "Nån som fortfarande spelar CS2?", categories: ["spel"] },
+      { text: "AI tar över allt snart... typ skynet-vibbar", categories: ["teknik"] },
+      { text: "TikTok vs YouTube shorts — vem vinner?", categories: ["teknik"] },
+      { text: "Expedition Robinson borde göra comeback", categories: ["star"] },
+      { text: "Vilken serie binge-watchar ni?", categories: ["star"] },
+      { text: "Jolt Cola > alla energidrycker", categories: ["nostalgi"] },
+      { text: "Nån mer som saknar Pistvakt?", categories: ["star", "nostalgi"] },
+      { text: "ZTV var ba en helt annan värld", categories: ["star", "nostalgi"] },
+      { text: "Ahlgrens bilar eller polly?", categories: ["nostalgi"] },
+      { text: "Vilka indie-spel har ni kört på sistone?", categories: ["spel"] },
+      { text: "Retro-gaming är ba det bästa. SNES > allt", categories: ["spel", "nostalgi"] },
+      { text: "Spotify Wrapped var typ det viktigaste eventet", categories: ["musik"] },
+      { text: "Fredagsmys med tacos — det mest svenska som finns", categories: ["star"] },
+      { text: "Saknar ni flip-phones ibland?", categories: ["teknik", "nostalgi"] },
+      { text: "Blogg.se var content creation innan det hette content creation", categories: ["teknik", "nostalgi"] },
+    ];
+
+    // Filter topics matching this bot's interests
+    const matchingTopics = TOPICS.filter(t =>
+      t.categories.some(c => interests.includes(c))
+    );
+
+    if (matchingTopics.length === 0) return;
+
+    const chosenTopic = matchingTopics[Math.floor(Math.random() * matchingTopics.length)];
 
     const res = await callBotRespond(supabaseUrl, {
-      action: "interest_search_post",
+      action: "topic_post",
       bot_id: bot.id,
-      context: `Användare som kan taggas om relevant:\n${taggableUsers}`,
+      context: chosenTopic.text,
     });
 
-    results[botName].push(`Interest search post: ${res.reply || res.error || "unknown"}`);
+    results[botName].push(`Topic post "${chosenTopic.text.substring(0, 30)}...": ${res.reply || res.error || "unknown"}`);
   } catch (e) {
-    console.error("Interest search posts error:", e);
+    console.error("Topic posts error:", e);
   }
 }
 
 // =============================================
-// Personality-driven news reactions
+// Admin "Dagens Nyhet" — bots discuss admin-set daily news
 // =============================================
-async function handleNewsReactions(
+async function handleDailyNewsPosts(
   supabase: ReturnType<typeof createClient>,
   supabaseUrl: string,
   bots: Record<string, unknown>[],
@@ -1260,43 +1303,26 @@ async function handleNewsReactions(
   results: Record<string, string[]>
 ) {
   try {
-    // ~4% chance per cycle
-    if (Math.random() > 0.04 * dygnsMultiplier) return;
+    // ~10% chance per cycle × dygnsrytm
+    if (Math.random() > 0.10 * dygnsMultiplier) return;
 
-    // Get news with age info for decay
-    const { data: news } = await supabase
-      .from("news_articles")
-      .select("id, title, content, created_at")
-      .eq("is_published", true)
+    // Get active daily news (not expired)
+    const { data: dailyNews } = await supabase
+      .from("daily_news")
+      .select("id, content, created_at, expires_at")
+      .eq("is_active", true)
+      .gte("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
-      .limit(10);
+      .limit(3);
 
-    if (!news || news.length === 0) return;
+    if (!dailyNews || dailyNews.length === 0) return;
 
-    // News decay: weight newer articles more heavily
-    const now = Date.now();
-    const weightedNews = news.map(n => {
-      const ageHours = (now - new Date(n.created_at).getTime()) / (1000 * 60 * 60);
-      const weight = Math.exp(-0.03 * ageHours);
-      return { ...n, weight, ageHours };
-    }).filter(n => n.weight > 0.02); // Filter out super old news
-
-    if (weightedNews.length === 0) return;
-
-    // Weighted random selection (newer = more likely)
-    const totalWeight = weightedNews.reduce((sum, n) => sum + n.weight, 0);
-    let r = Math.random() * totalWeight;
-    let chosenNews = weightedNews[0];
-    for (const n of weightedNews) {
-      r -= n.weight;
-      if (r <= 0) { chosenNews = n; break; }
-    }
-
+    const chosenNews = dailyNews[Math.floor(Math.random() * dailyNews.length)];
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    // Cooldown
+    // Cooldown: 30 min
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase
       .from("lajv_messages")
@@ -1306,25 +1332,20 @@ async function handleNewsReactions(
       .limit(1);
     if (recentLajv && recentLajv.length > 0) return;
 
-    const isOldNews = chosenNews.ageHours > 168; // > 1 week
-    const newsContext = isOldNews
-      ? `GAMMAL NYHET (${Math.floor(chosenNews.ageHours / 24)} dagar sedan): "${chosenNews.title}". Inled med "minns ni när..." eller "det var typ ett tag sen men..."`
-      : `NYHET: "${chosenNews.title}". Innehåll: "${chosenNews.content.substring(0, 200)}"`;
-
     const res = await callBotRespond(supabaseUrl, {
-      action: "news_reaction",
+      action: "daily_news_post",
       bot_id: bot.id,
-      context: newsContext,
+      context: chosenNews.content,
     });
 
-    results[botName].push(`News reaction "${chosenNews.title}": ${res.reply || res.error || "unknown"}`);
+    results[botName].push(`Daily news post: ${res.reply || res.error || "unknown"}`);
   } catch (e) {
-    console.error("News reactions error:", e);
+    console.error("Daily news posts error:", e);
   }
 }
 
 // =============================================
-// Cross-bot interaction: bots reply to each other's lajv posts (40% chance)
+// Cross-bot interaction: bots reply to each other's lajv posts (30% chance)
 // =============================================
 async function handleCrossBotInteraction(
   supabase: ReturnType<typeof createClient>,
@@ -1351,10 +1372,10 @@ async function handleCrossBotInteraction(
     if (botPosts.length === 0) return;
 
     for (const post of botPosts) {
-      // 40% chance to trigger cross-bot reply
-      if (Math.random() > 0.40) continue;
+      // 30% chance to trigger cross-bot reply
+      if (Math.random() > 0.30) continue;
 
-      // Find a bot with SHARED interests (same personality type = shared interest)
+      // Find a bot with SHARED interests
       const posterBot = bots.find(b => (b.user_id as string) === post.user_id);
       if (!posterBot) continue;
 
@@ -1363,10 +1384,10 @@ async function handleCrossBotInteraction(
 
       // Find bots with overlapping interests
       const candidateBots = bots.filter(b => {
-        if ((b.user_id as string) === post.user_id) return false; // Not self
+        if ((b.user_id as string) === post.user_id) return false;
         const bp = b.tone_of_voice as string || "nostalgikern";
         const bi = PERSONALITY_INTERESTS[bp] || [];
-        return bi.some(i => posterInterests.includes(i)); // Shared interest
+        return bi.some(i => posterInterests.includes(i));
       });
 
       if (candidateBots.length === 0) continue;

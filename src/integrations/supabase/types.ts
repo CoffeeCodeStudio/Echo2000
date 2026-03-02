@@ -181,6 +181,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_news: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       friend_votes: {
         Row: {
           created_at: string

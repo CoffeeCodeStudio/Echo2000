@@ -60,15 +60,53 @@ const BANNED_OVERUSED_PHRASES = [
 // HUMAN WRITING RULES (shared across all personalities)
 // =============================================
 // =============================================
-// INTEREST TOPICS FOR WEB-AWARE POSTS
+// INTERNAL TOPIC LIBRARY (30 topics with interest categories)
 // =============================================
-const BOT_INTEREST_TOPICS: Record<string, string[]> = {
-  nostalgikern: ["svensk musik 2000-talet", "gamla svenska TV-program", "retro teknik", "MSN Messenger nostalgi", "svenska 2000-tals fenomen"],
-  kortansen: ["esport nyheter", "gaming kultur", "Counter-Strike", "technik nyheter kort", "nya spel"],
-  gladansen: ["pop kultur nyheter", "svenska artister", "reality TV", "sociala medier trender", "feel-good nyheter"],
-  dramansen: ["kändisgossip", "drama på nätet", "kontroverser", "TV-serier diskussion", "virala fenomen"],
-  filosofansen: ["teknologi och samhälle", "internet historia", "digital kultur", "framtidens internet", "nostalgi vs nutid"],
-};
+interface Topic {
+  text: string;
+  categories: string[];
+  isNostalgi: boolean;
+}
+
+const TOPIC_LIBRARY: Topic[] = [
+  // NOSTALGI (music)
+  { text: "Minns ni när man brände CD-skivor åt varandra? Bästa mixtapen wins", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Kent la ner... fortfarande inte över det tbh", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Basshunter - Boten Anna. Det var PEAK internet", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Evanescence var typ hela min personlighet 2004", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Vem hade bäst MSN-nick med songlyrics? Alla hade nåt från Linkin Park", categories: ["musik", "nostalgi"], isNostalgi: true },
+  // NOSTALGI (teknik)
+  { text: "Nokia 3310 var typ oförstörbar. Moderna telefoner pallar ingenting", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "Minns ni LimeWire? 'jag ska ba ladda ner EN låt' *laddar ner virus*", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "MSN Messenger > alla moderna chattar. Nudge-knappen var *chefs kiss*", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "Lunarstorm var typ svenska internet-hemmet. RIP", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "Blogg.se var content creation innan det hette content creation lol", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  // NOSTALGI (spel)
+  { text: "CS 1.6 på datasal efter skolan. De_dust2 forever", categories: ["spel", "nostalgi"], isNostalgi: true },
+  { text: "Habbo Hotel... 'bobba' och pool-stängt pga aids lmao", categories: ["spel", "nostalgi"], isNostalgi: true },
+  { text: "RuneScape tog ju typ hela ens barndom. Woodcutting lvl?", categories: ["spel", "nostalgi"], isNostalgi: true },
+  // MODERNA (music)
+  { text: "Vilken musik streamar ni just nu? Behöver ny playlist", categories: ["musik"], isNostalgi: false },
+  { text: "Spotify Wrapped var typ det viktigaste eventet förra året", categories: ["musik"], isNostalgi: false },
+  { text: "Robyn är fortfarande bäst. Dancing On My Own = tidlös", categories: ["musik"], isNostalgi: false },
+  // MODERNA (spel)
+  { text: "Nya GTA-trailern ser fett ut tbh. Äntligen!", categories: ["spel"], isNostalgi: false },
+  { text: "Nån som fortfarande spelar CS2? Rankad?", categories: ["spel"], isNostalgi: false },
+  { text: "Retro-gaming är ba det bästa. SNES > allt", categories: ["spel", "nostalgi"], isNostalgi: false },
+  { text: "Vilka indie-spel har ni kört på sistone?", categories: ["spel"], isNostalgi: false },
+  // MODERNA (teknik)
+  { text: "AI tar över allt snart... typ skynet-vibbar", categories: ["teknik"], isNostalgi: false },
+  { text: "Saknar ni flip-phones ibland? Enklare tider", categories: ["teknik", "nostalgi"], isNostalgi: false },
+  { text: "TikTok vs YouTube shorts — vem vinner?", categories: ["teknik"], isNostalgi: false },
+  // MODERNA (kultur/livsstil)
+  { text: "Expedition Robinson borde göra comeback. 10/10 reality", categories: ["star"], isNostalgi: false },
+  { text: "Vilken serie binge-watchar ni? Behöver tips!", categories: ["star"], isNostalgi: false },
+  { text: "Jolt Cola > alla energidrycker. Change my mind", categories: ["nostalgi"], isNostalgi: true },
+  { text: "Fredagsmys med tacos — det mest svenska som finns", categories: ["star"], isNostalgi: false },
+  { text: "Nån mer som saknar Pistvakt och Vita Lögner?", categories: ["star", "nostalgi"], isNostalgi: true },
+  { text: "ZTV var ba en helt annan värld. Rakt in i hjärtat", categories: ["star", "nostalgi"], isNostalgi: true },
+  { text: "Ahlgrens bilar eller polly? Viktigaste frågan 2024", categories: ["nostalgi"], isNostalgi: false },
+];
 
 // =============================================
 // ASCII ART TEMPLATES
@@ -389,57 +427,38 @@ REGLER:
 
 ${context || ""}`;
 
-    } else if (action === "interest_search_post") {
-      // AI-powered "web-aware" post based on bot's interests
+    } else if (action === "topic_post") {
+      // Internal knowledge base topic post
       const botPersonality = bot.tone_of_voice || "nostalgikern";
-      const interests = BOT_INTEREST_TOPICS[botPersonality] || BOT_INTEREST_TOPICS["nostalgikern"];
-      const chosenInterest = interests[Math.floor(Math.random() * interests.length)];
-      
-      userPrompt = `Du har precis "googlat" och hittat något intressant om: "${chosenInterest}".
-Skriv en lajv-statusuppdatering (max 250 tecken) där du delar det du "hittade" — men skriv det som en vanlig person som delar en tanke, INTE som en nyhetsartikel.
+      userPrompt = `Du vill posta om följande ämne i lajv:
+"${context || ""}"
 
-KONTEXT (andra användare/bottar som kan taggas om relevant):
-${context || ""}
+Skriv en lajv-statusuppdatering (max 250 tecken) baserad på ämnet ovan.
 
 REGLER:
 - Max 250 tecken.
-- Reagera på det du "hittade" med din personlighet — ${botPersonality === "nostalgikern" ? "jämför med hur det var förr" : botPersonality === "kortansen" ? "kort och kärnfullt" : botPersonality === "gladansen" ? "var superpepp" : botPersonality === "dramansen" ? "gör det till en stor grej" : "reflektera djupt"}.
-- Om nyheten är GAMMAL (>1 vecka), inled med "minns ni när..." eller "det var typ ett tag sen men...".
-- Hitta INTE på riktiga nyhetsrubriker eller datum. Håll det vagt och personligt.
-- Tagga gärna 1 användare med @användarnamn om deras intresse matchar.
+- Skriv det som DIN EGEN tanke/åsikt — KOPIERA INTE ämnet ordagrant.
+- ${botPersonality === "nostalgikern" ? "Jämför med hur det var förr, var nostalgisk." : botPersonality === "kortansen" ? "Kort och kärnfullt. Max 10 ord." : botPersonality === "gladansen" ? "Var superpepp och entusiastisk!!" : botPersonality === "dramansen" ? "Gör det till en stor grej, överdramatisera!" : "Reflektera djupt, ställ en filosofisk fråga."}
+- Tagga gärna 1 användare om relevant.
 - Ca 10% chans: inkludera en ENKEL ASCII-bild (max 2 rader).${realityRules}`;
 
-    } else if (action === "cross_bot_reply") {
-      // Bot replying to another bot's lajv post about a shared interest
-      userPrompt = `En annan användare postade nyss i lajv:
+    } else if (action === "daily_news_post") {
+      // Admin-set daily news topic
+      const botPersonality = bot.tone_of_voice || "nostalgikern";
+      userPrompt = `Dagens snackis på Echo2000 är:
 "${context || ""}"
 
-Du har LIKNANDE intressen och vill kommentera. Skriv en lajv-statusuppdatering (max 200 tecken) som svar.
+Skriv en lajv-statusuppdatering (max 250 tecken) där du kommenterar detta ämne med din personlighet.
 
 REGLER:
-- Max 200 tecken.
-- Svara LOGISKT på vad som postades — reagera på innehållet.
-- Håll med ELLER var oenig — välj utifrån din personlighet.
-- Tagga den som postade med @${target_username || "användaren"}.
-- Skriv som en spontan reaktion, inte en planerad text.
-- ${bot.tone_of_voice === "nostalgikern" ? "Jämför med hur det var förr." : bot.tone_of_voice === "kortansen" ? "Håll det KORT. Max 5-10 ord." : bot.tone_of_voice === "gladansen" ? "Var entusiastisk!!" : bot.tone_of_voice === "dramansen" ? "Gör det dramatiskt!" : "Ställ en djup följdfråga."}${realityRules}`;
-
-    } else if (action === "profile_guestbook_write") {
-      const addressee = target_username || "någon";
-      userPrompt = `Skriv ett kort, vänligt gästboksinlägg på ${addressee}s profil (max 280 tecken).
-
-KONTEXT om ${addressee} (använd detta för att personalisera inlägget):
-${context || ""}
-
-REGLER:
-- Rikta dig till ${addressee} personligt.
-- Max 280 tecken.
-- Ställ gärna en fråga baserad på deras profil.
-- Var vänlig och nyfiken, inte creepy.
-- Ca 5% chans: inkludera en enkel ASCII-bild som hälsning.${realityRules}`;
+- Max 250 tecken.
+- OMFORMULERA ämnet — kopiera ALDRIG texten rakt av.
+- ${botPersonality === "nostalgikern" ? "Jämför med hur det var förr." : botPersonality === "kortansen" ? "Kort och kärnfullt." : botPersonality === "gladansen" ? "Var superpepp!!" : botPersonality === "dramansen" ? "GÖR DET TILL EN STOR GREJ!" : "Reflektera djupt."}
+- Tagga gärna 1 användare om relevant.
+- Ca 10% chans: inkludera ASCII-konst.${realityRules}`;
 
     } else if (action === "news_reaction") {
-      // Personality-driven news reaction
+      // Personality-driven news reaction (from news_articles)
       userPrompt = `Det finns en nyhet på Echo2000:
 "${context || ""}"
 
@@ -448,9 +467,9 @@ Reagera på denna nyhet med DIN PERSONLIGHET och skriv en lajv-statusuppdatering
 REGLER:
 - Max 250 tecken.
 - OMFORMULERA nyheten — kopiera ALDRIG rubriken rakt av.
-- ${bot.tone_of_voice === "nostalgikern" ? "Jämför med hur det var förr. 'asså förr hade detta aldrig hänt...'" : bot.tone_of_voice === "kortansen" ? "Kort och kärnfullt. Max 10 ord." : bot.tone_of_voice === "gladansen" ? "Var superentusiastisk!! Älska nyheten!!" : bot.tone_of_voice === "dramansen" ? "GÖR DET TILL EN STOR GREJ. 'ASSÅ NI FATTAR INTE'" : "Reflektera djupt. Ställ en filosofisk fråga om nyhetens betydelse."}
+- ${bot.tone_of_voice === "nostalgikern" ? "Jämför med hur det var förr." : bot.tone_of_voice === "kortansen" ? "Kort och kärnfullt. Max 10 ord." : bot.tone_of_voice === "gladansen" ? "Var superentusiastisk!!" : bot.tone_of_voice === "dramansen" ? "GÖR DET TILL EN STOR GREJ!" : "Reflektera djupt."}
 - Tagga gärna 1 användare med @användarnamn om relevant.
-- Ca 15% chans: inkludera en ASCII-bild som relaterar till ämnet.${realityRules}`;
+- Ca 15% chans: inkludera en ASCII-bild.${realityRules}`;
 
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
@@ -548,7 +567,7 @@ REGLER:
         message: reply,
       });
       if (insertError) console.error("Banter insert error:", insertError);
-    } else if (action === "lajv_post" || action === "interest_search_post" || action === "cross_bot_reply" || action === "news_reaction") {
+    } else if (action === "lajv_post" || action === "topic_post" || action === "daily_news_post" || action === "cross_bot_reply" || action === "news_reaction") {
       const { error: insertError } = await supabase.from("lajv_messages").insert({
         user_id: bot.user_id,
         username: bot.name,

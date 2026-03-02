@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper, Clock } from "lucide-react";
+import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper, Clock, Megaphone } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { AdminCreateUser } from "@/components/admin/AdminCreateUser";
 import { AdminContentModeration } from "@/components/admin/AdminContentModeration";
@@ -13,6 +13,7 @@ import { AdminBotManager } from "@/components/admin/AdminBotManager";
 import { AdminNewsManager } from "@/components/admin/AdminNewsManager";
 import { AdminPendingApprovals } from "@/components/admin/AdminPendingApprovals";
 import { AdminBotSpawner } from "@/components/admin/AdminBotSpawner";
+import { AdminDailyNews } from "@/components/admin/AdminDailyNews";
 
 interface Profile {
   id: string;
@@ -34,7 +35,7 @@ export default function Admin() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news" | "daily">("pending");
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -151,6 +152,9 @@ export default function Admin() {
           <Button variant={activeTab === "news" ? "default" : "outline"} onClick={() => setActiveTab("news")}>
             <Newspaper className="w-4 h-4 mr-2" />Nyheter
           </Button>
+          <Button variant={activeTab === "daily" ? "default" : "outline"} onClick={() => setActiveTab("daily")}>
+            <Megaphone className="w-4 h-4 mr-2" />Dagens Nyhet
+          </Button>
         </div>
 
         {activeTab === "pending" && <AdminPendingApprovals onRefresh={fetchData} />}
@@ -165,6 +169,7 @@ export default function Admin() {
           </>
         )}
         {activeTab === "news" && <AdminNewsManager />}
+        {activeTab === "daily" && <AdminDailyNews />}
       </div>
     </div>
   );
