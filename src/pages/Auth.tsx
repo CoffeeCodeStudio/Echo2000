@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, User, Info, AlertTriangle } from "lucide-react";
+import { Loader2, Mail, Lock, User, Info, AlertTriangle, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,6 +37,7 @@ export default function Auth() {
   const [confirmedAge, setConfirmedAge] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; email?: string; password?: string }>({});
 
   const { signIn, signUp, user, loading } = useAuth();
@@ -92,7 +93,6 @@ export default function Auth() {
             toast({ title: "Inloggning misslyckades", description: "Fel e-post eller lösenord", variant: "destructive" });
           }
         } else {
-          // Check if banned or not approved after login
           const { data: { user: loggedInUser } } = await supabase.auth.getUser();
           if (loggedInUser) {
             const { data: isBanned } = await supabase.rpc('has_role', { _user_id: loggedInUser.id, _role: 'banned' });
@@ -101,7 +101,6 @@ export default function Auth() {
               toast({ title: "Kontot är avstängt", description: "Ditt konto har blivit bannlyst.", variant: "destructive" });
               return;
             }
-            // Check approval status
             const { data: profile } = await supabase
               .from("profiles")
               .select("is_approved")
@@ -121,7 +120,6 @@ export default function Auth() {
           toast({ title: "Välkommen tillbaka!", description: "Du är nu inloggad" });
         }
       } else {
-        // Case-insensitive username check
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("id")
@@ -138,7 +136,6 @@ export default function Auth() {
         if (error) {
           toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
         } else if (data.user) {
-          // Auto-assign 'user' role
           await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
           toast({
             title: "Konto skapat!",
@@ -168,10 +165,19 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 p-4">
-      <div className="w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-md">
+      {/* Close button to go back */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-4 right-4 z-[60] p-2 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Stäng"
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      <div className="w-full max-w-md mx-4 relative">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="font-display font-black text-3xl tracking-tight mb-2">
             <span className="text-foreground">ECHO</span>
             <span className="text-accent-foreground bg-accent px-2 rounded">2000</span>
@@ -179,33 +185,33 @@ export default function Auth() {
           <p className="text-muted-foreground text-sm">Nostalgi på riktigt</p>
         </div>
 
-        {/* Login/Register Card */}
-        <div className="nostalgia-card p-6">
-          {/* Tab switcher - hidden in forgot mode */}
+        {/* Login/Register Card — boxy style */}
+        <div className="bg-card border-2 border-border p-6 shadow-[4px_4px_0px_hsl(var(--border))]">
+          {/* Tab switcher */}
           {mode !== "forgot" && (
-          <div className="flex mb-6 border-b border-border">
-            <button
-              onClick={() => setMode("login")}
-              className={`flex-1 pb-3 text-sm font-bold transition-colors border-b-2 ${
-                mode === "login" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Logga in
-            </button>
-            <button
-              onClick={() => setMode("register")}
-              className={`flex-1 pb-3 text-sm font-bold transition-colors border-b-2 ${
-                mode === "register" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Registrera
-            </button>
-          </div>
+            <div className="flex mb-6 border-b-2 border-border">
+              <button
+                onClick={() => setMode("login")}
+                className={`flex-1 pb-3 text-sm font-bold transition-colors border-b-2 -mb-[2px] ${
+                  mode === "login" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Logga in
+              </button>
+              <button
+                onClick={() => setMode("register")}
+                className={`flex-1 pb-3 text-sm font-bold transition-colors border-b-2 -mb-[2px] ${
+                  mode === "register" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Registrera
+              </button>
+            </div>
           )}
 
-          {/* Alpha warning for registration */}
+          {/* Alpha warning */}
           {mode === "register" && (
-            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+            <div className="mb-4 p-3 bg-destructive/10 border-2 border-destructive/30">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
                 <div>
@@ -221,110 +227,131 @@ export default function Auth() {
           )}
 
           {mode !== "forgot" && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username (register only) */}
-            {mode === "register" && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Username (register only) */}
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <Label htmlFor="username">Användarnamn</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="username"
+                      placeholder="Ditt namn"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.username && <p className="text-destructive text-sm">{errors.username}</p>}
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="username">Användarnamn</Label>
+                <Label htmlFor="email">E-post</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="username"
-                    placeholder="Ditt namn"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="din@email.se"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
                     disabled={isLoading}
                   />
                 </div>
-                {errors.username && <p className="text-destructive text-sm">{errors.username}</p>}
+                {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="din@email.se"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-              {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Lösenord</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-              {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
-            </div>
-
-            {/* Checkboxes (register only) */}
-            {mode === "register" && (
               <div className="space-y-2">
-                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                  <Checkbox
-                    id="age"
-                    checked={confirmedAge}
-                    onCheckedChange={(checked) => setConfirmedAge(checked === true)}
-                    className="mt-0.5"
+                <Label htmlFor="password">Lösenord</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10"
+                    disabled={isLoading}
                   />
-                  <label htmlFor="age" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                    Jag bekräftar att jag är minst 25 år gammal
-                  </label>
                 </div>
-                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                  <Checkbox
-                    id="terms"
-                    checked={acceptedTerms}
-                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                    className="mt-0.5"
-                  />
-                  <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                    Jag har läst och godkänner <a href="/" className="text-primary hover:underline" onClick={(e) => { e.preventDefault(); window.open('/', '_blank'); }}>användarvillkoren</a>
-                  </label>
-                </div>
-                <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                  <Checkbox
-                    id="rules"
-                    checked={acceptedRules}
-                    onCheckedChange={(checked) => setAcceptedRules(checked === true)}
-                    className="mt-0.5"
-                  />
-                  <label htmlFor="rules" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                    Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Alpha</span>.
-                  </label>
-                </div>
+                {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
               </div>
-            )}
 
-            <Button type="submit" className="w-full" disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms))}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {mode === "login" ? "Loggar in..." : "Registrerar..."}
-                </>
-              ) : (
-                mode === "login" ? "Logga in" : "Skapa konto"
+              {/* Checkboxes (register only) */}
+              {mode === "register" && (
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
+                    <Checkbox
+                      id="age"
+                      checked={confirmedAge}
+                      onCheckedChange={(checked) => setConfirmedAge(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="age" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                      Jag bekräftar att jag är minst 25 år gammal
+                    </label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
+                    <Checkbox
+                      id="terms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                      Jag har läst och godkänner{" "}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowTerms(true);
+                        }}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        användarvillkoren
+                      </button>
+                    </label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
+                    <Checkbox
+                      id="rules"
+                      checked={acceptedRules}
+                      onCheckedChange={(checked) => setAcceptedRules(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="rules" className="text-sm text-muted-foreground cursor-pointer leading-snug">
+                      Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Alpha</span>.
+                    </label>
+                  </div>
+                </div>
               )}
-            </Button>
-          </form>
+
+              {/* Nostalgic tagline above submit (register only) */}
+              {mode === "register" && (
+                <p className="text-center text-xs text-muted-foreground italic py-1">
+                  Endast för oss som minns 56k-modem och brända CD-skivor 💿
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms))}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {mode === "login" ? "Loggar in..." : "Registrerar..."}
+                  </>
+                ) : (
+                  mode === "login" ? "Logga in" : "Skapa konto"
+                )}
+              </Button>
+            </form>
           )}
 
           {mode === "login" && (
@@ -336,7 +363,7 @@ export default function Auth() {
               >
                 Glömt lösenord?
               </button>
-              <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="p-3 bg-muted/50 border border-border">
                 <div className="flex items-start gap-2 text-sm">
                   <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                   <p className="text-muted-foreground">
@@ -395,17 +422,43 @@ export default function Auth() {
               </button>
             </div>
           )}
+        </div>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => navigate("/")}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              ← Tillbaka till startsidan
-            </button>
-          </div>
+        {/* Back link below the card */}
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => navigate("/")}
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            ← Tillbaka till startsidan
+          </button>
         </div>
       </div>
+
+      {/* Terms popup (inline modal) */}
+      {showTerms && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border-2 border-border shadow-[4px_4px_0px_hsl(var(--border))] w-full max-w-sm mx-4 p-5 max-h-[70vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-foreground">Användarvillkor</h3>
+              <button onClick={() => setShowTerms(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p><strong>1. Allmänt</strong><br />ECHO2000 är en community i Alpha-fas. Genom att skapa ett konto godkänner du dessa villkor.</p>
+              <p><strong>2. Ålderskrav</strong><br />Du måste vara minst 25 år gammal för att registrera dig.</p>
+              <p><strong>3. Uppförande</strong><br />Positiv energi är ett krav. Negativitet, personangrepp och delande av personliga problem i publika utrymmen är förbjudet. Måttligt svärande är tillåtet.</p>
+              <p><strong>4. Innehåll</strong><br />Du ansvarar för allt innehåll du publicerar. Vi förbehåller oss rätten att ta bort innehåll som bryter mot reglerna.</p>
+              <p><strong>5. Alpha-status</strong><br />Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas utan förvarning.</p>
+              <p><strong>6. Konton</strong><br />Nya konton kräver godkännande av en administratör. Vi kan stänga av konton som bryter mot reglerna.</p>
+            </div>
+            <Button onClick={() => setShowTerms(false)} className="w-full mt-4" variant="outline" size="sm">
+              Stäng
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
