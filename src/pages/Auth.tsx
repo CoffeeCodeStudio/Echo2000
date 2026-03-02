@@ -286,7 +286,7 @@ export default function Auth() {
                     className="mt-0.5"
                   />
                   <label htmlFor="age" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                    Jag bekräftar att jag är minst 15 år gammal
+                    Jag bekräftar att jag är minst 25 år gammal
                   </label>
                 </div>
                 <div className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
