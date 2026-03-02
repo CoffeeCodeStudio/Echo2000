@@ -438,20 +438,66 @@ export default function Auth() {
       {/* Terms popup (inline modal) */}
       {showTerms && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="bg-card border-2 border-border shadow-[4px_4px_0px_hsl(var(--border))] w-full max-w-sm mx-4 p-5 max-h-[70vh] overflow-y-auto">
+          <div className="bg-card border-2 border-border shadow-[4px_4px_0px_hsl(var(--border))] w-full max-w-md mx-4 p-5 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-foreground">Användarvillkor</h3>
+              <h3 className="font-bold text-foreground text-base">📜 Användarvillkor — ECHO2000</h3>
               <button onClick={() => setShowTerms(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="text-sm text-muted-foreground space-y-3">
-              <p><strong>1. Allmänt</strong><br />ECHO2000 är en community i Alpha-fas. Genom att skapa ett konto godkänner du dessa villkor.</p>
-              <p><strong>2. Ålderskrav</strong><br />Du måste vara minst 25 år gammal för att registrera dig.</p>
-              <p><strong>3. Uppförande</strong><br />Positiv energi är ett krav. Negativitet, personangrepp och delande av personliga problem i publika utrymmen är förbjudet. Måttligt svärande är tillåtet.</p>
-              <p><strong>4. Innehåll</strong><br />Du ansvarar för allt innehåll du publicerar. Vi förbehåller oss rätten att ta bort innehåll som bryter mot reglerna.</p>
-              <p><strong>5. Alpha-status</strong><br />Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas utan förvarning.</p>
-              <p><strong>6. Konton</strong><br />Nya konton kräver godkännande av en administratör. Vi kan stänga av konton som bryter mot reglerna.</p>
+            <div className="text-sm text-muted-foreground space-y-4">
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">1. Allmänt</p>
+                <p>ECHO2000 är en community i Alpha-fas. Genom att skapa ett konto godkänner du dessa villkor i sin helhet.</p>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">2. Ålderskrav</p>
+                <p>Du måste vara minst <strong>25 år gammal</strong> för att registrera dig och använda tjänsten.</p>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">3. Uppförande</p>
+                <p>Positiv energi är ett krav. Negativitet, personangrepp och delande av personliga problem i publika utrymmen är förbjudet. Måttligt svärande är tillåtet.</p>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">4. Olagligt innehåll</p>
+                <p>Alla former av <strong>olagligt innehåll</strong> — inklusive men inte begränsat till hot, trakasserier, hatpropaganda, barnpornografi och upphovsrättsintrång — leder till <strong>omedelbar avstängning och permanent radering</strong> av kontot. Vi förbehåller oss rätten att anmäla till berörda myndigheter.</p>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">5. Innehåll & ansvar</p>
+                <p>Du ansvarar för allt innehåll du publicerar. Vi förbehåller oss rätten att ta bort innehåll som bryter mot reglerna utan förvarning.</p>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">6. Personuppgifter & GDPR</p>
+                <ul className="list-disc list-inside space-y-1 mt-1">
+                  <li>Vi sparar nödvändig data (e-postadress, IP-adress, profiluppgifter) för att tjänsten ska fungera.</li>
+                  <li>Din data delas <strong>inte</strong> med tredje part i marknadsföringssyfte.</li>
+                  <li>Du kan när som helst begära <strong>radering av ditt konto och all tillhörande data</strong> via inställningarna eller genom att kontakta oss.</li>
+                  <li>Du har rätt att begära ett utdrag av dina personuppgifter.</li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">7. Alpha-status & ansvarsfrihet</p>
+                <ul className="list-disc list-inside space-y-1 mt-1">
+                  <li>Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas <strong>utan förvarning</strong>.</li>
+                  <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Alpha-perioden.</li>
+                  <li>Genom att använda tjänsten accepterar du att den tillhandahålls <strong>"as is"</strong> utan garantier.</li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-muted/40 border border-border">
+                <p className="font-bold text-foreground mb-1">8. Konton</p>
+                <p>Nya konton kräver godkännande av en administratör. Vi kan stänga av eller radera konton som bryter mot dessa villkor.</p>
+              </div>
+
+              <p className="text-xs text-muted-foreground/70 text-center pt-2">
+                Senast uppdaterad: mars 2026 · © 2026 Echo2000 Alpha
+              </p>
             </div>
             <Button onClick={() => setShowTerms(false)} className="w-full mt-4" variant="outline" size="sm">
               Stäng
