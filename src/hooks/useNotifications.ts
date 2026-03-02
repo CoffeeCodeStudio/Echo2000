@@ -12,6 +12,9 @@ export interface NotificationCounts {
 /**
  * Hook to track notification counts for intelligent navbar.
  * Icons will animate/glow when there are new notifications.
+ *
+ * Exposes `markGuestbookRead()` so callers can zero the counter
+ * when the user opens their guestbook tab.
  */
 export function useNotifications() {
   const { user } = useAuth();
@@ -52,12 +55,12 @@ export function useNotifications() {
         .select('*', { count: 'exact', head: true })
         .gt('expires_at', new Date().toISOString());
 
-      // Guestbook: check entries in last 24 hours (simplified)
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      // Guestbook: count unread entries on the current user's profile
       const { count: gbCount } = await supabase
-        .from('guestbook_entries')
+        .from('profile_guestbook')
         .select('*', { count: 'exact', head: true })
-        .gt('created_at', oneDayAgo);
+        .eq('profile_owner_id', user.id)
+        .eq('is_read', false);
 
       setCounts({
         unreadMail: mailCount || 0,
@@ -72,10 +75,32 @@ export function useNotifications() {
     }
   }, [user]);
 
+  /**
+   * Mark all guestbook entries on the user's profile as read.
+   * Optimistically zeros the counter, then persists to DB.
+   */
+  const markGuestbookRead = useCallback(async () => {
+    if (!user) return;
+
+    // Optimistic: zero the counter immediately
+    setCounts((prev) => ({ ...prev, guestbookNew: 0 }));
+
+    try {
+      await supabase
+        .from('profile_guestbook')
+        .update({ is_read: true } as any)
+        .eq('profile_owner_id', user.id)
+        .eq('is_read', false);
+    } catch (error) {
+      console.error('Error marking guestbook as read:', error);
+      // Refetch to correct if the update failed
+      fetchCounts();
+    }
+  }, [user, fetchCounts]);
+
   useEffect(() => {
     fetchCounts();
 
-    // Subscribe to realtime changes for immediate updates
     if (!user) return;
 
     const messagesChannel = supabase
@@ -93,9 +118,10 @@ export function useNotifications() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lajv_messages' }, fetchCounts)
       .subscribe();
 
+    // Listen to profile_guestbook (the actual guestbook table)
     const guestbookChannel = supabase
-      .channel('notifications-guestbook')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guestbook_entries' }, fetchCounts)
+      .channel('notifications-profile-guestbook')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profile_guestbook' }, fetchCounts)
       .subscribe();
 
     return () => {
@@ -110,5 +136,6 @@ export function useNotifications() {
     counts,
     loading,
     refetch: fetchCounts,
+    markGuestbookRead,
   };
 }
