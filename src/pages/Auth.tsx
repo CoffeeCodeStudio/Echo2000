@@ -178,9 +178,9 @@ export default function Auth() {
       <div className="w-full max-w-md mx-4 relative">
         {/* Logo */}
         <div className="text-center mb-6">
-          <div className="font-display font-black text-3xl tracking-tight mb-2">
-            <span className="text-foreground">ECHO</span>
-            <span className="text-accent-foreground bg-accent px-2 rounded">2000</span>
+          <div className="mb-2" style={{ fontFamily: 'Tahoma, Arial, sans-serif', fontWeight: 'bold', fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
+            <span className="text-white">ECHO</span>
+            <span className="bg-sky-500/20 text-sky-400 px-1">2000</span>
           </div>
           <p className="text-muted-foreground text-sm">Nostalgi på riktigt</p>
         </div>

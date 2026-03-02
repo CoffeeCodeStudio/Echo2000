@@ -31,9 +31,9 @@ export function HomeContent() {
       <CrtBackground>
         {/* Hero header */}
         <section className="py-3 md:py-4 text-center px-4">
-          <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight text-glow mb-1">
-            <span className="text-primary animate-kinetic-slide-up">Echo</span>
-            <span className="text-accent animate-kinetic-slide-up" style={{ animationDelay: "0.1s" }}>2000</span>
+          <h1 className="leading-tight mb-1" style={{ fontFamily: 'Tahoma, Arial, sans-serif', fontWeight: 'bold', fontSize: '1.8rem', letterSpacing: '-0.02em' }}>
+            <span className="text-white">ECHO</span>
+            <span className="bg-sky-500/20 text-sky-400 px-1">2000</span>
           </h1>
           <p
             className="text-muted-foreground text-[10px] sm:text-xs max-w-lg mx-auto leading-snug"
