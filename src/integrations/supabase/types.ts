@@ -527,6 +527,7 @@ export type Database = {
           author_name: string
           created_at: string
           id: string
+          is_read: boolean
           message: string
           profile_owner_id: string
         }
@@ -536,6 +537,7 @@ export type Database = {
           author_name: string
           created_at?: string
           id?: string
+          is_read?: boolean
           message: string
           profile_owner_id: string
         }
@@ -545,6 +547,7 @@ export type Database = {
           author_name?: string
           created_at?: string
           id?: string
+          is_read?: boolean
           message?: string
           profile_owner_id?: string
         }

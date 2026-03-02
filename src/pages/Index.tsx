@@ -17,6 +17,7 @@ import { OnboardingModal } from "@/components/auth/OnboardingModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { usePresence } from "@/hooks/usePresence";
+import { useNotifications } from "@/hooks/useNotifications";
 import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
@@ -42,6 +43,14 @@ export default function Index() {
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { setActivity } = usePresence();
+  const { markGuestbookRead } = useNotifications();
+
+  // Mark guestbook entries as read when the user opens the guestbook tab
+  useEffect(() => {
+    if (activeTab === 'gastbok' && user) {
+      markGuestbookRead();
+    }
+  }, [activeTab, user, markGuestbookRead]);
 
   // Update activity based on active tab
   useEffect(() => {
