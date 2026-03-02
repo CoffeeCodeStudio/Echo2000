@@ -63,6 +63,11 @@ serve(async (req) => {
     const dygnsMultiplier = getDygnsrytmMultiplier();
 
     // =============================================
+    // AUTO-ACCEPT friend requests & write "Tack för adden!"
+    // =============================================
+    await handleAutoAcceptFriendRequests(supabase, supabaseUrl, bots, results);
+
+    // =============================================
     // NEW: Welcome new users (check for recently created profiles)
     // =============================================
     await handleNewUserWelcome(supabase, supabaseUrl, bots, results);
@@ -195,7 +200,19 @@ serve(async (req) => {
       }
     }
 
-    // Update bot presence (last_seen) for all active bots
+    // Update last_seen for ALL bots that did something this cycle
+    const activeBotUserIds = Object.entries(results)
+      .filter(([_, msgs]) => msgs.some(m => !m.includes("Skipped") && !m.includes("cooldown") && !m.includes("skipped")))
+      .map(([name]) => bots.find(b => b.name === name)?.user_id)
+      .filter(Boolean) as string[];
+
+    if (activeBotUserIds.length > 0) {
+      for (const uid of activeBotUserIds) {
+        await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", uid);
+      }
+    }
+
+    // Also update presence for all bots periodically
     try {
       await fetch(`${supabaseUrl}/functions/v1/bot-manager`, {
         method: "POST",
@@ -618,7 +635,7 @@ async function handleLajvPosts(
 ) {
   try {
     // Only 1-2 bots post per cron cycle, with dygnsrytm
-    const chance = 0.06 * dygnsMultiplier;
+    const chance = 0.12 * dygnsMultiplier;
     
     for (const bot of bots) {
       if (Math.random() > chance) continue;
@@ -1060,6 +1077,80 @@ async function handleScribbleParticipation(
       }
     }
   } catch (e) { console.error("Scribble participation error:", e); }
+}
+
+// =============================================
+// Auto-accept friend requests & write "Tack för adden!"
+// =============================================
+async function handleAutoAcceptFriendRequests(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const botUserIds = bots.map(b => b.user_id as string);
+
+    // Find pending friend requests WHERE bots are the friend_id (receiver)
+    const { data: pendingRequests } = await supabase
+      .from("friends")
+      .select("id, user_id, friend_id, created_at")
+      .in("friend_id", botUserIds)
+      .eq("status", "pending");
+
+    if (!pendingRequests || pendingRequests.length === 0) return;
+
+    for (const req of pendingRequests) {
+      // Random delay: only accept if request is >10 minutes old
+      const requestAge = Date.now() - new Date(req.created_at).getTime();
+      const minDelay = 10 * 60 * 1000; // 10 min
+      if (requestAge < minDelay) continue;
+
+      // Random chance to delay further (up to 2 hours simulation)
+      const maxDelay = 2 * 60 * 60 * 1000;
+      if (requestAge < maxDelay && Math.random() > 0.3) continue;
+
+      // Accept!
+      const { error } = await supabase
+        .from("friends")
+        .update({ status: "accepted", updated_at: new Date().toISOString() })
+        .eq("id", req.id);
+
+      if (error) continue;
+
+      const bot = bots.find(b => (b.user_id as string) === req.friend_id);
+      if (!bot) continue;
+
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
+      results[botName].push(`Accepted friend request from ${req.user_id.slice(0, 8)}`);
+
+      // Write "Tack för adden!" in their guestbook
+      const { data: senderProfile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", req.user_id)
+        .single();
+
+      const senderName = senderProfile?.username || "du";
+
+      const res = await callBotRespond(supabaseUrl, {
+        action: "profile_guestbook_write",
+        bot_id: bot.id,
+        target_id: req.user_id,
+        target_username: senderName,
+        profile_owner_id: req.user_id,
+        context: `${senderName} har precis lagt till dig som vän! Skriv ett kort, glatt tack-meddelande i deras gästbok. Typ "tack för adden!!" eller liknande.`,
+      });
+
+      results[botName].push(`Guestbook tack to ${senderName}: ${res.reply || res.error || "unknown"}`);
+
+      // Update last_seen for the bot
+      await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", req.friend_id);
+    }
+  } catch (e) {
+    console.error("Auto-accept friend requests error:", e);
+  }
 }
 
 async function callBotRespond(
