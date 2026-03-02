@@ -237,7 +237,10 @@ export function FAQSection() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-8 pb-4 text-center text-xs text-muted-foreground space-y-1">
+        <footer className="mt-8 pb-4 text-center text-xs text-muted-foreground space-y-2">
+          <p>
+            <a href="/villkor" className="text-primary hover:underline">Användarvillkor</a>
+          </p>
           <p>© 2026 Echo2000 Alpha</p>
         </footer>
       </div>
