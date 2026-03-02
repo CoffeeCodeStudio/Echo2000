@@ -96,7 +96,21 @@ export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
       : toEditableData(profile);
 
   const profileUserId = profile?.user_id || userId || user?.id;
-  const userStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : "offline";
+
+  // Derive status: use presence for real users, last_seen fallback for bots
+  const presenceStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : "offline";
+  const userStatus: UserStatus = (() => {
+    // If presence says online/away, trust it
+    if (presenceStatus !== "offline") return presenceStatus;
+    // Fallback: check last_seen (critical for bots who don't use Presence channel)
+    if (profile?.last_seen) {
+      const lastSeenMs = Date.now() - new Date(profile.last_seen).getTime();
+      if (lastSeenMs < 3 * 60 * 1000) return "online";    // < 3 min
+      if (lastSeenMs < 8 * 60 * 1000) return "away";      // 3-8 min
+    }
+    return "offline";
+  })();
+
   const userActivity = profileUserId ? getUserActivity(profileUserId) : undefined;
   const memberSince = profile
     ? new Date(profile.created_at).toLocaleDateString("sv-SE", { year: "numeric", month: "long" })
