@@ -423,6 +423,8 @@ async function handleBotProfileGuestbookReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
+    // Human-like delay: only reply to entries older than 3 minutes
+    const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
     const { data: recentEntries } = await supabase
@@ -431,6 +433,7 @@ async function handleBotProfileGuestbookReplies(
       .eq("profile_owner_id", bot.user_id)
       .neq("author_id", bot.user_id)
       .gte("created_at", thirtyMinAgo)
+      .lte("created_at", threeMinAgo) // Only entries at least 3 min old
       .order("created_at", { ascending: false })
       .limit(10);
 
@@ -501,15 +504,29 @@ async function handleChatReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
+    // Human-like delay: only reply to messages older than 2 minutes
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
     const { data: recentMsgs } = await supabase
       .from("chat_messages")
       .select("*")
       .eq("recipient_id", bot.user_id)
       .eq("is_read", false)
+      .lte("created_at", twoMinAgo) // Only messages at least 2 min old
       .order("created_at", { ascending: false })
       .limit(10);
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
+
+    // Additional human-like delay: randomly skip if message is less than 5 min old (50% chance)
+    const oldestMsg = recentMsgs[recentMsgs.length - 1];
+    const msgAge = Date.now() - new Date(oldestMsg.created_at).getTime();
+    const msgAgeMin = msgAge / (1000 * 60);
+    if (msgAgeMin < 5 && Math.random() < 0.5) {
+      results[bot.name as string].push(`Chat reply delayed: message only ${msgAgeMin.toFixed(1)} min old, will reply later`);
+      return false;
+    }
 
     const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
