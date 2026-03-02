@@ -1365,6 +1365,57 @@ async function handleDailyNewsPosts(
 }
 
 // =============================================
+// Personality-driven news reactions (from news_articles)
+// =============================================
+async function handleNewsReactions(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // ~6% chance per cycle × dygnsrytm
+    if (Math.random() > 0.06 * dygnsMultiplier) return;
+
+    // Get recent published news articles
+    const { data: newsArticles } = await supabase
+      .from("news_articles")
+      .select("id, title, content")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (!newsArticles || newsArticles.length === 0) return;
+
+    const article = newsArticles[Math.floor(Math.random() * newsArticles.length)];
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown: 1 hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentLajv } = await supabase
+      .from("lajv_messages")
+      .select("id")
+      .eq("user_id", bot.user_id)
+      .gte("created_at", oneHourAgo)
+      .limit(2);
+    if (recentLajv && recentLajv.length >= 2) return;
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "news_reaction",
+      bot_id: bot.id,
+      context: `${article.title}: ${article.content.substring(0, 200)}`,
+    });
+
+    results[botName].push(`News reaction to "${article.title.substring(0, 30)}...": ${res.reply || res.error || "unknown"}`);
+  } catch (e) {
+    console.error("News reactions error:", e);
+  }
+}
+
+// =============================================
 // Cross-bot interaction: bots reply to each other's lajv posts (30% chance)
 // =============================================
 async function handleCrossBotInteraction(
