@@ -59,6 +59,68 @@ const BANNED_OVERUSED_PHRASES = [
 // =============================================
 // HUMAN WRITING RULES (shared across all personalities)
 // =============================================
+// =============================================
+// INTEREST TOPICS FOR WEB-AWARE POSTS
+// =============================================
+const BOT_INTEREST_TOPICS: Record<string, string[]> = {
+  nostalgikern: ["svensk musik 2000-talet", "gamla svenska TV-program", "retro teknik", "MSN Messenger nostalgi", "svenska 2000-tals fenomen"],
+  kortansen: ["esport nyheter", "gaming kultur", "Counter-Strike", "technik nyheter kort", "nya spel"],
+  gladansen: ["pop kultur nyheter", "svenska artister", "reality TV", "sociala medier trender", "feel-good nyheter"],
+  dramansen: ["kändisgossip", "drama på nätet", "kontroverser", "TV-serier diskussion", "virala fenomen"],
+  filosofansen: ["teknologi och samhälle", "internet historia", "digital kultur", "framtidens internet", "nostalgi vs nutid"],
+};
+
+// =============================================
+// ASCII ART TEMPLATES
+// =============================================
+const ASCII_ART_TEMPLATES: Record<string, string> = {
+  musik: `
+  ♪♫•*¨*•.¸¸♪
+  |  ___  |
+  | |   | |
+  | |___| |
+  |_______|
+  ♪♫•*¨*•.¸¸♪`,
+  dator: `
+  .--------.
+  |.------.|
+  ||      ||
+  |'------'|
+  '--------'
+   _|____|_`,
+  hjarta: `
+   .:::.   .:::.
+  ::::::.::::::: 
+  :::::::::::::::
+   '::::::::::'
+     ':::::::'
+       ':::'
+        ':'`,
+  spel: `
+   _______
+  |  ___  |
+  | |_X_| |
+  |  ___  |
+  |_|   |_|
+    |___|`,
+  telefon: `
+  .-------.
+  |  .-.  |
+  |  | |  |
+  |  '-'  |
+  |  ___  |
+  |_|   |_|`,
+  star: `
+      *
+     ***
+   *******
+  *********
+   *******
+    *****
+   *** ***
+  **     **`,
+};
+
 const HUMAN_WRITING_RULES = `
 SKRIV SOM EN RIKTIG SVENSK TONÅRING FRÅN 2004 — INTE SOM EN AI:
 
@@ -70,26 +132,27 @@ SPRÅKREGLER:
 - Skriv ALDRIG perfekt grammatik. Riktiga tonåringar 2004 skrev inte perfekt.
 - Skriv korta meningar. Max 1-2 meningar per svar i chatten.
 - Använd ALDRIG ord som "fantastiskt", "underbara", "absolut", "verkligen" — det låter som en robot.
-- Skriv ALDRIG "@" eller "#" — det fanns inte på MSN/Lunar.
+- Skriv ALDRIG "@" eller "#" — det fanns inte på MSN/Lunar. UNDANTAG: Du FÅR använda @användarnamn för att tagga andra användare!
 - Avsluta ibland meningar med "haha", "lol", "xD" eller "<3"
-- Blanda ALLTID in en fråga till läsaren i gästboksinlägg, t.ex. "vilket var ditt första mobilspel?" eller "vem mer sitter uppe?"
+- Blanda ALLTID in en fråga till läsaren i gästboksinlägg
 
-ÄMNEN ATT POSTA OM (välj ETT slumpmässigt, hitta INTE på exakt dessa utan inspireras):
+TAGGNING:
+- Du FÅR tagga andra användare med @användarnamn om det är relevant.
+- Tagga ALDRIG mer än 1-2 personer per inlägg.
+- Tagga bara om ämnet faktiskt berör dem eller deras intressen.
 
-MUSIK:
-- Petter - Mikrofonkåt, Kent, Millencolin, The Hives, Robyn, Basshunter, Evanescence, Linkin Park, Eminem, Dr Bombay
+ASCII-KONST (ibland, ca 10% av inläggen):
+- Ibland KAN du inkludera en enkel ASCII-bild som relaterar till ämnet.
+- Håll ASCII-bilder EXTREMT enkla (max 3-4 rader).
+- Exempel: ♪♫ för musik, <3 hjärta, :) smiley, ** stjärnor **, === linjer ===
 
-TV & FILM:
-- Expedition Robinson, Idol, ZTV, Pistvakt, Vita Lögner, Raven, Friends, The OC, One Tree Hill
+ÄMNEN ATT POSTA OM (välj ETT slumpmässigt):
 
-TEKNIK & SPEL:
-- Nokia 3310, Snake, MSN Messenger, ICQ, Habbo Hotel, RuneScape, Counter-Strike 1.6, Kazaa, LimeWire, Napster
-
-LIVSSTIL & VARDAG:
-- Jolt Cola, Big Bite-korv, chips och dipp framför datorn, Ahlgrens Bilar, Polly, skolan
-
-NOSTALGI & COMMUNITY:
-- Blogg.se, Lunarstorm, Bilddagboken, MSN-nicks, winks, nudges
+MUSIK: Petter, Kent, Millencolin, The Hives, Robyn, Basshunter, Evanescence, Linkin Park, Eminem
+TV & FILM: Expedition Robinson, Idol, ZTV, Pistvakt, Vita Lögner, Friends, The OC, One Tree Hill
+TEKNIK & SPEL: Nokia 3310, Snake, MSN Messenger, ICQ, Habbo Hotel, RuneScape, CS 1.6, Kazaa, LimeWire
+LIVSSTIL: Jolt Cola, Big Bite-korv, Ahlgrens Bilar, Polly, skolan
+NOSTALGI: Blogg.se, Lunarstorm, Bilddagboken, MSN-nicks, winks, nudges
 `;
 
 const ANTI_DETECTION_RULES = `
@@ -321,9 +384,45 @@ REGLER:
 - Max 200 tecken.
 - Skriv som en spontan tanke — inte en bloggpost.
 - Blanda frågor, observationer och reaktioner.
-- Det ska kännas som en live-uppdatering.${realityRules}
+- Det ska kännas som en live-uppdatering.
+- Om du nämner andra användare, tagga dem med @användarnamn.${realityRules}
 
 ${context || ""}`;
+
+    } else if (action === "interest_search_post") {
+      // AI-powered "web-aware" post based on bot's interests
+      const botPersonality = bot.tone_of_voice || "nostalgikern";
+      const interests = BOT_INTEREST_TOPICS[botPersonality] || BOT_INTEREST_TOPICS["nostalgikern"];
+      const chosenInterest = interests[Math.floor(Math.random() * interests.length)];
+      
+      userPrompt = `Du har precis "googlat" och hittat något intressant om: "${chosenInterest}".
+Skriv en lajv-statusuppdatering (max 250 tecken) där du delar det du "hittade" — men skriv det som en vanlig person som delar en tanke, INTE som en nyhetsartikel.
+
+KONTEXT (andra användare/bottar som kan taggas om relevant):
+${context || ""}
+
+REGLER:
+- Max 250 tecken.
+- Reagera på det du "hittade" med din personlighet — ${botPersonality === "nostalgikern" ? "jämför med hur det var förr" : botPersonality === "kortansen" ? "kort och kärnfullt" : botPersonality === "gladansen" ? "var superpepp" : botPersonality === "dramansen" ? "gör det till en stor grej" : "reflektera djupt"}.
+- Om nyheten är GAMMAL (>1 vecka), inled med "minns ni när..." eller "det var typ ett tag sen men...".
+- Hitta INTE på riktiga nyhetsrubriker eller datum. Håll det vagt och personligt.
+- Tagga gärna 1 användare med @användarnamn om deras intresse matchar.
+- Ca 10% chans: inkludera en ENKEL ASCII-bild (max 2 rader).${realityRules}`;
+
+    } else if (action === "cross_bot_reply") {
+      // Bot replying to another bot's lajv post about a shared interest
+      userPrompt = `En annan användare postade nyss i lajv:
+"${context || ""}"
+
+Du har LIKNANDE intressen och vill kommentera. Skriv en lajv-statusuppdatering (max 200 tecken) som svar.
+
+REGLER:
+- Max 200 tecken.
+- Svara LOGISKT på vad som postades — reagera på innehållet.
+- Håll med ELLER var oenig — välj utifrån din personlighet.
+- Tagga den som postade med @${target_username || "användaren"}.
+- Skriv som en spontan reaktion, inte en planerad text.
+- ${bot.tone_of_voice === "nostalgikern" ? "Jämför med hur det var förr." : bot.tone_of_voice === "kortansen" ? "Håll det KORT. Max 5-10 ord." : bot.tone_of_voice === "gladansen" ? "Var entusiastisk!!" : bot.tone_of_voice === "dramansen" ? "Gör det dramatiskt!" : "Ställ en djup följdfråga."}${realityRules}`;
 
     } else if (action === "profile_guestbook_write") {
       const addressee = target_username || "någon";
@@ -336,7 +435,22 @@ REGLER:
 - Rikta dig till ${addressee} personligt.
 - Max 280 tecken.
 - Ställ gärna en fråga baserad på deras profil.
-- Var vänlig och nyfiken, inte creepy.${realityRules}`;
+- Var vänlig och nyfiken, inte creepy.
+- Ca 5% chans: inkludera en enkel ASCII-bild som hälsning.${realityRules}`;
+
+    } else if (action === "news_reaction") {
+      // Personality-driven news reaction
+      userPrompt = `Det finns en nyhet på Echo2000:
+"${context || ""}"
+
+Reagera på denna nyhet med DIN PERSONLIGHET och skriv en lajv-statusuppdatering (max 250 tecken).
+
+REGLER:
+- Max 250 tecken.
+- OMFORMULERA nyheten — kopiera ALDRIG rubriken rakt av.
+- ${bot.tone_of_voice === "nostalgikern" ? "Jämför med hur det var förr. 'asså förr hade detta aldrig hänt...'" : bot.tone_of_voice === "kortansen" ? "Kort och kärnfullt. Max 10 ord." : bot.tone_of_voice === "gladansen" ? "Var superentusiastisk!! Älska nyheten!!" : bot.tone_of_voice === "dramansen" ? "GÖR DET TILL EN STOR GREJ. 'ASSÅ NI FATTAR INTE'" : "Reflektera djupt. Ställ en filosofisk fråga om nyhetens betydelse."}
+- Tagga gärna 1 användare med @användarnamn om relevant.
+- Ca 15% chans: inkludera en ASCII-bild som relaterar till ämnet.${realityRules}`;
 
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
@@ -434,7 +548,7 @@ REGLER:
         message: reply,
       });
       if (insertError) console.error("Banter insert error:", insertError);
-    } else if (action === "lajv_post") {
+    } else if (action === "lajv_post" || action === "interest_search_post" || action === "cross_bot_reply" || action === "news_reaction") {
       const { error: insertError } = await supabase.from("lajv_messages").insert({
         user_id: bot.user_id,
         username: bot.name,

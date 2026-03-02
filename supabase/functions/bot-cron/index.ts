@@ -85,6 +85,16 @@ serve(async (req) => {
     await handleLajvPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
 
     // =============================================
+    // Interest-driven "web search" posts
+    // =============================================
+    await handleInterestSearchPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+
+    // =============================================
+    // Personality-driven news reactions
+    // =============================================
+    await handleNewsReactions(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+
+    // =============================================
     // Profile guestbook writing: bots visit and write in others' guestbooks
     // =============================================
     await handleProfileGuestbookWriting(supabase, supabaseUrl, bots, dygnsMultiplier, results);
@@ -95,6 +105,11 @@ serve(async (req) => {
     await handleProfileVisits(supabase, bots, dygnsMultiplier, results);
     await handleGoodVibes(supabase, bots, dygnsMultiplier, results);
     await handleLajvReplies(supabase, supabaseUrl, bots, results);
+
+    // =============================================
+    // Cross-bot interaction: bots reply to each other's lajv posts
+    // =============================================
+    await handleCrossBotInteraction(supabase, supabaseUrl, bots, results);
 
     // =============================================
     // Creative: klotter drawings, scribble games
@@ -1167,6 +1182,217 @@ async function handleAutoAcceptFriendRequests(
     }
   } catch (e) {
     console.error("Auto-accept friend requests error:", e);
+  }
+}
+
+// =============================================
+// Interest-driven "web search" posts: bots post about topics they care about
+// =============================================
+const PERSONALITY_INTERESTS: Record<string, string[]> = {
+  nostalgikern: ["musik", "teknik", "nostalgi"],
+  kortansen: ["spel", "teknik", "dator"],
+  gladansen: ["musik", "star", "hjarta"],
+  dramansen: ["star", "musik", "hjarta"],
+  filosofansen: ["dator", "teknik", "spel"],
+};
+
+async function handleInterestSearchPosts(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // ~6% chance per cycle × dygnsrytm
+    if (Math.random() > 0.06 * dygnsMultiplier) return;
+
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown: 1 hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentPosts } = await supabase
+      .from("lajv_messages")
+      .select("id")
+      .eq("user_id", bot.user_id)
+      .gte("created_at", oneHourAgo)
+      .limit(2);
+
+    if (recentPosts && recentPosts.length >= 2) {
+      results[botName].push("Interest search skipped: cooldown");
+      return;
+    }
+
+    // Build tagging context: list of active users/bots that could be tagged
+    const { data: activeProfiles } = await supabase
+      .from("profiles")
+      .select("username, interests, listens_to")
+      .neq("user_id", bot.user_id)
+      .gte("last_seen", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .limit(15);
+
+    const taggableUsers = activeProfiles?.map(p =>
+      `@${p.username} (intressen: ${p.interests || "okänt"}, lyssnar: ${p.listens_to || "okänt"})`
+    ).join(", ") || "";
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "interest_search_post",
+      bot_id: bot.id,
+      context: `Användare som kan taggas om relevant:\n${taggableUsers}`,
+    });
+
+    results[botName].push(`Interest search post: ${res.reply || res.error || "unknown"}`);
+  } catch (e) {
+    console.error("Interest search posts error:", e);
+  }
+}
+
+// =============================================
+// Personality-driven news reactions
+// =============================================
+async function handleNewsReactions(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // ~4% chance per cycle
+    if (Math.random() > 0.04 * dygnsMultiplier) return;
+
+    // Get news with age info for decay
+    const { data: news } = await supabase
+      .from("news_articles")
+      .select("id, title, content, created_at")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!news || news.length === 0) return;
+
+    // News decay: weight newer articles more heavily
+    const now = Date.now();
+    const weightedNews = news.map(n => {
+      const ageHours = (now - new Date(n.created_at).getTime()) / (1000 * 60 * 60);
+      const weight = Math.exp(-0.03 * ageHours);
+      return { ...n, weight, ageHours };
+    }).filter(n => n.weight > 0.02); // Filter out super old news
+
+    if (weightedNews.length === 0) return;
+
+    // Weighted random selection (newer = more likely)
+    const totalWeight = weightedNews.reduce((sum, n) => sum + n.weight, 0);
+    let r = Math.random() * totalWeight;
+    let chosenNews = weightedNews[0];
+    for (const n of weightedNews) {
+      r -= n.weight;
+      if (r <= 0) { chosenNews = n; break; }
+    }
+
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    // Cooldown
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data: recentLajv } = await supabase
+      .from("lajv_messages")
+      .select("id")
+      .eq("user_id", bot.user_id)
+      .gte("created_at", thirtyMinAgo)
+      .limit(1);
+    if (recentLajv && recentLajv.length > 0) return;
+
+    const isOldNews = chosenNews.ageHours > 168; // > 1 week
+    const newsContext = isOldNews
+      ? `GAMMAL NYHET (${Math.floor(chosenNews.ageHours / 24)} dagar sedan): "${chosenNews.title}". Inled med "minns ni när..." eller "det var typ ett tag sen men..."`
+      : `NYHET: "${chosenNews.title}". Innehåll: "${chosenNews.content.substring(0, 200)}"`;
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "news_reaction",
+      bot_id: bot.id,
+      context: newsContext,
+    });
+
+    results[botName].push(`News reaction "${chosenNews.title}": ${res.reply || res.error || "unknown"}`);
+  } catch (e) {
+    console.error("News reactions error:", e);
+  }
+}
+
+// =============================================
+// Cross-bot interaction: bots reply to each other's lajv posts (40% chance)
+// =============================================
+async function handleCrossBotInteraction(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+
+    // Get recent bot lajv posts
+    const { data: recentBotLajv } = await supabase
+      .from("lajv_messages")
+      .select("*")
+      .gte("created_at", tenMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!recentBotLajv || recentBotLajv.length === 0) return;
+
+    // Only consider posts from OTHER bots
+    const botPosts = recentBotLajv.filter(m => botUserIds.has(m.user_id));
+    if (botPosts.length === 0) return;
+
+    for (const post of botPosts) {
+      // 40% chance to trigger cross-bot reply
+      if (Math.random() > 0.40) continue;
+
+      // Find a bot with SHARED interests (same personality type = shared interest)
+      const posterBot = bots.find(b => (b.user_id as string) === post.user_id);
+      if (!posterBot) continue;
+
+      const posterPersonality = posterBot.tone_of_voice as string || "nostalgikern";
+      const posterInterests = PERSONALITY_INTERESTS[posterPersonality] || [];
+
+      // Find bots with overlapping interests
+      const candidateBots = bots.filter(b => {
+        if ((b.user_id as string) === post.user_id) return false; // Not self
+        const bp = b.tone_of_voice as string || "nostalgikern";
+        const bi = PERSONALITY_INTERESTS[bp] || [];
+        return bi.some(i => posterInterests.includes(i)); // Shared interest
+      });
+
+      if (candidateBots.length === 0) continue;
+
+      const respondBot = candidateBots[Math.floor(Math.random() * candidateBots.length)];
+      const botName = respondBot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Cooldown: no lajv from this bot in last 15 min
+      const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const { data: recentReply } = await supabase.from("lajv_messages")
+        .select("id").eq("user_id", respondBot.user_id).gte("created_at", fifteenMinAgo).limit(1);
+      if (recentReply && recentReply.length > 0) continue;
+
+      const res = await callBotRespond(supabaseUrl, {
+        action: "cross_bot_reply",
+        bot_id: respondBot.id,
+        context: post.message,
+        target_username: post.username,
+      });
+
+      results[botName].push(`Cross-bot reply to ${post.username}: ${res.reply || res.error || "unknown"}`);
+      break; // Only one cross-bot interaction per cycle
+    }
+  } catch (e) {
+    console.error("Cross-bot interaction error:", e);
   }
 }
 
