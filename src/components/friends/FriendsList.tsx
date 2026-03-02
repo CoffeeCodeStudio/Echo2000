@@ -74,9 +74,13 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
           let status: UserStatus = getUserStatus(friendUserId);
           if (status === 'offline' && profile?.last_seen) {
             const lastSeenMs = new Date(profile.last_seen).getTime();
-            const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
-            if (lastSeenMs > tenMinutesAgo) {
+            const now = Date.now();
+            const fiveMinutesAgo = now - 5 * 60 * 1000;
+            const tenMinutesAgo = now - 10 * 60 * 1000;
+            if (lastSeenMs > fiveMinutesAgo) {
               status = 'online';
+            } else if (lastSeenMs > tenMinutesAgo) {
+              status = 'away';
             }
           }
 
