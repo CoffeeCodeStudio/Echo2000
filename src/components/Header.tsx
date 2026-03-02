@@ -197,13 +197,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <div
-            className="cursor-pointer select-none"
+            className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight cursor-pointer"
             onClick={() => onTabChange?.("hem")}
             role="button"
-            tabIndex={0}
-            style={{ fontFamily: 'Tahoma, Arial, sans-serif', fontWeight: 'bold', fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
-            <span className="text-white">ECHO</span>
-            <span className="bg-sky-500/20 text-sky-400 px-1" style={{ fontSize: '1.1rem' }}>2000</span>
+            tabIndex={0}>
+
+            <span className="bg-transparent text-accent">ECHO</span>
+            <span className="bg-primary px-1 rounded text-primary-foreground">2000</span>
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
