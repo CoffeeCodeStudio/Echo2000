@@ -227,33 +227,120 @@ serve(async (req) => {
     }
 
     // =============================================
-    // 60% ONLINE RULE: Keep at least 60% of bots with recent last_seen
+    // 15-BOT MINIMUM RULE + 60% ONLINE
+    // Ensure at least 15 bots are active (last_seen within 15 min)
+    // Then apply 60% online rule for the rest
     // =============================================
-    const totalBots = bots.length;
-    const targetOnline = Math.ceil(totalBots * 0.6);
+    const MIN_ONLINE_BOTS = 15;
+    const ACTIVE_THRESHOLD_MS = 15 * 60 * 1000;
     const now = new Date();
     
-    // Shuffle bots and pick 60%+ to be "online"
+    // Count how many bots were active in the last 15 minutes
+    const fifteenMinAgo = new Date(now.getTime() - ACTIVE_THRESHOLD_MS).toISOString();
+    const { data: recentlyActiveBots } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("is_bot", true)
+      .gte("last_seen", fifteenMinAgo);
+    
+    const currentlyActiveIds = new Set((recentlyActiveBots || []).map(b => b.user_id));
+    const inactiveBots = bots.filter(b => !currentlyActiveIds.has(b.user_id));
+    const deficit = Math.max(0, MIN_ONLINE_BOTS - currentlyActiveIds.size);
+    
+    // Force inactive bots online if we're below the minimum
+    if (deficit > 0 && inactiveBots.length > 0) {
+      const shuffledInactive = [...inactiveBots].sort(() => Math.random() - 0.5);
+      const botsToActivate = shuffledInactive.slice(0, Math.min(deficit, shuffledInactive.length));
+      
+      const STATUS_MESSAGES = [
+        "Spelar Snake 🐍", "Lyssnar på musik 🎵", "Surfar runt 🌊",
+        "Kollar profiler 👀", "Skriver i gästboken ✍️", "Hänger i chatten 💬",
+        "Spelar Memory 🧠", "Ritar på klotterplanket 🎨", "Scrollar Lajv 📱",
+        "Letar nya vänner 🔍", "Kollar nyheter 📰", "Chillar 😎",
+      ];
+      
+      for (const bot of botsToActivate) {
+        const botName = bot.name as string;
+        results[botName] = results[botName] || [];
+        
+        // Update last_seen to NOW
+        const offset = Math.floor(Math.random() * 2 * 60 * 1000);
+        const lastSeen = new Date(now.getTime() - offset).toISOString();
+        await supabase.from("profiles").update({ 
+          last_seen: lastSeen,
+          status_message: STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)]
+        }).eq("user_id", bot.user_id as string);
+        
+        // Force an autonomous action
+        const actionRoll = Math.random();
+        try {
+          if (actionRoll < 0.35) {
+            // Post in Lajv
+            const res = await callBotRespond(supabaseUrl, {
+              action: "lajv_post",
+              bot_id: bot.id,
+              context: "Skriv ett kort, spontant inlägg om vad du gör just nu.",
+            });
+            results[botName].push(`Forced lajv: ${res.reply || res.error || "ok"}`);
+          } else if (actionRoll < 0.60) {
+            // Write in another bot's guestbook
+            const otherBots = bots.filter(b => b.user_id !== bot.user_id);
+            if (otherBots.length > 0) {
+              const target = otherBots[Math.floor(Math.random() * otherBots.length)];
+              const res = await callBotRespond(supabaseUrl, {
+                action: "profile_guestbook_post",
+                bot_id: bot.id,
+                context: `Skriv ett kort inlägg i ${target.name}s gästbok.`,
+                target_user_id: target.user_id,
+              });
+              results[botName].push(`Forced guestbook to ${target.name}: ${res.reply || res.error || "ok"}`);
+            }
+          } else if (actionRoll < 0.80) {
+            // Update status message only (already done above)
+            results[botName].push(`Forced online with status update`);
+          } else {
+            // Accept a pending friend request
+            const { data: pending } = await supabase
+              .from("friends")
+              .select("id")
+              .eq("friend_id", bot.user_id)
+              .eq("status", "pending")
+              .limit(1);
+            if (pending && pending.length > 0) {
+              await supabase.from("friends").update({ status: "accepted" }).eq("id", pending[0].id);
+              results[botName].push(`Forced: accepted friend request`);
+            } else {
+              results[botName].push(`Forced online (no pending requests)`);
+            }
+          }
+        } catch (e) {
+          results[botName].push(`Forced action error: ${(e as Error).message}`);
+        }
+      }
+    }
+    
+    // Standard 60% online rule for remaining bots
+    const totalBots = bots.length;
+    const targetOnline = Math.max(MIN_ONLINE_BOTS, Math.ceil(totalBots * 0.6));
+    
+    // Shuffle bots and pick targetOnline to be "online"
     const shuffledBots = [...bots].sort(() => Math.random() - 0.5);
     const onlineBots = shuffledBots.slice(0, targetOnline);
     
     for (const bot of onlineBots) {
-      // Set last_seen to now with slight random offset (0-2 min ago) for realism
       const offset = Math.floor(Math.random() * 2 * 60 * 1000);
       const lastSeen = new Date(now.getTime() - offset).toISOString();
       await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
     }
     
-    // Remaining bots: some "away" (3-8 min ago), some truly offline
+    // Remaining bots: some "away", some offline
     const remainingBots = shuffledBots.slice(targetOnline);
     for (const bot of remainingBots) {
-      // 50% chance to be "away", 50% offline
       if (Math.random() < 0.5) {
-        const awayOffset = 3 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000); // 3-8 min
+        const awayOffset = 3 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000);
         const lastSeen = new Date(now.getTime() - awayOffset).toISOString();
         await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
       }
-      // else: leave their last_seen as-is (offline)
     }
 
     // Also update last_seen for bots that actually DID something this cycle
