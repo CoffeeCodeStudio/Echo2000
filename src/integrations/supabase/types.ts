@@ -57,7 +57,9 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          recent_phrases: Json
           system_prompt: string
+          tone_of_voice: string
           updated_at: string
           user_id: string
         }
@@ -70,7 +72,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          recent_phrases?: Json
           system_prompt?: string
+          tone_of_voice?: string
           updated_at?: string
           user_id: string
         }
@@ -83,7 +87,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          recent_phrases?: Json
           system_prompt?: string
+          tone_of_voice?: string
           updated_at?: string
           user_id?: string
         }
