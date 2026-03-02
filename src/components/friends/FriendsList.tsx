@@ -60,7 +60,7 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
 
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("user_id, username, avatar_url, status_message")
+          .select("user_id, username, avatar_url, status_message, last_seen")
           .in("user_id", friendUserIds);
 
         if (profilesError) throw profilesError;
@@ -70,12 +70,22 @@ export function FriendsList({ onSendMessage }: FriendsListProps) {
           const profile = profiles?.find((p) => p.user_id === friendUserId);
           const isIncoming = friendship.friend_id === user.id && friendship.status === "pending";
 
+          // Use real-time presence first, fall back to last_seen for bots/offline users
+          let status: UserStatus = getUserStatus(friendUserId);
+          if (status === 'offline' && profile?.last_seen) {
+            const lastSeenMs = new Date(profile.last_seen).getTime();
+            const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+            if (lastSeenMs > tenMinutesAgo) {
+              status = 'online';
+            }
+          }
+
           return {
             id: friendUserId,
             name: profile?.username || "Okänd",
             username: profile?.username || "okand",
             avatar: profile?.avatar_url || undefined,
-            status: getUserStatus(friendUserId),
+            status,
             statusMessage: profile?.status_message || "",
             isBestFriend: friendship.is_best_friend,
             friendshipId: friendship.id,
