@@ -1323,9 +1323,6 @@ async function handleDailyNewsPosts(
   results: Record<string, string[]>
 ) {
   try {
-    // ~10% chance per cycle × dygnsrytm
-    if (Math.random() > 0.10 * dygnsMultiplier) return;
-
     // Get active daily news (not expired)
     const { data: dailyNews } = await supabase
       .from("daily_news")
@@ -1338,27 +1335,51 @@ async function handleDailyNewsPosts(
     if (!dailyNews || dailyNews.length === 0) return;
 
     const chosenNews = dailyNews[Math.floor(Math.random() * dailyNews.length)];
-    const bot = bots[Math.floor(Math.random() * bots.length)];
-    const botName = bot.name as string;
-    results[botName] = results[botName] || [];
 
-    // Cooldown: 30 min
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const { data: recentLajv } = await supabase
-      .from("lajv_messages")
-      .select("id")
-      .eq("user_id", bot.user_id)
-      .gte("created_at", thirtyMinAgo)
-      .limit(1);
-    if (recentLajv && recentLajv.length > 0) return;
+    // HIGH PRIORITY: 30% chance per cycle when daily news exists (was 10%)
+    // Up to 2 bots can discuss per cycle
+    const maxPosters = Math.random() < 0.30 * dygnsMultiplier ? (Math.random() < 0.4 ? 2 : 1) : 0;
+    if (maxPosters === 0) return;
 
-    const res = await callBotRespond(supabaseUrl, {
-      action: "daily_news_post",
-      bot_id: bot.id,
-      context: chosenNews.content,
-    });
+    const shuffledBots = [...bots].sort(() => Math.random() - 0.5);
+    let posted = 0;
 
-    results[botName].push(`Daily news post: ${res.reply || res.error || "unknown"}`);
+    for (const bot of shuffledBots) {
+      if (posted >= maxPosters) break;
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Cooldown: 20 min per bot for daily news
+      const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+      const { data: recentLajv } = await supabase
+        .from("lajv_messages")
+        .select("id")
+        .eq("user_id", bot.user_id)
+        .gte("created_at", twentyMinAgo)
+        .limit(1);
+      if (recentLajv && recentLajv.length > 0) continue;
+
+      // 70% lajv post, 30% guestbook comment about the news
+      if (Math.random() < 0.70) {
+        const res = await callBotRespond(supabaseUrl, {
+          action: "daily_news_post",
+          bot_id: bot.id,
+          context: chosenNews.content,
+        });
+        results[botName].push(`Daily news lajv: ${res.reply || res.error || "unknown"}`);
+      } else {
+        const res = await callBotRespond(supabaseUrl, {
+          action: "guestbook_post",
+          bot_id: bot.id,
+          context: `Dagens snackis på Echo2000: "${chosenNews.content}". Skriv en kommentar om detta i gästboken.`,
+        });
+        results[botName].push(`Daily news guestbook: ${res.reply || res.error || "unknown"}`);
+      }
+      posted++;
+
+      // Small delay between posts
+      if (posted < maxPosters) await new Promise(r => setTimeout(r, 2000));
+    }
   } catch (e) {
     console.error("Daily news posts error:", e);
   }
@@ -1551,19 +1572,20 @@ async function handleSnakeHighscores(
 ) {
   try {
     // ~3% chance per cycle × dygnsrytm
-    if (Math.random() > 0.03 * dygnsMultiplier) return;
+    // ~8% chance per cycle × dygnsrytm (increased from 3% for more activity)
+    if (Math.random() > 0.08 * dygnsMultiplier) return;
 
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    // Cooldown: 6 hours per bot
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    // Cooldown: 3 hours per bot (reduced for more activity)
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     const { data: recentScores } = await supabase
       .from("snake_highscores")
       .select("id")
       .eq("user_id", bot.user_id)
-      .gte("created_at", sixHoursAgo)
+      .gte("created_at", threeHoursAgo)
       .limit(1);
 
     if (recentScores && recentScores.length > 0) {
