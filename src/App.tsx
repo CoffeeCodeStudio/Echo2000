@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SharedLayout } from "@/components/SharedLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CookieBanner } from "@/components/CookieBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
@@ -36,11 +37,11 @@ function App() {
                 <Routes>
                   {/* Shared layout wraps all main routes */}
                   <Route element={<SharedLayout />}>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/rum" element={<ProtectedRoute><Room /></ProtectedRoute>} />
-                    <Route path="/profile/:username" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/news" element={<News />} />
-                    <Route path="/news/:id" element={<News />} />
+                    <Route path="/" element={<ErrorBoundary><Index /></ErrorBoundary>} />
+                    <Route path="/rum" element={<ProtectedRoute><ErrorBoundary><Room /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/profile/:username" element={<ProtectedRoute><ErrorBoundary><Profile /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/news" element={<ErrorBoundary><News /></ErrorBoundary>} />
+                    <Route path="/news/:id" element={<ErrorBoundary><News /></ErrorBoundary>} />
                   </Route>
                   
                   {/* Auth page without shared layout (full-page login) */}

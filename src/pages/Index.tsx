@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useOutletContext, useLocation } from "react-router-dom";
+import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { HomeContent } from "@/components/HomeContent";
@@ -38,6 +38,7 @@ export default function Index() {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { setActivity } = usePresence();
@@ -87,7 +88,7 @@ export default function Index() {
     const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv"];
     if (!user && protectedTabs.includes(activeTab)) {
       // Redirect to auth for non-logged-in users trying to access protected tabs
-      window.location.href = "/auth";
+      navigate("/auth", { replace: true });
       return null;
     }
 
