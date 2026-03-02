@@ -103,9 +103,14 @@ export function FriendCard({
           <div className="flex items-center gap-1.5">
             <StatusIndicator status={friend.status} size="sm" />
             <span className="text-xs text-muted-foreground">
-              {friend.statusMessage || friend.status}
+              {friend.status === 'online' ? 'online' : friend.status === 'away' ? 'borta' : 'offline'}
             </span>
           </div>
+          {friend.statusMessage && (
+            <p className="text-[10px] text-muted-foreground/70 truncate italic">
+              {friend.statusMessage}
+            </p>
+          )}
         </div>
 
         {isPending ? (
