@@ -251,39 +251,17 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 0 0 20px hsl(var(--glow-primary) / 0.5);
   }
 
-  /* Status indicator base — 8-bit pixel star */
-  .status-indicator {
-    @apply border-0 rounded-none bg-transparent;
-    clip-path: polygon(
-      50% 0%, 61% 35%, 98% 35%, 68% 57%,
-      79% 91%, 50% 70%, 21% 91%, 32% 57%,
-      2% 35%, 39% 35%
-    );
-    image-rendering: pixelated;
-  }
-
-  .status-online {
-    background: hsl(var(--online-green));
-    filter: drop-shadow(0 0 4px hsl(var(--online-green) / 0.8))
-            drop-shadow(0 0 8px hsl(var(--online-green) / 0.4));
+  /* Status star animations */
+  .animate-star-online {
     animation: star-rotate 4s linear infinite, star-pulse 2s ease-in-out infinite;
   }
 
-  .status-away {
-    background: hsl(var(--away-orange));
-    filter: drop-shadow(0 0 4px hsl(var(--away-orange) / 0.6))
-            drop-shadow(0 0 8px hsl(var(--away-orange) / 0.3));
+  .animate-star-away {
     animation: star-glimmer 3s ease-in-out infinite;
   }
 
-  .status-busy {
-    background: hsl(var(--busy-red));
-    filter: drop-shadow(0 0 4px hsl(var(--busy-red) / 0.6));
+  .animate-star-busy {
     animation: star-pulse 1.5s ease-in-out infinite;
-  }
-
-  .status-offline {
-    background: hsl(var(--offline-gray));
   }
 
   @keyframes star-rotate {
