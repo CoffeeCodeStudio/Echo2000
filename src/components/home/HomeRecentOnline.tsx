@@ -52,30 +52,42 @@ export function HomeRecentOnline() {
     return getUserStatus(m.user_id);
   };
 
+  // Sort: online first (by longest session / earliest last_seen), then away, then others
+  const statusOrder: Record<UserStatus, number> = { online: 0, away: 1, busy: 2, offline: 3 };
+
+  const sortedMembers = [...members]
+    .map((m) => ({ ...m, _status: getMemberStatus(m) }))
+    .sort((a, b) => {
+      const diff = statusOrder[a._status] - statusOrder[b._status];
+      if (diff !== 0) return diff;
+      // Within same status, longest online first (earliest last_seen)
+      const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+      const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+      if (a._status === "online" || a._status === "away") return aTime - bTime; // earliest = longest
+      return bTime - aTime; // offline: most recent first
+    });
+
   return (
     <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />}>
-      {members.length === 0 ? (
+      {sortedMembers.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {members.map((m) => {
-            const status = getMemberStatus(m);
-            return (
-              <button
-                key={m.user_id}
-                onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-                className="pressable flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-muted/30 transition-colors min-h-[44px]"
-              >
-                <div className="relative">
-                  <Avatar name={m.username} src={m.avatar_url} size="sm" />
-                  <div className="absolute -bottom-0.5 -right-0.5">
-                    <StatusIndicator status={status} size="sm" />
-                  </div>
+          {sortedMembers.map((m) => (
+            <button
+              key={m.user_id}
+              onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
+              className="pressable flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-muted/30 transition-colors min-h-[44px]"
+            >
+              <div className="relative">
+                <Avatar name={m.username} src={m.avatar_url} size="sm" />
+                <div className="absolute -bottom-0.5 -right-0.5">
+                  <StatusIndicator status={m._status} size="sm" />
                 </div>
-                <span className="text-[10px] truncate w-full text-center text-muted-foreground">{m.username}</span>
-              </button>
-            );
-          })}
+              </div>
+              <span className="text-[10px] truncate w-full text-center text-muted-foreground">{m.username}</span>
+            </button>
+          ))}
         </div>
       )}
     </BentoCard>
