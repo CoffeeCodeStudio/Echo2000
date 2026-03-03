@@ -471,6 +471,25 @@ REGLER:
 - Tagga gärna 1 användare med @användarnamn om relevant.
 - Ca 15% chans: inkludera en ASCII-bild.${realityRules}`;
 
+    } else if (action === "email_write") {
+      const addressee = target_username || "du";
+      userPrompt = `Skriv ett kort, personligt mejl till ${addressee} på Echo2000.
+
+REGLER:
+- Max 200 tecken.
+- Skriv BARA mejlinnehållet (ämnesraden sätts separat).
+- Var personlig och varm — som att du skriver till en kompis.
+- Ställ gärna en fråga eller berätta nåt kul.
+- Kan handla om nostalgi, musik, vad du gjort idag, etc.${realityRules}
+
+${context || ""}`;
+
+    } else if (action === "cross_bot_reply") {
+      userPrompt = `En annan användare (${target_username || "någon"}) skrev i lajv:
+"${context || ""}"
+
+Svara naturligt som en spontan lajv-uppdatering (max 200 tecken). Reagera på vad de sa, håll med eller var roligt oenig.${realityRules}`;
+
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
