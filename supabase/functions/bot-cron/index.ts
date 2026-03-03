@@ -115,6 +115,7 @@ serve(async (req) => {
     await handleProfileVisits(supabase, bots, dygnsMultiplier, results);
     await handleGoodVibes(supabase, bots, dygnsMultiplier, results);
     await handleLajvReplies(supabase, supabaseUrl, bots, results);
+    await handleLajvStalking(supabase, bots, dygnsMultiplier, results);
 
     // =============================================
     // Cross-bot interaction: bots reply to each other's lajv posts
@@ -1750,4 +1751,60 @@ async function callBotRespond(
   });
 
   return await res.json();
+}
+
+// =============================================
+// Lajv stalking: bots visit profiles of recent Lajv posters (30% chance)
+// =============================================
+async function handleLajvStalking(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  dygnsMultiplier: number,
+  results: Record<string, string[]>
+) {
+  try {
+    // 30% base chance, scaled by dygnsrytm
+    if (Math.random() > 0.30 * dygnsMultiplier) return;
+
+    // Get recent lajv messages from non-bots (last 30 min)
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data: recentLajv } = await supabase
+      .from("lajv_messages")
+      .select("user_id, username")
+      .gte("created_at", thirtyMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!recentLajv || recentLajv.length === 0) return;
+
+    // Filter out bot user_ids
+    const botIds = new Set(bots.map((b) => b.user_id as string));
+    const humanPosters = recentLajv.filter((m) => !botIds.has(m.user_id));
+    if (humanPosters.length === 0) return;
+
+    // Pick a random bot and a random human poster
+    const bot = bots[Math.floor(Math.random() * bots.length)];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    const target = humanPosters[Math.floor(Math.random() * humanPosters.length)];
+
+    // Upsert visit (don't duplicate)
+    const { error } = await supabase
+      .from("profile_visits")
+      .upsert(
+        {
+          visitor_id: bot.user_id as string,
+          profile_owner_id: target.user_id,
+          visited_at: new Date().toISOString(),
+        },
+        { onConflict: "profile_owner_id,visitor_id" }
+      );
+
+    if (!error) {
+      results[botName].push(`Stalked Lajv poster ${target.username}`);
+    }
+  } catch (e) {
+    console.error("Lajv stalking error:", e);
+  }
 }
