@@ -59,167 +59,136 @@ serve(async (req) => {
     const dygnsMultiplier = getDygnsrytmMultiplier();
 
     // =============================================
-    // AUTO-ACCEPT friend requests & write "Tack för adden!"
+    // REACTIVE HANDLERS (always run — these respond to user actions)
     // =============================================
     await handleAutoAcceptFriendRequests(supabase, supabaseUrl, bots, results);
-
-    // =============================================
-    // NEW: Welcome new users (check for recently created profiles)
-    // =============================================
     await handleNewUserWelcome(supabase, supabaseUrl, bots, results);
+    await handleLajvAutoFill(supabase, supabaseUrl, bots, results);
+    await handleLajvReplies(supabase, supabaseUrl, bots, results);
 
-    // =============================================
-    // NEW: Inter-bot banter (occasional fun debates)
-    // =============================================
-    if (bots.length >= 2 && Math.random() < 0.15) {
-      await handleBotBanter(supabase, supabaseUrl, bots, results);
+    // Per-bot reactive: reply to guestbook entries & DMs
+    for (const bot of bots) {
+      results[bot.name as string] = results[bot.name as string] || [];
+      const allowedContexts: string[] = (bot.allowed_contexts as string[]) || ["chat", "guestbook"];
+      if (allowedContexts.includes("guestbook")) {
+        await handleBotProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
+      }
+      if (allowedContexts.includes("chat")) {
+        const didChat = await handleChatReplies(supabase, supabaseUrl, bot, results);
+        if (!didChat) await handleInactiveUserOutreach(supabase, supabaseUrl, bot, results);
+      }
     }
 
     // =============================================
-    // Lajv auto-fill: if lajv is empty for 10 min, force a bot post
+    // PROACTIVE ACTIVITIES — DISTRIBUTED (each bot gets ONE task)
     // =============================================
-    await handleLajvAutoFill(supabase, supabaseUrl, bots, results);
+    // Available proactive activities with relative weights
+    const PROACTIVE_ACTIVITIES = [
+      { id: "lajv_post", weight: 25 },
+      { id: "profile_guestbook_write", weight: 20 },
+      { id: "topic_post", weight: 12 },
+      { id: "email_write", weight: 12 },
+      { id: "klotter_drawing", weight: 8 },
+      { id: "snake_highscore", weight: 8 },
+      { id: "profile_visit", weight: 5 },
+      { id: "good_vibes", weight: 5 },
+      { id: "daily_news_post", weight: 5 },
+      { id: "news_reaction", weight: 4 },
+      { id: "cross_bot_reply", weight: 4 },
+      { id: "bot_banter", weight: 3 },
+      { id: "scribble", weight: 3 },
+      { id: "lajv_stalking", weight: 3 },
+      { id: "guestbook_post", weight: 3 },
+    ];
 
-    // =============================================
-    // Lajv posts: occasional spontaneous status updates
-    // =============================================
-    await handleLajvPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
+    const totalWeight = PROACTIVE_ACTIVITIES.reduce((s, a) => s + a.weight, 0);
 
-    // =============================================
-    // Topic-based posts from internal knowledge base
-    // =============================================
-    await handleTopicPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
-
-    // =============================================
-    // Admin "Dagens Nyhet" — bots discuss admin-set topics
-    // =============================================
-    await handleDailyNewsPosts(supabase, supabaseUrl, bots, dygnsMultiplier, results);
-
-    // =============================================
-    // Personality-driven news reactions (from news_articles)
-    // =============================================
-    await handleNewsReactions(supabase, supabaseUrl, bots, dygnsMultiplier, results);
-
-    // =============================================
-    // Profile guestbook writing: bots visit and write in others' guestbooks
-    // =============================================
-    await handleProfileGuestbookWriting(supabase, supabaseUrl, bots, dygnsMultiplier, results);
-
-    // =============================================
-    // Social: profile visits, good vibes, lajv replies
-    // =============================================
-    await handleProfileVisits(supabase, bots, dygnsMultiplier, results);
-    await handleGoodVibes(supabase, bots, dygnsMultiplier, results);
-    await handleLajvReplies(supabase, supabaseUrl, bots, results);
-    await handleLajvStalking(supabase, bots, dygnsMultiplier, results);
-
-    // =============================================
-    // Cross-bot interaction: bots reply to each other's lajv posts
-    // =============================================
-    await handleCrossBotInteraction(supabase, supabaseUrl, bots, results);
-
-    // =============================================
-    // Creative: klotter drawings, scribble games, snake highscores
-    // =============================================
-    await handleKlotterDrawing(supabase, bots, dygnsMultiplier, results);
-    await handleScribbleParticipation(supabase, bots, results);
-    await handleSnakeHighscores(supabase, bots, dygnsMultiplier, results);
-
-    for (const bot of bots) {
-      results[bot.name] = results[bot.name] || [];
-      const allowedContexts: string[] = bot.allowed_contexts || ["chat", "guestbook"];
-
-      // PRIORITY 1: Reply to entries in the BOT'S OWN profile guestbook
-      if (allowedContexts.includes("guestbook")) {
-        const didProfileReply = await handleBotProfileGuestbookReplies(supabase, supabaseUrl, bot, results);
-        if (didProfileReply) continue;
+    function pickWeightedActivity(): string {
+      let r = Math.random() * totalWeight;
+      for (const a of PROACTIVE_ACTIVITIES) {
+        r -= a.weight;
+        if (r <= 0) return a.id;
       }
+      return PROACTIVE_ACTIVITIES[0].id;
+    }
 
-      // PRIORITY 2: Reply to unread chat/DM messages (with typing delay)
-      if (allowedContexts.includes("chat")) {
-        const didChatReply = await handleChatReplies(supabase, supabaseUrl, bot, results);
-        if (didChatReply) continue;
-      }
+    // Shuffle bots and assign each a DIFFERENT activity
+    const shuffledBots = [...bots].sort(() => Math.random() - 0.5);
+    // Pick how many bots are active this cycle (50-80% of total)
+    const activeCount = Math.max(3, Math.floor(shuffledBots.length * (0.5 + Math.random() * 0.3)));
+    const activeBotsCycle = shuffledBots.slice(0, activeCount);
+    const usedActivities = new Set<string>();
 
-      // PRIORITY 3: Inactive user outreach
-      if (allowedContexts.includes("chat")) {
-        const didOutreach = await handleInactiveUserOutreach(supabase, supabaseUrl, bot, results);
-        if (didOutreach) continue;
-      }
+    for (const bot of activeBotsCycle) {
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
 
-      // PRIORITY 4: Autonomous guestbook post (high activity — always try)
-      const adjustedLevel = Math.max(bot.activity_level, 70); // Minimum 70% chance
-      const roll = Math.random() * 100;
-      if (roll > adjustedLevel) {
-        results[bot.name].push(`Skipped autonomous (roll ${roll.toFixed(0)} > adjusted ${adjustedLevel.toFixed(0)})`);
-        continue;
-      }
+      // Pick a unique activity (allow repeats after all are used once)
+      let activity: string;
+      let attempts = 0;
+      do {
+        activity = pickWeightedActivity();
+        attempts++;
+      } while (usedActivities.has(activity) && attempts < 10 && usedActivities.size < PROACTIVE_ACTIVITIES.length);
+      usedActivities.add(activity);
 
-      const autonomousContexts = allowedContexts.filter(c => c !== "chat");
-      if (autonomousContexts.length === 0) {
-        results[bot.name].push("No autonomous contexts left");
-        continue;
-      }
-      const chosenContext = autonomousContexts[Math.floor(Math.random() * autonomousContexts.length)];
-
-      if (chosenContext === "guestbook") {
-        try {
-          const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-          const { data: recentBotPosts } = await supabase
-            .from("guestbook_entries")
-            .select("id")
-            .eq("user_id", bot.user_id)
-            .gte("created_at", tenMinAgo)
-            .limit(1);
-
-          if (recentBotPosts && recentBotPosts.length > 0) {
-            results[bot.name].push("Guestbook skipped: already posted within the last hour");
-            continue;
-          }
-
-          const { data: recentEntries } = await supabase
-            .from("guestbook_entries")
-            .select("author_name, message")
-            .order("created_at", { ascending: false })
-            .limit(10);
-
-          const othersEntries = recentEntries?.filter(e => e.author_name !== bot.name) || [];
-          const contextStr = othersEntries.length > 0
-            ? `\n\nSenaste inläggen i gästboken från andra användare:\n${othersEntries.map(e => `- ${e.author_name}: "${e.message}"`).join("\n")}`
-            : "";
-
-          const res = await callBotRespond(supabaseUrl, {
-            action: "guestbook_post",
-            bot_id: bot.id,
-            context: contextStr,
-          });
-          results[bot.name].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
-        } catch (e) {
-          results[bot.name].push(`Guestbook error: ${(e as Error).message}`);
-        }
-      } else if (chosenContext === "news") {
-        const { data: latestNews } = await supabase
-          .from("news_articles")
-          .select("id, title, content")
-          .eq("is_published", true)
-          .order("created_at", { ascending: false })
-          .limit(3);
-
-        if (latestNews && latestNews.length > 0) {
-          const article = latestNews[Math.floor(Math.random() * latestNews.length)];
-          try {
+      try {
+        switch (activity) {
+          case "lajv_post":
+            await runSingleBotLajvPost(supabase, supabaseUrl, bot, results);
+            break;
+          case "profile_guestbook_write":
+            await runSingleBotGuestbookWrite(supabase, supabaseUrl, bot, bots, results);
+            break;
+          case "topic_post":
+            await handleTopicPosts(supabase, supabaseUrl, [bot], dygnsMultiplier, results);
+            break;
+          case "email_write":
+            await handleEmailWriting(supabase, supabaseUrl, bot, bots, results);
+            break;
+          case "klotter_drawing":
+            await handleKlotterDrawing(supabase, [bot], dygnsMultiplier, results);
+            break;
+          case "snake_highscore":
+            await handleSnakeHighscores(supabase, [bot], dygnsMultiplier, results);
+            break;
+          case "profile_visit":
+            await handleProfileVisits(supabase, [bot], dygnsMultiplier, results);
+            break;
+          case "good_vibes":
+            await handleGoodVibes(supabase, [bot], dygnsMultiplier, results);
+            break;
+          case "daily_news_post":
+            await handleDailyNewsPosts(supabase, supabaseUrl, [bot], dygnsMultiplier, results);
+            break;
+          case "news_reaction":
+            await handleNewsReactions(supabase, supabaseUrl, [bot], dygnsMultiplier, results);
+            break;
+          case "cross_bot_reply":
+            await handleCrossBotInteraction(supabase, supabaseUrl, [bot], results);
+            break;
+          case "bot_banter":
+            if (bots.length >= 2) await handleBotBanter(supabase, supabaseUrl, bots, results);
+            break;
+          case "scribble":
+            await handleScribbleParticipation(supabase, [bot], results);
+            break;
+          case "lajv_stalking":
+            await handleLajvStalking(supabase, [bot], dygnsMultiplier, results);
+            break;
+          case "guestbook_post": {
             const res = await callBotRespond(supabaseUrl, {
               action: "guestbook_post",
               bot_id: bot.id,
-              context: `Kommentera den senaste nyheten "${article.title}". Referera till innehållet: "${article.content.substring(0, 200)}"`,
+              context: "",
             });
-            results[bot.name].push(`News comment about "${article.title}": ${res.reply || res.error || "unknown"}`);
-          } catch (e) {
-            results[bot.name].push(`News error: ${(e as Error).message}`);
+            results[botName].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
+            break;
           }
-        } else {
-          results[bot.name].push("No news to comment on");
         }
+        results[botName].push(`[assigned: ${activity}]`);
+      } catch (e) {
+        results[botName].push(`${activity} error: ${(e as Error).message}`);
       }
     }
 
@@ -673,8 +642,40 @@ async function handleInactiveUserOutreach(
 }
 
 // =============================================
-// Lajv posts: bots post spontaneous status updates
+// Single bot lajv post (used by activity distributor)
 // =============================================
+async function runSingleBotLajvPost(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  results: Record<string, string[]>
+) {
+  const botName = bot.name as string;
+  results[botName] = results[botName] || [];
+
+  // Cooldown: no lajv from this bot in last 5 min
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data: recentLajv } = await supabase
+    .from("lajv_messages")
+    .select("id")
+    .eq("user_id", bot.user_id)
+    .gte("created_at", fiveMinAgo)
+    .limit(1);
+
+  if (recentLajv && recentLajv.length > 0) {
+    results[botName].push("Lajv skipped: cooldown");
+    return;
+  }
+
+  const res = await callBotRespond(supabaseUrl, {
+    action: "lajv_post",
+    bot_id: bot.id,
+    context: "",
+  });
+  results[botName].push(`Lajv post: ${res.reply || res.error || "unknown"}`);
+}
+
+// Legacy wrapper for compatibility
 async function handleLajvPosts(
   supabase: ReturnType<typeof createClient>,
   supabaseUrl: string,
@@ -682,40 +683,8 @@ async function handleLajvPosts(
   dygnsMultiplier: number,
   results: Record<string, string[]>
 ) {
-  try {
-    // High activity: 2-3 bots post per cycle (every 5 min)
-    const chance = 0.60;
-    
-    for (const bot of bots) {
-      if (Math.random() > chance) continue;
-      
-      const botName = bot.name as string;
-      results[botName] = results[botName] || [];
-
-      // Cooldown: no lajv from this bot in last 5 min
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const { data: recentLajv } = await supabase
-        .from("lajv_messages")
-        .select("id")
-        .eq("user_id", bot.user_id)
-        .gte("created_at", fiveMinAgo)
-        .limit(1);
-
-      if (recentLajv && recentLajv.length > 0) {
-        results[botName].push("Lajv skipped: cooldown");
-        continue;
-      }
-
-      const res = await callBotRespond(supabaseUrl, {
-        action: "lajv_post",
-        bot_id: bot.id,
-        context: "",
-      });
-
-      results[botName].push(`Lajv post: ${res.reply || res.error || "unknown"}`);
-    }
-  } catch (e) {
-    console.error("Lajv post error:", e);
+  for (const bot of bots) {
+    await runSingleBotLajvPost(supabase, supabaseUrl, bot, results);
   }
 }
 
@@ -817,8 +786,214 @@ async function handleProfileGuestbookWriting(
 }
 
 // =============================================
-// Profile visits: bots randomly visit profiles
+// Single bot guestbook write (used by activity distributor)
 // =============================================
+async function runSingleBotGuestbookWrite(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  const botName = bot.name as string;
+  results[botName] = results[botName] || [];
+
+  // Cooldown: 5 min
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data: recentWrites } = await supabase
+    .from("profile_guestbook")
+    .select("id")
+    .eq("author_id", bot.user_id)
+    .gte("created_at", fiveMinAgo)
+    .limit(1);
+
+  if (recentWrites && recentWrites.length > 0) {
+    results[botName].push("Profile guestbook write skipped: cooldown");
+    return;
+  }
+
+  // Pick target: 50/50 bot or real user
+  const botUserIds = new Set(bots.map(b => b.user_id as string));
+  let targetUserId: string | null = null;
+  let targetUsername: string | null = null;
+
+  if (Math.random() < 0.5) {
+    const otherBots = bots.filter(b => (b.user_id as string) !== (bot.user_id as string));
+    if (otherBots.length > 0) {
+      const target = otherBots[Math.floor(Math.random() * otherBots.length)];
+      targetUserId = target.user_id as string;
+      targetUsername = target.name as string;
+    }
+  }
+
+  if (!targetUserId) {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: activeUsers } = await supabase
+      .from("profiles")
+      .select("user_id, username")
+      .eq("is_bot", false)
+      .eq("is_approved", true)
+      .gte("last_seen", oneWeekAgo)
+      .limit(20);
+
+    if (!activeUsers || activeUsers.length === 0) {
+      results[botName].push("Profile guestbook write: no targets");
+      return;
+    }
+    const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+    targetUserId = target.user_id;
+    targetUsername = target.username;
+  }
+
+  const { data: targetProfile } = await supabase
+    .from("profiles")
+    .select("city, interests, listens_to")
+    .eq("user_id", targetUserId)
+    .single();
+
+  const profileContext = targetProfile
+    ? `${targetUsername} bor i ${targetProfile.city || "okänt"}. Intressen: ${targetProfile.interests || "okänt"}. Lyssnar på: ${targetProfile.listens_to || "okänt"}.`
+    : "";
+
+  const res = await callBotRespond(supabaseUrl, {
+    action: "profile_guestbook_write",
+    bot_id: bot.id,
+    target_id: targetUserId,
+    target_username: targetUsername,
+    profile_owner_id: targetUserId,
+    context: profileContext,
+  });
+
+  results[botName].push(`Profile guestbook write to ${targetUsername}: ${res.reply || res.error || "unknown"}`);
+}
+
+// =============================================
+// Email writing: bots send emails to friends/active users
+// =============================================
+const EMAIL_SUBJECTS = [
+  "Hejhej! :)",
+  "Läget?? 🙃",
+  "Kolla in detta!",
+  "Tänkte på dig",
+  "Random fråga haha",
+  "Sett nåt kul?",
+  "Nostalgi-attack!!",
+  "Viktig fråga tbh",
+  "Hallå där! ✨",
+  "Du missade detta",
+  "Måste berätta!!",
+  "Typ bästa grejen",
+  "Saknar dig <3",
+  "Haha kolla",
+  "Fredag!! 🎉",
+];
+
+async function handleEmailWriting(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  const botName = bot.name as string;
+  results[botName] = results[botName] || [];
+
+  try {
+    // Cooldown: no email from this bot in last 30 min
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data: recentEmails } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("sender_id", bot.user_id)
+      .gte("created_at", thirtyMinAgo)
+      .limit(1);
+
+    if (recentEmails && recentEmails.length > 0) {
+      results[botName].push("Email skipped: cooldown");
+      return;
+    }
+
+    // Find a target: prefer friends, fall back to active users
+    const { data: friends } = await supabase
+      .from("friends")
+      .select("friend_id")
+      .eq("user_id", bot.user_id)
+      .eq("status", "accepted")
+      .limit(50);
+
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+    let targetUserId: string | null = null;
+    let targetUsername: string | null = null;
+
+    if (friends && friends.length > 0) {
+      // Prefer non-bot friends
+      const humanFriends = friends.filter(f => !botUserIds.has(f.friend_id));
+      const pool = humanFriends.length > 0 ? humanFriends : friends;
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      targetUserId = chosen.friend_id;
+    }
+
+    if (!targetUserId) {
+      // Fall back to recently active user
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: activeUsers } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .eq("is_bot", false)
+        .eq("is_approved", true)
+        .gte("last_seen", oneWeekAgo)
+        .neq("user_id", bot.user_id as string)
+        .limit(20);
+
+      if (!activeUsers || activeUsers.length === 0) {
+        results[botName].push("Email: no targets");
+        return;
+      }
+      const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+      targetUserId = target.user_id;
+      targetUsername = target.username;
+    }
+
+    if (!targetUsername) {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", targetUserId)
+        .single();
+      targetUsername = p?.username || "du";
+    }
+
+    // Generate email content via bot-respond
+    const subject = EMAIL_SUBJECTS[Math.floor(Math.random() * EMAIL_SUBJECTS.length)];
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "email_write",
+      bot_id: bot.id,
+      target_id: targetUserId,
+      target_username: targetUsername,
+      context: `Skriv ett kort, personligt mejl till ${targetUsername}. Ämne: "${subject}". Max 2-3 meningar. Skriv BARA mejlinnehållet, inget ämne.`,
+    });
+
+    const content = res.reply || "Hej! Ville bara säga hej :)";
+
+    // Insert into messages table
+    const { error } = await supabase.from("messages").insert({
+      sender_id: bot.user_id as string,
+      recipient_id: targetUserId,
+      subject,
+      content,
+    });
+
+    if (!error) {
+      results[botName].push(`Email to ${targetUsername}: "${subject}" ✉️`);
+    } else {
+      results[botName].push(`Email error: ${error.message}`);
+    }
+  } catch (e) {
+    results[botName].push(`Email error: ${(e as Error).message}`);
+  }
+}
+
 async function handleProfileVisits(
   supabase: ReturnType<typeof createClient>,
   bots: Record<string, unknown>[],
@@ -826,7 +1001,6 @@ async function handleProfileVisits(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.20) return; // 20% chance per cycle
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -861,7 +1035,6 @@ async function handleGoodVibes(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.20) return; // 20% chance per cycle
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -980,8 +1153,6 @@ async function handleKlotterDrawing(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.15) return; // 15% chance — at least 1 klotter per day guaranteed
-
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -1560,10 +1731,6 @@ async function handleSnakeHighscores(
   results: Record<string, string[]>
 ) {
   try {
-    // ~3% chance per cycle × dygnsrytm
-    // ~8% chance per cycle × dygnsrytm (increased from 3% for more activity)
-    if (Math.random() > 0.08 * dygnsMultiplier) return;
-
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -1664,8 +1831,7 @@ async function handleLajvStalking(
   results: Record<string, string[]>
 ) {
   try {
-    // 30% base chance, scaled by dygnsrytm
-    if (Math.random() > 0.30 * dygnsMultiplier) return;
+    // Activity selected by distributor — no probability gate needed
 
     // Get recent lajv messages from non-bots (last 30 min)
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
