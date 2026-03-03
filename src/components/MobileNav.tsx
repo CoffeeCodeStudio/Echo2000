@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare";
 
 interface MobileNavProps {
   activeTab: Tab;
@@ -37,6 +37,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
       case 'vanner': return counts.pendingFriends > 0 ? counts.pendingFriends : undefined;
       case 'gastbok': return counts.guestbookNew > 0 ? counts.guestbookNew : undefined;
       case 'lajv': return counts.lajvActive > 0 ? counts.lajvActive : undefined;
+      case 'besokare': return counts.newVisitors > 0 ? counts.newVisitors : undefined;
       default: return undefined;
     }
   };
@@ -45,6 +46,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const topRowItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
     { id: "hem", label: "HEM", emoji: "🏠", animationClass: "scale-in" },
     { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+    { id: "besokare", label: "SPANARE", emoji: "👀", animationClass: "scale-in" },
     { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
     { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
     { id: "chatt", label: "CHATT", emoji: "🖊️", animationClass: "writing-pen" },

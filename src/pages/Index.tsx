@@ -20,7 +20,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { LayoutContext } from "@/components/SharedLayout";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare";
 
 
 export default function Index() {
@@ -43,7 +43,7 @@ export default function Index() {
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { setActivity } = usePresence();
-  const { markGuestbookRead } = useNotifications();
+  const { markGuestbookRead, markVisitorsRead } = useNotifications();
 
   // Mark guestbook entries as read when the user opens the guestbook tab
   useEffect(() => {
@@ -51,6 +51,13 @@ export default function Index() {
       markGuestbookRead();
     }
   }, [activeTab, user, markGuestbookRead]);
+
+  // Mark visitors as read when the user opens the besokare tab
+  useEffect(() => {
+    if (activeTab === 'besokare' && user) {
+      markVisitorsRead();
+    }
+  }, [activeTab, user, markVisitorsRead]);
 
   // Update activity based on active tab
   useEffect(() => {
@@ -65,6 +72,7 @@ export default function Index() {
       spel: 'Spelar spel',
       traffar: 'Kollar träffar',
       lajv: 'Lajvar',
+      besokare: 'Kollar sina spanare',
       faq: 'Läser FAQ',
     };
     setActivity(tabActivityMap[activeTab] || 'Surfar runt');
@@ -94,7 +102,7 @@ export default function Index() {
 
   const renderContent = () => {
     // Protected tabs require login
-    const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv"];
+    const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv", "besokare"];
     if (!user && protectedTabs.includes(activeTab)) {
       // Redirect to auth for non-logged-in users trying to access protected tabs
       navigate("/auth", { replace: true });
@@ -141,6 +149,9 @@ export default function Index() {
 
       case "profil":
         return <ProfilePage />;
+
+      case "besokare":
+        return <ProfilePage initialTab="besokare" />;
 
       default:
         return null;

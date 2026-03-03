@@ -22,7 +22,8 @@ type Tab =
 "spel" |
 "traffar" |
 "lajv" |
-"faq";
+"faq" |
+"besokare";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -69,6 +70,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         return counts.guestbookNew > 0;
       case "lajv":
         return counts.lajvActive > 0;
+      case "besokare":
+        return counts.newVisitors > 0;
       default:
         return false;
     }
@@ -120,7 +123,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
   { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
   { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
-  { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" }];
+  { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+  { id: "besokare" as Tab, label: "SPANARE", emoji: "👀", animationClass: "scale-in" }];
 
 
   // Community zone items (right group)
