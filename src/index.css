@@ -251,26 +251,54 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 0 0 20px hsl(var(--glow-primary) / 0.5);
   }
 
-  /* Status indicator base */
+  /* Status indicator base — 8-bit pixel star */
   .status-indicator {
-    @apply w-3 h-3 rounded-full border-2 border-background;
+    @apply border-0 rounded-none bg-transparent;
+    clip-path: polygon(
+      50% 0%, 61% 35%, 98% 35%, 68% 57%,
+      79% 91%, 50% 70%, 21% 91%, 32% 57%,
+      2% 35%, 39% 35%
+    );
+    image-rendering: pixelated;
   }
 
   .status-online {
-    @apply bg-[hsl(var(--online-green))];
-    box-shadow: 0 0 6px hsl(var(--online-green) / 0.7);
+    background: hsl(var(--online-green));
+    filter: drop-shadow(0 0 4px hsl(var(--online-green) / 0.8))
+            drop-shadow(0 0 8px hsl(var(--online-green) / 0.4));
+    animation: star-rotate 4s linear infinite, star-pulse 2s ease-in-out infinite;
   }
 
   .status-away {
-    @apply bg-[hsl(var(--away-orange))];
+    background: hsl(var(--away-orange));
+    filter: drop-shadow(0 0 4px hsl(var(--away-orange) / 0.6))
+            drop-shadow(0 0 8px hsl(var(--away-orange) / 0.3));
+    animation: star-glimmer 3s ease-in-out infinite;
   }
 
   .status-busy {
-    @apply bg-[hsl(var(--busy-red))];
+    background: hsl(var(--busy-red));
+    filter: drop-shadow(0 0 4px hsl(var(--busy-red) / 0.6));
+    animation: star-pulse 1.5s ease-in-out infinite;
   }
 
   .status-offline {
-    @apply bg-[hsl(var(--offline-gray))];
+    background: hsl(var(--offline-gray));
+  }
+
+  @keyframes star-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes star-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  @keyframes star-glimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
   }
 
   /* Chat bubbles */
