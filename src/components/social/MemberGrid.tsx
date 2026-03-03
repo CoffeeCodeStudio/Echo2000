@@ -10,6 +10,8 @@ interface MemberProfile {
   user_id: string;
   username: string;
   avatar_url: string | null;
+  last_seen?: string | null;
+  is_bot?: boolean;
 }
 
 export function MemberGrid() {
@@ -22,7 +24,7 @@ export function MemberGrid() {
     const fetchMembers = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, username, avatar_url")
+        .select("user_id, username, avatar_url, last_seen, is_bot")
         .order("created_at", { ascending: false });
 
       if (!error && data) setMembers(data);
@@ -31,10 +33,32 @@ export function MemberGrid() {
     fetchMembers();
   }, []);
 
-  const onlineCount = members.filter((m) => {
-    const status = getUserStatus(m.user_id);
-    return status === "online" || status === "away";
-  }).length;
+  const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
+  const statusOrder: Record<UserStatus, number> = { online: 0, away: 1, busy: 2, offline: 3 };
+
+  const getMemberStatus = (m: MemberProfile): UserStatus => {
+    if (m.is_bot && m.last_seen) {
+      const age = Date.now() - new Date(m.last_seen).getTime();
+      if (age < BOT_ONLINE_THRESHOLD_MS) return "online";
+      return "offline";
+    }
+    return getUserStatus(m.user_id);
+  };
+
+  const sortedMembers = [...members]
+    .map((m) => ({ ...m, _status: getMemberStatus(m) }))
+    .sort((a, b) => {
+      const diff = statusOrder[a._status] - statusOrder[b._status];
+      if (diff !== 0) return diff;
+      const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+      const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+      if (a._status === "online" || a._status === "away") return aTime - bTime;
+      return bTime - aTime;
+    });
+
+  const onlineCount = sortedMembers.filter(
+    (m) => m._status === "online" || m._status === "away"
+  ).length;
 
   if (loading) {
     return (
@@ -60,26 +84,23 @@ export function MemberGrid() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
-          {members.map((member) => {
-            const status = getUserStatus(member.user_id);
-            return (
-              <button
-                key={member.user_id}
-                onClick={() => navigate(`/profile/${encodeURIComponent(member.username)}`)}
-                className="nostalgia-card p-4 flex flex-col items-center gap-2 hover:border-primary/50 transition-all hover:-translate-y-0.5"
-              >
-                <div className="relative">
-                  <Avatar name={member.username} src={member.avatar_url} size="lg" />
-                  <div className="absolute -bottom-0.5 -right-0.5">
-                    <StatusIndicator status={status} size="md" />
-                  </div>
+          {sortedMembers.map((member) => (
+            <button
+              key={member.user_id}
+              onClick={() => navigate(`/profile/${encodeURIComponent(member.username)}`)}
+              className="nostalgia-card p-4 flex flex-col items-center gap-2 hover:border-primary/50 transition-all hover:-translate-y-0.5"
+            >
+              <div className="relative">
+                <Avatar name={member.username} src={member.avatar_url} size="lg" />
+                <div className="absolute -bottom-0.5 -right-0.5">
+                  <StatusIndicator status={member._status} size="md" />
                 </div>
-                <span className="text-sm font-medium truncate w-full text-center">
-                  {member.username}
-                </span>
-              </button>
-            );
-          })}
+              </div>
+              <span className="text-sm font-medium truncate w-full text-center">
+                {member.username}
+              </span>
+            </button>
+          ))}
         </div>
 
         {members.length === 0 && (
