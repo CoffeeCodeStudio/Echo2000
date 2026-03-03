@@ -6,13 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Dygnsrytm: reduce activity at night (Swedish time approx UTC+1)
+// Dygnsrytm DISABLED: bots are active 24/7
 function getDygnsrytmMultiplier(): number {
-  const hour = new Date().getUTCHours() + 1;
-  if (hour >= 2 && hour <= 7) return 0.05; // Almost zero at night
-  if (hour >= 18 && hour <= 23) return 1.5; // Peak evening
-  if (hour >= 8 && hour <= 11) return 0.6; // Morning slow
-  return 1.0; // Normal
+  return 1.0;
 }
 
 serve(async (req) => {
@@ -75,7 +71,7 @@ serve(async (req) => {
     // =============================================
     // NEW: Inter-bot banter (occasional fun debates)
     // =============================================
-    if (bots.length >= 2 && Math.random() < 0.08 * dygnsMultiplier) {
+    if (bots.length >= 2 && Math.random() < 0.15) {
       await handleBotBanter(supabase, supabaseUrl, bots, results);
     }
 
@@ -151,8 +147,8 @@ serve(async (req) => {
         if (didOutreach) continue;
       }
 
-      // PRIORITY 4: Autonomous guestbook post (activity roll × dygnsrytm)
-      const adjustedLevel = bot.activity_level * dygnsMultiplier;
+      // PRIORITY 4: Autonomous guestbook post (high activity — always try)
+      const adjustedLevel = Math.max(bot.activity_level, 70); // Minimum 70% chance
       const roll = Math.random() * 100;
       if (roll > adjustedLevel) {
         results[bot.name].push(`Skipped autonomous (roll ${roll.toFixed(0)} > adjusted ${adjustedLevel.toFixed(0)})`);
@@ -168,12 +164,12 @@ serve(async (req) => {
 
       if (chosenContext === "guestbook") {
         try {
-          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
           const { data: recentBotPosts } = await supabase
             .from("guestbook_entries")
             .select("id")
             .eq("user_id", bot.user_id)
-            .gte("created_at", oneHourAgo)
+            .gte("created_at", tenMinAgo)
             .limit(1);
 
           if (recentBotPosts && recentBotPosts.length > 0) {
@@ -228,120 +224,28 @@ serve(async (req) => {
     }
 
     // =============================================
-    // 15-BOT MINIMUM RULE + 60% ONLINE
-    // Ensure at least 15 bots are active (last_seen within 15 min)
-    // Then apply 60% online rule for the rest
+    // ALL BOTS ONLINE 24/7 with varied random statuses
+    // 80% online (last_seen within 2 min), 15% away (3-7 min), 5% just returned
     // =============================================
-    const MIN_ONLINE_BOTS = 15;
-    const ACTIVE_THRESHOLD_MS = 15 * 60 * 1000;
     const now = new Date();
     
-    // Count how many bots were active in the last 15 minutes
-    const fifteenMinAgo = new Date(now.getTime() - ACTIVE_THRESHOLD_MS).toISOString();
-    const { data: recentlyActiveBots } = await supabase
-      .from("profiles")
-      .select("user_id")
-      .eq("is_bot", true)
-      .gte("last_seen", fifteenMinAgo);
-    
-    const currentlyActiveIds = new Set((recentlyActiveBots || []).map(b => b.user_id));
-    const inactiveBots = bots.filter(b => !currentlyActiveIds.has(b.user_id));
-    const deficit = Math.max(0, MIN_ONLINE_BOTS - currentlyActiveIds.size);
-    
-    // Force inactive bots online if we're below the minimum
-    if (deficit > 0 && inactiveBots.length > 0) {
-      const shuffledInactive = [...inactiveBots].sort(() => Math.random() - 0.5);
-      const botsToActivate = shuffledInactive.slice(0, Math.min(deficit, shuffledInactive.length));
+    for (const bot of bots) {
+      const statusRoll = Math.random();
+      let offset: number;
       
-      const STATUS_MESSAGES = [
-        "Spelar Snake 🐍", "Lyssnar på musik 🎵", "Surfar runt 🌊",
-        "Kollar profiler 👀", "Skriver i gästboken ✍️", "Hänger i chatten 💬",
-        "Spelar Memory 🧠", "Ritar på klotterplanket 🎨", "Scrollar Lajv 📱",
-        "Letar nya vänner 🔍", "Kollar nyheter 📰", "Chillar 😎",
-      ];
-      
-      for (const bot of botsToActivate) {
-        const botName = bot.name as string;
-        results[botName] = results[botName] || [];
-        
-        // Update last_seen to NOW
-        const offset = Math.floor(Math.random() * 2 * 60 * 1000);
-        const lastSeen = new Date(now.getTime() - offset).toISOString();
-        await supabase.from("profiles").update({ 
-          last_seen: lastSeen,
-          status_message: STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)]
-        }).eq("user_id", bot.user_id as string);
-        
-        // Force an autonomous action
-        const actionRoll = Math.random();
-        try {
-          if (actionRoll < 0.35) {
-            // Post in Lajv
-            const res = await callBotRespond(supabaseUrl, {
-              action: "lajv_post",
-              bot_id: bot.id,
-              context: "Skriv ett kort, spontant inlägg om vad du gör just nu.",
-            });
-            results[botName].push(`Forced lajv: ${res.reply || res.error || "ok"}`);
-          } else if (actionRoll < 0.60) {
-            // Write in another bot's guestbook
-            const otherBots = bots.filter(b => b.user_id !== bot.user_id);
-            if (otherBots.length > 0) {
-              const target = otherBots[Math.floor(Math.random() * otherBots.length)];
-              const res = await callBotRespond(supabaseUrl, {
-                action: "profile_guestbook_post",
-                bot_id: bot.id,
-                context: `Skriv ett kort inlägg i ${target.name}s gästbok.`,
-                target_user_id: target.user_id,
-              });
-              results[botName].push(`Forced guestbook to ${target.name}: ${res.reply || res.error || "ok"}`);
-            }
-          } else if (actionRoll < 0.80) {
-            // Update status message only (already done above)
-            results[botName].push(`Forced online with status update`);
-          } else {
-            // Accept a pending friend request
-            const { data: pending } = await supabase
-              .from("friends")
-              .select("id")
-              .eq("friend_id", bot.user_id)
-              .eq("status", "pending")
-              .limit(1);
-            if (pending && pending.length > 0) {
-              await supabase.from("friends").update({ status: "accepted" }).eq("id", pending[0].id);
-              results[botName].push(`Forced: accepted friend request`);
-            } else {
-              results[botName].push(`Forced online (no pending requests)`);
-            }
-          }
-        } catch (e) {
-          results[botName].push(`Forced action error: ${(e as Error).message}`);
-        }
+      if (statusRoll < 0.80) {
+        // Online: last_seen within 0-2 minutes ago
+        offset = Math.floor(Math.random() * 2 * 60 * 1000);
+      } else if (statusRoll < 0.95) {
+        // Away: last_seen 3-7 minutes ago
+        offset = 3 * 60 * 1000 + Math.floor(Math.random() * 4 * 60 * 1000);
+      } else {
+        // Just returned: last_seen 0-30 seconds ago
+        offset = Math.floor(Math.random() * 30 * 1000);
       }
-    }
-    
-    // Standard 60% online rule for remaining bots
-    const totalBots = bots.length;
-    const targetOnline = Math.max(MIN_ONLINE_BOTS, Math.ceil(totalBots * 0.6));
-    
-    // Shuffle bots and pick targetOnline to be "online"
-    const shuffledBots = [...bots].sort(() => Math.random() - 0.5);
-    const onlineBots = shuffledBots.slice(0, targetOnline);
-    
-    for (const bot of onlineBots) {
-      const offset = Math.floor(Math.random() * 2 * 60 * 1000);
+      
       const lastSeen = new Date(now.getTime() - offset).toISOString();
       await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
-    }
-    
-    // Remaining bots: some "away", some offline
-    const remainingBots = shuffledBots.slice(targetOnline);
-    for (const bot of remainingBots) {
-      if (Math.random() < 0.5) {
-        const awayOffset = 3 * 60 * 1000 + Math.floor(Math.random() * 5 * 60 * 1000);
-        const lastSeen = new Date(now.getTime() - awayOffset).toISOString();
-        await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
-      }
     }
 
     // Also update last_seen for bots that actually DID something this cycle
@@ -779,8 +683,8 @@ async function handleLajvPosts(
   results: Record<string, string[]>
 ) {
   try {
-    // Only 1-2 bots post per cron cycle, with dygnsrytm
-    const chance = 0.12 * dygnsMultiplier;
+    // High activity: 2-3 bots post per cycle (every 5 min)
+    const chance = 0.60;
     
     for (const bot of bots) {
       if (Math.random() > chance) continue;
@@ -788,13 +692,13 @@ async function handleLajvPosts(
       const botName = bot.name as string;
       results[botName] = results[botName] || [];
 
-      // Cooldown: no lajv from this bot in last 30 min
-      const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      // Cooldown: no lajv from this bot in last 5 min
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentLajv } = await supabase
         .from("lajv_messages")
         .select("id")
         .eq("user_id", bot.user_id)
-        .gte("created_at", thirtyMinAgo)
+        .gte("created_at", fiveMinAgo)
         .limit(1);
 
       if (recentLajv && recentLajv.length > 0) {
@@ -809,9 +713,6 @@ async function handleLajvPosts(
       });
 
       results[botName].push(`Lajv post: ${res.reply || res.error || "unknown"}`);
-      
-      // Only one bot posts per cycle to keep it natural
-      break;
     }
   } catch (e) {
     console.error("Lajv post error:", e);
@@ -829,21 +730,21 @@ async function handleProfileGuestbookWriting(
   results: Record<string, string[]>
 ) {
   try {
-    // ~12% chance per cycle × dygnsrytm (increased for more visibility)
-    if (Math.random() > 0.12 * dygnsMultiplier) return;
+    // ~50% chance per cycle — write in guestbooks frequently
+    if (Math.random() > 0.50) return;
 
     // Pick a random bot as author
     const authorBot = bots[Math.floor(Math.random() * bots.length)];
     const botName = authorBot.name as string;
     results[botName] = results[botName] || [];
 
-    // Cooldown: no profile guestbook write from this bot in last 45 min
-    const twoHoursAgo = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    // Cooldown: no profile guestbook write from this bot in last 5 min
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: recentWrites } = await supabase
       .from("profile_guestbook")
       .select("id")
       .eq("author_id", authorBot.user_id)
-      .gte("created_at", twoHoursAgo)
+      .gte("created_at", fiveMinAgo)
       .limit(1);
 
     if (recentWrites && recentWrites.length > 0) {
@@ -925,7 +826,7 @@ async function handleProfileVisits(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.06 * dygnsMultiplier) return;
+    if (Math.random() > 0.20) return; // 20% chance per cycle
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -960,7 +861,7 @@ async function handleGoodVibes(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.08 * dygnsMultiplier) return;
+    if (Math.random() > 0.20) return; // 20% chance per cycle
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
@@ -1079,16 +980,16 @@ async function handleKlotterDrawing(
   results: Record<string, string[]>
 ) {
   try {
-    if (Math.random() > 0.03 * dygnsMultiplier) return;
+    if (Math.random() > 0.15) return; // 15% chance — at least 1 klotter per day guaranteed
 
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    // Cooldown: 4 hours
-    const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+    // Cooldown: 2 hours
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const { data: recent } = await supabase.from("klotter")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", fourHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", twoHoursAgo).limit(1);
     if (recent && recent.length > 0) { results[botName].push("Klotter: cooldown"); return; }
 
     const template = KLOTTER_TEMPLATES[Math.floor(Math.random() * KLOTTER_TEMPLATES.length)];
@@ -1320,8 +1221,8 @@ async function handleTopicPosts(
   results: Record<string, string[]>
 ) {
   try {
-    // ~8% chance per cycle × dygnsrytm
-    if (Math.random() > 0.08 * dygnsMultiplier) return;
+    // ~25% chance per cycle
+    if (Math.random() > 0.25) return;
 
     const bot = bots[Math.floor(Math.random() * bots.length)];
     const botName = bot.name as string;
