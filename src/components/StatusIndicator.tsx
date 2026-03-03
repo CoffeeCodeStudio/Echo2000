@@ -9,9 +9,9 @@ interface StatusIndicatorProps {
 }
 
 const sizeMap = {
-  sm: 12,
-  md: 14,
-  lg: 18,
+  sm: 14,
+  md: 17,
+  lg: 22,
 };
 
 const statusColors: Record<UserStatus, string> = {
