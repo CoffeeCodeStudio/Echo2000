@@ -22,7 +22,7 @@ const baseTabs: { id: ProfileTabId; label: string }[] = [
  */
 export function ProfileTabs({ activeTab, onTabChange, isOwnProfile }: ProfileTabsProps) {
   const tabs = isOwnProfile
-    ? [...baseTabs, { id: "besokare" as ProfileTabId, label: "BESÖKARE" }]
+    ? [...baseTabs, { id: "besokare" as ProfileTabId, label: "👀 SPANARE" }]
     : baseTabs;
 
   return (
