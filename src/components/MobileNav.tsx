@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
 interface MobileNavProps {
   activeTab: Tab;
@@ -54,6 +54,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   ];
 
   const bottomRowItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+    { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
     { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
     { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
     { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },

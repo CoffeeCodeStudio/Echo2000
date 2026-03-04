@@ -23,7 +23,8 @@ type Tab =
 "traffar" |
 "lajv" |
 "faq" |
-"besokare";
+"besokare" |
+"folk";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -129,6 +130,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
   // Community zone items (right group)
   const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
+  { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
   { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
   { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
   { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },

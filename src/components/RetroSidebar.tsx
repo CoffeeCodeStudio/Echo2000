@@ -21,7 +21,8 @@ type Tab =
   | "spel"
   | "traffar"
   | "lajv"
-  | "faq";
+  | "faq"
+  | "folk";
 
 interface RetroSidebarProps {
   activeTab: Tab;
@@ -61,6 +62,7 @@ export function RetroSidebar({ activeTab, onTabChange }: RetroSidebarProps) {
   ];
 
   const communityItems: { id: Tab; label: string; emoji: string }[] = [
+    { id: "folk", label: "Folk", emoji: "🌐" },
     { id: "klotterplanket", label: "Klotterplanket", emoji: "🎨" },
     { id: "lajv", label: "Lajv", emoji: "🎭" },
     { id: "traffar", label: "Träffar", emoji: "📅" },
