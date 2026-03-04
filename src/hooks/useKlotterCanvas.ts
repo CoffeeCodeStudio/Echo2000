@@ -55,13 +55,13 @@ export function useKlotterCanvas() {
   // Side-effects
   // ---------------------------------------------------------------------------
 
-  // Hide navbar when drawing on mobile or publish modal open
+  // Hide navbar only when publish modal is open on mobile
   useEffect(() => {
     if (isMobile && setHideNavbar) {
-      setHideNavbar(showPublishModal || activeTab === "draw");
+      setHideNavbar(showPublishModal);
     }
     return () => { if (setHideNavbar) setHideNavbar(false); };
-  }, [showPublishModal, isMobile, setHideNavbar, activeTab]);
+  }, [showPublishModal, isMobile, setHideNavbar]);
 
   // Initialize canvas with proper DPI scaling
   useEffect(() => {
