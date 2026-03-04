@@ -95,7 +95,8 @@ serve(async (req) => {
       { id: "topic_post", weight: 12 },
       { id: "email_write", weight: 12 },
       { id: "klotter_drawing", weight: 8 },
-      { id: "snake_highscore", weight: 8 },
+      { id: "snake_highscore", weight: 6 },
+      { id: "memory_highscore", weight: 6 },
       { id: "good_vibes", weight: 5 },
       { id: "daily_news_post", weight: 5 },
       { id: "news_reaction", weight: 4 },
@@ -149,6 +150,9 @@ serve(async (req) => {
             break;
           case "snake_highscore":
             await handleSnakeHighscores(supabase, [bot], results);
+            break;
+          case "memory_highscore":
+            await handleMemoryHighscores(supabase, [bot], results);
             break;
           case "good_vibes":
             await handleGoodVibes(supabase, [bot], results);
@@ -1146,7 +1150,74 @@ async function handleSnakeHighscores(
 }
 
 // =============================================
-// Good vibes
+// Memory Highscores
+// =============================================
+async function handleMemoryHighscores(
+  supabase: ReturnType<typeof createClient>,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const bot = bots[0];
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const { data: recentScores } = await supabase.from("memory_highscores")
+      .select("id").eq("user_id", bot.user_id).gte("created_at", threeHoursAgo).limit(1);
+
+    if (recentScores && recentScores.length > 0) {
+      results[botName].push("Memory: cooldown");
+      return;
+    }
+
+    // Difficulty distribution: 50% medium, 30% easy, 20% hard
+    const diffRoll = Math.random();
+    let difficulty: string;
+    let pairCount: number;
+    if (diffRoll < 0.30) {
+      difficulty = "easy"; pairCount = 6;
+    } else if (diffRoll < 0.80) {
+      difficulty = "medium"; pairCount = 8;
+    } else {
+      difficulty = "hard"; pairCount = 12;
+    }
+
+    // Generate realistic scores based on difficulty
+    const minMoves = pairCount * 2; // perfect game
+    const maxExtraMoves = Math.floor(pairCount * 1.5);
+    const moves = minMoves + Math.floor(Math.random() * maxExtraMoves);
+    
+    // Time: ~2-4 sec per move for easy, 3-6 for medium, 4-8 for hard
+    const timePerMove = difficulty === "easy" ? 2 + Math.random() * 2 
+                      : difficulty === "medium" ? 3 + Math.random() * 3 
+                      : 4 + Math.random() * 4;
+    const time = Math.floor(moves * timePerMove);
+    
+    // Score: higher for fewer moves and faster time
+    const efficiency = minMoves / moves; // 1.0 = perfect
+    const baseScore = Math.floor(pairCount * 100 * efficiency);
+    const timeBonus = Math.max(0, Math.floor((300 - time) * 0.5));
+    const score = baseScore + timeBonus;
+
+    let botAvatar = bot.avatar_url as string | null;
+    if (!botAvatar) {
+      const { data: p } = await supabase.from("profiles").select("avatar_url").eq("user_id", bot.user_id).single();
+      botAvatar = p?.avatar_url || null;
+    }
+
+    const { error } = await supabase.from("memory_highscores").insert({
+      user_id: bot.user_id as string,
+      username: botName,
+      avatar_url: botAvatar,
+      score, moves, time_seconds: time, difficulty,
+    });
+
+    if (!error) results[botName].push(`Memory (${difficulty}): ${score}pts (${moves} drag, ${time}s) 🧠`);
+  } catch (e) { console.error("Memory error:", e); }
+}
+
+
 // =============================================
 async function handleGoodVibes(
   supabase: ReturnType<typeof createClient>,
