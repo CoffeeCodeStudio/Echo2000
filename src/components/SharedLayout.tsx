@@ -56,7 +56,7 @@ export function SharedLayout() {
       />
 
       {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden pb-[120px] md:pb-0">
+      <div className="flex-1 flex overflow-hidden pb-[140px] md:pb-0">
         {/* Main content outlet */}
         <main className="flex-1 flex overflow-hidden">
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />

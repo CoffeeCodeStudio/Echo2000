@@ -2,9 +2,11 @@
  * @module KlotterHeader
  * Tab switcher and header bar for the Klotterplanket.
  */
-import { Send } from "lucide-react";
+import { Send, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useOutletContext } from "react-router-dom";
+import type { LayoutContext } from "../SharedLayout";
 
 interface KlotterHeaderProps {
   isMobile: boolean;
@@ -62,13 +64,25 @@ export function KlotterHeader({
   onPublish,
   galleryCount,
 }: KlotterHeaderProps) {
+  const context = useOutletContext<LayoutContext>();
+  const goBack = () => context?.setActiveTab?.("hem");
+
   return (
     <div
       className={cn(
         "border-b border-border",
-        isMobile ? "p-3 flex items-center justify-between" : "p-4"
+        isMobile ? "p-3 flex items-center justify-between gap-2" : "p-4"
       )}
     >
+      {isMobile && (
+        <button
+          onClick={goBack}
+          className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          aria-label="Tillbaka"
+        >
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        </button>
+      )}
       {!isMobile && (
         <div className="flex items-center justify-between mb-3">
           <h1 className="font-display font-bold text-xl flex items-center gap-2">
