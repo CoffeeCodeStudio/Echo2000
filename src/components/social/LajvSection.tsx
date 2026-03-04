@@ -59,19 +59,6 @@ export function LajvSection() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      {/* Header */}
-      <div className="msn-header px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Radio className="w-5 h-5 text-primary animate-pulse" />
-          <h2 className="font-display font-bold text-lg">LAJV</h2>
-          <span className="text-xs text-muted-foreground">Live-meddelanden</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          <span>Försvinner efter 10 min</span>
-        </div>
-      </div>
-
       {/* Message input area - at top */}
       <div className="p-4 border-b border-border bg-card/50">
         <div className="flex gap-3">
