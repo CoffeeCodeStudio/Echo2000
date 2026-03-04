@@ -450,7 +450,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
               </div>
             </div>
             <div className="border-t border-border pt-4">
-              <p className="text-sm whitespace-pre-line text-gray-900 dark:text-foreground">{selectedMail.content}</p>
+              <p className="text-sm whitespace-pre-line text-foreground">{selectedMail.content}</p>
             </div>
             <div className="flex gap-2 mt-6">
               <Button variant="msn" onClick={handleReply}>
