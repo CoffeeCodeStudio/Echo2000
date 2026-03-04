@@ -20,7 +20,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { LayoutContext } from "@/components/SharedLayout";
 
-type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
 
 export default function Index() {
@@ -67,6 +67,7 @@ export default function Index() {
       gastbok: 'Kollar gästboken',
       mejl: 'Läser mejl',
       vanner: 'Kollar vänlistan',
+      folk: 'Kollar medlemmar',
       profil: 'Kollar sin profil',
       klotterplanket: 'Klottrar',
       spel: 'Spelar spel',
@@ -102,7 +103,7 @@ export default function Index() {
 
   const renderContent = () => {
     // Protected tabs require login
-    const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv", "besokare"];
+    const protectedTabs: Tab[] = ["chatt", "gastbok", "mejl", "vanner", "profil", "klotterplanket", "spel", "traffar", "lajv", "besokare", "folk"];
     if (!user && protectedTabs.includes(activeTab)) {
       // Redirect to auth for non-logged-in users trying to access protected tabs
       navigate("/auth", { replace: true });
@@ -125,12 +126,12 @@ export default function Index() {
       case "vanner":
         return (
           <div className="flex-1 flex flex-col overflow-y-auto scrollbar-nostalgic">
-            <div className="shrink-0">
-              <FriendsList />
-            </div>
-            <MemberGrid />
+            <FriendsList />
           </div>
         );
+
+      case "folk":
+        return <MemberGrid />;
 
       case "klotterplanket":
         return <Klotterplanket />;
