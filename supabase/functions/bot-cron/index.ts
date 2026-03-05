@@ -84,6 +84,8 @@ serve(async (req) => {
       if (allowedContexts.includes("chat")) {
         await handleChatReplies(supabase, supabaseUrl, bot, results);
       }
+      // Reactive email replies (check for unread emails)
+      await handleEmailReplies(supabase, supabaseUrl, bot, bots, results);
     }
 
     // =============================================
@@ -132,6 +134,9 @@ serve(async (req) => {
       results[botName] = results[botName] || [];
 
       try {
+        // Set bot to "busy" (last_seen = now) while acting
+        await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", bot.user_id as string);
+
         switch (activity) {
           case "lajv_post":
             await runSingleBotLajvPost(supabase, supabaseUrl, bot, results, recentContext);
@@ -503,16 +508,16 @@ async function handleBotProfileGuestbookReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
     const { data: recentEntries } = await supabase
       .from("profile_guestbook")
       .select("id, author_name, author_id, message, profile_owner_id, created_at")
       .eq("profile_owner_id", bot.user_id)
       .neq("author_id", bot.user_id)
-      .gte("created_at", thirtyMinAgo)
-      .lte("created_at", threeMinAgo)
+      .gte("created_at", fifteenMinAgo)
+      .lte("created_at", oneMinAgo)
       .order("created_at", { ascending: false })
       .limit(10);
 
@@ -602,13 +607,28 @@ async function handleChatReplies(
       .from("profiles").select("username").eq("user_id", chosenSenderId).single();
     const senderName = senderProfile?.username || "en användare";
 
-    const messagesContext = senderMessages.slice(0, 5).reverse().map(m => `"${m.content}"`).join(", ");
+    // Fetch full conversation history for context (last 20 messages between them)
+    const { data: conversationHistory } = await supabase
+      .from("chat_messages")
+      .select("sender_id, content, created_at")
+      .or(`and(sender_id.eq.${bot.user_id},recipient_id.eq.${chosenSenderId}),and(sender_id.eq.${chosenSenderId},recipient_id.eq.${bot.user_id})`)
+      .order("created_at", { ascending: true })
+      .limit(20);
+
+    const historyContext = (conversationHistory || []).map(m => {
+      const who = m.sender_id === bot.user_id ? (bot.name as string) : senderName;
+      return `${who}: "${m.content}"`;
+    }).join("\n");
+
     await broadcastTypingIndicator(supabase, bot.user_id as string, chosenSenderId);
+
+    // Mark bot as busy while replying
+    await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", bot.user_id as string);
 
     const res = await callBotRespond(supabaseUrl, {
       action: "chat_reply",
       bot_id: bot.id,
-      context: `Du chattar med ${senderName}. Senaste: ${messagesContext}`,
+      context: `Du chattar med ${senderName}.\n\nKONVERSATIONSHISTORIK:\n${historyContext}`,
       target_id: chosenSenderId,
       target_username: senderName,
     });
@@ -1449,6 +1469,113 @@ async function handleLajvAutoFill(
     });
     results[botName].push(`Auto-fill: ${res.reply || res.error || "unknown"}`);
   } catch (e) { console.error("Lajv auto-fill error:", e); }
+}
+
+// =============================================
+// Email replies — reactive handler for unread emails
+// =============================================
+async function handleEmailReplies(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+): Promise<boolean> {
+  try {
+    const botName = bot.name as string;
+    results[botName] = results[botName] || [];
+
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+
+    // Find unread emails sent TO this bot (at least 2 min old for natural delay)
+    const { data: unreadEmails } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("recipient_id", bot.user_id)
+      .eq("is_read", false)
+      .eq("deleted_by_recipient", false)
+      .lte("created_at", twoMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (!unreadEmails || unreadEmails.length === 0) return false;
+
+    // Random delay: 40% chance to skip if < 5 min old (human-like)
+    const oldestEmail = unreadEmails[unreadEmails.length - 1];
+    const emailAgeMin = (Date.now() - new Date(oldestEmail.created_at).getTime()) / 60000;
+    if (emailAgeMin < 5 && Math.random() < 0.4) {
+      results[botName].push(`Email reply delayed: ${emailAgeMin.toFixed(0)}min old`);
+      return false;
+    }
+
+    // Pick one sender to reply to
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+    const senderIds = [...new Set(unreadEmails.map(m => m.sender_id))].filter(id => id !== bot.user_id);
+    if (senderIds.length === 0) return false;
+
+    // Prefer human senders
+    const humanSenders = senderIds.filter(id => !botUserIds.has(id));
+    const chosenSenderId = humanSenders.length > 0
+      ? humanSenders[Math.floor(Math.random() * humanSenders.length)]
+      : senderIds[Math.floor(Math.random() * senderIds.length)];
+
+    // Get sender profile
+    const { data: senderProfile } = await supabase
+      .from("profiles").select("username").eq("user_id", chosenSenderId).single();
+    const senderName = senderProfile?.username || "en användare";
+
+    // Fetch full email conversation history (last 10 emails between them)
+    const { data: emailHistory } = await supabase
+      .from("messages")
+      .select("sender_id, subject, content, created_at")
+      .or(`and(sender_id.eq.${bot.user_id},recipient_id.eq.${chosenSenderId}),and(sender_id.eq.${chosenSenderId},recipient_id.eq.${bot.user_id})`)
+      .eq("deleted_by_sender", false)
+      .eq("deleted_by_recipient", false)
+      .order("created_at", { ascending: true })
+      .limit(10);
+
+    const historyContext = (emailHistory || []).map(m => {
+      const who = m.sender_id === bot.user_id ? botName : senderName;
+      return `${who} (ämne: "${m.subject}"): "${m.content}"`;
+    }).join("\n");
+
+    // Mark bot as busy
+    await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", bot.user_id as string);
+
+    // Get the latest unread email to reply to
+    const latestEmail = unreadEmails.find(e => e.sender_id === chosenSenderId) || unreadEmails[0];
+    const replySubject = latestEmail.subject.startsWith("Re: ") ? latestEmail.subject : `Re: ${latestEmail.subject}`;
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "email_reply",
+      bot_id: bot.id,
+      context: `Du svarar på ett mejl från ${senderName}.\n\nMEJLHISTORIK:\n${historyContext}\n\nSenaste mejlet: "${latestEmail.content}"`,
+      target_id: chosenSenderId,
+      target_username: senderName,
+    });
+
+    if (res.reply) {
+      // Send the reply
+      await supabase.from("messages").insert({
+        sender_id: bot.user_id as string,
+        recipient_id: chosenSenderId,
+        subject: replySubject,
+        content: res.reply,
+      });
+
+      // Mark original emails as read
+      for (const email of unreadEmails.filter(e => e.sender_id === chosenSenderId)) {
+        await supabase.from("messages").update({ is_read: true }).eq("id", email.id);
+      }
+
+      results[botName].push(`✉️ reply → ${senderName}: "${replySubject}"`);
+    }
+
+    return true;
+  } catch (e) {
+    results[bot.name as string].push(`Email reply error: ${(e as Error).message}`);
+    return false;
+  }
 }
 
 // =============================================
