@@ -490,6 +490,23 @@ ${context || ""}`;
 
 Svara naturligt som en spontan lajv-uppdatering (max 200 tecken). Reagera på vad de sa, håll med eller var roligt oenig.${realityRules}`;
 
+    } else if (action === "email_reply") {
+      const addressee = target_username || "du";
+      userPrompt = `Svara på ett mejl från ${addressee} på Echo2000.
+
+KONTEXT (HELA mejlkonversationen — svara LOGISKT på det senaste meddelandet):
+${context || "Hej!"}
+
+REGLER:
+- Max 250 tecken.
+- Skriv BARA mejlinnehållet (ämnesraden sätts automatiskt).
+- Svara på det ${addressee} FAKTISKT skrev — inte generiskt.
+- Om de ställer en fråga: svara på frågan.
+- Om de berättar något: reagera och bygg vidare.
+- Ställ gärna en följdfråga — håll konversationen igång.
+- Kom ihåg vad ni pratat om tidigare i konversationshistoriken!
+- Var personlig, varm och mänsklig.${realityRules}`;
+
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
