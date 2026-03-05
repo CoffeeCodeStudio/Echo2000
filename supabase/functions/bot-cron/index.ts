@@ -204,15 +204,26 @@ serve(async (req) => {
     await handleLajvAutoFill(supabase, supabaseUrl, bots, results);
 
     // =============================================
-    // 6. STATUS ROTATION — based on recent activity
+    // 6. STATUS ROTATION — guarantee 50%+ bots online 24/7
     // Bots that just acted → online (last_seen = now)
-    // Bots idle but present → varied (online/away)
+    // Idle bots → controlled distribution ensuring minimum 50% online
+    // Online = last_seen < 3 min (matches AWAY_TIMEOUT_MS in usePresence)
     // =============================================
     const activeBotNames = new Set(
       Object.entries(results)
         .filter(([_, msgs]) => msgs.some(m => !m.startsWith("[") && !m.includes("cooldown") && !m.includes("skipped") && !m.includes("Skipped")))
         .map(([name]) => name)
     );
+
+    // Calculate how many bots need to be online (minimum 50%)
+    const minOnlineCount = Math.ceil(bots.length * 0.5);
+    const activeCount2 = activeBotNames.size;
+    const idleBots = bots.filter(b => !activeBotNames.has(b.name as string));
+    const additionalOnlineNeeded = Math.max(0, minOnlineCount - activeCount2);
+
+    // Shuffle idle bots and assign guaranteed online slots
+    const shuffledIdle = [...idleBots].sort(() => Math.random() - 0.5);
+    const guaranteedOnline = new Set(shuffledIdle.slice(0, additionalOnlineNeeded).map(b => b.name as string));
 
     for (const bot of bots) {
       const botName = bot.name as string;
@@ -224,19 +235,23 @@ serve(async (req) => {
         // Just acted → definitely online (0-30s ago)
         const offset = Math.floor(Math.random() * 30 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
+      } else if (guaranteedOnline.has(botName)) {
+        // Guaranteed online slot — keep within 2 min (well under 3 min threshold)
+        const offset = Math.floor(Math.random() * 2 * 60 * 1000);
+        lastSeen = new Date(now.getTime() - offset).toISOString();
       } else {
-        // Idle this tick → rotate status naturally
+        // Remaining idle bots — natural distribution (some online, some away)
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.65) {
+        if (statusRoll < 0.40) {
           // Online: 0-2 min ago
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
-        } else if (statusRoll < 0.90) {
+        } else if (statusRoll < 0.75) {
           // Away: 3-7 min ago
           offset = 3 * 60 * 1000 + Math.floor(Math.random() * 4 * 60 * 1000);
         } else {
-          // Busy: 1-2 min ago (recently active but "busy")
-          offset = 60 * 1000 + Math.floor(Math.random() * 60 * 1000);
+          // Offline-ish: 8-20 min ago
+          offset = 8 * 60 * 1000 + Math.floor(Math.random() * 12 * 60 * 1000);
         }
         lastSeen = new Date(now.getTime() - offset).toISOString();
       }
