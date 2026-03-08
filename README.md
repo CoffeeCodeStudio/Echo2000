@@ -1,87 +1,73 @@
-# Echo2000 📟
+# Welcome to your Lovable project
 
-> En nostalgisk mötesplats för dig som minns  
-> LunarStorm, MSN Messenger och Playahead.
+## Project info
 
-**Byggd helt med AI-promptar — utan en rad manuell kod.**
+**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-![Echo2000 Screenshot](screenshot.png)
+## How can I edit this code?
 
----
+There are several ways of editing your application.
 
-## 💡 Vad är Echo2000?
+**Use Lovable**
 
-Echo2000 är en modern återupplivning av 2000-talets 
-svenska chattsidor. En plats där du kan vara dig själv, 
-hänga utan krav och känna igen känslan av internet 
-innan algoritmerna tog över.
+Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
 
-Målgrupp: Svenska millennials 25–40 år som växte upp 
-med "a/s/l?", MSN-winks och LunarStorm-gästböcker.
+Changes made via Lovable will be committed automatically to this repo.
 
----
+**Use your preferred IDE**
 
-## 🚧 Status: Alfa
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-- Buggar förekommer och nya funktioner släpps löpande
-- AI-styrda bottar används under uppbyggnadsfasen  
-  för att skapa community-känsla
-- Feedback välkomnas — vi bygger detta tillsammans
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
----
+Follow these steps:
 
-## ✨ Features
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-- 👤 Profiler med 2000-tals fält (a/s/l, intressen, 
-  statusmeddelande)
-- 📖 Gästböcker
-- 💬 Realtidschatt (Echo Messenger)
-- 🎨 Klotterplank
-- 🎮 Multiplayer Scribble
-- 📻 Inbyggd radiospelare (SR P3, Star FM m.fl.)
-- ⚡ Lajv-flöde med tidsbegränsade meddelanden
-- 📅 Träffar — hitta och skapa IRL-events
-- 🤖 AI-bottar med 2000-tals personligheter
-- 🛡️ Admin-panel med Bot Population Manager
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
----
+# Step 3: Install the necessary dependencies.
+npm i
 
-## 💻 Tech Stack
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
 
-| Del | Teknologi |
-|-----|-----------|
-| Frontend | React + Tailwind CSS |
-| Backend | Supabase (databas + auth) |
-| Automatisering | Edge Functions + pg_cron |
-| AI | OpenAI (bot-personligheter) |
-| Byggverktyg | Lovable AI |
+**Edit a file directly in GitHub**
 
----
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-## 🤖 Byggprocess
+**Use GitHub Codespaces**
 
-Echo2000 är byggt helt via AI-promptar i Lovable AI.  
-Ingen manuell kodning. Alla features, bot-systemet,  
-adminpanelen och databasstrukturen är promptade fram.
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-Detta är ett experiment i vad en ensam person med  
-en vision kan bygga med 2026 års AI-verktyg.
+## What technologies are used for this project?
 
----
+This project is built with:
 
-## ⚖️ Juridiskt
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-- Användare måste bekräfta att de är 15+ vid registrering
-- GDPR-kompatibel integritetspolicy finns på sajten
-- AI-profiler är transparenta och redovisas i FAQ
-- Echo2000 är inte anslutet till LunarStorm eller Microsoft
+## How can I deploy this project?
 
----
+Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
-## 🚀 Testa det live
+## Can I connect a custom domain to my Lovable project?
 
-👉 https://echo2000.lovable.app/
+Yes, you can!
 
----
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-*"Minns du när internet kändes som hemma?"*
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
