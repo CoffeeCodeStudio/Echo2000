@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
@@ -14,6 +15,7 @@ export function SharedLayout() {
   const [hideNavbar, setHideNavbar] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const scrollNavVisible = useScrollDirection(15);
 
   // Determine active tab from URL or default to "hem"
   const getActiveTab = (): Tab => {
@@ -56,7 +58,7 @@ export function SharedLayout() {
       />
 
       {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden pb-[140px] md:pb-0">
+      <div className="flex-1 flex overflow-hidden pb-[70px] md:pb-0">
         {/* Main content outlet */}
         <main className="flex-1 flex overflow-hidden">
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
@@ -64,7 +66,7 @@ export function SharedLayout() {
       </div>
 
       {/* Mobile bottom navigation */}
-      {!hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} />}
+      {!hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} isVisible={scrollNavVisible} />}
     </div>
   );
 }
