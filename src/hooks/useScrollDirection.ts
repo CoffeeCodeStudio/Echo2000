@@ -6,39 +6,46 @@ export function useScrollDirection(threshold = 10) {
   const ticking = useRef(false);
 
   useEffect(() => {
-    const updateScrollDir = () => {
-      const scrollY = window.scrollY;
-      const diff = scrollY - lastScrollY.current;
+    const updateScrollDir = (currentY: number) => {
+      const diff = currentY - lastScrollY.current;
 
-      // Only update if we've scrolled past threshold
       if (Math.abs(diff) < threshold) {
         ticking.current = false;
         return;
       }
 
-      // Show nav when scrolling up, hide when scrolling down
-      // Also always show when at top of page
-      if (scrollY < 50) {
+      // Always show at top of container
+      if (currentY < 50) {
         setIsVisible(true);
       } else if (diff > 0) {
-        setIsVisible(false); // scrolling down
+        setIsVisible(false); // scrolling down → hide
       } else {
-        setIsVisible(true); // scrolling up
+        setIsVisible(true);  // scrolling up → show
       }
 
-      lastScrollY.current = scrollY > 0 ? scrollY : 0;
+      lastScrollY.current = currentY > 0 ? currentY : 0;
       ticking.current = false;
     };
 
-    const onScroll = () => {
+    // Listen on window AND capture scroll events from any inner element
+    const onScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const scrollY = target.scrollTop ?? window.scrollY;
+
       if (!ticking.current) {
-        window.requestAnimationFrame(updateScrollDir);
+        window.requestAnimationFrame(() => updateScrollDir(scrollY));
         ticking.current = true;
       }
     };
 
+    // Use capture:true so we intercept scroll from any child container
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      document.removeEventListener("scroll", onScroll, { capture: true });
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [threshold]);
 
   return isVisible;
