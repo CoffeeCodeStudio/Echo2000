@@ -15,6 +15,7 @@ export function SharedLayout() {
   const [hideNavbar, setHideNavbar] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const scrollNavVisible = useScrollDirection(15);
 
   // Determine active tab from URL or default to "hem"
   const getActiveTab = (): Tab => {
