@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
