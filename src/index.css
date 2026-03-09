@@ -797,18 +797,15 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(0.9);
   }
 
-  .mobile-tab-item.active {
-    color: hsl(var(--primary));
-  }
-
   .mobile-tab-item.active .mobile-tab-icon {
-    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.6)) 
-            drop-shadow(0 0 16px hsl(var(--primary) / 0.4));
+    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.8)) 
+            drop-shadow(0 0 16px hsl(var(--primary) / 0.5));
   }
 
   .mobile-tab-icon {
-    width: 24px;
-    height: 24px;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
     transition: all 0.25s ease;
   }
 
