@@ -46,11 +46,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   useEffect(() => {
     const fetchBotCount = async () => {
       const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
-      const { count } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .eq("is_bot", true)
-        .gte("last_seen", eightMinAgo);
+      const { count } = await supabase.
+      from("profiles").
+      select("*", { count: "exact", head: true }).
+      eq("is_bot", true).
+      gte("last_seen", eightMinAgo);
       setOnlineBotCount(count ?? 0);
     };
     fetchBotCount();
@@ -209,7 +209,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             tabIndex={0}>
 
             <span className="bg-transparent text-accent">ECHO</span>
-            <span className="bg-primary px-1 rounded text-primary-foreground">2000</span>
+            
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
@@ -251,11 +251,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                     </Button>
               }
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate("/settings")}
-                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                    aria-label="Inställningar">
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/settings")}
+                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                aria-label="Inställningar">
                     <Settings className="w-4 h-4" />
                     <span className="hidden sm:inline">Inställningar</span>
                   </Button>
