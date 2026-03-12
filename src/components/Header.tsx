@@ -208,7 +208,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             role="button"
             tabIndex={0}>
 
-            <span className="bg-transparent text-accent">ECHO 2000 </span>
+            <span className="bg-transparent text-primary">ECHO 2000 </span>
             
           </div>
           <span className="alpha-badge">ALPHA</span>
