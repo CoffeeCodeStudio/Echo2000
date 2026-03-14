@@ -19,7 +19,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   if (!user) {
     return (
       <nav className={cn(
-        "md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-tab-bar pb-safe transition-transform duration-300",
+        "md:hidden fixed bottom-0 left-0 right-0 z-[100] mobile-tab-bar pb-safe transition-transform duration-300",
         !isVisible && "translate-y-full"
       )}>
         <div className="flex items-center justify-center h-[60px]">
