@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { useAuth } from "@/hooks/useAuth";
 
 import { UnreadMailBar } from "@/components/UnreadMailBar";
 import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
@@ -16,8 +17,8 @@ export function SharedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const scrollNavVisible = useScrollDirection(15);
+  const { user } = useAuth();
 
-  // Determine active tab from URL or default to "hem"
   const getActiveTab = (): Tab => {
     const path = location.pathname;
     if (path.startsWith("/profile")) return "profil";
@@ -30,7 +31,6 @@ export function SharedLayout() {
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
-    // Navigate to home when changing tabs from external pages
     if (location.pathname !== "/") {
       navigate("/", { state: { tab } });
     }
@@ -42,24 +42,24 @@ export function SharedLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-x-hidden">
-      <Header 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange} 
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
-      />
-
-      {/* Lajv ticker - inline row below navbar */}
-      <GlobalLajvTicker />
-      
-      {/* Unread mail notification bar */}
-      <UnreadMailBar 
-        unreadCount={unreadMailCount} 
-        onTabChange={(tab) => handleTabChange(tab as Tab)} 
-      />
+      {/* Header, Lajv ticker, and Unread mail — only for logged-in users */}
+      {user && (
+        <>
+          <Header 
+            activeTab={activeTab} 
+            onTabChange={handleTabChange} 
+            onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
+          />
+          <GlobalLajvTicker />
+          <UnreadMailBar 
+            unreadCount={unreadMailCount} 
+            onTabChange={(tab) => handleTabChange(tab as Tab)} 
+          />
+        </>
+      )}
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden pb-[70px] md:pb-0">
-        {/* Main content outlet */}
         <main className="flex-1 flex overflow-hidden">
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
@@ -77,13 +77,12 @@ export function SharedLayout() {
         </footer>
       </div>
 
-      {/* Mobile bottom navigation */}
-      {!hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} isVisible={scrollNavVisible} />}
+      {/* Mobile bottom navigation — only for logged-in users */}
+      {user && !hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} isVisible={scrollNavVisible} />}
     </div>
   );
 }
 
-// Export context type for children to use
 export interface LayoutContext {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
