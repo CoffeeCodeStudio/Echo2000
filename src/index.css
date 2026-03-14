@@ -786,7 +786,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    padding: 8px;
     border-radius: 12px;
     transition: all 0.25s ease;
     position: relative;
@@ -803,7 +803,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .mobile-tab-icon {
-    font-size: 24px;
+    font-size: 22px;
     display: inline-block;
     line-height: 1;
     transition: all 0.25s ease;

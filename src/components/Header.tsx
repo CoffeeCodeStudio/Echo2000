@@ -1,5 +1,6 @@
-import { LogIn, LogOut, Shield, Settings } from "lucide-react";
+import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react";
 import echo2000Logo from "@/assets/echo2000-logo.png";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -245,30 +246,33 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 onClick={() => navigate("/admin")}
                 className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
                 aria-label="Admin">
-
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
                     </Button>
               }
-                  <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/settings")}
-                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                aria-label="Inställningar">
-                    <Settings className="w-4 h-4" />
-                    <span className="hidden sm:inline">Inställningar</span>
-                  </Button>
-                  <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                aria-label="Logga ut">
-
-                    <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">Logga ut</span>
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                        aria-label="Användarmeny">
+                        <User className="w-4 h-4" />
+                        <ChevronDown className="w-3 h-3 hidden sm:inline" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
+                      <DropdownMenuItem onClick={() => onTabChange?.("profil")} className="cursor-pointer gap-2">
+                        <User className="w-4 h-4" /> Profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer gap-2">
+                        <Settings className="w-4 h-4" /> Inställningar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer gap-2 text-destructive">
+                        <LogOut className="w-4 h-4" /> Logga ut
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </> :
 
             <Button
@@ -277,7 +281,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               onClick={() => navigate("/auth")}
               className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
               aria-label="Logga in">
-
                   <LogIn className="w-4 h-4" />
                   <span className="hidden sm:inline">Logga in</span>
                 </Button>

@@ -57,7 +57,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
     )}>
       <div
         ref={scrollRef}
-        className="flex items-center h-[60px] px-2 gap-1 overflow-x-auto scrollbar-none"
+        className="flex items-center h-[56px] px-1 gap-0.5 overflow-x-auto scrollbar-none"
       >
         {allTabs.map((item) => {
           const isActive = activeTab === item.id;
