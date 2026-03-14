@@ -65,19 +65,7 @@ export function SharedLayout() {
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
 
-        {/* Footer — always visible, with bottom padding to clear mobile nav */}
-        {location.pathname !== "/auth" && (
-          <footer className="shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm text-center text-muted-foreground z-10 py-1.5 px-3 pb-24 md:py-3 md:px-4 md:pb-3 text-[10px] md:text-xs">
-            © 2026{" "}
-            <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-              Coffee Code Studio
-            </a>
-            . All rights reserved. Built &amp; designed by{" "}
-            <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-              Coffee Code Studio
-            </a>
-          </footer>
-        )}
+        {/* Footer removed */}
       </div>
 
       {/* Mobile bottom navigation — only for logged-in users */}

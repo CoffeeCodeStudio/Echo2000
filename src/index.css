@@ -827,6 +827,58 @@ h1, h2, h3, h4, h5, h6 {
     animation: pulse-dot 2s infinite;
   }
 
+  /* Compact 5-icon mobile tab styles */
+  .mobile-tab-item-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    color: hsl(var(--muted-foreground));
+    min-width: 48px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .mobile-tab-item-compact:active {
+    transform: scale(0.92);
+  }
+  .mobile-tab-item-compact.active .mobile-tab-icon-compact {
+    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.8));
+  }
+  .mobile-tab-item-compact.active .mobile-tab-label-compact {
+    color: hsl(var(--primary));
+  }
+  .mobile-tab-icon-compact {
+    font-size: 22px;
+    line-height: 1;
+  }
+  .mobile-tab-label-compact {
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+  }
+  .mobile-tab-badge-compact {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    background: hsl(var(--destructive));
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 6px hsl(var(--destructive) / 0.7);
+  }
+
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;

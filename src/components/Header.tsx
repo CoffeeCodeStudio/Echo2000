@@ -210,7 +210,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             role="button"
             tabIndex={0}>
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-blue-400/30 to-primary/40 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-shimmer bg-[length:200%_100%]" />
-            <img src={echo2000Logo} alt="Echo 2000" className="relative h-7 sm:h-8 md:h-9 w-auto" />
+            <img src={echo2000Logo} alt="Echo 2000" className="relative h-8 sm:h-9 md:h-10 w-auto" />
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
