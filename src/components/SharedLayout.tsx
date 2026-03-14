@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -64,9 +65,12 @@ export function SharedLayout() {
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
 
-        {/* Footer — compact on mobile, hidden on /auth */}
+        {/* Footer — hidden on mobile when logged in, hidden on /auth */}
         {location.pathname !== "/auth" && (
-          <footer className="shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm py-1.5 px-3 md:py-3 md:px-4 text-center text-[10px] md:text-xs text-muted-foreground mb-[60px] md:mb-0">
+          <footer className={cn(
+            "shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm text-center text-muted-foreground",
+            user ? "hidden md:block md:py-3 md:px-4 md:text-xs" : "py-1.5 px-3 text-[10px] md:py-3 md:px-4 md:text-xs"
+          )}>
             © 2026{" "}
             <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
               Coffee Code Studio
