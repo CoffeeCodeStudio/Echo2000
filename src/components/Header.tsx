@@ -205,12 +205,14 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <div
-            className="cursor-pointer relative group"
+            className="cursor-pointer relative group flex items-center"
             onClick={() => onTabChange?.("hem")}
             role="button"
             tabIndex={0}>
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-blue-400/30 to-primary/40 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-shimmer bg-[length:200%_100%]" />
-            <img src={echo2000Logo} alt="Echo 2000" className="relative h-14 sm:h-16 md:h-20 w-auto object-contain mx-1" />
+            <span className="relative font-bold tracking-tight" style={{ fontSize: '22px', lineHeight: 1 }}>
+              <span className="text-primary">ECHO</span>
+              <span className="text-blue-400">2000</span>
+            </span>
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
