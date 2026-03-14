@@ -203,34 +203,34 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       {/* Single compact header bar */}
       <div className="navbar-dark">
         {/* ECHO2000 Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 min-w-0">
           <div
-            className="cursor-pointer relative group flex items-center"
+            className="cursor-pointer relative group flex items-center shrink-0"
             onClick={() => onTabChange?.("hem")}
             role="button"
             tabIndex={0}>
             <img
               alt="Echo2000"
-              style={{ height: '28px', width: 'auto', objectFit: 'contain', flexShrink: 0, maxWidth: '120px' }}
+              className="h-6 sm:h-7 w-auto object-contain max-w-[100px] sm:max-w-[120px]"
+              style={{ flexShrink: 0 }}
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
-            
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
 
         {/* Global Search */}
-        <div className="hidden sm:block">
+        <div className="hidden sm:block shrink min-w-0">
           <GlobalSearch />
         </div>
 
         {/* Desktop nav items – visible from md breakpoint */}
         {user &&
-        <nav className="hidden md:flex items-center gap-0.5 mx-2">
+        <nav className="hidden md:flex items-center gap-0.5 mx-2 shrink-0 grow-0">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden md:flex items-center gap-0.5">
+        <nav className="hidden md:flex items-center gap-0.5 shrink-0 grow-0">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
@@ -238,7 +238,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </nav>
 
         {/* Right side - Auth & Status */}
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0">
           {!loading &&
           <>
               {user ?

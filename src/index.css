@@ -567,11 +567,14 @@ h1, h2, h3, h4, h5, h6 {
   .navbar-dark {
     background-color: hsl(230 35% 8%);
     display: flex;
+    flex-wrap: nowrap;
     gap: 4px;
     padding: 8px 10px;
     border-bottom: 3px solid hsl(var(--primary));
     align-items: center;
+    justify-content: space-between;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
   }
 
   @media (min-width: 480px) {
