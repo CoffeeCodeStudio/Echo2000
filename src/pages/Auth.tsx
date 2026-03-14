@@ -110,7 +110,7 @@ export default function Auth() {
               await supabase.auth.signOut();
               toast({
                 title: "Väntar på godkännande",
-                description: "Ditt konto har inte godkänts av en administratör ännu. Försök igen senare.",
+                description: "Ditt konto väntar på att godkännas av en administratör. Du får logga in när kontot är godkänt.",
                 variant: "destructive",
                 duration: 8000,
               });
@@ -136,10 +136,12 @@ export default function Auth() {
         if (error) {
           toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
         } else if (data.user) {
+          // Auto-confirmed: assign role, then sign out so admin gate works
           await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
+          await supabase.auth.signOut();
           toast({
-            title: "Konto skapat!",
-            description: "Ditt konto har skapats och väntar på att godkännas av en administratör. Du får logga in när kontot är godkänt.",
+            title: "Konto skapat! 🎉",
+            description: "Ditt konto väntar på godkännande av en administratör. Du kan logga in när kontot är godkänt.",
             duration: 10000,
           });
           setMode("login");
@@ -166,7 +168,6 @@ export default function Auth() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-md">
-      {/* Close button to go back */}
       <button
         onClick={() => navigate("/")}
         className="absolute top-4 right-4 z-[60] p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -176,7 +177,6 @@ export default function Auth() {
       </button>
 
       <div className="w-full max-w-md mx-4 relative">
-        {/* Logo */}
         <div className="text-center mb-6">
           <div className="font-display font-black text-3xl tracking-tight mb-2">
             <span className="text-foreground">ECHO</span>
@@ -185,9 +185,7 @@ export default function Auth() {
           <p className="text-muted-foreground text-sm">Nostalgi på riktigt</p>
         </div>
 
-        {/* Login/Register Card — boxy style */}
         <div className="bg-card border-2 border-border p-6 shadow-[4px_4px_0px_hsl(var(--border))]">
-          {/* Tab switcher */}
           {mode !== "forgot" && (
             <div className="flex mb-6 border-b-2 border-border">
               <button
@@ -209,7 +207,6 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Alpha warning */}
           {mode === "register" && (
             <div className="mb-4 p-3 bg-destructive/10 border-2 border-destructive/30">
               <div className="flex items-start gap-2">
@@ -228,7 +225,6 @@ export default function Auth() {
 
           {mode !== "forgot" && (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Username (register only) */}
               {mode === "register" && (
                 <div className="space-y-2">
                   <Label htmlFor="username">Användarnamn</Label>
@@ -281,7 +277,6 @@ export default function Auth() {
                 {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
               </div>
 
-              {/* Checkboxes (register only) */}
               {mode === "register" && (
                 <div className="space-y-2">
                   <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
@@ -328,7 +323,6 @@ export default function Auth() {
                 </div>
               )}
 
-              {/* Nostalgic tagline above submit (register only) */}
               {mode === "register" && (
                 <p className="text-center text-xs text-muted-foreground italic py-1">
                   Endast för oss som minns 56k-modem och brända CD-skivor 💿
@@ -422,17 +416,15 @@ export default function Auth() {
           )}
         </div>
 
-        {/* Back link below the card */}
         <div className="mt-4 text-center">
           <button
             onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="text-sm text-muted-foreground hover:text-primary"
           >
             ← Tillbaka till startsidan
           </button>
         </div>
       </div>
-
     </div>
   );
 }
