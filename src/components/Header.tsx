@@ -1,4 +1,5 @@
 import { LogIn, LogOut, Shield, Settings } from "lucide-react";
+import echo2000Logo from "@/assets/echo2000-logo.png";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -203,13 +204,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         {/* ECHO2000 Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <div
-            className="font-display font-black text-base sm:text-lg md:text-xl tracking-tight cursor-pointer"
+            className="cursor-pointer relative group"
             onClick={() => onTabChange?.("hem")}
             role="button"
             tabIndex={0}>
-
-            <span className="bg-transparent text-primary">ECHO 2000 </span>
-            
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-blue-400/30 to-primary/40 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-shimmer bg-[length:200%_100%]" />
+            <img src={echo2000Logo} alt="Echo 2000" className="relative h-7 sm:h-8 md:h-9 w-auto" />
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
