@@ -64,17 +64,19 @@ export function SharedLayout() {
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
 
-        {/* Footer */}
-        <footer className="shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm py-3 px-4 text-center text-xs text-muted-foreground">
-          © 2026{" "}
-          <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-            Coffee Code Studio
-          </a>
-          . All rights reserved. Built &amp; designed by{" "}
-          <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-            Coffee Code Studio
-          </a>
-        </footer>
+        {/* Footer — compact on mobile, hidden on /auth */}
+        {location.pathname !== "/auth" && (
+          <footer className="shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm py-1.5 px-3 md:py-3 md:px-4 text-center text-[10px] md:text-xs text-muted-foreground mb-[60px] md:mb-0">
+            © 2026{" "}
+            <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+              Coffee Code Studio
+            </a>
+            . All rights reserved. Built &amp; designed by{" "}
+            <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+              Coffee Code Studio
+            </a>
+          </footer>
+        )}
       </div>
 
       {/* Mobile bottom navigation — only for logged-in users */}
