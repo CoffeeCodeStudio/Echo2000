@@ -210,9 +210,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             role="button"
             tabIndex={0}>
             <img
-
               alt="Echo2000"
-              style={{ height: '32px', width: 'auto' }} src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png" />
+              style={{ height: '40px', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+              src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
+            />
             
           </div>
           <span className="alpha-badge">ALPHA</span>
