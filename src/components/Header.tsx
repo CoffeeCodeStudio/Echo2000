@@ -211,7 +211,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             tabIndex={0}>
             <img
               alt="Echo2000"
-              style={{ height: '40px', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+              style={{ height: '28px', width: 'auto', objectFit: 'contain', flexShrink: 0, maxWidth: '120px' }}
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
             
