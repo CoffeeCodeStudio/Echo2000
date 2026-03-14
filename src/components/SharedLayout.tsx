@@ -58,11 +58,23 @@ export function SharedLayout() {
       />
 
       {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden pb-[70px] md:pb-0">
+      <div className="flex-1 flex flex-col overflow-hidden pb-[70px] md:pb-0">
         {/* Main content outlet */}
         <main className="flex-1 flex overflow-hidden">
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
+
+        {/* Footer */}
+        <footer className="shrink-0 border-t border-border/50 bg-card/50 backdrop-blur-sm py-3 px-4 text-center text-xs text-muted-foreground">
+          © 2026{" "}
+          <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+            Coffee Code Studio
+          </a>
+          . All rights reserved. Built &amp; designed by{" "}
+          <a href="https://coffeecodestudio.se/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+            Coffee Code Studio
+          </a>
+        </footer>
       </div>
 
       {/* Mobile bottom navigation */}
