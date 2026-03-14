@@ -209,10 +209,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             onClick={() => onTabChange?.("hem")}
             role="button"
             tabIndex={0}>
-            <span className="relative font-bold tracking-tight" style={{ fontSize: '22px', lineHeight: 1 }}>
-              <span className="text-primary">ECHO</span>
-              <span className="text-blue-400">2000</span>
-            </span>
+            <img
+              src="/echo2000-logo-new.png"
+              alt="Echo2000"
+              style={{ height: '32px', width: 'auto' }}
+            />
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
