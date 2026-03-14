@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -73,7 +73,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
 
   const handleGenderSelect = (selectedGender: string) => {
     setGender(selectedGender);
-    // Set default avatar based on gender
     const genderOption = genderOptions.find(g => g.value === selectedGender);
     if (genderOption && !avatarUrl) {
       setAvatarUrl(genderOption.defaultAvatar);
@@ -86,6 +85,10 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
         ? prev.filter(i => i !== interestId)
         : [...prev, interestId]
     );
+  };
+
+  const handleSkip = () => {
+    onComplete();
   };
 
   const handleSubmit = async () => {
@@ -127,8 +130,23 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="nostalgia-card max-w-lg w-full p-6 my-8">
+    <div
+      className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      onClick={handleSkip}
+    >
+      <div
+        className="nostalgia-card max-w-lg w-full p-6 my-8 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={handleSkip}
+          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          aria-label="Stäng"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Header */}
         <div className="text-center mb-6">
           <div className="font-display font-black text-2xl tracking-tight mb-2">
@@ -156,7 +174,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
         {/* Step 1: Basic Info */}
         {step === 1 && (
           <div className="space-y-6">
-            {/* Gender - Large clickable buttons */}
             <div className="space-y-3">
               <Label className="text-base font-semibold">Kön *</Label>
               <div className="grid grid-cols-3 gap-3">
@@ -183,7 +200,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
               </div>
             </div>
 
-            {/* City */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Stad *</Label>
               <Input
@@ -195,7 +211,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
               />
             </div>
 
-            {/* Age */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Ålder *</Label>
               <Input
@@ -222,7 +237,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
         {/* Step 2: Lifestyle */}
         {step === 2 && (
           <div className="space-y-6">
-            {/* Relationship Status */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Civilstånd</Label>
               <Select value={relationship} onValueChange={setRelationship}>
@@ -239,7 +253,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
               </Select>
             </div>
 
-            {/* Occupation */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Sysselsättning</Label>
               <div className="grid grid-cols-3 gap-2">
@@ -261,7 +274,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
               </div>
             </div>
 
-            {/* Smoking */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Röker du?</Label>
               <div className="grid grid-cols-3 gap-2">
@@ -304,7 +316,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
         {/* Step 3: Interests & Avatar */}
         {step === 3 && (
           <div className="space-y-6">
-            {/* Interests */}
             <div className="space-y-3">
               <Label className="text-base font-semibold">Intressen</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -330,7 +341,6 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
               </div>
             </div>
 
-            {/* Avatar */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Välj en avatar</Label>
               <AvatarPicker
@@ -365,9 +375,15 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          * Obligatoriska fält
-        </p>
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-muted-foreground">* Obligatoriska fält</p>
+          <button
+            onClick={handleSkip}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Hoppa över
+          </button>
+        </div>
       </div>
     </div>
   );
