@@ -210,10 +210,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             role="button"
             tabIndex={0}>
             <img
-              src="/echo2000-logo-new.png"
+
               alt="Echo2000"
-              style={{ height: '32px', width: 'auto' }}
-            />
+              style={{ height: '32px', width: 'auto' }} src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png" />
+            
           </div>
           <span className="alpha-badge">ALPHA</span>
         </div>
@@ -256,10 +256,10 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                        aria-label="Användarmeny">
+                    variant="ghost"
+                    size="sm"
+                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                    aria-label="Användarmeny">
                         <User className="w-4 h-4" />
                         <ChevronDown className="w-3 h-3 hidden sm:inline" />
                       </Button>
