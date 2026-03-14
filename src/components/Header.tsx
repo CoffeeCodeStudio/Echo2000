@@ -1,5 +1,6 @@
-import { LogIn, LogOut, Shield, Settings } from "lucide-react";
+import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react";
 import echo2000Logo from "@/assets/echo2000-logo.png";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
