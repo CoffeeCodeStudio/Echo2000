@@ -1,12 +1,16 @@
 import { ExternalLink, Globe } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 
-function SocialLink({ label }: { label: string }) {
+function SocialLink({ label, href }: { label: string; href?: string }) {
+  const Tag = href ? "a" : "button";
   return (
-    <button className="pressable flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full border border-[hsl(var(--glass-border))] hover:border-primary/40 bg-muted/20">
+    <Tag
+      {...(href ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="pressable flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full border border-[hsl(var(--glass-border))] hover:border-primary/40 bg-muted/20"
+    >
       <ExternalLink className="w-3 h-3" />
       {label}
-    </button>
+    </Tag>
   );
 }
 
