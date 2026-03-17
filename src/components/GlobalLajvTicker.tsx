@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 export function GlobalLajvTicker() {
   const { messages } = useLajv();
+  const navigate = useNavigate();
   const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
 
   // Rotate through messages every 5 seconds
