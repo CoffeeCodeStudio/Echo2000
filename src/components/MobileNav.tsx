@@ -48,7 +48,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
     { id: "vanner", emoji: "❤️", label: "Vänner" },
     { id: "gastbok", emoji: "👣", label: "Gästbok" },
     { id: "besokare", emoji: "👀", label: "Spanare", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
-    { id: "lajv", emoji: "🎭", label: "Lajv" },
+    
     { id: "traffar", emoji: "📅", label: "Träffar" },
     { id: "klotterplanket", emoji: "🎨", label: "Klotter" },
     { id: "spel", emoji: "🎮", label: "Spel" },
