@@ -23,8 +23,11 @@ export function MemberGrid() {
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("alla");
+  const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
   const { getUserStatus, onlineUsers } = usePresence();
   const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
