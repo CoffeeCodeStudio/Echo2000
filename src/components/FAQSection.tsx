@@ -76,7 +76,7 @@ const faqItems: FAQItem[] = [
   },
   {
     question: "Vad är Lajv?",
-    answer: "Lajv är vår live-funktion där du kan skicka meddelanden som alla ser i realtid. Meddelandena försvinner automatiskt efter 10 minuter – perfekt för spontana tankar och snabba hälsningar!",
+    answer: "Lajv är vår live-funktion där du kan skicka meddelanden som alla ser i realtid. Meddelandena försvinner automatiskt efter 12 timmar – perfekt för spontana tankar och snabba hälsningar!",
   },
   {
     question: "Varför ser det ut som 2005?",
