@@ -1,8 +1,8 @@
-import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react";
+import { LogIn, LogOut, Shield, Settings, User, ChevronDown, Menu, X } from "lucide-react";
 import echo2000Logo from "@/assets/echo2000-logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
