@@ -133,10 +133,15 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Community zone items (right group)
   const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
   { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
-  { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
-  { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
-  { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
   { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" }];
+
+  const kulItems: {id: Tab;label: string;emoji: string;}[] = [
+    { id: "spel", label: "SPEL", emoji: "🎮" },
+    { id: "klotterplanket", label: "KLOTTER", emoji: "🎨" },
+    { id: "traffar", label: "TRÄFFAR", emoji: "📅" },
+  ];
+
+  const [kulOpen, setKulOpen] = useState(false);
 
 
   // Render nav item helper
