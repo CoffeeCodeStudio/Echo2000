@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
-import { GlobalSearch } from "./GlobalSearch";
+
 
 type Tab =
 "hem" |
