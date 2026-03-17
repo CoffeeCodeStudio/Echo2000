@@ -222,11 +222,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
         {/* Desktop nav items – visible from md breakpoint */}
         {user &&
-        <nav className="hidden md:flex items-center gap-0.5 mx-2 shrink-0 grow-0">
+        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 mx-1 lg:mx-2 shrink min-w-0">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden md:flex items-center gap-0.5 shrink-0 grow-0">
+        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)

@@ -1209,6 +1209,31 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 6px hsl(var(--primary) / 0.8);
   }
 
+  /* Tablet: tighter nav items so everything fits */
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .header-nav-item {
+      padding: 3px 4px;
+      min-width: 30px;
+      border-radius: 6px;
+    }
+
+    .header-nav-icon {
+      font-size: 13px;
+    }
+
+    .header-nav-label {
+      font-size: 7px;
+      letter-spacing: 0.2px;
+    }
+
+    .header-nav-dot {
+      width: 5px;
+      height: 5px;
+      top: 1px;
+      right: 2px;
+    }
+  }
+
   @media (min-width: 1280px) {
     .header-nav-item {
       padding: 5px 10px;
