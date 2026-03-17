@@ -19,6 +19,7 @@ export function AdminImageReview() {
   const [uploads, setUploads] = useState<AvatarUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [denyReasons, setDenyReasons] = useState<Record<string, string>>({});
   const [showDenyInput, setShowDenyInput] = useState<string | null>(null);
   const { toast } = useToast();
