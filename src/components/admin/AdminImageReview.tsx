@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, Loader2, ImageIcon } from "lucide-react";
+import { Check, X, Loader2, ImageIcon, RefreshCw } from "lucide-react";
 
 interface AvatarUpload {
   id: string;
@@ -19,6 +19,7 @@ export function AdminImageReview() {
   const [uploads, setUploads] = useState<AvatarUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [denyReasons, setDenyReasons] = useState<Record<string, string>>({});
   const [showDenyInput, setShowDenyInput] = useState<string | null>(null);
   const { toast } = useToast();
@@ -134,12 +135,43 @@ export function AdminImageReview() {
     );
   }
 
+  const handleSyncAll = async () => {
+    setSyncLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        body: { action: "sync_approved_avatars" },
+      });
+      if (error) throw error;
+      const count = data?.updated_count ?? 0;
+      toast({
+        title: "Synkning klar",
+        description: count > 0
+          ? `${count} profil(er) uppdaterades med godkänd avatar.`
+          : "Alla profiler är redan synkade.",
+      });
+    } catch (err: any) {
+      toast({ title: "Fel", description: err?.message || "Kunde inte synka.", variant: "destructive" });
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
   return (
     <div className="nostalgia-card p-6">
       <div className="flex items-center gap-3 mb-6">
         <ImageIcon className="w-5 h-5 text-primary" />
         <h2 className="font-semibold text-lg">Bildgranskning</h2>
         <span className="text-sm text-muted-foreground">({uploads.length} väntande)</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncAll}
+          disabled={syncLoading}
+          className="ml-auto"
+        >
+          {syncLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+          Synka alla godkända bilder
+        </Button>
       </div>
 
       {uploads.length === 0 ? (
