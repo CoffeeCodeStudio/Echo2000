@@ -869,6 +869,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      sync_approved_avatars: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "banned"

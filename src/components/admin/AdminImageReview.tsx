@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, Loader2, ImageIcon } from "lucide-react";
+import { Check, X, Loader2, ImageIcon, RefreshCw } from "lucide-react";
 
 interface AvatarUpload {
   id: string;
