@@ -2,7 +2,7 @@ import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react
 import echo2000Logo from "@/assets/echo2000-logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
-
+import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 
 type Tab =
 "hem" |
