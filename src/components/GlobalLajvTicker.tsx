@@ -33,10 +33,10 @@ export function GlobalLajvTicker() {
   return (
     <div
       className="lajv-ticker-row cursor-pointer hover:brightness-125 transition-all"
-      onClick={() => navigate('/?tab=lajv')}
+      onClick={() => navigate('/', { state: { tab: 'lajv' } })}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && navigate('/?tab=lajv')}
+      onKeyDown={(e) => e.key === 'Enter' && navigate('/', { state: { tab: 'lajv' } })}
     >
       {/* Radio icon */}
       <div className="flex items-center gap-2 shrink-0">
