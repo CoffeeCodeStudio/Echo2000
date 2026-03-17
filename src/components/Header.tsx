@@ -238,13 +238,26 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
 
 
-        {/* Desktop nav items – visible from md breakpoint */}
+        {/* Tablet hamburger – visible only at md (768-1024px), hidden on lg+ */}
+        {user && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTabletDrawerOpen(true)}
+            className="hidden md:flex lg:hidden text-foreground hover:bg-muted min-h-[44px] min-w-[44px]"
+            aria-label="Meny"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        )}
+
+        {/* Desktop nav items – visible from lg (1025px+) */}
         {user &&
-        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 mx-1 lg:mx-2 shrink min-w-0">
+        <nav className="hidden lg:flex items-center gap-px lg:gap-0.5 mx-1 lg:mx-2 shrink min-w-0">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
+        <nav className="hidden lg:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
