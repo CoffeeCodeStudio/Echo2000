@@ -142,6 +142,20 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   ];
 
   const [kulOpen, setKulOpen] = useState(false);
+  const [tabletDrawerOpen, setTabletDrawerOpen] = useState(false);
+
+  // All nav items for tablet drawer
+  const allDrawerItems: {id: Tab; label: string; emoji: string;}[] = user ? [
+    homeItem,
+    ...privateZoneItems,
+    ...communityZoneItems,
+    ...kulItems,
+  ] : [homeItem];
+
+  const handleDrawerNav = useCallback((tab: Tab) => {
+    onTabChange?.(tab);
+    setTabletDrawerOpen(false);
+  }, [onTabChange]);
 
 
   // Render nav item helper
