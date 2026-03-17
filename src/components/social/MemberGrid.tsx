@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { Loader2, Users } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Loader2, Users, Search, X } from "lucide-react";
 import { Avatar } from "../Avatar";
 import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { usePresence } from "@/hooks/usePresence";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MemberProfile {
   user_id: string;
