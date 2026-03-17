@@ -6,12 +6,14 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Send, Radio, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 import { AuthDialog } from '../auth/AuthDialog';
 import { toast } from 'sonner';
 
 export function LajvSection() {
   const { user, loading: authLoading } = useAuth();
   const { messages, sendMessage, sending } = useLajv();
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -115,15 +117,25 @@ export function LajvSection() {
                 msg.user_id === user?.id && "bg-primary/5 border-primary/20"
               )}
             >
-              <Avatar
-                name={msg.username}
-                src={msg.avatar_url || undefined}
-                size="sm"
-                status="online"
-              />
+              <button
+                onClick={() => navigate(`/profile/${encodeURIComponent(msg.username)}`)}
+                className="shrink-0 cursor-pointer rounded-full hover:ring-2 hover:ring-primary/50 transition-all"
+              >
+                <Avatar
+                  name={msg.username}
+                  src={msg.avatar_url || undefined}
+                  size="sm"
+                  status="online"
+                />
+              </button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm truncate">{msg.username}</span>
+                  <button
+                    onClick={() => navigate(`/profile/${encodeURIComponent(msg.username)}`)}
+                    className="font-semibold text-sm truncate hover:text-primary hover:underline transition-colors cursor-pointer"
+                  >
+                    {msg.username}
+                  </button>
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
