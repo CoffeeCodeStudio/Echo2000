@@ -136,7 +136,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
   { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
   { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
-  { id: "lajv", label: "LAJV", emoji: "🎭", animationClass: "heart-pulse" },
   { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" }];
 
 

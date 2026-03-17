@@ -3,9 +3,11 @@ import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from './Avatar';
 import { Radio } from 'lucide-react';
 import { replaceEmoteCodes } from './social/PixelEmotes';
+import { useNavigate } from 'react-router-dom';
 
 export function GlobalLajvTicker() {
   const { messages } = useLajv();
+  const navigate = useNavigate();
   const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
 
   // Rotate through messages every 5 seconds
@@ -29,7 +31,13 @@ export function GlobalLajvTicker() {
   const currentMessage = messages[currentDisplayIndex];
 
   return (
-    <div className="lajv-ticker-row">
+    <div
+      className="lajv-ticker-row cursor-pointer hover:brightness-125 transition-all"
+      onClick={() => navigate('/', { state: { tab: 'lajv' } })}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && navigate('/', { state: { tab: 'lajv' } })}
+    >
       {/* Radio icon */}
       <div className="flex items-center gap-2 shrink-0">
         <div className="relative">
