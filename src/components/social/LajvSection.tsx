@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 export function LajvSection() {
   const { user, loading: authLoading } = useAuth();
   const { messages, sendMessage, sending } = useLajv();
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
