@@ -1,8 +1,8 @@
-import { LogIn, LogOut, Shield, Settings, User, ChevronDown, Menu, X } from "lucide-react";
+import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react";
 import echo2000Logo from "@/assets/echo2000-logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -142,20 +142,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   ];
 
   const [kulOpen, setKulOpen] = useState(false);
-  const [tabletDrawerOpen, setTabletDrawerOpen] = useState(false);
-
-  // All nav items for tablet drawer
-  const allDrawerItems: {id: Tab; label: string; emoji: string;}[] = user ? [
-    homeItem,
-    ...privateZoneItems,
-    ...communityZoneItems,
-    ...kulItems,
-  ] : [homeItem];
-
-  const handleDrawerNav = useCallback((tab: Tab) => {
-    onTabChange?.(tab);
-    setTabletDrawerOpen(false);
-  }, [onTabChange]);
 
 
   // Render nav item helper
@@ -238,26 +224,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         </div>
 
 
-        {/* Tablet hamburger – visible only at md (768-1024px), hidden on lg+ */}
-        {user && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTabletDrawerOpen(true)}
-            className="hidden md:flex lg:hidden text-foreground hover:bg-muted min-h-[44px] min-w-[44px]"
-            aria-label="Meny"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-        )}
-
-        {/* Desktop nav items – visible from lg (1025px+) */}
+        {/* Desktop nav items – visible from md breakpoint */}
         {user &&
-        <nav className="hidden lg:flex items-center gap-px lg:gap-0.5 mx-1 lg:mx-2 shrink min-w-0">
+        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 mx-1 lg:mx-2 shrink min-w-0">
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden lg:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
+        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
@@ -369,81 +342,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
-
-      {/* Tablet drawer overlay – only renders at md breakpoint */}
-      {tabletDrawerOpen && (
-        <div className="fixed inset-0 z-[100] hidden md:block lg:hidden">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setTabletDrawerOpen(false)}
-          />
-          {/* Drawer panel */}
-          <nav className="absolute left-0 top-0 h-full w-64 bg-card border-r-2 border-primary/50 shadow-[4px_0_24px_hsl(var(--primary)/0.25)] flex flex-col animate-in slide-in-from-left duration-200">
-            {/* Close button */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="font-display font-bold text-sm tracking-wider text-primary">MENY</span>
-              <button
-                onClick={() => setTabletDrawerOpen(false)}
-                className="p-1 rounded-md hover:bg-muted transition-colors"
-                aria-label="Stäng meny"
-              >
-                <X className="w-5 h-5 text-foreground" />
-              </button>
-            </div>
-
-            {/* Nav items */}
-            <div className="flex-1 overflow-y-auto py-2 px-2">
-              {allDrawerItems.map((item) => {
-                const hasNotice = getHasNotice(item.id);
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleDrawerNav(item.id)}
-                    className={cn(
-                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-lg text-left font-display font-bold text-sm tracking-wide transition-colors cursor-pointer",
-                      activeTab === item.id
-                        ? "bg-primary/20 text-primary"
-                        : "text-foreground hover:bg-primary/10 hover:text-primary",
-                      hasNotice && "text-primary"
-                    )}
-                  >
-                    <span className="text-xl w-7 text-center">{item.emoji}</span>
-                    <span>{item.label}</span>
-                    {hasNotice && (
-                      <span className="ml-auto w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Footer actions */}
-            <div className="border-t border-border p-3 space-y-1">
-              {isAdmin && (
-                <button
-                  onClick={() => { navigate("/admin"); setTabletDrawerOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors"
-                >
-                  <Shield className="w-4 h-4" /> Admin
-                </button>
-              )}
-              <button
-                onClick={() => { navigate("/settings"); setTabletDrawerOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors"
-              >
-                <Settings className="w-4 h-4" /> Inställningar
-              </button>
-              <button
-                onClick={() => { handleSignOut(); setTabletDrawerOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" /> Logga ut
-              </button>
-            </div>
-          </nav>
-        </div>
-      )}
     </header>);
 
 }
