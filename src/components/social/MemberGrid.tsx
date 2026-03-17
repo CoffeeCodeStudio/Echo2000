@@ -55,6 +55,11 @@ export function MemberGrid() {
   };
 
   const filteredMembers = members.filter((m) => {
+    // Search filter
+    if (searchQuery.trim()) {
+      if (!m.username.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    }
+    // Gender filter
     if (genderFilter === "alla") return true;
     const g = (m.gender || "").toLowerCase();
     if (genderFilter === "kille") return g === "kille" || g === "man" || g === "pojke";
