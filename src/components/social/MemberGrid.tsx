@@ -111,6 +111,32 @@ export function MemberGrid() {
           </div>
         </div>
 
+        {/* Search bar */}
+        <div className="relative mb-4">
+          <div className={cn(
+            "flex items-center gap-2 bg-muted/50 rounded-lg px-4 py-2.5 border transition-all",
+            "border-border focus-within:border-primary/50 focus-within:bg-muted"
+          )}>
+            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Sök användare..."
+              className="bg-transparent text-foreground text-sm placeholder:text-muted-foreground outline-none w-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(""); inputRef.current?.focus(); }}
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Gender filter */}
         <div className="flex gap-2 mb-6">
           {filterButtons.map((btn) => (

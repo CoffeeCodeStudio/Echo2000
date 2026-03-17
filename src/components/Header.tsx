@@ -219,10 +219,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <span className="alpha-badge">ALPHA</span>
         </div>
 
-        {/* Global Search */}
-        <div className="hidden sm:block shrink min-w-0">
-          <GlobalSearch />
-        </div>
 
         {/* Desktop nav items – visible from md breakpoint */}
         {user &&
