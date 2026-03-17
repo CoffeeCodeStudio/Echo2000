@@ -235,6 +235,45 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
           }
+          {user && (
+            <Popover open={kulOpen} onOpenChange={setKulOpen}>
+              <PopoverTrigger asChild>
+                <div
+                  className={cn(
+                    "header-nav-item cursor-pointer",
+                    kulOpen && "active"
+                  )}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="KUL"
+                >
+                  <span className="header-nav-icon">🎉</span>
+                  <span className="header-nav-label">KUL</span>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                align="center"
+                sideOffset={8}
+                className="w-auto p-0 border-2 border-primary/60 bg-card shadow-[0_0_16px_hsl(var(--primary)/0.3)] rounded-lg overflow-hidden"
+              >
+                <div className="flex flex-col gap-0.5 p-2 min-w-[160px]">
+                  {kulItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onTabChange?.(item.id);
+                        setKulOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-md text-left font-display font-bold text-sm tracking-wide text-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <span className="text-lg">{item.emoji}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </nav>
 
         {/* Right side - Auth & Status */}
