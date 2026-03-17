@@ -193,6 +193,15 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "sync_approved_avatars": {
+        const { data: synced, error } = await adminClient.rpc("sync_approved_avatars");
+        if (error) throw error;
+        return new Response(
+          JSON.stringify({ success: true, updated_count: synced ?? 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
