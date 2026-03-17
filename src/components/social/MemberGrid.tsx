@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { Loader2, Users } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Loader2, Users, Search, X } from "lucide-react";
 import { Avatar } from "../Avatar";
 import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { usePresence } from "@/hooks/usePresence";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MemberProfile {
   user_id: string;
@@ -22,8 +23,11 @@ export function MemberGrid() {
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("alla");
+  const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
   const { getUserStatus, onlineUsers } = usePresence();
   const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -51,6 +55,11 @@ export function MemberGrid() {
   };
 
   const filteredMembers = members.filter((m) => {
+    // Search filter
+    if (searchQuery.trim()) {
+      if (!m.username.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    }
+    // Gender filter
     if (genderFilter === "alla") return true;
     const g = (m.gender || "").toLowerCase();
     if (genderFilter === "kille") return g === "kille" || g === "man" || g === "pojke";
@@ -99,6 +108,32 @@ export function MemberGrid() {
             <p className="text-sm text-muted-foreground">
               {onlineCount} online av {filteredMembers.length} medlemmar
             </p>
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative mb-4">
+          <div className={cn(
+            "flex items-center gap-2 bg-muted/50 rounded-lg px-4 py-2.5 border transition-all",
+            "border-border focus-within:border-primary/50 focus-within:bg-muted"
+          )}>
+            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Sök användare..."
+              className="bg-transparent text-foreground text-sm placeholder:text-muted-foreground outline-none w-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(""); inputRef.current?.focus(); }}
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 

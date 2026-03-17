@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
-import { GlobalSearch } from "./GlobalSearch";
+
 
 type Tab =
 "hem" |
@@ -219,10 +219,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           <span className="alpha-badge">ALPHA</span>
         </div>
 
-        {/* Global Search */}
-        <div className="hidden sm:block shrink min-w-0">
-          <GlobalSearch />
-        </div>
 
         {/* Desktop nav items – visible from md breakpoint */}
         {user &&
