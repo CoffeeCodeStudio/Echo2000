@@ -2,7 +2,7 @@ import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react
 import echo2000Logo from "@/assets/echo2000-logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
-
+import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 
 type Tab =
 "hem" |
@@ -133,10 +133,15 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Community zone items (right group)
   const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
   { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
-  { id: "klotterplanket", label: "KLOTTER", emoji: "🎨", animationClass: "writing-pen" },
-  { id: "traffar", label: "TRÄFFAR", emoji: "📅", animationClass: "msn-bounce" },
-  { id: "spel", label: "SPEL", emoji: "🎮", animationClass: "scale-in" },
   { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" }];
+
+  const kulItems: {id: Tab;label: string;emoji: string;}[] = [
+    { id: "spel", label: "SPEL", emoji: "🎮" },
+    { id: "klotterplanket", label: "KLOTTER", emoji: "🎨" },
+    { id: "traffar", label: "TRÄFFAR", emoji: "📅" },
+  ];
+
+  const [kulOpen, setKulOpen] = useState(false);
 
 
   // Render nav item helper
@@ -230,6 +235,45 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
           }
+          {user && (
+            <Popover open={kulOpen} onOpenChange={setKulOpen}>
+              <PopoverTrigger asChild>
+                <div
+                  className={cn(
+                    "header-nav-item cursor-pointer",
+                    kulOpen && "active"
+                  )}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="KUL"
+                >
+                  <span className="header-nav-icon">🎉</span>
+                  <span className="header-nav-label">KUL</span>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                align="center"
+                sideOffset={8}
+                className="w-auto p-0 border-2 border-primary/60 bg-card shadow-[0_0_16px_hsl(var(--primary)/0.3)] rounded-lg overflow-hidden"
+              >
+                <div className="flex flex-col gap-0.5 p-2 min-w-[160px]">
+                  {kulItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onTabChange?.(item.id);
+                        setKulOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-md text-left font-display font-bold text-sm tracking-wide text-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <span className="text-lg">{item.emoji}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </nav>
 
         {/* Right side - Auth & Status */}
