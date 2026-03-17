@@ -1209,31 +1209,6 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 6px hsl(var(--primary) / 0.8);
   }
 
-  /* Tablet (768-1024): icons only, no labels */
-  @media (min-width: 768px) and (max-width: 1024px) {
-    .header-nav-item {
-      padding: 4px;
-      min-width: 28px;
-      border-radius: 6px;
-      gap: 0;
-    }
-
-    .header-nav-icon {
-      font-size: 16px;
-    }
-
-    .header-nav-label {
-      display: none;
-    }
-
-    .header-nav-dot {
-      width: 5px;
-      height: 5px;
-      top: 1px;
-      right: 1px;
-    }
-  }
-
   /* Tablet-large (1025-1279): compact with labels */
   @media (min-width: 1025px) and (max-width: 1279px) {
     .header-nav-item {
