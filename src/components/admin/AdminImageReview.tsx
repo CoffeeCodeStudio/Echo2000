@@ -56,21 +56,26 @@ export function AdminImageReview() {
     setActionLoading(upload.id);
     try {
       // Update upload status
-      await supabase
+      const { error: uploadError } = await supabase
         .from("avatar_uploads")
         .update({ status: "approved", reviewed_at: new Date().toISOString() })
         .eq("id", upload.id);
 
+      if (uploadError) throw uploadError;
+
       // Set the profile avatar_url to the approved image
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({ avatar_url: upload.image_url })
         .eq("user_id", upload.user_id);
 
+      if (profileError) throw profileError;
+
       toast({ title: "Bild godkänd", description: `${upload.username}s profilbild har godkänts.` });
       fetchUploads();
-    } catch {
-      toast({ title: "Fel", description: "Kunde inte godkänna bilden.", variant: "destructive" });
+    } catch (err: any) {
+      console.error("Approve error:", err);
+      toast({ title: "Fel", description: err?.message || "Kunde inte godkänna bilden.", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
