@@ -343,7 +343,7 @@ function CategoryGroup({
                 <StatusIndicator status={status} size="sm" />
               </div>
             </td>
-            <td className="px-2 py-1.5 hidden md:table-cell">
+            <td className="px-1 py-1 hidden md:table-cell">
               <span className="text-[11px] text-muted-foreground">
                 {friend.last_seen ? formatTimeAgo(friend.last_seen) : "–"}
               </span>
