@@ -1,16 +1,12 @@
 /**
  * @module ProfileFriendsTab
- * StajlPlejs-inspired friends tab with two-column desktop layout:
- * LEFT: Best friends + categorized friends table
- * RIGHT: Personality meter sidebar
- * Responsive: tablet collapses sidebar below, mobile uses simple list.
+ * 2000s-style dense friends page with raw HTML tables.
+ * No cards, no rounded modern components.
  */
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
-import { Avatar } from "./Avatar";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
-import { PersonalityMeter } from "./PersonalityMeter";
-import { useFriendVotes } from "@/hooks/useFriendVotes";
+import { useFriendVotes, VOTE_CATEGORIES, type VoteCategory } from "@/hooks/useFriendVotes";
 import { FRIEND_CATEGORIES } from "./friends/FriendCard";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import { useAuth } from "@/hooks/useAuth";
 import { formatTimeAgo } from "@/lib/format";
-import { Checkbox } from "./ui/checkbox";
 
 interface ProfileFriend {
   id: string;
@@ -101,7 +96,6 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
   const bestFriends = friends.filter((f) => f.is_best_friend);
 
-  // Group by category
   const grouped = FRIEND_CATEGORIES.reduce<Record<string, ProfileFriend[]>>((acc, cat) => {
     const inCat = friends.filter((f) => f.category === cat);
     if (inCat.length > 0) acc[cat] = inCat;
@@ -125,6 +119,9 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
     }
   };
 
+  const goToProfile = (username: string) =>
+    navigate(`/profile/${encodeURIComponent(username)}`);
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -142,61 +139,88 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
-      {/* LEFT: Main content */}
-      <div className="flex-1 min-w-0 space-y-4">
-        {/* Bästa Vänner */}
-        <BestFriendsSection
-          bestFriends={bestFriends}
-          onNavigate={(username) => navigate(`/profile/${encodeURIComponent(username)}`)}
-        />
+    <div className="flex flex-col lg:flex-row lg:gap-3 gap-4">
+      {/* ── LEFT COLUMN ── */}
+      <div className="flex-1 min-w-0">
+        {/* BÄSTA VÄNNER */}
+        <BestFriendsRow bestFriends={bestFriends} onNavigate={goToProfile} />
 
-        {/* Friends table */}
-        <div className="border border-border rounded-lg overflow-hidden">
-          {/* Table header - hidden on mobile */}
-          <div className="hidden sm:grid sm:grid-cols-[auto_1fr_auto_auto_auto] gap-2 px-3 py-2 bg-muted/50 text-xs font-bold text-muted-foreground uppercase tracking-wider border-b border-border">
-            <span className="w-9">Avatar</span>
-            <span>Användarnamn</span>
-            <span className="w-16 text-center">Online</span>
-            <span className="w-28 text-center hidden md:block lg:block">Senast inloggad</span>
-            {isOwnProfile && <span className="w-14 text-center">Bästis</span>}
-          </div>
-
-          {Object.entries(grouped).map(([category, categoryFriends]) => (
-            <div key={category}>
-              {/* Category header */}
-              <div className="px-3 py-1.5 bg-primary/15 border-y border-primary/30">
-                <span className="text-sm font-bold text-primary">{category}</span>
-                <span className="ml-2 text-xs text-muted-foreground">({categoryFriends.length})</span>
-              </div>
-
-              {/* Friends in category */}
-              {categoryFriends.map((friend) => (
-                <FriendRow
-                  key={friend.id}
-                  friend={friend}
+        {/* FRIENDS TABLE */}
+        <div className="border border-primary/40 mt-3">
+          {/* Table header — desktop/tablet */}
+          <table className="w-full border-collapse hidden sm:table">
+            <thead>
+              <tr className="bg-muted/60 border-b border-primary/30">
+                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-10">Avatar</th>
+                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5">Användarnamn</th>
+                <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-16">Online</th>
+                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-28 hidden md:table-cell">Senast inloggad</th>
+                {isOwnProfile && (
+                  <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-14">Bästis</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(grouped).map(([category, catFriends]) => (
+                <CategoryGroup
+                  key={category}
+                  category={category}
+                  friends={catFriends}
                   getUserStatus={getUserStatus}
                   isOwnProfile={isOwnProfile}
-                  onNavigate={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
+                  onNavigate={goToProfile}
                   onToggleBestFriend={handleToggleBestFriend}
+                  colSpan={isOwnProfile ? 5 : 4}
                 />
               ))}
-            </div>
-          ))}
+            </tbody>
+          </table>
+
+          {/* Mobile list */}
+          <div className="sm:hidden">
+            {Object.entries(grouped).map(([category, catFriends]) => (
+              <div key={category}>
+                <div className="bg-primary/20 border-b border-primary/40 px-2 py-1">
+                  <span className="text-xs font-bold text-primary">{category}</span>
+                </div>
+                {catFriends.map((friend) => {
+                  const status = getUserStatus(friend.id);
+                  return (
+                    <div
+                      key={friend.id}
+                      className="flex items-center gap-2 px-2 py-1.5 border-b border-border/40 cursor-pointer hover:bg-muted/20"
+                      onClick={() => goToProfile(friend.username)}
+                    >
+                      <img
+                        src={friend.avatar_url || "/placeholder.svg"}
+                        alt={friend.username}
+                        className="w-7 h-7 border border-primary/30 object-cover"
+                        style={{ imageRendering: "auto" }}
+                      />
+                      <span className="text-xs font-medium text-foreground flex-1 truncate">
+                        {friend.username}
+                      </span>
+                      <StatusIndicator status={status} size="sm" />
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR (desktop) / BOTTOM (tablet/mobile) */}
-      <div className="lg:w-72 shrink-0">
+      {/* ── RIGHT SIDEBAR ── */}
+      <div className="lg:w-64 shrink-0">
         <PersonalityBox userId={userId} />
       </div>
     </div>
   );
 }
 
-/* ─── Best Friends Section ─── */
+/* ═══ BEST FRIENDS ROW ═══ */
 
-function BestFriendsSection({
+function BestFriendsRow({
   bestFriends,
   onNavigate,
 }: {
@@ -204,155 +228,193 @@ function BestFriendsSection({
   onNavigate: (username: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (dir: "left" | "right") => {
-    scrollRef.current?.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
-  };
-
-  if (bestFriends.length === 0) {
-    return (
-      <div className="border border-border rounded-lg p-4">
-        <h3 className="font-bold text-sm mb-2">⭐ Bästa Vänner</h3>
-        <p className="text-xs text-muted-foreground">Inga bästa vänner markerade ännu.</p>
-      </div>
-    );
-  }
+  const scroll = (dir: "left" | "right") =>
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
 
   return (
-    <div className="border border-border rounded-lg p-4">
-      <h3 className="font-bold text-sm mb-3">⭐ Bästa Vänner</h3>
-      <div className="relative">
-        {bestFriends.length > 5 && (
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 border border-border rounded-full p-1 hover:bg-muted transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        )}
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-none px-1"
-        >
-          {bestFriends.map((friend) => (
+    <div className="border border-primary/40 p-3">
+      <h3 className="text-sm font-bold text-foreground mb-2" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+        Bästa Vänner
+      </h3>
+      {bestFriends.length === 0 ? (
+        <p className="text-[11px] text-muted-foreground">Inga bästa vänner markerade.</p>
+      ) : (
+        <div className="relative">
+          {bestFriends.length > 5 && (
             <button
-              key={friend.id}
-              onClick={() => onNavigate(friend.username)}
-              className="flex flex-col items-center gap-1 shrink-0 group"
+              onClick={() => scroll("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background border border-primary/40 p-0.5"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg border-2 border-primary/40 overflow-hidden group-hover:border-primary transition-colors">
-                <Avatar name={friend.username} src={friend.avatar_url} size="lg" />
-              </div>
-              <span className="text-[10px] sm:text-xs font-medium text-foreground truncate max-w-[60px] sm:max-w-[70px] text-center group-hover:text-primary transition-colors">
-                {friend.username}
-              </span>
+              <ChevronLeft className="w-4 h-4 text-primary" />
             </button>
-          ))}
+          )}
+          <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-none">
+            {bestFriends.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => onNavigate(f.username)}
+                className="shrink-0 flex flex-col items-center gap-1 hover:opacity-80"
+              >
+                <img
+                  src={f.avatar_url || "/placeholder.svg"}
+                  alt={f.username}
+                  className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-primary object-cover"
+                  style={{ imageRendering: "auto" }}
+                />
+                <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center">
+                  {f.username}
+                </span>
+              </button>
+            ))}
+          </div>
+          {bestFriends.length > 5 && (
+            <button
+              onClick={() => scroll("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background border border-primary/40 p-0.5"
+            >
+              <ChevronRight className="w-4 h-4 text-primary" />
+            </button>
+          )}
         </div>
-        {bestFriends.length > 5 && (
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 border border-border rounded-full p-1 hover:bg-muted transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
 
-/* ─── Friend Row ─── */
+/* ═══ CATEGORY GROUP (table rows) ═══ */
 
-function FriendRow({
-  friend,
+function CategoryGroup({
+  category,
+  friends,
   getUserStatus,
   isOwnProfile,
   onNavigate,
   onToggleBestFriend,
+  colSpan,
 }: {
-  friend: ProfileFriend;
+  category: string;
+  friends: ProfileFriend[];
   getUserStatus: (userId: string) => UserStatus;
   isOwnProfile: boolean;
-  onNavigate: () => void;
+  onNavigate: (username: string) => void;
   onToggleBestFriend: (friendshipId: string, current: boolean) => void;
+  colSpan: number;
 }) {
-  const status = getUserStatus(friend.id);
-  const genderAge = [friend.gender, friend.age].filter(Boolean).join(", ");
-
   return (
     <>
-      {/* Desktop/tablet row */}
-      <div className="hidden sm:grid sm:grid-cols-[auto_1fr_auto_auto_auto] gap-2 items-center px-3 py-2 border-b border-border/50 hover:bg-muted/30 transition-colors">
-        <div className="w-9 cursor-pointer" onClick={onNavigate}>
-          <Avatar name={friend.username} src={friend.avatar_url} size="sm" />
-        </div>
-        <div className="min-w-0">
-          <span
-            className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
-            onClick={onNavigate}
+      {/* Category header row */}
+      <tr>
+        <td colSpan={colSpan} className="bg-primary/20 border-b border-primary/40 px-2 py-1">
+          <span className="text-xs font-bold text-primary" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+            {category}
+          </span>
+        </td>
+      </tr>
+      {friends.map((friend) => {
+        const status = getUserStatus(friend.id);
+        const genderAge = [friend.gender, friend.age].filter(Boolean).join(", ");
+        return (
+          <tr
+            key={friend.id}
+            className="border-b border-border/30 hover:bg-muted/20 transition-colors"
           >
-            {friend.username}
-          </span>
-          {genderAge && (
-            <span className="text-xs text-muted-foreground ml-1">({genderAge})</span>
-          )}
-        </div>
-        <div className="w-16 flex justify-center">
-          <StatusIndicator status={status} size="sm" />
-        </div>
-        <div className="w-28 text-center hidden md:block lg:block">
-          <span className="text-xs text-muted-foreground">
-            {friend.last_seen ? formatTimeAgo(friend.last_seen) : "–"}
-          </span>
-        </div>
-        {isOwnProfile && (
-          <div className="w-14 flex justify-center">
-            <Checkbox
-              checked={friend.is_best_friend}
-              onCheckedChange={() => onToggleBestFriend(friend.friendshipId, friend.is_best_friend)}
-              className="border-primary/50 data-[state=checked]:bg-primary"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Mobile row */}
-      <div
-        className="flex sm:hidden items-center gap-3 px-3 py-2.5 border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
-        onClick={onNavigate}
-      >
-        <Avatar name={friend.username} src={friend.avatar_url} size="sm" />
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium">{friend.username}</span>
-          {genderAge && (
-            <span className="text-xs text-muted-foreground ml-1">({genderAge})</span>
-          )}
-        </div>
-        <StatusIndicator status={status} size="sm" />
-      </div>
+            <td className="px-2 py-1.5">
+              <img
+                src={friend.avatar_url || "/placeholder.svg"}
+                alt={friend.username}
+                className="w-8 h-8 border border-primary/30 cursor-pointer object-cover"
+                onClick={() => onNavigate(friend.username)}
+                style={{ imageRendering: "auto" }}
+              />
+            </td>
+            <td className="px-2 py-1.5">
+              <span
+                className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+                onClick={() => onNavigate(friend.username)}
+              >
+                {friend.username}
+              </span>
+              {genderAge && (
+                <span className="text-[10px] text-muted-foreground ml-1">({genderAge})</span>
+              )}
+            </td>
+            <td className="px-2 py-1.5 text-center">
+              <div className="flex justify-center">
+                <StatusIndicator status={status} size="sm" />
+              </div>
+            </td>
+            <td className="px-2 py-1.5 hidden md:table-cell">
+              <span className="text-[11px] text-muted-foreground">
+                {friend.last_seen ? formatTimeAgo(friend.last_seen) : "–"}
+              </span>
+            </td>
+            {isOwnProfile && (
+              <td className="px-2 py-1.5 text-center">
+                <input
+                  type="checkbox"
+                  checked={friend.is_best_friend}
+                  onChange={() => onToggleBestFriend(friend.friendshipId, friend.is_best_friend)}
+                  className="w-3.5 h-3.5 accent-[hsl(var(--primary))] cursor-pointer"
+                />
+              </td>
+            )}
+          </tr>
+        );
+      })}
     </>
   );
 }
 
-/* ─── Personality Box ─── */
+/* ═══ PERSONALITY BOX ═══ */
 
 function PersonalityBox({ userId }: { userId: string }) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading } = useFriendVotes(userId);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
-      <div className="px-3 py-2 bg-primary/15 border-b border-primary/30">
-        <h3 className="text-sm font-bold text-primary">Personlighet</h3>
+    <div className="border border-primary/40">
+      <div className="bg-primary/20 border-b border-primary/40 px-2 py-1.5">
+        <h3 className="text-sm font-bold text-primary" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+          Personlighet
+        </h3>
       </div>
-      <div className="p-3">
-        <PersonalityMeter
-          voteCounts={voteCounts}
-          userVotes={userVotes}
-          totalVotes={totalVotes}
-          onToggleVote={toggleVote}
-          loading={loading}
-        />
+      <div className="p-2 space-y-1.5">
+        {VOTE_CATEGORIES.map((cat) => {
+          const count = voteCounts[cat] || 0;
+          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          const voted = userVotes[cat] || false;
+          return (
+            <button
+              key={cat}
+              onClick={() => toggleVote(cat)}
+              disabled={loading}
+              className={cn(
+                "w-full flex items-center gap-2 text-left py-0.5 hover:opacity-80 transition-opacity",
+                loading && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <span className={cn(
+                "text-[11px] w-24 shrink-0 truncate",
+                voted ? "text-primary font-bold" : "text-foreground"
+              )} style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+                {cat}
+              </span>
+              <div className="flex-1 h-3.5 bg-muted/50 border border-border/50 overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-muted-foreground w-8 text-right font-mono shrink-0">
+                {pct}%
+              </span>
+            </button>
+          );
+        })}
+        {totalVotes > 0 && (
+          <p className="text-[10px] text-muted-foreground text-right pt-1">
+            {totalVotes} röst{totalVotes !== 1 ? "er" : ""} totalt
+          </p>
+        )}
       </div>
     </div>
   );
