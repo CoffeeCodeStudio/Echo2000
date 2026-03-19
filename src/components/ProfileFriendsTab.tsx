@@ -304,8 +304,8 @@ function CategoryGroup({
     <>
       {/* Category header row */}
       <tr>
-        <td colSpan={colSpan} className="bg-primary/20 border-b border-primary/40 px-2 py-1">
-          <span className="text-xs font-bold text-primary" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+        <td colSpan={colSpan} className="bg-primary px-2 py-1">
+          <span className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
             {category}
           </span>
         </td>
