@@ -156,7 +156,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                 <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-16">Online</th>
                 <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-28 hidden md:table-cell">Senast inloggad</th>
                 {isOwnProfile && (
-                  <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-14">Bästis</th>
+                  <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-14">Bästis</th>
                 )}
               </tr>
             </thead>
