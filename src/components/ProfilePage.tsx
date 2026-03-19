@@ -187,7 +187,7 @@ export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
         )}
 
         {activeTab === "vanner" && profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-4">
+          <div>
             <ProfileFriendsTab userId={profileUserId} />
           </div>
         )}
