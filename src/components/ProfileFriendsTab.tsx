@@ -180,8 +180,8 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
           <div className="sm:hidden">
             {Object.entries(grouped).map(([category, catFriends]) => (
               <div key={category}>
-                <div className="bg-primary/20 border-b border-primary/40 px-2 py-1">
-                  <span className="text-xs font-bold text-primary">{category}</span>
+                <div className="bg-primary px-2 py-1">
+                  <span className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>{category}</span>
                 </div>
                 {catFriends.map((friend) => {
                   const status = getUserStatus(friend.id);
