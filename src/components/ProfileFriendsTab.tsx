@@ -188,7 +188,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                   return (
                     <div
                       key={friend.id}
-                      className="flex items-center gap-2 px-2 py-1.5 border-b border-border/40 cursor-pointer hover:bg-muted/20"
+                      className="flex items-center gap-2 px-2 py-1 border-b border-border/30 cursor-pointer hover:bg-muted/20"
                       onClick={() => goToProfile(friend.username)}
                     >
                       <img
