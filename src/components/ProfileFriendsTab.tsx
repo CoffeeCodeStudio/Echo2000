@@ -398,7 +398,7 @@ function PersonalityBox({ userId }: { userId: string }) {
               )} style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
                 {cat}
               </span>
-              <div className="flex-1 h-3.5 bg-muted/50 border border-border/50 overflow-hidden">
+              <div className="flex-1 h-3 bg-muted/40 overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${pct}%` }}
