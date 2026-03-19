@@ -318,7 +318,7 @@ function CategoryGroup({
             key={friend.id}
             className="border-b border-border/20 hover:bg-muted/15"
           >
-            <td className="px-2 py-1.5">
+            <td className="px-1 py-1">
               <img
                 src={friend.avatar_url || "/placeholder.svg"}
                 alt={friend.username}
