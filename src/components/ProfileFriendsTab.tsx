@@ -371,9 +371,9 @@ function PersonalityBox({ userId }: { userId: string }) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading } = useFriendVotes(userId);
 
   return (
-    <div className="border border-primary/40">
-      <div className="bg-primary/20 border-b border-primary/40 px-2 py-1.5">
-        <h3 className="text-sm font-bold text-primary" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+    <div className="border border-primary/50">
+      <div className="bg-primary px-2 py-1">
+        <h3 className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
           Personlighet
         </h3>
       </div>
