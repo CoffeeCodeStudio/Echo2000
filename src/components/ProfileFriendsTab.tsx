@@ -146,7 +146,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
         <BestFriendsRow bestFriends={bestFriends} onNavigate={goToProfile} />
 
         {/* FRIENDS TABLE */}
-        <div className="border border-primary/40 mt-3">
+        <div className="border border-primary/50 mt-2">
           {/* Table header — desktop/tablet */}
           <table className="w-full border-collapse hidden sm:table">
             <thead>
