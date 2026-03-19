@@ -377,7 +377,7 @@ function PersonalityBox({ userId }: { userId: string }) {
           Personlighet
         </h3>
       </div>
-      <div className="p-2 space-y-1.5">
+      <div className="p-2 space-y-1">
         {VOTE_CATEGORIES.map((cat) => {
           const count = voteCounts[cat] || 0;
           const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
