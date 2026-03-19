@@ -150,7 +150,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
           {/* Table header — desktop/tablet */}
           <table className="w-full border-collapse hidden sm:table">
             <thead>
-              <tr className="bg-muted/60 border-b border-primary/30">
+              <tr className="bg-muted/40 border-b border-primary/50">
                 <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-10">Avatar</th>
                 <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5">Användarnamn</th>
                 <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-2 py-1.5 w-16">Online</th>
