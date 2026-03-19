@@ -327,7 +327,7 @@ function CategoryGroup({
                 style={{ imageRendering: "auto" }}
               />
             </td>
-            <td className="px-2 py-1.5">
+            <td className="px-1 py-1">
               <span
                 className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
                 onClick={() => onNavigate(friend.username)}
