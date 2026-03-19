@@ -338,7 +338,7 @@ function CategoryGroup({
                 <span className="text-[10px] text-muted-foreground ml-1">({genderAge})</span>
               )}
             </td>
-            <td className="px-2 py-1.5 text-center">
+            <td className="px-1 py-1 text-center">
               <div className="flex justify-center">
                 <StatusIndicator status={status} size="sm" />
               </div>
