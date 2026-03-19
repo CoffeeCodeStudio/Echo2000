@@ -316,7 +316,7 @@ function CategoryGroup({
         return (
           <tr
             key={friend.id}
-            className="border-b border-border/30 hover:bg-muted/20 transition-colors"
+            className="border-b border-border/20 hover:bg-muted/15"
           >
             <td className="px-2 py-1.5">
               <img
