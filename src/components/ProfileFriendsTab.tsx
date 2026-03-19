@@ -232,7 +232,7 @@ function BestFriendsRow({
     scrollRef.current?.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
 
   return (
-    <div className="border border-primary/40 p-3">
+    <div className="border border-primary/50 p-2">
       <h3 className="text-sm font-bold text-foreground mb-2" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
         Bästa Vänner
       </h3>
