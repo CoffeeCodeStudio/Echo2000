@@ -349,7 +349,7 @@ function CategoryGroup({
               </span>
             </td>
             {isOwnProfile && (
-              <td className="px-2 py-1.5 text-center">
+              <td className="px-1 py-1 text-center">
                 <input
                   type="checkbox"
                   checked={friend.is_best_friend}
