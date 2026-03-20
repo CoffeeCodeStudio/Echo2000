@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
@@ -8,7 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 export function HeaderRadio() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const {
     isPlaying,
@@ -38,13 +40,22 @@ export function HeaderRadio() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  const handleToggle = useCallback(() => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
   if (!user) return null;
 
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Radio toggle button in header */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className={cn(
           "flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all",
           "hover:bg-muted/50",
@@ -68,7 +79,10 @@ export function HeaderRadio() {
 
       {/* Dropdown panel */}
       {isOpen &&
-      <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-2xl z-[60] overflow-hidden">
+      <div
+        className="fixed w-72 sm:w-80 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-2xl z-[9999] overflow-hidden"
+        style={{ top: dropdownPos.top, right: dropdownPos.right }}
+      >
           {/* Now Playing */}
           {currentStation &&
         <div className="p-4 border-b border-border bg-muted/30">
