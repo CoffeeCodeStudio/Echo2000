@@ -79,7 +79,10 @@ export function HeaderRadio() {
 
       {/* Dropdown panel */}
       {isOpen &&
-      <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-2xl z-[60] overflow-hidden">
+      <div
+        className="fixed w-72 sm:w-80 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-2xl z-[9999] overflow-hidden"
+        style={{ top: dropdownPos.top, right: dropdownPos.right }}
+      >
           {/* Now Playing */}
           {currentStation &&
         <div className="p-4 border-b border-border bg-muted/30">
