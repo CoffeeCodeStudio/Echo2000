@@ -8,7 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 export function HeaderRadio() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const {
     isPlaying,
