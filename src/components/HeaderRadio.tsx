@@ -42,11 +42,20 @@ export function HeaderRadio() {
 
   if (!user) return null;
 
+  const handleToggle = useCallback(() => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Radio toggle button in header */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className={cn(
           "flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all",
           "hover:bg-muted/50",
