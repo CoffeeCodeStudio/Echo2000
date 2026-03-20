@@ -40,8 +40,6 @@ export function HeaderRadio() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  if (!user) return null;
-
   const handleToggle = useCallback(() => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -49,6 +47,8 @@ export function HeaderRadio() {
     }
     setIsOpen(!isOpen);
   }, [isOpen]);
+
+  if (!user) return null;
 
   return (
     <div className="relative" ref={dropdownRef}>
