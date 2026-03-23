@@ -314,32 +314,30 @@ h1, h2, h3, h4, h5, h6 {
       hsl(var(--accent) / 0.1) 100%);
   }
 
-  /* ===== 2026 Glassmorphism Bento Card ===== */
+  /* ===== Lunar Box Card ===== */
   .glass-card {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
-    border-radius: var(--bento-radius);
+    background: hsl(var(--lunar-box-bg));
+    border: 1px solid hsl(var(--lunar-box-border));
+    border-radius: 8px;
     overflow: hidden;
     position: relative;
-    transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
   }
 
   .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(135deg, hsl(var(--glass-highlight)) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
+    display: none;
   }
 
   .glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px hsl(var(--primary) / 0.12),
-                0 2px 8px rgba(0,0,0,0.3);
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Lunar orange gradient header for boxes */
+  .lunar-box-header {
+    background: linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    border-radius: 8px 8px 0 0;
   }
 
   /* Pressable micro-interaction */
