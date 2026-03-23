@@ -6,7 +6,7 @@ function SocialLink({ label, href }: { label: string; href?: string }) {
   return (
     <Tag
       {...(href ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="pressable flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full border border-[hsl(var(--glass-border))] hover:border-primary/40 bg-muted/20"
+      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded border border-[hsl(var(--lunar-box-border))] hover:border-primary/40 bg-white/5 cursor-pointer"
     >
       <ExternalLink className="w-3 h-3" />
       {label}

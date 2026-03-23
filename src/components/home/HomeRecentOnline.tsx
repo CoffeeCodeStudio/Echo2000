@@ -9,7 +9,7 @@ import type { UserStatus } from "../StatusIndicator";
 import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 
-const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000; // 8 min
+const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
 export function HomeRecentOnline() {
   const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null }[]>([]);
@@ -43,7 +43,6 @@ export function HomeRecentOnline() {
   }, [user]);
 
   const getMemberStatus = (m: typeof members[0]): UserStatus => {
-    // For bots, derive status from last_seen
     if (m.is_bot && m.last_seen) {
       const age = Date.now() - new Date(m.last_seen).getTime();
       if (age < BOT_ONLINE_THRESHOLD_MS) return "online";
@@ -52,7 +51,6 @@ export function HomeRecentOnline() {
     return getUserStatus(m.user_id);
   };
 
-  // Sort: online first (by longest session / earliest last_seen), then away, then others
   const statusOrder: Record<UserStatus, number> = { online: 0, away: 1, busy: 2, offline: 3 };
 
   const sortedMembers = [...members]
@@ -60,11 +58,10 @@ export function HomeRecentOnline() {
     .sort((a, b) => {
       const diff = statusOrder[a._status] - statusOrder[b._status];
       if (diff !== 0) return diff;
-      // Within same status, longest online first (earliest last_seen)
       const aTime = a.last_seen ? new Date(a.last_seen).getTime() : 0;
       const bTime = b.last_seen ? new Date(b.last_seen).getTime() : 0;
-      if (a._status === "online" || a._status === "away") return aTime - bTime; // earliest = longest
-      return bTime - aTime; // offline: most recent first
+      if (a._status === "online" || a._status === "away") return aTime - bTime;
+      return bTime - aTime;
     });
 
   return (
@@ -77,7 +74,7 @@ export function HomeRecentOnline() {
             <button
               key={m.user_id}
               onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-              className="pressable flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-muted/30 transition-colors min-h-[44px]"
+              className="flex flex-col items-center gap-1 p-1.5 rounded hover:bg-white/10 transition-colors min-h-[44px] cursor-pointer"
             >
               <div className="relative">
                 <Avatar name={m.username} src={m.avatar_url} size="sm" />

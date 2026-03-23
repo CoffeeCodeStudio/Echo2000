@@ -1,7 +1,6 @@
 /**
  * @module BentoCard
- * Glassmorphism bento card wrapper for the 2026 dashboard.
- * Supports header, icon, and micro-interaction "pressable" feel.
+ * Lunar-themed box card with orange gradient header.
  */
 import type { ReactNode } from "react";
 
@@ -22,13 +21,13 @@ const spanClasses = {
 export function BentoCard({ title, icon, children, className = "", span = "default" }: BentoCardProps) {
   return (
     <div className={`glass-card flex flex-col ${spanClasses[span]} ${className}`}>
-      {/* Header strip */}
-      <div className="relative z-10 flex items-center gap-2 px-4 py-2.5 border-b border-[hsl(var(--glass-border))]">
-        {icon && <span className="text-primary">{icon}</span>}
-        <h3 className="font-display font-bold text-sm text-foreground tracking-wide">{title}</h3>
+      {/* Lunar orange gradient header */}
+      <div className="lunar-box-header flex items-center gap-2 px-4 py-2">
+        {icon && <span className="text-white/90">{icon}</span>}
+        <h3 className="font-display font-bold text-sm tracking-wide">{title}</h3>
       </div>
       {/* Content */}
-      <div className="relative z-10 p-4 flex-1">{children}</div>
+      <div className="p-4 flex-1">{children}</div>
     </div>
   );
 }
