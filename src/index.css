@@ -355,13 +355,14 @@ h6 {
     background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 50%, hsl(var(--accent) / 0.1) 100%);
   }
 
-  /* ===== Lunar Box Card ===== */
+  /* ===== Retro Box Card ===== */
   .glass-card {
-    background: hsl(var(--lunar-box-bg));
-    border: 1px solid hsl(var(--lunar-box-border));
-    border-radius: 8px;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.08);
   }
 
   .glass-card::before {
@@ -370,7 +371,7 @@ h6 {
 
   .glass-card:hover {
     transform: none;
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.08);
   }
 
   /* Lunar orange gradient header for boxes */
@@ -378,23 +379,23 @@ h6 {
     background: linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%);
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid #8a1008;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
-  /* Pressable micro-interaction */
+  /* Pressable — subtle retro feel */
   .pressable {
-    transition:
-      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.15s ease;
+    transition: all 0.1s ease;
     cursor: pointer;
   }
   .pressable:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transform: none;
+    box-shadow: inset 0 -1px 0 hsl(0 0% 0% / 0.1);
   }
   .pressable:active {
-    transform: translateY(1px) scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px);
+    box-shadow: inset 0 1px 2px hsl(0 0% 0% / 0.2);
   }
 
   /* Retro gradient background */
