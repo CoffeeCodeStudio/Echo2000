@@ -27,15 +27,14 @@ export function HomeContent() {
       {/* Hero header */}
       <section className="py-3 md:py-4 text-center px-4">
         <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight mb-1">
-          <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>Echo</span>
-          <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>2000</span>
+          <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>
+            Echo
+          </span>
+          <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>
+            2000
+          </span>
         </h1>
-        <p className="text-white/70 text-[10px] sm:text-xs max-w-lg mx-auto leading-snug">
-          Som förr. Fast nu  
-        </p>
-        <div className="flex justify-center mt-2">
-          <ClearViewToggle />
-        </div>
+        <p className="text-white/70 text-[10px] sm:text-xs max-w-lg mx-auto leading-snug">Som förr. Fast nu</p>
       </section>
 
       {/* Stats + Vision */}
@@ -62,6 +61,6 @@ export function HomeContent() {
           </div>
         </div>
       </section>
-    </div>);
-
+    </div>
+  );
 }
