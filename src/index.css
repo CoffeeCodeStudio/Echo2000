@@ -248,21 +248,9 @@ h6 {
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: "Inter", system-ui, sans-serif;
-    background-image: url("@/assets/retro-pixel-bg.png");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-blend-mode: soft-light;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* Fix background-attachment: fixed on iOS */
-  @supports (-webkit-touch-callout: none) {
-    body {
-      background-attachment: scroll;
-    }
   }
 
   h1,
@@ -271,7 +259,8 @@ h6 {
   h4,
   h5,
   h6 {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
+    font-weight: 700;
   }
 }
 
