@@ -160,6 +160,11 @@ h1, h2, h3, h4, h5, h6 {
     /* Bento tokens */
     --bento-radius: 1.5rem;
     --bento-gap: 0.75rem;
+
+    /* Lunar theme tokens */
+    --lunar-bg: 195 48% 34%;
+    --lunar-box-border: 197 37% 51%;
+    --lunar-box-bg: 0 0% 100% / 0.08;
   }
 
   .dark {
