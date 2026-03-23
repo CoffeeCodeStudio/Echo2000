@@ -1322,20 +1322,21 @@ h6 {
     justify-content: center;
     padding: 4px 8px;
     min-width: 40px;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
-    color: hsl(var(--foreground) / 0.6);
-    transition: all 0.2s ease;
+    color: hsl(0 0% 100% / 0.65);
+    transition: all 0.15s ease;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .header-nav-item:hover {
-    color: hsl(var(--primary));
-    background: hsl(var(--primary) / 0.15);
-    transform: translateY(-1px);
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    transform: none;
   }
 
   .header-nav-item:hover .header-nav-icon {
-    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.6));
+    filter: none;
   }
 
   .header-nav-item.active {
