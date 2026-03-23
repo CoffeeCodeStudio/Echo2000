@@ -63,10 +63,10 @@ export function GlobalLajvTicker() {
               size="sm"
               className="w-6 h-6 shrink-0"
             />
-            <span className="font-semibold text-foreground shrink-0 max-w-[100px] truncate">
+            <span className="font-semibold shrink-0 max-w-[100px] truncate" style={{ color: '#E6EEF2' }}>
               {currentMessage.username}:
             </span>
-            <span className="text-foreground truncate flex-1 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+            <span className="truncate flex-1" style={{ color: '#ccd5d8' }}>
               {replaceEmoteCodes(currentMessage.message)}
             </span>
             {messages.length > 1 && (
