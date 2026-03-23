@@ -1448,12 +1448,14 @@ h6 {
     flex-direction: column;
     width: 200px;
     min-width: 200px;
-    background: hsl(230 35% 10%);
-    border-right: 2px solid hsl(var(--primary) / 0.4);
+    background: #1a4456;
+    border-right: 1px solid hsl(var(--border));
     overflow-y: auto;
     overflow-x: hidden;
     gap: 0;
     padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0,0,0,0.15);
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   @media (min-width: 1280px) {
@@ -1464,13 +1466,13 @@ h6 {
   }
 
   .retro-sidebar-box {
-    border-bottom: 1px solid hsl(230 25% 20%);
+    border-bottom: 1px solid hsl(var(--border));
     padding: 10px;
-    background: hsl(230 30% 12%);
+    background: #1e4e62;
   }
 
   .retro-sidebar-box:hover {
-    background: hsl(230 30% 14%);
+    background: #225a70;
   }
 
   .retro-sidebar-user {
@@ -1479,17 +1481,17 @@ h6 {
     gap: 10px;
     cursor: pointer;
     padding: 12px 10px;
-    background: linear-gradient(135deg, hsl(230 30% 14%) 0%, hsl(var(--primary) / 0.08) 100%);
-    border-bottom: 2px solid hsl(var(--primary) / 0.3);
+    background: #1a4456;
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .retro-sidebar-user:hover {
-    background: linear-gradient(135deg, hsl(230 30% 16%) 0%, hsl(var(--primary) / 0.15) 100%);
+    background: #1e4e62;
   }
 
   .retro-sidebar-status {
     padding: 8px 10px;
-    background: hsl(230 35% 8%);
+    background: #163c4d;
   }
 
   .retro-sidebar-group-label {
