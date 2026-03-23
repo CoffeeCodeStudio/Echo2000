@@ -1340,12 +1340,13 @@ h6 {
   }
 
   .header-nav-item.active {
-    color: hsl(var(--primary));
-    background: hsl(var(--primary) / 0.2);
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    border-bottom: 2px solid hsl(var(--primary));
   }
 
   .header-nav-item.has-notice {
-    color: hsl(var(--foreground));
+    color: hsl(0 0% 100% / 0.9);
   }
 
   .header-nav-icon {
