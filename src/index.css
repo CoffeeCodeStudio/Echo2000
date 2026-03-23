@@ -899,9 +899,10 @@ h6 {
   .status-box-dark {
     display: flex;
     align-items: center;
-    color: hsl(var(--foreground));
+    color: #E6EEF2;
     font-weight: bold;
     font-size: 12px;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .online-dot-dark {
