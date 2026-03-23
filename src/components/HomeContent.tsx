@@ -31,7 +31,7 @@ export function HomeContent() {
           <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>2000</span>
         </h1>
         <p className="text-white/70 text-[10px] sm:text-xs max-w-lg mx-auto leading-snug">
-          En nostalgisk chatt-community inspirerad av MSN Messenger, LunarStorm och Playahead.
+          Som förr. Fast nu  
         </p>
         <div className="flex justify-center mt-2">
           <ClearViewToggle />
@@ -62,6 +62,6 @@ export function HomeContent() {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
