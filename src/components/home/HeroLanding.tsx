@@ -116,34 +116,37 @@ export function HeroLanding() {
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      {/* Deep space gradient background */}
+    <div className="flex-1 overflow-y-auto scrollbar-nostalgic" style={{ background: "linear-gradient(to bottom, #2D6B81 0%, #1e4e62 100%)" }}>
       <div
         className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative"
-        style={{
-          background: "radial-gradient(ellipse at 50% 30%, hsl(265 35% 15% / 0.5) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(28 100% 56% / 0.06) 0%, transparent 50%)",
-        }}
       >
         {/* Snowfall layers */}
         <Snowfall />
 
-        {/* Kinetic headline */}
-        <h1 className="font-display font-bold text-center max-w-4xl">
+        {/* Headline — Trebuchet MS */}
+        <h1 className="font-bold text-center max-w-4xl" style={{ fontFamily: "'Trebuchet MS', sans-serif" }}>
           <span
-            className="kinetic-text block text-3xl sm:text-5xl md:text-7xl text-foreground animate-kinetic-slide-up"
+            className="block text-3xl sm:text-5xl md:text-7xl text-white animate-kinetic-slide-up"
             style={{ lineHeight: 1.1, letterSpacing: "-0.03em" }}
           >
             Välkommen hem till
           </span>
           <span className="block mt-1 sm:mt-2">
             <span
-              className="kinetic-text text-4xl sm:text-6xl md:text-8xl text-primary animate-kinetic-blur-in"
-              style={{ animationDelay: "0.2s", lineHeight: 1.1 }}
+              className="text-4xl sm:text-6xl md:text-8xl animate-kinetic-blur-in"
+              style={{
+                animationDelay: "0.2s",
+                lineHeight: 1.1,
+                background: "linear-gradient(to bottom, #d8613e 0%, #b40c06 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
             >
               2000
             </span>
             <span
-              className="kinetic-text text-4xl sm:text-6xl md:text-8xl text-accent animate-kinetic-blur-in"
+              className="text-4xl sm:text-6xl md:text-8xl text-white/90 animate-kinetic-blur-in"
               style={{ animationDelay: "0.35s", lineHeight: 1.1 }}
             >
               -talet
@@ -152,14 +155,14 @@ export function HeroLanding() {
         </h1>
 
         <p
-          className="mt-5 sm:mt-8 text-muted-foreground text-base sm:text-lg md:text-xl text-center max-w-2xl animate-kinetic-slide-up"
-          style={{ lineHeight: 1.65, letterSpacing: "0.3px", animationDelay: "0.3s" }}
+          className="mt-5 sm:mt-8 text-base sm:text-lg md:text-xl text-center max-w-2xl animate-kinetic-slide-up"
+          style={{ lineHeight: 1.65, letterSpacing: "0.3px", animationDelay: "0.3s", color: "#ccd5d8", fontFamily: "'Trebuchet MS', sans-serif" }}
         >
           En nostalgisk community inspirerad av MSN&nbsp;Messenger, LunarStorm
           och Playahead — fast med dagens teknik.
         </p>
 
-        {/* Glassmorphism vision pills */}
+        {/* Vision pills — Lunar glass style */}
         <div
           className="flex flex-wrap justify-center gap-2.5 sm:gap-3 mt-7 animate-kinetic-slide-up"
           style={{ animationDelay: "0.4s" }}
@@ -167,32 +170,30 @@ export function HeroLanding() {
           {visionItems.map((v) => (
             <span
               key={v.text}
-              className="pressable inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-medium text-foreground select-none"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-medium text-white/90 select-none"
               style={{
-                background: "hsl(var(--glass-bg))",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid hsl(var(--glass-border))",
+                background: "#1e4e62",
+                border: "1px solid #5A94AB",
               }}
             >
-              <span aria-hidden="true">{v.emoji}</span> {v.text}
+              <span aria-hidden="true" style={{ filter: "drop-shadow(0 0 3px rgba(216,97,62,0.5))" }}>{v.emoji}</span> {v.text}
             </span>
           ))}
         </div>
 
-        {/* CTA — pressable micro-interaction */}
+        {/* CTA */}
         <button
           onClick={() => navigate("/auth")}
-          className="hero-cta-button pressable mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 rounded-2xl text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background min-h-[52px] animate-kinetic-slide-up"
-          style={{ animationDelay: "0.5s" }}
+          className="hero-cta-button mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] animate-kinetic-slide-up"
+          style={{ animationDelay: "0.5s", fontFamily: "'Trebuchet MS', sans-serif" }}
         >
           Skapa din profil
         </button>
 
         <button
           onClick={() => navigate("/auth")}
-          className="pressable mt-4 text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center animate-kinetic-slide-up"
-          style={{ animationDelay: "0.55s" }}
+          className="mt-4 text-sm hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center animate-kinetic-slide-up cursor-pointer"
+          style={{ animationDelay: "0.55s", color: "#ccd5d8" }}
         >
           Har du redan konto? Logga in
         </button>
