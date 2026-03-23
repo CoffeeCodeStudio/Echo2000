@@ -1,10 +1,40 @@
 @tailwind base;
 
+/* Lägg till detta i din index.css eller App.css */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif !important;
+  letter-spacing: -0.02em; /* Gör den lite mer kompakt som förr */
+}
+
+h1,
+.logo-text {
+  font-family: "Impact", "Arial Black", sans-serif;
+  text-transform: uppercase;
+}
+
 /* MSN Shake animation */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 .animate-shake {
@@ -15,8 +45,12 @@
 
 /* Marquee animation */
 @keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 .marquee-container {
@@ -31,7 +65,8 @@
 }
 
 /* Prevent horizontal scroll globally */
-html, body {
+html,
+body {
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -58,17 +93,32 @@ body {
 }
 
 /* Body text weight boost for dark backgrounds */
-p, span, label, li, td, th, dd, dt {
+p,
+span,
+label,
+li,
+td,
+th,
+dd,
+dt {
   font-weight: 450;
 }
 
 /* Headings get slightly more letter-spacing */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   letter-spacing: 0.4px;
 }
 
 /* Slightly more generous line-height on smaller text */
-.text-xs, .text-sm, .text-\[10px\], .text-\[11px\] {
+.text-xs,
+.text-sm,
+.text-\[10px\],
+.text-\[11px\] {
   line-height: 1.6;
 }
 
@@ -81,7 +131,6 @@ h1, h2, h3, h4, h5, h6 {
 .pb-safe {
   padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
 }
-
 
 @layer base {
   :root {
@@ -124,11 +173,11 @@ h1, h2, h3, h4, h5, h6 {
     --away-orange: 32 85% 55%;
     --busy-red: 0 60% 50%;
     --offline-gray: 225 15% 45%;
-    
+
     --glow-primary: 28 100% 56%;
     --glow-accent: 200 65% 58%;
     --glow-online: 145 65% 42%;
-    
+
     /* Deep space gradient */
     --gradient-start: 228 42% 10%;
     --gradient-mid: 250 38% 14%;
@@ -138,7 +187,7 @@ h1, h2, h3, h4, h5, h6 {
     --pastel-peach: 20 80% 80%;
     --pastel-lavender: 260 50% 78%;
     --pastel-mint: 165 40% 75%;
-    
+
     --chat-bubble-self: 28 45% 22%;
     --chat-bubble-other: 228 28% 18%;
 
@@ -215,8 +264,8 @@ h1, h2, h3, h4, h5, h6 {
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
-    background-image: url('@/assets/retro-pixel-bg.png');
+    font-family: "Inter", system-ui, sans-serif;
+    background-image: url("@/assets/retro-pixel-bg.png");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -231,21 +280,28 @@ h1, h2, h3, h4, h5, h6 {
     }
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Space Grotesk", sans-serif;
   }
 }
 
 @layer components {
   /* Nostalgic glow effects */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--glow-primary) / 0.3),
-                0 0 40px hsl(var(--glow-primary) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--glow-primary) / 0.3),
+      0 0 40px hsl(var(--glow-primary) / 0.1);
   }
 
   .glow-accent {
-    box-shadow: 0 0 20px hsl(var(--glow-accent) / 0.3),
-                0 0 40px hsl(var(--glow-accent) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--glow-accent) / 0.3),
+      0 0 40px hsl(var(--glow-accent) / 0.1);
   }
 
   .glow-online {
@@ -258,7 +314,9 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Status star animations */
   .animate-star-online {
-    animation: star-rotate 4s linear infinite, star-pulse 2s ease-in-out infinite;
+    animation:
+      star-rotate 4s linear infinite,
+      star-pulse 2s ease-in-out infinite;
   }
 
   .animate-star-away {
@@ -270,18 +328,32 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes star-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes star-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.15);
+    }
   }
 
   @keyframes star-glimmer {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.45; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
   }
 
   /* Chat bubbles */
@@ -300,18 +372,13 @@ h1, h2, h3, h4, h5, h6 {
   /* Nostalgic card with subtle gradient border */
   .nostalgia-card {
     @apply relative bg-card rounded-xl overflow-hidden;
-    background: linear-gradient(135deg, 
-      hsl(var(--card)) 0%, 
-      hsl(var(--secondary) / 0.3) 100%);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.3) 100%);
   }
 
   .nostalgia-card::before {
-    content: '';
+    content: "";
     @apply absolute inset-0 rounded-xl pointer-events-none;
-    background: linear-gradient(135deg, 
-      hsl(var(--primary) / 0.1) 0%, 
-      transparent 50%,
-      hsl(var(--accent) / 0.1) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 50%, hsl(var(--accent) / 0.1) 100%);
   }
 
   /* ===== Lunar Box Card ===== */
@@ -336,44 +403,47 @@ h1, h2, h3, h4, h5, h6 {
   .lunar-box-header {
     background: linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%);
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     border-radius: 8px 8px 0 0;
   }
 
   /* Pressable micro-interaction */
   .pressable {
-    transition: transform 0.15s cubic-bezier(.4,0,.2,1), box-shadow 0.15s ease;
+    transition:
+      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.15s ease;
     cursor: pointer;
   }
   .pressable:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
   .pressable:active {
     transform: translateY(1px) scale(0.98);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
 
   /* Retro gradient background */
   .retro-gradient {
-    background: linear-gradient(135deg, 
-      hsl(var(--gradient-start)) 0%, 
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gradient-start)) 0%,
       hsl(var(--gradient-end)) 50%,
-      hsl(var(--gradient-start)) 100%);
+      hsl(var(--gradient-start)) 100%
+    );
   }
 
   /* MSN-style window header */
   .msn-header {
-    background: linear-gradient(180deg, 
-      hsl(var(--primary) / 0.2) 0%, 
-      hsl(var(--primary) / 0.05) 100%);
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.05) 100%);
     @apply border-b border-primary/20;
   }
 
   /* Soft focus glow for inputs */
   .input-glow:focus {
-    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3),
-                0 0 20px hsl(var(--primary) / 0.1);
+    box-shadow:
+      0 0 0 2px hsl(var(--primary) / 0.3),
+      0 0 20px hsl(var(--primary) / 0.1);
   }
 
   /* Avatar ring for online status */
@@ -384,9 +454,7 @@ h1, h2, h3, h4, h5, h6 {
   /* Nostalgic button styles */
   .btn-nostalgic {
     @apply relative overflow-hidden transition-all duration-300;
-    background: linear-gradient(135deg, 
-      hsl(var(--primary)) 0%, 
-      hsl(185 70% 40%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(185 70% 40%) 100%);
   }
 
   .btn-nostalgic:hover {
@@ -395,11 +463,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .btn-nostalgic::after {
-    content: '';
+    content: "";
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, 
-      hsl(var(--primary) / 0.5) 0%, 
-      transparent 100%);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.5) 0%, transparent 100%);
   }
 
   .btn-nostalgic:hover::after {
@@ -433,8 +499,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 
   .animate-glow {
@@ -446,8 +517,9 @@ h1, h2, h3, h4, h5, h6 {
       box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
     }
     to {
-      box-shadow: 0 0 20px hsl(var(--primary) / 0.5),
-                  0 0 30px hsl(var(--primary) / 0.2);
+      box-shadow:
+        0 0 20px hsl(var(--primary) / 0.5),
+        0 0 30px hsl(var(--primary) / 0.2);
     }
   }
 
@@ -457,10 +529,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes icon-bounce {
-    0%, 100% { transform: translateY(0); }
-    25% { transform: translateY(-3px); }
-    50% { transform: translateY(0); }
-    75% { transform: translateY(-2px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-3px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateY(-2px);
+    }
   }
 
   .animate-icon-wiggle {
@@ -468,9 +549,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes icon-wiggle {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
   }
 
   .animate-icon-walk {
@@ -478,10 +566,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes icon-walk {
-    0%, 100% { transform: translateX(0) rotate(0deg); }
-    25% { transform: translateX(-1px) rotate(-3deg); }
-    50% { transform: translateX(0) rotate(0deg); }
-    75% { transform: translateX(1px) rotate(3deg); }
+    0%,
+    100% {
+      transform: translateX(0) rotate(0deg);
+    }
+    25% {
+      transform: translateX(-1px) rotate(-3deg);
+    }
+    50% {
+      transform: translateX(0) rotate(0deg);
+    }
+    75% {
+      transform: translateX(1px) rotate(3deg);
+    }
   }
 
   .animate-icon-jump {
@@ -489,10 +586,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes icon-jump {
-    0%, 100% { transform: translateY(0) scale(1); }
-    30% { transform: translateY(-4px) scale(1.05); }
-    50% { transform: translateY(0) scale(0.95); }
-    70% { transform: translateY(-2px) scale(1.02); }
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    30% {
+      transform: translateY(-4px) scale(1.05);
+    }
+    50% {
+      transform: translateY(0) scale(0.95);
+    }
+    70% {
+      transform: translateY(-2px) scale(1.02);
+    }
   }
 
   /* Good-Vibe fade in animation */
@@ -517,9 +623,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes waddle {
-    0%, 100% { transform: rotate(0deg) translateY(0); }
-    25% { transform: rotate(-8deg) translateY(-1px); }
-    75% { transform: rotate(8deg) translateY(-1px); }
+    0%,
+    100% {
+      transform: rotate(0deg) translateY(0);
+    }
+    25% {
+      transform: rotate(-8deg) translateY(-1px);
+    }
+    75% {
+      transform: rotate(8deg) translateY(-1px);
+    }
   }
 
   .animate-msn-bounce {
@@ -527,10 +640,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes msn-bounce {
-    0%, 100% { transform: translateY(0); }
-    25% { transform: translateY(-4px); }
-    50% { transform: translateY(0); }
-    75% { transform: translateY(-2px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-4px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateY(-2px);
+    }
   }
 
   .animate-writing {
@@ -538,10 +660,19 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes writing {
-    0%, 100% { transform: translateX(0) rotate(0deg); }
-    25% { transform: translateX(2px) rotate(5deg); }
-    50% { transform: translateX(0) rotate(0deg); }
-    75% { transform: translateX(-2px) rotate(-5deg); }
+    0%,
+    100% {
+      transform: translateX(0) rotate(0deg);
+    }
+    25% {
+      transform: translateX(2px) rotate(5deg);
+    }
+    50% {
+      transform: translateX(0) rotate(0deg);
+    }
+    75% {
+      transform: translateX(-2px) rotate(-5deg);
+    }
   }
 
   .animate-heartbeat {
@@ -549,16 +680,29 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes heartbeat {
-    0%, 100% { transform: scale(1); }
-    14% { transform: scale(1.15); }
-    28% { transform: scale(1); }
-    42% { transform: scale(1.15); }
-    56% { transform: scale(1); }
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    14% {
+      transform: scale(1.15);
+    }
+    28% {
+      transform: scale(1);
+    }
+    42% {
+      transform: scale(1.15);
+    }
+    56% {
+      transform: scale(1);
+    }
   }
 
   /* Icon glow on hover */
   .icon-glow {
-    transition: filter 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transition:
+      filter 0.2s ease-in-out,
+      transform 0.2s ease-in-out;
   }
 
   .icon-glow:hover {
@@ -666,7 +810,9 @@ h1, h2, h3, h4, h5, h6 {
   .icon-dark {
     font-size: 20px;
     display: inline-block;
-    transition: filter 0.3s ease, transform 0.2s ease;
+    transition:
+      filter 0.3s ease,
+      transform 0.2s ease;
     line-height: 1;
   }
 
@@ -719,8 +865,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes waddle-dark {
-    0%, 100% { transform: rotate(-12deg); }
-    50% { transform: rotate(12deg); }
+    0%,
+    100% {
+      transform: rotate(-12deg);
+    }
+    50% {
+      transform: rotate(12deg);
+    }
   }
 
   .msn-bounce {
@@ -728,8 +879,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes bounce-dark {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-8px); }
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
   }
 
   .writing-pen {
@@ -737,8 +896,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes write-dark {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(5px, -2px); }
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(5px, -2px);
+    }
   }
 
   .heart-pulse {
@@ -746,9 +910,15 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   @keyframes pulse-dark {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   .status-box-dark {
@@ -765,14 +935,27 @@ h1, h2, h3, h4, h5, h6 {
     height: 8px;
     background: hsl(var(--online-green));
     border-radius: 50%;
-    box-shadow: 0 0 5px hsl(var(--online-green)), 0 0 10px hsl(var(--online-green));
+    box-shadow:
+      0 0 5px hsl(var(--online-green)),
+      0 0 10px hsl(var(--online-green));
     margin-right: 8px;
     animation: pulse-dot 2s infinite;
   }
 
   @keyframes pulse-dot {
-    0%, 100% { opacity: 1; box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
-    50% { opacity: 0.7; box-shadow: 0 0 8px #ff0000, 0 0 16px #ff0000; }
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow:
+        0 0 5px #ff0000,
+        0 0 10px #ff0000;
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow:
+        0 0 8px #ff0000,
+        0 0 16px #ff0000;
+    }
   }
 
   .count-dark {
@@ -804,8 +987,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .mobile-tab-item.active .mobile-tab-icon {
-    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.8)) 
-            drop-shadow(0 0 16px hsl(var(--primary) / 0.5));
+    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.8)) drop-shadow(0 0 16px hsl(var(--primary) / 0.5));
   }
 
   .mobile-tab-icon {
@@ -904,7 +1086,7 @@ h1, h2, h3, h4, h5, h6 {
       padding: 10px 12px;
       gap: 12px;
     }
-    
+
     .icon-dark {
       font-size: 20px;
     }
@@ -1082,7 +1264,9 @@ h1, h2, h3, h4, h5, h6 {
   .icon-grouped {
     font-size: 20px;
     display: inline-block;
-    transition: filter 0.3s ease, transform 0.2s ease;
+    transition:
+      filter 0.3s ease,
+      transform 0.2s ease;
     line-height: 1;
   }
 
@@ -1189,7 +1373,9 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 16px;
     line-height: 1;
     display: inline-block;
-    transition: filter 0.3s ease, transform 0.2s ease;
+    transition:
+      filter 0.3s ease,
+      transform 0.2s ease;
   }
 
   .header-nav-label {
