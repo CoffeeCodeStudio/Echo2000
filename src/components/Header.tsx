@@ -197,9 +197,9 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   return (
     <header className="sticky top-0 z-50">
       {/* Marquee ticker - hidden on very small screens to save space */}
-      <div className="hidden sm:block bg-primary/10 border-b border-border overflow-hidden">
+      <div className="hidden sm:block bg-[#1a4456] border-b border-border overflow-hidden">
         <div className="marquee-container">
-          <span className="marquee-text text-xs text-primary font-medium">
+          <span className="marquee-text text-xs text-[#E6EEF2] font-medium">
             ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Alpha-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
           </span>
         </div>

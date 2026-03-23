@@ -118,108 +118,109 @@ h6 {
 
 @layer base {
   :root {
-    /* 2026 Deep Space Blue + Neon Orange palette */
-    --background: 228 40% 8%;
-    --foreground: 45 20% 95%;
+    /* Retro Lunar palette — muted, eye-friendly */
+    --background: 195 48% 34%;
+    --foreground: 197 55% 14%;
 
-    --card: 228 35% 12%;
-    --card-foreground: 45 20% 95%;
+    --card: 200 24% 92%;
+    --card-foreground: 197 55% 14%;
 
-    --popover: 228 38% 10%;
-    --popover-foreground: 45 20% 95%;
+    --popover: 200 20% 88%;
+    --popover-foreground: 197 55% 14%;
 
-    /* Neon orange accent */
-    --primary: 28 100% 56%;
-    --primary-foreground: 228 40% 6%;
+    /* Lunar orange accent */
+    --primary: 14 85% 44%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Soft purple accent */
-    --secondary: 265 35% 30%;
-    --secondary-foreground: 45 20% 95%;
+    /* Soft teal accent */
+    --secondary: 195 40% 28%;
+    --secondary-foreground: 200 24% 92%;
 
-    --muted: 228 28% 18%;
-    --muted-foreground: 225 15% 55%;
+    --muted: 200 18% 82%;
+    --muted-foreground: 197 30% 40%;
 
-    /* Pastel sky accent */
-    --accent: 200 65% 58%;
-    --accent-foreground: 228 40% 6%;
+    /* Sky accent */
+    --accent: 197 37% 51%;
+    --accent-foreground: 197 55% 14%;
 
     --destructive: 0 65% 50%;
-    --destructive-foreground: 45 20% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 228 22% 20%;
-    --input: 228 28% 16%;
-    --ring: 28 100% 56%;
+    --border: 197 37% 51%;
+    --input: 200 20% 86%;
+    --ring: 14 85% 44%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Status colors */
     --online-green: 145 65% 42%;
     --away-orange: 32 85% 55%;
     --busy-red: 0 60% 50%;
-    --offline-gray: 225 15% 45%;
+    --offline-gray: 200 10% 55%;
 
-    --glow-primary: 28 100% 56%;
-    --glow-accent: 200 65% 58%;
+    --glow-primary: 14 85% 44%;
+    --glow-accent: 197 37% 51%;
     --glow-online: 145 65% 42%;
 
-    /* Deep space gradient */
-    --gradient-start: 228 42% 10%;
-    --gradient-mid: 250 38% 14%;
-    --gradient-end: 270 32% 12%;
+    /* Gradient tokens (unused but kept) */
+    --gradient-start: 195 48% 30%;
+    --gradient-mid: 195 48% 34%;
+    --gradient-end: 195 50% 26%;
 
     /* Pastel warm tones */
     --pastel-peach: 20 80% 80%;
     --pastel-lavender: 260 50% 78%;
     --pastel-mint: 165 40% 75%;
 
-    --chat-bubble-self: 28 45% 22%;
-    --chat-bubble-other: 228 28% 18%;
+    --chat-bubble-self: 14 40% 30%;
+    --chat-bubble-other: 200 18% 82%;
 
-    --sidebar-background: 228 35% 10%;
-    --sidebar-foreground: 45 20% 92%;
-    --sidebar-primary: 28 100% 56%;
-    --sidebar-primary-foreground: 228 40% 6%;
-    --sidebar-accent: 265 35% 30%;
-    --sidebar-accent-foreground: 45 20% 95%;
-    --sidebar-border: 228 22% 18%;
-    --sidebar-ring: 28 100% 56%;
+    --sidebar-background: 195 50% 22%;
+    --sidebar-foreground: 200 24% 92%;
+    --sidebar-primary: 14 85% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 195 40% 28%;
+    --sidebar-accent-foreground: 200 24% 92%;
+    --sidebar-border: 197 37% 51%;
+    --sidebar-ring: 14 85% 44%;
 
-    /* Glassmorphism tokens */
-    --glass-bg: 228 35% 14% / 0.6;
-    --glass-border: 0 0% 100% / 0.08;
-    --glass-highlight: 0 0% 100% / 0.04;
-    --glass-blur: 16px;
+    /* Glass tokens — now solid retro */
+    --glass-bg: 200 24% 92% / 0.95;
+    --glass-border: 197 37% 51%;
+    --glass-highlight: 0 0% 100% / 0.1;
+    --glass-blur: 0px;
 
     /* Bento tokens */
-    --bento-radius: 1.5rem;
+    --bento-radius: 0.5rem;
     --bento-gap: 0.75rem;
 
     /* Lunar theme tokens */
     --lunar-bg: 195 48% 34%;
     --lunar-box-border: 197 37% 51%;
-    --lunar-box-bg: 0 0% 100% / 0.08;
+    --lunar-box-bg: 200 24% 92%;
   }
 
+  /* Dark mode inherits same palette */
   .dark {
-    --background: 228 40% 8%;
-    --foreground: 45 20% 95%;
-    --card: 228 35% 12%;
-    --card-foreground: 45 20% 95%;
-    --popover: 228 38% 10%;
-    --popover-foreground: 45 20% 95%;
-    --primary: 28 100% 56%;
-    --primary-foreground: 228 40% 6%;
-    --secondary: 265 35% 30%;
-    --secondary-foreground: 45 20% 95%;
-    --muted: 228 28% 18%;
-    --muted-foreground: 225 15% 55%;
-    --accent: 200 65% 58%;
-    --accent-foreground: 228 40% 6%;
+    --background: 195 48% 34%;
+    --foreground: 197 55% 14%;
+    --card: 200 24% 92%;
+    --card-foreground: 197 55% 14%;
+    --popover: 200 20% 88%;
+    --popover-foreground: 197 55% 14%;
+    --primary: 14 85% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 195 40% 28%;
+    --secondary-foreground: 200 24% 92%;
+    --muted: 200 18% 82%;
+    --muted-foreground: 197 30% 40%;
+    --accent: 197 37% 51%;
+    --accent-foreground: 197 55% 14%;
     --destructive: 0 65% 50%;
-    --destructive-foreground: 45 20% 98%;
-    --border: 228 22% 20%;
-    --input: 228 28% 16%;
-    --ring: 28 100% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 197 37% 51%;
+    --input: 200 20% 86%;
+    --ring: 14 85% 44%;
   }
 
   /* Clear View mode — disables heavy effects for accessibility */
@@ -247,21 +248,9 @@ h6 {
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: "Inter", system-ui, sans-serif;
-    background-image: url("@/assets/retro-pixel-bg.png");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-blend-mode: soft-light;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* Fix background-attachment: fixed on iOS */
-  @supports (-webkit-touch-callout: none) {
-    body {
-      background-attachment: scroll;
-    }
   }
 
   h1,
@@ -270,7 +259,8 @@ h6 {
   h4,
   h5,
   h6 {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
+    font-weight: 700;
   }
 }
 
@@ -365,13 +355,14 @@ h6 {
     background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 50%, hsl(var(--accent) / 0.1) 100%);
   }
 
-  /* ===== Lunar Box Card ===== */
+  /* ===== Retro Box Card ===== */
   .glass-card {
-    background: hsl(var(--lunar-box-bg));
-    border: 1px solid hsl(var(--lunar-box-border));
-    border-radius: 8px;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.08);
   }
 
   .glass-card::before {
@@ -380,7 +371,7 @@ h6 {
 
   .glass-card:hover {
     transform: none;
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 hsl(0 0% 0% / 0.08);
   }
 
   /* Lunar orange gradient header for boxes */
@@ -388,23 +379,23 @@ h6 {
     background: linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%);
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid #8a1008;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
-  /* Pressable micro-interaction */
+  /* Pressable — subtle retro feel */
   .pressable {
-    transition:
-      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.15s ease;
+    transition: all 0.1s ease;
     cursor: pointer;
   }
   .pressable:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transform: none;
+    box-shadow: inset 0 -1px 0 hsl(0 0% 0% / 0.1);
   }
   .pressable:active {
-    transform: translateY(1px) scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px);
+    box-shadow: inset 0 1px 2px hsl(0 0% 0% / 0.2);
   }
 
   /* Retro gradient background */
@@ -696,15 +687,15 @@ h6 {
 
   /* ========== DARK NAVBAR STYLES WITH ORANGE THEME ========== */
   .navbar-dark {
-    background-color: hsl(230 35% 8%);
+    background-color: #1e4e62;
     display: flex;
     flex-wrap: nowrap;
     gap: 4px;
     padding: 8px 10px;
-    border-bottom: 3px solid hsl(var(--primary));
+    border-bottom: 2px solid hsl(var(--border));
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 0 rgba(0, 0, 0, 0.15);
     overflow: hidden;
   }
 
@@ -908,9 +899,10 @@ h6 {
   .status-box-dark {
     display: flex;
     align-items: center;
-    color: hsl(var(--foreground));
+    color: #E6EEF2;
     font-weight: bold;
     font-size: 12px;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .online-dot-dark {
@@ -948,11 +940,9 @@ h6 {
 
   /* ========== MOBILE TAB BAR (MINIMAL) ========== */
   .mobile-tab-bar {
-    background: hsl(var(--background) / 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid hsl(var(--border) / 0.3);
-    box-shadow: 0 -4px 30px hsl(0 0% 0% / 0.15);
+    background: #1e4e62;
+    border-top: 1px solid hsl(var(--border));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
   }
 
   .mobile-tab-item {
@@ -1282,13 +1272,14 @@ h6 {
   .alpha-badge {
     font-size: 10px;
     font-weight: 700;
-    color: white;
+    color: #E6EEF2;
     background: transparent;
-    border: 1px solid white;
+    border: 1px solid #5A94AB;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 2px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   /* ========== LAJV TICKER ROW ========== */
@@ -1296,11 +1287,14 @@ h6 {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 16px;
-    background: linear-gradient(90deg, hsl(230 35% 10%) 0%, hsl(230 30% 14%) 50%, hsl(230 35% 10%) 100%);
-    border-bottom: 1px solid hsl(var(--primary) / 0.3);
-    min-height: 44px;
+    padding: 6px 16px;
+    background: #1a4456;
+    border-bottom: 1px solid hsl(var(--border));
+    border-top: 1px solid rgba(255,255,255,0.08);
+    min-height: 36px;
     flex-wrap: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .lajv-ticker-row > * {
@@ -1315,7 +1309,7 @@ h6 {
   @media (min-width: 768px) {
     .lajv-ticker-row {
       gap: 16px;
-      padding: 10px 24px;
+      padding: 8px 24px;
     }
   }
 
@@ -1328,29 +1322,31 @@ h6 {
     justify-content: center;
     padding: 4px 8px;
     min-width: 40px;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
-    color: hsl(var(--foreground) / 0.6);
-    transition: all 0.2s ease;
+    color: hsl(0 0% 100% / 0.65);
+    transition: all 0.15s ease;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .header-nav-item:hover {
-    color: hsl(var(--primary));
-    background: hsl(var(--primary) / 0.15);
-    transform: translateY(-1px);
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    transform: none;
   }
 
   .header-nav-item:hover .header-nav-icon {
-    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.6));
+    filter: none;
   }
 
   .header-nav-item.active {
-    color: hsl(var(--primary));
-    background: hsl(var(--primary) / 0.2);
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    border-bottom: 2px solid hsl(var(--primary));
   }
 
   .header-nav-item.has-notice {
-    color: hsl(var(--foreground));
+    color: hsl(0 0% 100% / 0.9);
   }
 
   .header-nav-icon {
@@ -1452,12 +1448,14 @@ h6 {
     flex-direction: column;
     width: 200px;
     min-width: 200px;
-    background: hsl(230 35% 10%);
-    border-right: 2px solid hsl(var(--primary) / 0.4);
+    background: #1a4456;
+    border-right: 1px solid hsl(var(--border));
     overflow-y: auto;
     overflow-x: hidden;
     gap: 0;
     padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0,0,0,0.15);
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   @media (min-width: 1280px) {
@@ -1468,13 +1466,13 @@ h6 {
   }
 
   .retro-sidebar-box {
-    border-bottom: 1px solid hsl(230 25% 20%);
+    border-bottom: 1px solid hsl(var(--border));
     padding: 10px;
-    background: hsl(230 30% 12%);
+    background: #1e4e62;
   }
 
   .retro-sidebar-box:hover {
-    background: hsl(230 30% 14%);
+    background: #225a70;
   }
 
   .retro-sidebar-user {
@@ -1483,17 +1481,17 @@ h6 {
     gap: 10px;
     cursor: pointer;
     padding: 12px 10px;
-    background: linear-gradient(135deg, hsl(230 30% 14%) 0%, hsl(var(--primary) / 0.08) 100%);
-    border-bottom: 2px solid hsl(var(--primary) / 0.3);
+    background: #1a4456;
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   .retro-sidebar-user:hover {
-    background: linear-gradient(135deg, hsl(230 30% 16%) 0%, hsl(var(--primary) / 0.15) 100%);
+    background: #1e4e62;
   }
 
   .retro-sidebar-status {
     padding: 8px 10px;
-    background: hsl(230 35% 8%);
+    background: #163c4d;
   }
 
   .retro-sidebar-group-label {
@@ -1517,15 +1515,16 @@ h6 {
     align-items: center;
     gap: 8px;
     padding: 8px 8px;
-    border-radius: 6px;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.15s ease;
-    color: hsl(var(--foreground));
+    color: #E6EEF2;
     border: 1px solid transparent;
     background: transparent;
     width: 100%;
     text-align: left;
     font-size: 13px;
+    font-family: "Trebuchet MS", "Lucida Grande", sans-serif;
   }
 
   .retro-sidebar-item.inactive {
@@ -1533,21 +1532,21 @@ h6 {
   }
 
   .retro-sidebar-item:hover {
-    background: hsl(var(--primary) / 0.15);
-    border-color: hsl(var(--primary) / 0.25);
+    background: rgba(255,255,255,0.08);
+    border-color: hsl(var(--border));
     opacity: 1;
   }
 
   .retro-sidebar-item.active {
-    background: hsl(var(--primary) / 0.2);
-    border-color: hsl(var(--primary) / 0.4);
-    color: hsl(var(--primary));
+    background: rgba(255,255,255,0.12);
+    border-color: hsl(var(--border));
+    color: #fff;
     opacity: 1;
   }
 
   .retro-sidebar-item.has-notice {
     opacity: 1;
-    color: hsl(var(--foreground));
+    color: #E6EEF2;
   }
 
   .retro-sidebar-emoji {

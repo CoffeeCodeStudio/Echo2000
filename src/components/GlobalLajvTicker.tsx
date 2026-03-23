@@ -46,13 +46,13 @@ export function GlobalLajvTicker() {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           )}
         </div>
-        <span className="font-bold text-xs text-primary uppercase tracking-wide">LAJV</span>
+        <span className="font-bold text-xs uppercase tracking-wide" style={{ color: '#E6EEF2' }}>LAJV</span>
       </div>
 
       {/* Message display area */}
       <div className="flex-1 min-w-0">
         {messages.length === 0 ? (
-          <span className="text-sm text-muted-foreground italic">
+          <span className="text-sm italic" style={{ color: '#8aaab8' }}>
             Just nu finns inga aktiva lajvsändningar
           </span>
         ) : currentMessage ? (
@@ -63,10 +63,10 @@ export function GlobalLajvTicker() {
               size="sm"
               className="w-6 h-6 shrink-0"
             />
-            <span className="font-semibold text-foreground shrink-0 max-w-[100px] truncate">
+            <span className="font-semibold shrink-0 max-w-[100px] truncate" style={{ color: '#E6EEF2' }}>
               {currentMessage.username}:
             </span>
-            <span className="text-foreground truncate flex-1 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+            <span className="truncate flex-1" style={{ color: '#ccd5d8' }}>
               {replaceEmoteCodes(currentMessage.message)}
             </span>
             {messages.length > 1 && (
