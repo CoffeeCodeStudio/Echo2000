@@ -118,86 +118,86 @@ h6 {
 
 @layer base {
   :root {
-    /* 2026 Deep Space Blue + Neon Orange palette */
-    --background: 228 40% 8%;
-    --foreground: 45 20% 95%;
+    /* Retro Lunar palette — muted, eye-friendly */
+    --background: 195 48% 34%;
+    --foreground: 197 55% 14%;
 
-    --card: 228 35% 12%;
-    --card-foreground: 45 20% 95%;
+    --card: 200 24% 92%;
+    --card-foreground: 197 55% 14%;
 
-    --popover: 228 38% 10%;
-    --popover-foreground: 45 20% 95%;
+    --popover: 200 20% 88%;
+    --popover-foreground: 197 55% 14%;
 
-    /* Neon orange accent */
-    --primary: 28 100% 56%;
-    --primary-foreground: 228 40% 6%;
+    /* Lunar orange accent */
+    --primary: 14 85% 44%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Soft purple accent */
-    --secondary: 265 35% 30%;
-    --secondary-foreground: 45 20% 95%;
+    /* Soft teal accent */
+    --secondary: 195 40% 28%;
+    --secondary-foreground: 200 24% 92%;
 
-    --muted: 228 28% 18%;
-    --muted-foreground: 225 15% 55%;
+    --muted: 200 18% 82%;
+    --muted-foreground: 197 30% 40%;
 
-    /* Pastel sky accent */
-    --accent: 200 65% 58%;
-    --accent-foreground: 228 40% 6%;
+    /* Sky accent */
+    --accent: 197 37% 51%;
+    --accent-foreground: 197 55% 14%;
 
     --destructive: 0 65% 50%;
-    --destructive-foreground: 45 20% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 228 22% 20%;
-    --input: 228 28% 16%;
-    --ring: 28 100% 56%;
+    --border: 197 37% 51%;
+    --input: 200 20% 86%;
+    --ring: 14 85% 44%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Status colors */
     --online-green: 145 65% 42%;
     --away-orange: 32 85% 55%;
     --busy-red: 0 60% 50%;
-    --offline-gray: 225 15% 45%;
+    --offline-gray: 200 10% 55%;
 
-    --glow-primary: 28 100% 56%;
-    --glow-accent: 200 65% 58%;
+    --glow-primary: 14 85% 44%;
+    --glow-accent: 197 37% 51%;
     --glow-online: 145 65% 42%;
 
-    /* Deep space gradient */
-    --gradient-start: 228 42% 10%;
-    --gradient-mid: 250 38% 14%;
-    --gradient-end: 270 32% 12%;
+    /* Gradient tokens (unused but kept) */
+    --gradient-start: 195 48% 30%;
+    --gradient-mid: 195 48% 34%;
+    --gradient-end: 195 50% 26%;
 
     /* Pastel warm tones */
     --pastel-peach: 20 80% 80%;
     --pastel-lavender: 260 50% 78%;
     --pastel-mint: 165 40% 75%;
 
-    --chat-bubble-self: 28 45% 22%;
-    --chat-bubble-other: 228 28% 18%;
+    --chat-bubble-self: 14 40% 30%;
+    --chat-bubble-other: 200 18% 82%;
 
-    --sidebar-background: 228 35% 10%;
-    --sidebar-foreground: 45 20% 92%;
-    --sidebar-primary: 28 100% 56%;
-    --sidebar-primary-foreground: 228 40% 6%;
-    --sidebar-accent: 265 35% 30%;
-    --sidebar-accent-foreground: 45 20% 95%;
-    --sidebar-border: 228 22% 18%;
-    --sidebar-ring: 28 100% 56%;
+    --sidebar-background: 195 50% 22%;
+    --sidebar-foreground: 200 24% 92%;
+    --sidebar-primary: 14 85% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 195 40% 28%;
+    --sidebar-accent-foreground: 200 24% 92%;
+    --sidebar-border: 197 37% 51%;
+    --sidebar-ring: 14 85% 44%;
 
-    /* Glassmorphism tokens */
-    --glass-bg: 228 35% 14% / 0.6;
-    --glass-border: 0 0% 100% / 0.08;
-    --glass-highlight: 0 0% 100% / 0.04;
-    --glass-blur: 16px;
+    /* Glass tokens — now solid retro */
+    --glass-bg: 200 24% 92% / 0.95;
+    --glass-border: 197 37% 51%;
+    --glass-highlight: 0 0% 100% / 0.1;
+    --glass-blur: 0px;
 
     /* Bento tokens */
-    --bento-radius: 1.5rem;
+    --bento-radius: 0.5rem;
     --bento-gap: 0.75rem;
 
     /* Lunar theme tokens */
     --lunar-bg: 195 48% 34%;
     --lunar-box-border: 197 37% 51%;
-    --lunar-box-bg: 0 0% 100% / 0.08;
+    --lunar-box-bg: 200 24% 92%;
   }
 
   .dark {
