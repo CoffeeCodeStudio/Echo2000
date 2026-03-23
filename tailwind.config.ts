@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Space Grotesk", "sans-serif"],
+        sans: ["Trebuchet MS", "Lucida Grande", "sans-serif"],
+        display: ["Trebuchet MS", "Lucida Grande", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
