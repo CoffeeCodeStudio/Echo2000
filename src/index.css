@@ -1,21 +1,5 @@
 @tailwind base;
 
-/* Lägg till detta i din index.css eller App.css */
-body,
-button,
-input,
-select,
-textarea {
-  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif !important;
-  letter-spacing: -0.02em; /* Gör den lite mer kompakt som förr */
-}
-
-h1,
-.logo-text {
-  font-family: "Impact", "Arial Black", sans-serif;
-  text-transform: uppercase;
-}
-
 /* MSN Shake animation */
 @keyframes shake {
   0%,
