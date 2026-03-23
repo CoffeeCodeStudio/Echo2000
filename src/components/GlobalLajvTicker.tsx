@@ -52,7 +52,7 @@ export function GlobalLajvTicker() {
       {/* Message display area */}
       <div className="flex-1 min-w-0">
         {messages.length === 0 ? (
-          <span className="text-sm text-muted-foreground italic">
+          <span className="text-sm italic" style={{ color: '#8aaab8' }}>
             Just nu finns inga aktiva lajvsändningar
           </span>
         ) : currentMessage ? (
