@@ -46,7 +46,7 @@ export function GlobalLajvTicker() {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           )}
         </div>
-        <span className="font-bold text-xs text-primary uppercase tracking-wide">LAJV</span>
+        <span className="font-bold text-xs uppercase tracking-wide" style={{ color: '#E6EEF2' }}>LAJV</span>
       </div>
 
       {/* Message display area */}
