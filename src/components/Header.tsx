@@ -360,6 +360,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
+      {/* Friend Request Panel */}
+      <FriendRequestPanel open={friendRequestOpen} onOpenChange={setFriendRequestOpen} />
     </header>);
 
 }
