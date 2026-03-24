@@ -38,6 +38,7 @@ export default function Index() {
 
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { user } = useAuth();
