@@ -6,7 +6,7 @@ import { HomeContent } from "@/components/HomeContent";
 import { ProfilePage } from "@/components/ProfilePage";
 // Guestbook import removed - unified into ProfilePage
 import { Mailbox } from "@/components/social/Mailbox";
-import { FriendsList } from "@/components/friends/FriendsList";
+import { ProfileFriendsTab } from "@/components/ProfileFriendsTab";
 import { MemberGrid } from "@/components/social/MemberGrid";
 import { Klotterplanket } from "@/components/social/Klotterplanket";
 import { GamesSection } from "@/components/games/GamesSection";
@@ -136,11 +136,11 @@ export default function Index() {
         return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
 
       case "vanner":
-        return (
-          <div className="flex-1 flex flex-col overflow-y-auto scrollbar-nostalgic">
-            <FriendsList />
+        return user ? (
+          <div className="flex-1 flex flex-col overflow-y-auto scrollbar-nostalgic p-2">
+            <ProfileFriendsTab userId={user.id} />
           </div>
-        );
+        ) : null;
 
       case "folk":
         return <MemberGrid />;
