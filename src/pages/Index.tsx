@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 
 import { ChatWindow } from "@/components/chat/ChatWindow";
