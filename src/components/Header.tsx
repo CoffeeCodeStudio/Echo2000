@@ -12,6 +12,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
 import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { FriendRequestPanel } from "./friends/FriendRequestPanel";
 
 type Tab =
 "hem" |
