@@ -1,7 +1,7 @@
 /**
  * @module ProfileFriendsTab
  * 2000s-style dense friends page with raw HTML tables.
- * No cards, no rounded modern components.
+ * Uses Lunar retro design system from index.css.
  */
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
@@ -124,39 +124,39 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="flex justify-center py-4">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
       </div>
     );
   }
 
   if (friends.length === 0) {
     return (
-      <p className="text-center text-muted-foreground py-8">
+      <p className="text-center text-muted-foreground py-4 text-xs">
         🌟 Inga vänner ännu
       </p>
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row lg:gap-3 gap-4">
+    <div className="flex flex-col lg:flex-row lg:gap-2 gap-2">
       {/* ── LEFT COLUMN ── */}
       <div className="flex-1 min-w-0">
         {/* BÄSTA VÄNNER */}
         <BestFriendsRow bestFriends={bestFriends} onNavigate={goToProfile} />
 
         {/* FRIENDS TABLE */}
-        <div className="border border-primary/50 mt-2">
+        <div className="border border-border mt-1 bg-card">
           {/* Table header — desktop/tablet */}
           <table className="w-full border-collapse hidden sm:table">
             <thead>
-              <tr className="bg-muted/40 border-b border-primary/50">
-                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-10">Avatar</th>
-                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-1 py-1">Användarnamn</th>
-                <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-16">Online</th>
-                <th className="text-left text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-28 hidden md:table-cell">Senast inloggad</th>
+              <tr className="bg-muted border-b border-border">
+                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-10">Bild</th>
+                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5">Namn</th>
+                <th className="text-center text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-14">Status</th>
+                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-24 hidden md:table-cell">Senast</th>
                 {isOwnProfile && (
-                  <th className="text-center text-[11px] font-bold text-muted-foreground uppercase px-1 py-1 w-14">Bästis</th>
+                  <th className="text-center text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-12">Bästis</th>
                 )}
               </tr>
             </thead>
@@ -180,27 +180,29 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
           <div className="sm:hidden">
             {Object.entries(grouped).map(([category, catFriends]) => (
               <div key={category}>
-                <div className="bg-primary px-2 py-1">
-                  <span className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>{category}</span>
+                <div className="lunar-box-header px-2 py-1">
+                  <span className="text-[11px] font-bold uppercase">{category}</span>
                 </div>
-                {catFriends.map((friend) => {
+                {catFriends.map((friend, i) => {
                   const status = getUserStatus(friend.id);
                   return (
                     <div
                       key={friend.id}
-                      className="flex items-center gap-2 px-2 py-1 border-b border-border/30 cursor-pointer hover:bg-muted/20"
+                      className={cn(
+                        "flex items-center gap-2 px-1 py-0.5 border-b border-border/40 cursor-pointer hover:bg-muted/60",
+                        i % 2 === 0 ? "bg-card" : "bg-muted/30"
+                      )}
                       onClick={() => goToProfile(friend.username)}
                     >
                       <img
                         src={friend.avatar_url || "/placeholder.svg"}
                         alt={friend.username}
-                        className="w-7 h-7 border border-primary/30 object-cover"
-                        style={{ imageRendering: "auto" }}
+                        className="w-7 h-7 border border-border object-cover"
                       />
-                      <span className="text-xs font-medium text-foreground flex-1 truncate">
+                      <span className="text-[11px] font-medium text-foreground flex-1 truncate">
                         {friend.username}
                       </span>
-                      <StatusIndicator status={status} size="sm" />
+                      <OnlineDot status={status} />
                     </div>
                   );
                 })}
@@ -211,10 +213,23 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
       </div>
 
       {/* ── RIGHT SIDEBAR ── */}
-      <div className="lg:w-64 shrink-0">
+      <div className="lg:w-56 shrink-0">
         <PersonalityBox userId={userId} />
       </div>
     </div>
+  );
+}
+
+/* ═══ ONLINE DOT (10px circle) ═══ */
+
+function OnlineDot({ status }: { status: UserStatus }) {
+  return (
+    <span
+      className={cn(
+        "inline-block w-[10px] h-[10px] rounded-full shrink-0",
+        status === "online" ? "bg-green-500" : "bg-muted-foreground/40"
+      )}
+    />
   );
 }
 
@@ -232,51 +247,54 @@ function BestFriendsRow({
     scrollRef.current?.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
 
   return (
-    <div className="border border-primary/50 p-2">
-      <h3 className="text-sm font-bold text-foreground mb-2" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
-        Bästa Vänner
-      </h3>
-      {bestFriends.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground">Inga bästa vänner markerade.</p>
-      ) : (
-        <div className="relative">
-          {bestFriends.length > 5 && (
-            <button
-              onClick={() => scroll("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background border border-primary/40 p-0.5"
-            >
-              <ChevronLeft className="w-4 h-4 text-primary" />
-            </button>
-          )}
-          <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-none">
-            {bestFriends.map((f) => (
+    <div className="border border-border bg-card">
+      <div className="lunar-box-header px-2 py-1">
+        <h3 className="text-[11px] font-bold uppercase">
+          ⭐ Bästa Vänner
+        </h3>
+      </div>
+      <div className="p-1.5">
+        {bestFriends.length === 0 ? (
+          <p className="text-[10px] text-muted-foreground px-1">Inga bästa vänner markerade.</p>
+        ) : (
+          <div className="relative">
+            {bestFriends.length > 5 && (
               <button
-                key={f.id}
-                onClick={() => onNavigate(f.username)}
-                className="shrink-0 flex flex-col items-center gap-1 hover:opacity-80"
+                onClick={() => scroll("left")}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card border border-border p-0.5"
               >
-                <img
-                  src={f.avatar_url || "/placeholder.svg"}
-                  alt={f.username}
-                  className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-primary object-cover"
-                  style={{ imageRendering: "auto" }}
-                />
-                <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center">
-                  {f.username}
-                </span>
+                <ChevronLeft className="w-3 h-3 text-primary" />
               </button>
-            ))}
+            )}
+            <div ref={scrollRef} className="flex gap-1.5 overflow-x-auto scrollbar-none">
+              {bestFriends.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => onNavigate(f.username)}
+                  className="shrink-0 flex flex-col items-center gap-0.5 hover:opacity-80"
+                >
+                  <img
+                    src={f.avatar_url || "/placeholder.svg"}
+                    alt={f.username}
+                    className="w-16 h-16 border-2 border-primary object-cover"
+                  />
+                  <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center leading-tight">
+                    {f.username}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {bestFriends.length > 5 && (
+              <button
+                onClick={() => scroll("right")}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card border border-border p-0.5"
+              >
+                <ChevronRight className="w-3 h-3 text-primary" />
+              </button>
+            )}
           </div>
-          {bestFriends.length > 5 && (
-            <button
-              onClick={() => scroll("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background border border-primary/40 p-0.5"
-            >
-              <ChevronRight className="w-4 h-4 text-primary" />
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -302,34 +320,36 @@ function CategoryGroup({
 }) {
   return (
     <>
-      {/* Category header row */}
+      {/* Category header row — uses lunar-box-header gradient */}
       <tr>
-        <td colSpan={colSpan} className="bg-primary px-2 py-1">
-          <span className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+        <td colSpan={colSpan} className="lunar-box-header px-2 py-0.5">
+          <span className="text-[11px] font-bold uppercase">
             {category}
           </span>
         </td>
       </tr>
-      {friends.map((friend) => {
+      {friends.map((friend, i) => {
         const status = getUserStatus(friend.id);
         const genderAge = [friend.gender, friend.age].filter(Boolean).join(", ");
         return (
           <tr
             key={friend.id}
-            className="border-b border-border/20 hover:bg-muted/15"
+            className={cn(
+              "border-b border-border/30 hover:bg-muted/50",
+              i % 2 === 0 ? "bg-card" : "bg-muted/25"
+            )}
           >
-            <td className="px-1 py-1">
+            <td className="px-1 py-0.5">
               <img
                 src={friend.avatar_url || "/placeholder.svg"}
                 alt={friend.username}
-                className="w-8 h-8 border border-primary/30 cursor-pointer object-cover"
+                className="w-7 h-7 border border-border cursor-pointer object-cover"
                 onClick={() => onNavigate(friend.username)}
-                style={{ imageRendering: "auto" }}
               />
             </td>
-            <td className="px-1 py-1">
+            <td className="px-1 py-0.5">
               <span
-                className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+                className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
                 onClick={() => onNavigate(friend.username)}
               >
                 {friend.username}
@@ -338,23 +358,23 @@ function CategoryGroup({
                 <span className="text-[10px] text-muted-foreground ml-1">({genderAge})</span>
               )}
             </td>
-            <td className="px-1 py-1 text-center">
+            <td className="px-1 py-0.5 text-center">
               <div className="flex justify-center">
-                <StatusIndicator status={status} size="sm" />
+                <OnlineDot status={status} />
               </div>
             </td>
-            <td className="px-1 py-1 hidden md:table-cell">
-              <span className="text-[11px] text-muted-foreground">
+            <td className="px-1 py-0.5 hidden md:table-cell">
+              <span className="text-[10px] text-muted-foreground">
                 {friend.last_seen ? formatTimeAgo(friend.last_seen) : "–"}
               </span>
             </td>
             {isOwnProfile && (
-              <td className="px-1 py-1 text-center">
+              <td className="px-1 py-0.5 text-center">
                 <input
                   type="checkbox"
                   checked={friend.is_best_friend}
                   onChange={() => onToggleBestFriend(friend.friendshipId, friend.is_best_friend)}
-                  className="w-3.5 h-3.5 accent-[hsl(var(--primary))] cursor-pointer"
+                  className="w-3 h-3 accent-[hsl(var(--primary))] cursor-pointer"
                 />
               </td>
             )}
@@ -371,13 +391,13 @@ function PersonalityBox({ userId }: { userId: string }) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading } = useFriendVotes(userId);
 
   return (
-    <div className="border border-primary/50">
-      <div className="bg-primary px-2 py-1">
-        <h3 className="text-[11px] font-bold text-white uppercase" style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
-          Personlighet
+    <div className="border border-border bg-card">
+      <div className="lunar-box-header px-2 py-1">
+        <h3 className="text-[11px] font-bold uppercase">
+          🎭 Personlighet
         </h3>
       </div>
-      <div className="p-2 space-y-1">
+      <div className="p-1.5 space-y-0.5">
         {VOTE_CATEGORIES.map((cat) => {
           const count = voteCounts[cat] || 0;
           const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
@@ -388,33 +408,34 @@ function PersonalityBox({ userId }: { userId: string }) {
               onClick={() => toggleVote(cat)}
               disabled={loading}
               className={cn(
-                "w-full flex items-center gap-2 text-left py-0.5 hover:opacity-80 transition-opacity",
+                "w-full flex items-center gap-1.5 text-left py-px hover:opacity-80 transition-opacity",
                 loading && "opacity-50 cursor-not-allowed"
               )}
             >
               <span className={cn(
-                "text-[11px] w-24 shrink-0 truncate",
+                "text-[10px] w-20 shrink-0 truncate leading-tight",
                 voted ? "text-primary font-bold" : "text-foreground"
-              )} style={{ fontFamily: "Tahoma, Verdana, sans-serif" }}>
+              )}>
                 {cat}
               </span>
-              <div className="flex-1 h-3 bg-muted/40 overflow-hidden">
+              <div className="flex-1 h-2.5 bg-muted/50 border border-border/40 overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${pct}%` }}
+                  className="h-full transition-all duration-300"
+                  style={{
+                    width: `${Math.max(pct, 2)}%`,
+                    background: "linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%)",
+                  }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground w-8 text-right font-mono shrink-0">
+              <span className="text-[9px] text-muted-foreground w-7 text-right font-mono shrink-0">
                 {pct}%
               </span>
             </button>
           );
         })}
-        {totalVotes > 0 && (
-          <p className="text-[10px] text-muted-foreground text-right pt-1">
-            {totalVotes} röst{totalVotes !== 1 ? "er" : ""} totalt
-          </p>
-        )}
+        <p className="text-[9px] text-muted-foreground text-right pt-0.5">
+          {totalVotes} röst{totalVotes !== 1 ? "er" : ""} totalt
+        </p>
       </div>
     </div>
   );
