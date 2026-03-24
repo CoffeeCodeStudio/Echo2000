@@ -37,6 +37,7 @@ interface HeaderProps {
 
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [friendRequestOpen, setFriendRequestOpen] = useState(false);
 
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
