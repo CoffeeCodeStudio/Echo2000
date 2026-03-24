@@ -6,7 +6,7 @@ import { HomeContent } from "@/components/HomeContent";
 import { ProfilePage } from "@/components/ProfilePage";
 // Guestbook import removed - unified into ProfilePage
 import { Mailbox } from "@/components/social/Mailbox";
-import { FriendsList } from "@/components/friends/FriendsList";
+import { ProfileFriendsTab } from "@/components/ProfileFriendsTab";
 import { MemberGrid } from "@/components/social/MemberGrid";
 import { Klotterplanket } from "@/components/social/Klotterplanket";
 import { GamesSection } from "@/components/games/GamesSection";
