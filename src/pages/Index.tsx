@@ -47,7 +47,20 @@ export default function Index() {
   const { setActivity } = usePresence();
   const { markGuestbookRead, markVisitorsRead } = useNotifications();
 
-  // Mark guestbook entries as read when the user opens the guestbook tab
+  // Fetch user role
+  useEffect(() => {
+    if (!user) { setUserRole(null); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        const role = data?.[0]?.role ?? null;
+        setUserRole(role);
+      });
+  }, [user]);
+
+
   useEffect(() => {
     if (activeTab === 'gastbok' && user) {
       markGuestbookRead();
