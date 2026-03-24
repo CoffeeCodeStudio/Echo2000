@@ -237,6 +237,7 @@ export type Database = {
           category: string
           created_at: string
           friend_id: string
+          how_met: string | null
           id: string
           is_best_friend: boolean
           status: string
@@ -247,6 +248,7 @@ export type Database = {
           category?: string
           created_at?: string
           friend_id: string
+          how_met?: string | null
           id?: string
           is_best_friend?: boolean
           status?: string
@@ -257,6 +259,7 @@ export type Database = {
           category?: string
           created_at?: string
           friend_id?: string
+          how_met?: string | null
           id?: string
           is_best_friend?: boolean
           status?: string

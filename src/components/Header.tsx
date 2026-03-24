@@ -12,6 +12,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { HeaderRadio } from "./HeaderRadio";
 import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { FriendRequestPanel } from "./friends/FriendRequestPanel";
 
 type Tab =
 "hem" |
@@ -36,6 +37,7 @@ interface HeaderProps {
 
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [friendRequestOpen, setFriendRequestOpen] = useState(false);
 
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -172,12 +174,23 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Render compact header nav item
   const renderHeaderNavItem = (item: {id: Tab;label: string;emoji: string;animationClass: string;}) => {
     const hasNotice = getHasNotice(item.id);
+    const isHeart = item.id === "vanner";
+    const pendingCount = counts.pendingFriends;
+
+    const handleClick = () => {
+      if (isHeart && pendingCount > 0) {
+        setFriendRequestOpen(true);
+      } else {
+        onTabChange?.(item.id);
+      }
+    };
+
     return (
       <div
         key={item.id}
-        onClick={() => onTabChange?.(item.id)}
+        onClick={handleClick}
         className={cn(
-          "header-nav-item",
+          "header-nav-item relative",
           activeTab === item.id && "active",
           hasNotice && "has-notice"
         )}
@@ -189,7 +202,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           {item.emoji}
         </span>
         <span className="header-nav-label">{item.label}</span>
-        {hasNotice && <span className="header-nav-dot" />}
+        {isHeart && pendingCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
+            {pendingCount > 9 ? "9+" : pendingCount}
+          </span>
+        )}
+        {hasNotice && !isHeart && <span className="header-nav-dot" />}
       </div>);
 
   };
@@ -342,6 +360,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           </div>
         </div>
       </div>
+      {/* Friend Request Panel */}
+      <FriendRequestPanel open={friendRequestOpen} onOpenChange={setFriendRequestOpen} />
     </header>);
 
 }
