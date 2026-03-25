@@ -26,9 +26,10 @@ serve(async (req) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
   const isScheduler = req.headers.get("x-supabase-scheduler") !== null;
+  const isCronWithAnonKey = authHeader === `Bearer ${anonKey}`;
 
   let isAdmin = false;
-  if (!isServiceRole && !isScheduler && authHeader.startsWith("Bearer ")) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && authHeader.startsWith("Bearer ")) {
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
