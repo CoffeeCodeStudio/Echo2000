@@ -244,6 +244,30 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
         <PersonalityBox userId={userId} isOwnProfile={isOwnProfile} />
       </div>
     </div>
+
+      {/* Confirmation dialog for removing best friend on mobile */}
+      <AlertDialog open={!!pendingRemove} onOpenChange={(open) => { if (!open) setPendingRemove(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ta bort som bästis?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vill du ta bort {pendingRemove?.username} som bästis?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingRemove) {
+                handleToggleBestFriend(pendingRemove.friendshipId, true);
+                setPendingRemove(null);
+              }
+            }}>
+              Ta bort
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
 
