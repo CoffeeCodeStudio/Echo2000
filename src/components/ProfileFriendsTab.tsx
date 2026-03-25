@@ -194,10 +194,10 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                       )}
                       onClick={() => goToProfile(friend.username)}
                     >
-                      <img
-                        src={friend.avatar_url || "/placeholder.svg"}
-                        alt={friend.username}
-                        className="w-7 h-7 border border-border object-cover"
+                      <FriendAvatar
+                        src={friend.avatar_url}
+                        username={friend.username}
+                        size={28}
                       />
                       <span className="text-[11px] font-medium text-foreground flex-1 truncate">
                         {friend.username}
@@ -216,6 +216,55 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
       <div className="lg:w-56 shrink-0">
         <PersonalityBox userId={userId} />
       </div>
+    </div>
+  );
+}
+
+/* ═══ FRIEND AVATAR ═══ */
+
+function FriendAvatar({
+  src,
+  username,
+  size = 28,
+  className = "",
+  onClick,
+}: {
+  src: string | null;
+  username: string;
+  size?: number;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const initial = (username || "?")[0].toUpperCase();
+  const showImg = !!src && !failed;
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "relative flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0 overflow-hidden",
+        onClick && "cursor-pointer",
+        className
+      )}
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {/* Always render the letter as fallback layer */}
+      {(!showImg || !loaded) && <span>{initial}</span>}
+      {/* Render img on top if src exists */}
+      {showImg && (
+        <img
+          src={src}
+          alt={username}
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+          className={cn(
+            "absolute inset-0 w-full h-full object-cover",
+            loaded ? "opacity-100" : "opacity-0"
+          )}
+        />
+      )}
     </div>
   );
 }
@@ -273,10 +322,11 @@ function BestFriendsRow({
                   onClick={() => onNavigate(f.username)}
                   className="shrink-0 flex flex-col items-center gap-0.5 hover:opacity-80"
                 >
-                  <img
-                    src={f.avatar_url || "/placeholder.svg"}
-                    alt={f.username}
-                    className="w-16 h-16 border-2 border-primary object-cover"
+                  <FriendAvatar
+                    src={f.avatar_url}
+                    username={f.username}
+                    size={64}
+                    className="border-2 !border-primary"
                   />
                   <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center leading-tight">
                     {f.username}
@@ -340,10 +390,10 @@ function CategoryGroup({
             )}
           >
             <td className="px-1 py-0.5">
-              <img
-                src={friend.avatar_url || "/placeholder.svg"}
-                alt={friend.username}
-                className="w-7 h-7 border border-border cursor-pointer object-cover"
+              <FriendAvatar
+                src={friend.avatar_url}
+                username={friend.username}
+                size={28}
                 onClick={() => onNavigate(friend.username)}
               />
             </td>
