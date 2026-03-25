@@ -42,6 +42,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   const isOwnProfile = user?.id === userId;
   const [pendingRemove, setPendingRemove] = useState<{ friendshipId: string; username: string } | null>(null);
 
+  useEffect(() => {
     const fetchFriends = async () => {
       setLoading(true);
       try {
