@@ -4,6 +4,7 @@
  */
 import { useRef, useState, useCallback } from "react";
 import { Calendar, Eye, EyeOff } from "lucide-react";
+import { BackgroundPicker } from "./BackgroundPicker";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { parseBBCode } from "@/lib/bbcode";
@@ -81,9 +82,17 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
 
         {isEditing ? (
           <div className="space-y-2">
+            {/* Background Picker */}
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Bakgrundsbild</p>
+              <BackgroundPicker
+                value={editData.presentation_bg_url}
+                onChange={(url) => setEditData({ ...editData, presentation_bg_url: url })}
+              />
+            </div>
+
             {/* BBCode Toolbar */}
             <div className="flex flex-wrap items-center gap-1 bg-muted/30 border border-border rounded p-1.5">
-              {/* Format buttons */}
               {TOOLBAR_BUTTONS.map((btn) => (
                 <button
                   key={btn.label}
@@ -149,7 +158,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
               ))}
 
               <div className="ml-auto flex items-center gap-2">
-                {/* Preview toggle */}
                 <button
                   type="button"
                   onClick={() => setShowPreview(!showPreview)}
@@ -164,8 +172,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
                   {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                   <span className="hidden sm:inline">PREVIEW</span>
                 </button>
-
-                {/* Char counter */}
                 <span className="text-[10px] text-muted-foreground font-mono">
                   {editData.presentation.length}/10000
                 </span>
@@ -188,13 +194,28 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
 
             {/* Live Preview */}
             {showPreview && (
-              <div className="border border-border rounded p-3 bg-muted/20">
-                <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1.5">Förhandsgranskning:</p>
-                <div
-                  className="text-sm text-foreground/90"
-                  style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
-                  dangerouslySetInnerHTML={{ __html: parseBBCode(editData.presentation) }}
-                />
+              <div
+                className="border border-border rounded p-3 relative overflow-hidden"
+                style={editData.presentation_bg_url ? {
+                  backgroundImage: `url(${editData.presentation_bg_url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                } : undefined}
+              >
+                {editData.presentation_bg_url && (
+                  <div className="absolute inset-0 bg-black/50" />
+                )}
+                <div className="relative z-10">
+                  <p className={cn(
+                    "text-[10px] uppercase font-bold mb-1.5",
+                    editData.presentation_bg_url ? "text-white/70" : "text-muted-foreground"
+                  )}>Förhandsgranskning:</p>
+                  <div
+                    className={cn("text-sm", editData.presentation_bg_url ? "text-white" : "text-foreground/90")}
+                    style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(editData.presentation) }}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -202,10 +223,22 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
           <>
             {presentationText ? (
               <div
-                className="text-sm text-foreground/80"
-                style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
-                dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
-              />
+                className={cn("text-sm rounded relative overflow-hidden", displayData.presentation_bg_url ? "p-4" : "")}
+                style={displayData.presentation_bg_url ? {
+                  backgroundImage: `url(${displayData.presentation_bg_url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                } : undefined}
+              >
+                {displayData.presentation_bg_url && (
+                  <div className="absolute inset-0 bg-black/50" />
+                )}
+                <div
+                  className={cn("relative z-10", displayData.presentation_bg_url ? "text-white" : "text-foreground/80")}
+                  style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                  dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
+                />
+              </div>
             ) : (
               <p className="text-sm text-foreground/80">Ingen presentation ännu...</p>
             )}

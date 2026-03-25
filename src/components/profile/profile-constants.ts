@@ -51,6 +51,7 @@ export interface EditableProfileData {
   gender: string;
   interests: string;
   spanar_in: string;
+  presentation_bg_url: string | null;
 }
 
 /** Demo data shown to logged-out visitors. */
@@ -76,6 +77,7 @@ export const demoProfile: EditableProfileData = {
   gender: "Kille",
   interests: "Retro gaming, webbutveckling",
   spanar_in: "Nya vänner",
+  presentation_bg_url: null,
 };
 
 /** Helper to build an {@link EditableProfileData} from a profile row (or defaults). */
@@ -102,5 +104,6 @@ export function toEditableData(profile: Record<string, any> | null): EditablePro
     gender: profile?.gender || "",
     interests: profile?.interests || "",
     spanar_in: profile?.spanar_in || "",
+    presentation_bg_url: profile?.presentation_bg_url ?? null,
   };
 }

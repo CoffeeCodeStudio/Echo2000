@@ -632,6 +632,7 @@ export type Database = {
           personality: string | null
           prefers: string | null
           presentation: string | null
+          presentation_bg_url: string | null
           relationship: string | null
           spanar_in: string | null
           status_message: string | null
@@ -663,6 +664,7 @@ export type Database = {
           personality?: string | null
           prefers?: string | null
           presentation?: string | null
+          presentation_bg_url?: string | null
           relationship?: string | null
           spanar_in?: string | null
           status_message?: string | null
@@ -694,6 +696,7 @@ export type Database = {
           personality?: string | null
           prefers?: string | null
           presentation?: string | null
+          presentation_bg_url?: string | null
           relationship?: string | null
           spanar_in?: string | null
           status_message?: string | null

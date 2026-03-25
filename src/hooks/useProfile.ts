@@ -27,6 +27,7 @@ export interface ProfileData {
   spanar_in: string;
   status_message: string;
   presentation: string;
+  presentation_bg_url: string | null;
   created_at: string;
   updated_at: string;
   last_seen: string | null;
