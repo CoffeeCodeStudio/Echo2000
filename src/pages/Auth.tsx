@@ -45,10 +45,12 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && user) {
+    // Only redirect if the user is logged in AND we're not in the middle of
+    // a registration flow (where we sign-up then immediately sign-out).
+    if (!loading && user && mode !== "register") {
       navigate("/");
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, mode]);
 
   const validateForm = () => {
     const schema = mode === "login" ? loginSchema : registerSchema;
