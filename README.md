@@ -147,4 +147,6 @@ Mer info: [Custom domain-dokumentation](https://docs.lovable.dev/features/custom
 
 ## 📄 Licens
 
+**Proprietär / All rights reserved** — Se [LICENSE](./LICENSE) för detaljer.
+
 Byggt med [Lovable](https://lovable.dev).
