@@ -455,11 +455,11 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
           return (
             <button
               key={cat}
-              onClick={() => toggleVote(cat)}
-              disabled={loading}
+              onClick={() => !isOwnProfile && toggleVote(cat)}
+              disabled={loading || isOwnProfile}
               className={cn(
                 "w-full flex items-center gap-1.5 text-left py-px hover:opacity-80 transition-opacity",
-                loading && "opacity-50 cursor-not-allowed"
+                (loading || isOwnProfile) && "opacity-50 cursor-not-allowed"
               )}
             >
               <span className={cn(
