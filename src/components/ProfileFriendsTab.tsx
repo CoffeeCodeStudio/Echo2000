@@ -3,8 +3,9 @@
  * 2000s-style dense friends page with raw HTML tables.
  * Uses Lunar retro design system from index.css.
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { useFriendVotes, VOTE_CATEGORIES, type VoteCategory } from "@/hooks/useFriendVotes";
 import { FRIEND_CATEGORIES } from "./friends/FriendCard";
@@ -39,6 +40,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   const { getUserStatus } = usePresence();
   const { user } = useAuth();
   const isOwnProfile = user?.id === userId;
+  const [pendingRemove, setPendingRemove] = useState<{ friendshipId: string; username: string } | null>(null);
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -139,6 +141,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   }
 
   return (
+    <>
     <div className="flex flex-col lg:flex-row lg:gap-2 gap-2">
       {/* ── LEFT COLUMN ── */}
       <div className="flex-1 min-w-0">
@@ -209,7 +212,14 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                       </div>
                       {isOwnProfile && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleToggleBestFriend(friend.friendshipId, friend.is_best_friend); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (friend.is_best_friend) {
+                              setPendingRemove({ friendshipId: friend.friendshipId, username: friend.username });
+                            } else {
+                              handleToggleBestFriend(friend.friendshipId, false);
+                            }
+                          }}
                           className="p-1 shrink-0"
                           title={friend.is_best_friend ? "Ta bort som bästis" : "Lägg till som bästis"}
                         >
@@ -235,6 +245,30 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
         <PersonalityBox userId={userId} isOwnProfile={isOwnProfile} />
       </div>
     </div>
+
+      {/* Confirmation dialog for removing best friend on mobile */}
+      <AlertDialog open={!!pendingRemove} onOpenChange={(open) => { if (!open) setPendingRemove(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ta bort som bästis?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vill du ta bort {pendingRemove?.username} som bästis?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingRemove) {
+                handleToggleBestFriend(pendingRemove.friendshipId, true);
+                setPendingRemove(null);
+              }
+            }}>
+              Ta bort
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
