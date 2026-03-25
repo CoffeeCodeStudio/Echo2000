@@ -146,7 +146,7 @@ export function LajvSection() {
                   >
                     {msg.username}
                   </button>
-                  {(msg as any).is_bot && <AiBadge />}
+                  {botUserIds.has(msg.user_id) && <AiBadge />}
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
