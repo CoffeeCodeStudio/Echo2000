@@ -1,73 +1,125 @@
-# Welcome to your Lovable project
+# Echo2000 🦋
 
-## Project info
+**En nostalgisk chatt-community inspirerad av MSN Messenger och LunarStorm — återuppbyggd med modern teknik.**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+🌐 **Live**: [echo2000.lovable.app](https://echo2000.lovable.app)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Om projektet
 
-**Use Lovable**
+Echo2000 är en social plattform som återskapar känslan av 2000-talets svenska internet — med profiler, gästböcker, chatt, spel och klotterplank. Allt byggt med modern webbteknik men designat för att kännas som att öppna MSN Messenger för första gången.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## ✨ Funktioner
 
-Changes made via Lovable will be committed automatically to this repo.
+### 👤 Profiler
+- Anpassningsbara profiler med **BBCode-formatering** (fetstil, kursiv, färger, ASCII-art)
+- Bakgrundsbilder för presentationen (kurerade favoriter + Unsplash-sökning)
+- Profilgästbok, besökslogg och vänlista
+- Statusmeddelanden och "Dr. Love"-poäng
+- Avatar-uppladdning med moderatorsgranskning
 
-**Use your preferred IDE**
+### 💬 Chatt (MSN-stil)
+- Realtidschatt med MSN Messenger-inspirerat gränssnitt
+- Kontaktlista med online-status
+- Emoticons och ljud
+- Röst-/videosamtal via WebRTC
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🎨 Klotterplanket
+- Rita och publicera klotter med canvas-verktyg
+- Galleri med alla användares konstverk
+- Good Vibes-reaktioner
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 🎮 Spel
+- 🐍 Snake med topplista
+- 🧠 Memory med svårighetsgrader
+- ✏️ Scribble (rita-och-gissa) multiplayer
 
-Follow these steps:
+### 📰 Nyheter & Community
+- Redaktionella nyhetsartiklar med kommentarer
+- Lajv-ticker (temporära meddelanden)
+- Medlemslista med sökfunktion
+- Brevlåda (intern post)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 🤖 Bots
+- BotAdam — automatisk gästboksskrivare vid nya vänskaper
+- Admin-hanterade bots med AI-genererade svar
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 🔒 Admin
+- Användarhantering (godkännande, roller, bannlysning)
+- Bildgranskning för avatarer
+- Nyhetshantering och daglig nyhetsticker
+- Innehållsmoderering
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🛠️ Teknikstack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+| Kategori | Teknologi |
+|----------|-----------|
+| **Frontend** | React 18, TypeScript, Vite |
+| **Styling** | Tailwind CSS, shadcn/ui |
+| **Backend** | Lovable Cloud (Supabase) |
+| **Databas** | PostgreSQL med RLS |
+| **Realtid** | Supabase Realtime |
+| **Auth** | Supabase Auth med e-postverifiering |
+| **Edge Functions** | Deno (bot-logik, admin-API, radiostream) |
+| **State** | TanStack Query, React Context |
+
+## 📁 Projektstruktur
+
+```
+src/
+├── components/
+│   ├── admin/          # Admin-panel (användare, bots, nyheter)
+│   ├── auth/           # Inloggning, registrering, onboarding
+│   ├── calls/          # WebRTC röst-/videosamtal
+│   ├── chat/           # MSN-inspirerad chattfönster
+│   ├── friends/        # Vänförfrågningar och vänlista
+│   ├── games/          # Snake, Memory, Scribble
+│   ├── home/           # Startsida, hero, bento-kort
+│   ├── profile/        # Profilredigering, BBCode, bakgrundsväljare
+│   ├── settings/       # Kontoinställningar
+│   ├── social/         # Gästbok, klotter, lajv, nyheter
+│   ├── ui/             # shadcn/ui-komponenter
+│   └── HabboRoom/      # Isometriskt rum (Habbo-stil)
+├── hooks/              # Custom hooks (auth, profil, chatt, etc.)
+├── lib/                # Utilities (BBCode-parser, Unsplash, etc.)
+├── contexts/           # React Context (Radio, Lajv)
+├── pages/              # Sidkomponenter (Index, Profile, Admin, etc.)
+└── integrations/       # Supabase-klient och typer
+supabase/
+├── functions/          # Edge Functions (admin, bots, radio)
+└── config.toml         # Supabase-konfiguration
+```
+
+## 🚀 Kom igång
+
+### Krav
+- Node.js 18+ (rekommenderat via [nvm](https://github.com/nvm-sh/nvm))
+
+### Installation
+
+```bash
+git clone <DIN_GIT_URL>
+cd echo2000
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Miljövariabler (valfritt)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Variabel | Beskrivning |
+|----------|-------------|
+| `VITE_UNSPLASH_ACCESS_KEY` | Unsplash API-nyckel för bildsökning i bakgrundsväljaren. Hämta gratis på [unsplash.com/developers](https://unsplash.com/developers) |
 
-**Use GitHub Codespaces**
+## 🌍 Deploy
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Öppna projektet i [Lovable](https://lovable.dev/projects/32117feb-2322-4353-ba59-42f9f57d06da) och klicka **Share → Publish**.
 
-## What technologies are used for this project?
+### Egen domän
 
-This project is built with:
+Gå till **Project → Settings → Domains → Connect Domain**.
+Mer info: [Custom domain-dokumentation](https://docs.lovable.dev/features/custom-domain)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📄 Licens
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Byggt med [Lovable](https://lovable.dev).
