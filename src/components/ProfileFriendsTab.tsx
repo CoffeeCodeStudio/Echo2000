@@ -437,7 +437,7 @@ function CategoryGroup({
 
 /* ═══ PERSONALITY BOX ═══ */
 
-function PersonalityBox({ userId }: { userId: string }) {
+function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile: boolean }) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading } = useFriendVotes(userId);
 
   return (
