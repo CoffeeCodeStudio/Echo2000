@@ -3,8 +3,9 @@
  * 2000s-style dense friends page with raw HTML tables.
  * Uses Lunar retro design system from index.css.
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { useFriendVotes, VOTE_CATEGORIES, type VoteCategory } from "@/hooks/useFriendVotes";
 import { FRIEND_CATEGORIES } from "./friends/FriendCard";
