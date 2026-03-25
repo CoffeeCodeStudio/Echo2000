@@ -211,7 +211,14 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                       </div>
                       {isOwnProfile && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleToggleBestFriend(friend.friendshipId, friend.is_best_friend); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (friend.is_best_friend) {
+                              setPendingRemove({ friendshipId: friend.friendshipId, username: friend.username });
+                            } else {
+                              handleToggleBestFriend(friend.friendshipId, false);
+                            }
+                          }}
                           className="p-1 shrink-0"
                           title={friend.is_best_friend ? "Ta bort som bästis" : "Lägg till som bästis"}
                         >
