@@ -1,5 +1,6 @@
 /** KlotterGallery - Gallery view for published klotter drawings with lightbox */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MessageSquare, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar } from "../Avatar";
@@ -24,6 +25,7 @@ interface KlotterGalleryProps {
 }
 
 export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: KlotterGalleryProps) {
+  const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   if (klotter.length === 0) {
@@ -82,7 +84,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
             <div className="flex flex-col">
               {/* Top bar */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => { setLightboxIndex(null); navigate(`/profile/${currentItem.author_name}`); }}>
                   <Avatar name={currentItem.author_name} size="sm" />
                   <div className="min-w-0">
                     <ClickableUsername username={currentItem.author_name} className="text-white text-sm font-medium truncate" />
