@@ -1,14 +1,24 @@
 /**
  * @module ProfileBioStatus
- * Presentation (bio + ASCII art), and member-since footer sections.
+ * Presentation (BBCode-formatted) and member-since footer sections.
  */
-import { useRef, useState } from "react";
-import { Calendar } from "lucide-react";
+import { useRef, useState, useCallback } from "react";
+import { Calendar, Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { parseBBCode } from "@/lib/bbcode";
 import type { EditableProfileData } from "./profile-constants";
 
-const ASCII_CHARS = ["█", "▓", "▒", "░", "▄", "▀", "─", "│", "┼", "╔", "╗", "╚", "╝"];
+const ASCII_CHARS = ["█", "▓", "▒", "░", "▄", "▀", "─", "│", "╔", "╗", "╚", "╝"];
+
+const TOOLBAR_BUTTONS: { label: string; tag: string; endTag: string; title: string; bold?: boolean; italic?: boolean; underline?: boolean; strike?: boolean }[] = [
+  { label: "B", tag: "[b]", endTag: "[/b]", title: "Fetstil", bold: true },
+  { label: "I", tag: "[i]", endTag: "[/i]", title: "Kursiv", italic: true },
+  { label: "U", tag: "[u]", endTag: "[/u]", title: "Understruken", underline: true },
+  { label: "S", tag: "[s]", endTag: "[/s]", title: "Genomstruken", strike: true },
+  { label: "CENTER", tag: "[center]", endTag: "[/center]", title: "Centrera" },
+  { label: "KOD", tag: "[code]", endTag: "[/code]", title: "Kodblock (ASCII-art)" },
+];
 
 interface ProfileBioStatusProps {
   displayData: EditableProfileData;
@@ -19,31 +29,49 @@ interface ProfileBioStatusProps {
 }
 
 export function ProfileBioStatus({ displayData, editData, setEditData, isEditing, memberSince }: ProfileBioStatusProps) {
-  const [asciiMode, setAsciiMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-  const currentText = asciiMode ? editData.ascii_presentation : editData.bio;
-  const charCount = currentText.length;
-
-  const insertChar = (char: string) => {
+  const wrapSelection = useCallback((openTag: string, closeTag: string) => {
     const ta = textareaRef.current;
     if (!ta) return;
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
-    const field = asciiMode ? "ascii_presentation" : "bio";
-    const value = asciiMode ? editData.ascii_presentation : editData.bio;
-    if (value.length >= 2000) return;
-    const newValue = value.slice(0, start) + char + value.slice(end);
-    setEditData({ ...editData, [field]: newValue.slice(0, 2000) });
-    // Restore cursor position after React re-render
+    const text = editData.presentation;
+    const selected = text.slice(start, end);
+    const newText = text.slice(0, start) + openTag + selected + closeTag + text.slice(end);
+    setEditData({ ...editData, presentation: newText.slice(0, 2000) });
+    requestAnimationFrame(() => {
+      const cursorPos = start + openTag.length + selected.length + closeTag.length;
+      ta.selectionStart = ta.selectionEnd = selected.length > 0 ? cursorPos : start + openTag.length;
+      ta.focus();
+    });
+  }, [editData, setEditData]);
+
+  const insertChar = useCallback((char: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = editData.presentation;
+    if (text.length >= 2000) return;
+    const newText = text.slice(0, start) + char + text.slice(end);
+    setEditData({ ...editData, presentation: newText.slice(0, 2000) });
     requestAnimationFrame(() => {
       ta.selectionStart = ta.selectionEnd = start + char.length;
       ta.focus();
     });
-  };
+  }, [editData, setEditData]);
 
-  const displayBio = displayData.bio;
-  const displayAscii = displayData.ascii_presentation;
+  const handleColorInsert = useCallback((color: string) => {
+    wrapSelection(`[color=${color}]`, "[/color]");
+    setShowColorPicker(false);
+  }, [wrapSelection]);
+
+  const QUICK_COLORS = ["#FF0000", "#FF6600", "#FFCC00", "#00CC00", "#0066FF", "#9900FF", "#FF00CC", "#FFFFFF", "#CCCCCC", "#666666"];
+
+  const presentationText = displayData.presentation;
 
   return (
     <>
@@ -53,95 +81,135 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
 
         {isEditing ? (
           <div className="space-y-2">
-            {/* ASCII Toolbar */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setAsciiMode(!asciiMode)}
-                className={cn(
-                  "px-2 py-0.5 text-[10px] font-bold uppercase border rounded transition-colors",
-                  asciiMode
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted text-muted-foreground border-border hover:border-primary/50"
+            {/* BBCode Toolbar */}
+            <div className="flex flex-wrap items-center gap-1 bg-muted/30 border border-border rounded p-1.5">
+              {/* Format buttons */}
+              {TOOLBAR_BUTTONS.map((btn) => (
+                <button
+                  key={btn.label}
+                  type="button"
+                  onClick={() => wrapSelection(btn.tag, btn.endTag)}
+                  className={cn(
+                    "px-1.5 py-0.5 text-[11px] border border-border rounded bg-card hover:bg-accent hover:text-accent-foreground transition-colors",
+                    btn.bold && "font-bold",
+                    btn.italic && "italic",
+                    btn.underline && "underline",
+                    btn.strike && "line-through"
+                  )}
+                  title={btn.title}
+                >
+                  {btn.label}
+                </button>
+              ))}
+
+              {/* Color picker */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  className={cn(
+                    "px-1.5 py-0.5 text-[11px] border border-border rounded transition-colors",
+                    showColorPicker
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card hover:bg-accent hover:text-accent-foreground"
+                  )}
+                  title="Färg"
+                >
+                  FÄRG
+                </button>
+                {showColorPicker && (
+                  <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded p-1.5 shadow-lg flex flex-wrap gap-1 w-[130px]">
+                    {QUICK_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => handleColorInsert(color)}
+                        className="w-5 h-5 rounded border border-border/60 hover:scale-110 transition-transform"
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
                 )}
-              >
-                ASCII-LÄGE
-              </button>
+              </div>
 
               <div className="h-4 w-px bg-border mx-0.5" />
 
+              {/* ASCII quick chars */}
               {ASCII_CHARS.map((char) => (
                 <button
                   key={char}
                   type="button"
                   onClick={() => insertChar(char)}
-                  className="w-6 h-6 flex items-center justify-center text-xs font-mono bg-muted border border-border rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+                  className="w-5 h-5 flex items-center justify-center text-[10px] font-mono bg-card border border-border rounded hover:bg-accent hover:text-accent-foreground transition-colors"
                   title={`Infoga ${char}`}
                 >
                   {char}
                 </button>
               ))}
 
-              <span className="ml-auto text-[10px] text-muted-foreground font-mono">
-                {charCount}/2000
-              </span>
+              <div className="ml-auto flex items-center gap-2">
+                {/* Preview toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className={cn(
+                    "flex items-center gap-1 px-1.5 py-0.5 text-[10px] border border-border rounded transition-colors",
+                    showPreview
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card hover:bg-accent hover:text-accent-foreground"
+                  )}
+                  title={showPreview ? "Dölj förhandsgranskning" : "Visa förhandsgranskning"}
+                >
+                  {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  <span className="hidden sm:inline">PREVIEW</span>
+                </button>
+
+                {/* Char counter */}
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {editData.presentation.length}/2000
+                </span>
+              </div>
             </div>
 
             {/* Textarea */}
             <Textarea
               ref={textareaRef}
-              value={currentText}
+              value={editData.presentation}
               onChange={(e) => {
-                const field = asciiMode ? "ascii_presentation" : "bio";
-                setEditData({ ...editData, [field]: e.target.value.slice(0, 2000) });
+                setEditData({ ...editData, presentation: e.target.value.slice(0, 2000) });
               }}
-              rows={asciiMode ? 10 : 3}
+              rows={10}
               maxLength={2000}
-              className={cn(
-                "text-sm resize-none",
-                asciiMode && "font-mono tracking-[0px]"
-              )}
-              style={{
-                whiteSpace: "pre",
-                ...(asciiMode ? { fontFamily: "'Courier New', monospace", letterSpacing: "0px" } : {}),
-              }}
-              placeholder={asciiMode ? "Rita din ASCII-konst här..." : "Berätta lite om dig själv..."}
+              className="text-sm resize-none font-mono"
+              style={{ whiteSpace: "pre", fontFamily: "'Courier New', monospace", letterSpacing: "0px" }}
+              placeholder="Skriv din presentation här... Använd BBCode för formatering: [b]fetstil[/b], [i]kursiv[/i], [color=#FF0000]färg[/color]"
             />
 
-            {asciiMode && (
-              <p className="text-[10px] text-muted-foreground">
-                Tips: Använd knapparna ovan för att infoga specialtecken. Radbrytningar bevaras.
-              </p>
+            {/* Live Preview */}
+            {showPreview && (
+              <div className="border border-border rounded p-3 bg-muted/20">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1.5">Förhandsgranskning:</p>
+                <div
+                  className="text-sm text-foreground/90"
+                  style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                  dangerouslySetInnerHTML={{ __html: parseBBCode(editData.presentation) }}
+                />
+              </div>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {/* Regular bio */}
-            {displayBio && (
-              <p className="text-sm text-foreground/80">{displayBio}</p>
+          <>
+            {presentationText ? (
+              <div
+                className="text-sm text-foreground/80"
+                style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
+              />
+            ) : (
+              <p className="text-sm text-foreground/80">Ingen presentation ännu...</p>
             )}
-
-            {/* ASCII presentation */}
-            {displayAscii && (
-              <pre
-                style={{
-                  fontFamily: "'Courier New', monospace",
-                  lineHeight: 1.1,
-                  letterSpacing: "0px",
-                  whiteSpace: "pre",
-                  overflowX: "auto",
-                  fontSize: "12px",
-                }}
-                className="text-foreground/90"
-              >
-                {displayAscii}
-              </pre>
-            )}
-
-            {!displayBio && !displayAscii && (
-              <p className="text-sm text-foreground/80">Ingen beskrivning ännu...</p>
-            )}
-          </div>
+          </>
         )}
       </div>
 
