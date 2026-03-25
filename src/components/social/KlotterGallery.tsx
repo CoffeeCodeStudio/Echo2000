@@ -7,6 +7,7 @@ import { Avatar } from "../Avatar";
 import { formatTimeAgo } from "@/lib/format";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { ClickableUsername } from "../ClickableUsername";
+import { GoodVibe } from "./GoodVibe";
 
 interface KlotterItem {
   id: string;
@@ -129,15 +130,18 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
                 )}
               </div>
 
-              {/* Comment */}
-              {currentItem.comment && (
-                <div className="px-4 py-3 border-t border-white/10">
-                  <p className="text-white/80 text-sm flex items-start gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0 text-white/50" />
-                    {currentItem.comment}
-                  </p>
+              {/* Comment & Good Vibe */}
+              <div className="px-4 py-3 border-t border-white/10 flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {currentItem.comment && (
+                    <p className="text-white/80 text-sm flex items-start gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0 text-white/50" />
+                      {currentItem.comment}
+                    </p>
+                  )}
                 </div>
-              )}
+                <GoodVibe targetType="klotter" targetId={currentItem.id} className="shrink-0" />
+              </div>
 
               {/* Counter */}
               <div className="px-4 py-2 text-center text-white/40 text-xs border-t border-white/10">
