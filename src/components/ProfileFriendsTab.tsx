@@ -189,20 +189,38 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                     <div
                       key={friend.id}
                       className={cn(
-                        "flex items-center gap-2 px-1 py-0.5 border-b border-border/40 cursor-pointer hover:bg-muted/60",
+                        "flex items-center gap-2 px-1 py-0.5 border-b border-border/40 hover:bg-muted/60",
                         i % 2 === 0 ? "bg-card" : "bg-muted/30"
                       )}
-                      onClick={() => goToProfile(friend.username)}
                     >
-                      <FriendAvatar
-                        src={friend.avatar_url}
-                        username={friend.username}
-                        size={28}
-                      />
-                      <span className="text-[11px] font-medium text-foreground flex-1 truncate">
-                        {friend.username}
-                      </span>
-                      <OnlineDot status={status} />
+                      <div
+                        className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                        onClick={() => goToProfile(friend.username)}
+                      >
+                        <FriendAvatar
+                          src={friend.avatar_url}
+                          username={friend.username}
+                          size={28}
+                        />
+                        <span className="text-[11px] font-medium text-foreground flex-1 truncate">
+                          {friend.username}
+                        </span>
+                        <OnlineDot status={status} />
+                      </div>
+                      {isOwnProfile && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleBestFriend(friend.friendshipId, friend.is_best_friend); }}
+                          className="p-1 shrink-0"
+                          title={friend.is_best_friend ? "Ta bort som bästis" : "Lägg till som bästis"}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={friend.is_best_friend}
+                            readOnly
+                            className="w-3.5 h-3.5 accent-[hsl(var(--primary))] cursor-pointer pointer-events-none"
+                          />
+                        </button>
+                      )}
                     </div>
                   );
                 })}
