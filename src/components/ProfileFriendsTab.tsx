@@ -214,7 +214,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
       {/* ── RIGHT SIDEBAR ── */}
       <div className="lg:w-56 shrink-0">
-        <PersonalityBox userId={userId} />
+        <PersonalityBox userId={userId} isOwnProfile={isOwnProfile} />
       </div>
     </div>
   );
