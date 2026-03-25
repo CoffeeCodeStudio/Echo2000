@@ -22,6 +22,7 @@ export function FriendItem({
   status,
   statusMessage,
   isActive = false,
+  isBot = false,
   onClick,
 }: FriendItemProps) {
   const navigate = useNavigate();
