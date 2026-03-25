@@ -523,6 +523,36 @@ export type Database = {
         }
         Relationships: []
       }
+      news_comments: {
+        Row: {
+          article_id: string
+          author_avatar: string | null
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          author_avatar?: string | null
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          author_avatar?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_guestbook: {
         Row: {
           author_avatar: string | null
