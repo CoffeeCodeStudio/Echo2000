@@ -94,9 +94,29 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
           .select("user_id, username, avatar_url")
           .in("user_id", senderIds);
 
+        // Fallback: individually fetch any senders missing from batch query
+        const fetchedMap = new Map<string, { username: string; avatar_url: string | null }>();
+        profiles?.forEach((p) => fetchedMap.set(p.user_id, { username: p.username, avatar_url: p.avatar_url }));
+
+        const missingSenderIds = senderIds.filter((id) => !fetchedMap.has(id));
+        if (missingSenderIds.length > 0) {
+          for (const senderId of missingSenderIds) {
+            const { data: individual } = await supabase
+              .from("profiles")
+              .select("user_id, username, avatar_url")
+              .eq("user_id", senderId)
+              .single();
+            if (individual) {
+              fetchedMap.set(individual.user_id, { username: individual.username, avatar_url: individual.avatar_url });
+            } else {
+              fetchedMap.set(senderId, { username: "Borttagen användare", avatar_url: null });
+            }
+          }
+        }
+
         // Map to MailMessage format
         const mailList: MailMessage[] = messages.map((msg) => {
-          const sender = profiles?.find((p) => p.user_id === msg.sender_id);
+          const sender = fetchedMap.get(msg.sender_id);
           const createdAt = new Date(msg.created_at);
           const now = new Date();
           const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
@@ -114,7 +134,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
           return {
             id: msg.id,
-            from: sender?.username || "Okänd",
+            from: sender?.username || "Borttagen användare",
             fromAvatar: sender?.avatar_url || undefined,
             fromUserId: msg.sender_id,
             subject: msg.subject,
