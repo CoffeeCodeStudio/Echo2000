@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from '../Avatar';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Send, Radio, Clock } from 'lucide-react';
