@@ -129,16 +129,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         </div>
       )}
 
-      <ProfileHeaderBar
-        displayData={displayData}
-        isOwnProfile={isOwnProfile}
-        isEditing={isEditing}
-        saving={saving}
-        showDemoMode={showDemoMode}
-        onEdit={() => setIsEditing(true)}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
 
       {/* Profile content */}
       <div className="container px-4 py-4 max-w-5xl mx-auto space-y-4">
