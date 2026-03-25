@@ -141,6 +141,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   }
 
   return (
+    <>
     <div className="flex flex-col lg:flex-row lg:gap-2 gap-2">
       {/* ── LEFT COLUMN ── */}
       <div className="flex-1 min-w-0">
