@@ -73,7 +73,7 @@ serve(async (req) => {
     // =============================================
     await handleAutoAcceptFriendRequests(supabase, supabaseUrl, bots, results);
     await handleLajvReplies(supabase, supabaseUrl, bots, results, recentContext);
-
+    await handleProfileVisitReactions(supabase, supabaseUrl, bots, results);
     // Per-bot reactive: only check for unread messages (fast)
     for (const bot of bots) {
       results[bot.name as string] = results[bot.name as string] || [];
