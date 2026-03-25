@@ -220,6 +220,57 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   );
 }
 
+/* ═══ FRIEND AVATAR ═══ */
+
+function FriendAvatar({
+  src,
+  username,
+  size = 28,
+  className = "",
+  onClick,
+}: {
+  src: string | null;
+  username: string;
+  size?: number;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const [failed, setFailed] = useState(false);
+  const initial = (username || "?")[0].toUpperCase();
+  const showFallback = !src || failed;
+
+  if (showFallback) {
+    return (
+      <div
+        onClick={onClick}
+        className={cn(
+          "flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0",
+          onClick && "cursor-pointer",
+          className
+        )}
+        style={{ width: size, height: size, fontSize: size * 0.4 }}
+      >
+        {initial}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={username}
+      onError={() => setFailed(true)}
+      onClick={onClick}
+      className={cn(
+        "border border-border object-cover shrink-0",
+        onClick && "cursor-pointer",
+        className
+      )}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
 /* ═══ ONLINE DOT (10px circle) ═══ */
 
 function OnlineDot({ status }: { status: UserStatus }) {
