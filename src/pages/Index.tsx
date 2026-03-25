@@ -152,21 +152,6 @@ export default function Index() {
         return <HomeContent />;
 
       case "chatt":
-        if (userRole === 'admin' || userRole === 'moderator') {
-          return (
-            <div className="flex-1 relative overflow-hidden flex items-center justify-center">
-              <div className="nostalgia-card p-8 max-w-md text-center border-primary/30">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-3xl">🖊️</span>
-                </div>
-                <h2 className="font-display font-bold text-xl mb-2">UNDER UTVECKLING</h2>
-                <p className="text-muted-foreground">
-                  EchoMessenger öppnar senare under Alpha-perioden!
-                </p>
-              </div>
-            </div>
-          );
-        }
         return (
           <div className="flex-1 relative overflow-hidden flex items-center justify-center">
             <div className="nostalgia-card p-8 max-w-md text-center border-primary/30">
@@ -185,22 +170,7 @@ export default function Index() {
         return <ProfilePage />;
 
       case "mejl":
-        if (userRole === 'admin' || userRole === 'moderator') {
-          return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
-        }
-        return (
-          <div className="flex-1 relative overflow-hidden flex items-center justify-center">
-            <div className="nostalgia-card p-8 max-w-md text-center border-primary/30">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <span className="text-3xl">📬</span>
-              </div>
-              <h2 className="font-display font-bold text-xl mb-2">UNDER UTVECKLING</h2>
-              <p className="text-muted-foreground">
-                Mejl öppnar senare under Alpha-perioden!
-              </p>
-            </div>
-          </div>
-        );
+        return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
 
       case "vanner":
         return user ? (
@@ -216,6 +186,9 @@ export default function Index() {
         return <Klotterplanket />;
 
       case "spel":
+        if (userRole === 'admin' || userRole === 'moderator') {
+          return <GamesSection />;
+        }
         return (
           <div className="flex-1 relative overflow-hidden flex items-center justify-center">
             <div className="nostalgia-card p-8 max-w-md text-center border-primary/30">
