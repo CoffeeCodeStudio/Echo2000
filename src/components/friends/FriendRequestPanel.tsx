@@ -221,6 +221,7 @@ function AcceptFlow({
   onSelectHowMet,
   onNext,
   onBack,
+  onSkip,
   loading,
 }: {
   request: PendingRequest;
@@ -231,6 +232,7 @@ function AcceptFlow({
   onSelectHowMet: (h: string) => void;
   onNext: () => void;
   onBack: () => void;
+  onSkip: () => void;
   loading: boolean;
 }) {
   const { senderProfile } = request;
@@ -317,30 +319,41 @@ function AcceptFlow({
       )}
 
       {/* Action buttons */}
-      <div className="flex justify-between pt-1">
+      <div className="flex flex-col gap-1 pt-1">
         {step < 3 ? (
           <>
+            <div className="flex justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBack}
+                className="text-[10px] h-7"
+              >
+                Tillbaka
+              </Button>
+              <Button
+                size="sm"
+                onClick={onNext}
+                disabled={loading}
+                className="text-[10px] h-7 lunar-box-header border-0"
+              >
+                {loading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : step === 2 ? (
+                  "Acceptera ✓"
+                ) : (
+                  "Nästa →"
+                )}
+              </Button>
+            </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={onBack}
-              className="text-[10px] h-7"
-            >
-              Tillbaka
-            </Button>
-            <Button
-              size="sm"
-              onClick={onNext}
+              onClick={onSkip}
               disabled={loading}
-              className="text-[10px] h-7 lunar-box-header border-0"
+              className="text-[10px] h-6 text-muted-foreground hover:text-foreground w-full"
             >
-              {loading ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : step === 2 ? (
-                "Acceptera ✓"
-              ) : (
-                "Nästa →"
-              )}
+              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Hoppa över — gör det senare"}
             </Button>
           </>
         ) : (
