@@ -7,6 +7,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { AiBadge } from "../AiBadge";
 
 interface MemberProfile {
   user_id: string;
@@ -168,8 +169,9 @@ export function MemberGrid() {
                   <StatusIndicator status={member._status} size="md" />
                 </div>
               </div>
-              <span className="text-sm font-medium truncate w-full text-center">
+              <span className="text-sm font-medium truncate w-full text-center flex items-center justify-center gap-1">
                 {member.username}
+                {member.is_bot && <AiBadge />}
               </span>
             </button>
           ))}

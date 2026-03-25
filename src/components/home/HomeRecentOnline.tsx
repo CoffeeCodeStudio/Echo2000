@@ -8,6 +8,7 @@ import { StatusIndicator } from "../StatusIndicator";
 import type { UserStatus } from "../StatusIndicator";
 import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
+import { AiBadge } from "../AiBadge";
 
 const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
@@ -82,7 +83,10 @@ export function HomeRecentOnline() {
                   <StatusIndicator status={m._status} size="sm" />
                 </div>
               </div>
-              <span className="text-[10px] truncate w-full text-center text-muted-foreground">{m.username}</span>
+              <span className="text-[10px] truncate w-full text-center text-muted-foreground flex items-center justify-center gap-0.5">
+                {m.username}
+                {m.is_bot && <AiBadge className="text-[8px] px-1 py-0" />}
+              </span>
             </button>
           ))}
         </div>

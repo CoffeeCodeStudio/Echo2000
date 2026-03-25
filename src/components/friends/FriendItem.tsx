@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Avatar } from "../Avatar";
 import type { UserStatus } from "../StatusIndicator";
 import { useNavigate } from "react-router-dom";
+import { AiBadge } from "../AiBadge";
 
 interface FriendItemProps {
   name: string;
@@ -10,6 +11,7 @@ interface FriendItemProps {
   status: UserStatus;
   statusMessage?: string;
   isActive?: boolean;
+  isBot?: boolean;
   onClick?: () => void;
 }
 
@@ -44,12 +46,15 @@ export function FriendItem({
         <Avatar src={avatar} name={name} status={status} size="md" />
       </div>
       <div className="flex-1 min-w-0 text-left">
-        <p 
-          className="font-medium text-sm truncate hover:text-primary transition-colors cursor-pointer"
-          onClick={handleProfileClick}
-        >
-          {name}
-        </p>
+        <div className="flex items-center gap-1">
+          <p 
+            className="font-medium text-sm truncate hover:text-primary transition-colors cursor-pointer"
+            onClick={handleProfileClick}
+          >
+            {name}
+          </p>
+          {isBot && <AiBadge />}
+        </div>
         {statusMessage && (
           <p className="text-xs text-muted-foreground truncate italic">
             {statusMessage}

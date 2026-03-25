@@ -31,6 +31,7 @@ interface ProfileInfoSectionProps {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  isBot?: boolean;
 }
 
 export function ProfileInfoSection({
