@@ -26,6 +26,7 @@ export interface ProfileData {
   interests: string;
   spanar_in: string;
   status_message: string;
+  presentation: string;
   created_at: string;
   updated_at: string;
   last_seen: string | null;
