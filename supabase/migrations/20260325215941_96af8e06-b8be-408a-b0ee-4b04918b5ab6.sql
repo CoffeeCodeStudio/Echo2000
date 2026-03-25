@@ -1,0 +1,1 @@
+UPDATE profiles SET presentation = NULL;
