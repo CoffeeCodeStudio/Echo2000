@@ -194,10 +194,10 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                       )}
                       onClick={() => goToProfile(friend.username)}
                     >
-                      <img
-                        src={friend.avatar_url || "/placeholder.svg"}
-                        alt={friend.username}
-                        className="w-7 h-7 border border-border object-cover"
+                      <FriendAvatar
+                        src={friend.avatar_url}
+                        username={friend.username}
+                        size={28}
                       />
                       <span className="text-[11px] font-medium text-foreground flex-1 truncate">
                         {friend.username}
@@ -324,10 +324,11 @@ function BestFriendsRow({
                   onClick={() => onNavigate(f.username)}
                   className="shrink-0 flex flex-col items-center gap-0.5 hover:opacity-80"
                 >
-                  <img
-                    src={f.avatar_url || "/placeholder.svg"}
-                    alt={f.username}
-                    className="w-16 h-16 border-2 border-primary object-cover"
+                  <FriendAvatar
+                    src={f.avatar_url}
+                    username={f.username}
+                    size={64}
+                    className="border-2 !border-primary"
                   />
                   <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center leading-tight">
                     {f.username}
