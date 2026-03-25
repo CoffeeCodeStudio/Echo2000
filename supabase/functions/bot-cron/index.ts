@@ -14,7 +14,7 @@ const corsHeaders = {
 // Status stars rotate based on recent activity.
 // =============================================
 
-const BOT_ACTION_CHANCE = 0.08; // 8% chance per bot per tick
+const BOT_ACTION_CHANCE = 0.15; // 15% chance per bot per tick
 const PROFILE_SURF_COUNT = 3; // Number of bots that surf profiles each tick
 
 serve(async (req) => {
