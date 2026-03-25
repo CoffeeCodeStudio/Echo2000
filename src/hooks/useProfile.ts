@@ -29,6 +29,7 @@ export interface ProfileData {
   created_at: string;
   updated_at: string;
   last_seen: string | null;
+  is_bot: boolean;
 }
 
 /**
