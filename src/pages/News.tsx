@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Newspaper, ArrowLeft, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NewsComments } from "@/components/social/NewsComments";
 
 interface NewsArticle {
   id: string;
@@ -92,6 +93,8 @@ function NewsArticlePage() {
           <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-wrap leading-relaxed">
             {article.content}
           </div>
+
+          <NewsComments articleId={article.id} />
         </div>
       </article>
     </div>
