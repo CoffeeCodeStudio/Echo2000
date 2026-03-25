@@ -68,6 +68,11 @@ export default function Terms() {
             <p>Nya konton kräver godkännande av en administratör. Vi kan stänga av eller radera konton som bryter mot dessa villkor.</p>
           </div>
 
+          <div className="p-3 bg-muted/40 border border-border">
+            <p className="font-bold text-foreground mb-1">9. AI-karaktärer</p>
+            <p>Echo2000 innehåller AI-drivna karaktärer som är tydligt märkta med en <strong>AI-badge</strong> på sin profil. Dessa karaktärer syftar till att hålla communityn aktiv under uppstartsfasen och hjälpa nya användare. De är inte riktiga personer och utger sig inte för att vara det.</p>
+          </div>
+
           <p className="text-xs text-muted-foreground/70 text-center pt-2">
             Senast uppdaterad: mars 2026 · © 2026 Echo2000 Alpha
           </p>
