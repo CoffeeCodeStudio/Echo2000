@@ -358,7 +358,41 @@ async function handleAutonomousProfileSurfing(
           },
           { onConflict: "profile_owner_id,visitor_id" }
         );
-        if (!error) results[botName].push(`👀 ${target.username}`);
+        if (!error) {
+          results[botName].push(`👀 ${target.username}`);
+
+          // Curious visit: 30% chance to also write a guestbook entry
+          if (Math.random() < 0.30) {
+            try {
+              // Check guestbook cooldown (3 min)
+              const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+              const { data: recentGB } = await supabase
+                .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
+                .gte("created_at", threeMinAgo).limit(1);
+
+              if (!recentGB || recentGB.length === 0) {
+                const { data: targetProfile } = await supabase
+                  .from("profiles").select("city, interests, listens_to").eq("user_id", target.user_id).single();
+
+                const profileCtx = targetProfile
+                  ? `${target.username} bor i ${targetProfile.city || "okänt"}. Intressen: ${targetProfile.interests || "okänt"}.`
+                  : "";
+
+                const res = await callBotRespond(supabaseUrl, {
+                  action: "profile_guestbook_write",
+                  bot_id: bot.id,
+                  target_id: target.user_id,
+                  target_username: target.username,
+                  profile_owner_id: target.user_id,
+                  context: `Du surfade förbi ${target.username}s profil och vill lämna ett kort hej! ${profileCtx}`,
+                });
+                results[botName].push(`📝 GB → ${target.username}: ${res.reply || "unknown"}`);
+              }
+            } catch (gbErr) {
+              // Ignore guestbook errors during surfing
+            }
+          }
+        }
       }
     }
   } catch (e) {
