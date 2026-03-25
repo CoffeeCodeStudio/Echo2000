@@ -219,8 +219,8 @@ export function ProfileGuestbook({
                           <MessageSquare className="w-3 h-3" />
                         </Button>
                       )}
-                      {/* Delete button - only for profile owner */}
-                      {user && isOwnProfile && profileOwnerId === user.id && (
+                      {/* Delete button - for profile owner OR entry author */}
+                      {user && ((isOwnProfile && profileOwnerId === user.id) || entry.author_id === user.id) && (
                         <Button
                           variant="ghost"
                           size="icon"
