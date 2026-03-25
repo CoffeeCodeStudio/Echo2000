@@ -1280,6 +1280,110 @@ async function handleMemoryHighscores(
   } catch (e) { console.error("Memory error:", e); }
 }
 
+// =============================================
+// Reactive: when a real user visits a bot's profile,
+// the bot visits back + optionally writes a guestbook entry
+// =============================================
+async function handleProfileVisitReactions(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
+
+    // Find recent visits TO bot profiles FROM real users (1-5 min old for natural delay)
+    const { data: recentVisits } = await supabase
+      .from("profile_visits")
+      .select("visitor_id, profile_owner_id, visited_at")
+      .in("profile_owner_id", Array.from(botUserIds))
+      .gte("visited_at", fiveMinAgo)
+      .lte("visited_at", oneMinAgo)
+      .order("visited_at", { ascending: false })
+      .limit(10);
+
+    if (!recentVisits || recentVisits.length === 0) return;
+
+    // Filter to only human visitors
+    const humanVisits = recentVisits.filter(v => !botUserIds.has(v.visitor_id));
+    if (humanVisits.length === 0) return;
+
+    for (const visit of humanVisits) {
+      const bot = bots.find(b => (b.user_id as string) === visit.profile_owner_id);
+      if (!bot) continue;
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Check if bot already visited back recently (dedup)
+      const { data: alreadyVisited } = await supabase
+        .from("profile_visits")
+        .select("id")
+        .eq("visitor_id", bot.user_id as string)
+        .eq("profile_owner_id", visit.visitor_id)
+        .gte("visited_at", fiveMinAgo)
+        .limit(1);
+
+      if (alreadyVisited && alreadyVisited.length > 0) continue;
+
+      // Get visitor profile
+      const { data: visitorProfile } = await supabase
+        .from("profiles").select("username, city, interests, listens_to")
+        .eq("user_id", visit.visitor_id).single();
+      const visitorName = visitorProfile?.username || "Okänd";
+
+      // Visit back
+      const { error: visitError } = await supabase.from("profile_visits").upsert(
+        {
+          visitor_id: bot.user_id as string,
+          profile_owner_id: visit.visitor_id,
+          visited_at: new Date().toISOString(),
+        },
+        { onConflict: "profile_owner_id,visitor_id" }
+      );
+      if (!visitError) {
+        results[botName].push(`👀↩️ ${visitorName}`);
+      }
+
+      // Mark bot as active
+      await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", bot.user_id as string);
+
+      // Write a short guestbook entry on the visitor's profile (70% chance)
+      if (Math.random() < 0.70) {
+        try {
+          // Check guestbook cooldown (3 min)
+          const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+          const { data: recentGB } = await supabase
+            .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
+            .gte("created_at", threeMinAgo).limit(1);
+
+          if (!recentGB || recentGB.length === 0) {
+            const profileCtx = visitorProfile
+              ? `${visitorName} bor i ${visitorProfile.city || "okänt"}. Intressen: ${visitorProfile.interests || "okänt"}.`
+              : "";
+
+            const res = await callBotRespond(supabaseUrl, {
+              action: "profile_guestbook_write",
+              bot_id: bot.id,
+              target_id: visit.visitor_id,
+              target_username: visitorName,
+              profile_owner_id: visit.visitor_id,
+              context: `${visitorName} besökte just din profil! Skriv ett kort, vänligt meddelande i deras gästbok — typ "tack för besöket" eller "kul att du tittade förbi!". ${profileCtx}`,
+            });
+            results[botName].push(`📝↩️ GB → ${visitorName}: ${res.reply || "unknown"}`);
+          }
+        } catch (gbErr) {
+          // Ignore guestbook errors
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Profile visit reactions error:", e);
+  }
+}
+
 
 // =============================================
 async function handleGoodVibes(
