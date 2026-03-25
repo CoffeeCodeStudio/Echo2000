@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { AuthDialog } from '../auth/AuthDialog';
 import { toast } from 'sonner';
+import { AiBadge } from '../AiBadge';
 
 export function LajvSection() {
   const { user, loading: authLoading } = useAuth();
