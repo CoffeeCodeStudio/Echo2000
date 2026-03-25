@@ -143,6 +143,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           onSave={handleSave}
           onCancel={handleCancel}
           saving={saving}
+          isBot={profile?.is_bot}
         />
       </div>
     </div>
