@@ -65,6 +65,8 @@ export function Klotterplanket() {
               loading={k.klotterLoading}
               isMobile={k.isMobile}
               onSwitchToDraw={() => k.setActiveTab("draw")}
+              currentUserId={k.user?.id}
+              onDelete={k.deleteKlotter}
             />
           </div>
         )}
