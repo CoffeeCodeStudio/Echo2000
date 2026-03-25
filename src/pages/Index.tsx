@@ -101,11 +101,27 @@ export default function Index() {
     }
   }, [location.state, setActiveTab]);
 
-  // Check if onboarding is needed (missing required profile fields)
+  // Show onboarding only for brand-new accounts (created < 5 min ago) that
+  // haven't filled in basic info yet. Never show for bots.
   useEffect(() => {
-    if (user && !profileLoading && profile) {
-      const needsOnboarding = !profile.gender || !profile.city || !profile.age;
-      setShowOnboarding(needsOnboarding);
+    if (!user || profileLoading || !profile) {
+      setShowOnboarding(false);
+      return;
+    }
+
+    // Skip bots
+    if (profile.is_bot) {
+      setShowOnboarding(false);
+      return;
+    }
+
+    // Only show for very recently created profiles (within 5 minutes)
+    const createdAt = new Date(profile.created_at).getTime();
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const isNewAccount = createdAt > fiveMinutesAgo;
+
+    if (isNewAccount && (!profile.gender || !profile.city || !profile.age)) {
+      setShowOnboarding(true);
     } else {
       setShowOnboarding(false);
     }
