@@ -392,10 +392,10 @@ function CategoryGroup({
             )}
           >
             <td className="px-1 py-0.5">
-              <img
-                src={friend.avatar_url || "/placeholder.svg"}
-                alt={friend.username}
-                className="w-7 h-7 border border-border cursor-pointer object-cover"
+              <FriendAvatar
+                src={friend.avatar_url}
+                username={friend.username}
+                size={28}
                 onClick={() => onNavigate(friend.username)}
               />
             </td>
