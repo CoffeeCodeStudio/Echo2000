@@ -17,7 +17,15 @@ export function LajvSection() {
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [botUserIds, setBotUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch bot user IDs once
+  useEffect(() => {
+    supabase.from('profiles').select('user_id').eq('is_bot', true).then(({ data }) => {
+      if (data) setBotUserIds(new Set(data.map(d => d.user_id)));
+    });
+  }, []);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
