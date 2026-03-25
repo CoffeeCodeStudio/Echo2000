@@ -40,7 +40,7 @@ serve(async (req) => {
     }
   }
 
-  if (!isServiceRole && !isScheduler && !isAdmin) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && !isAdmin) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
