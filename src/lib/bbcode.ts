@@ -41,7 +41,7 @@ function clampSize(raw: string): number {
 export function parseBBCode(input: string): string {
   // 0. Detect corrupted pixel-art BBCode (more than 10 [color= tags per line)
   const lines = input.split('\n');
-  const isCorrupted = lines.some(line => (line.match(/\[color=/gi) || []).length > 10);
+  const isCorrupted = lines.some(line => (line.match(/\[color=/gi) || []).length > 500);
   if (isCorrupted) return '';
 
   // 1. Escape raw HTML

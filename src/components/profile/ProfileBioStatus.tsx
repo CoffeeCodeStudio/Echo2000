@@ -41,7 +41,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
     const text = editData.presentation;
     const selected = text.slice(start, end);
     const newText = text.slice(0, start) + openTag + selected + closeTag + text.slice(end);
-    setEditData({ ...editData, presentation: newText.slice(0, 2000) });
+    setEditData({ ...editData, presentation: newText.slice(0, 10000) });
     requestAnimationFrame(() => {
       const cursorPos = start + openTag.length + selected.length + closeTag.length;
       ta.selectionStart = ta.selectionEnd = selected.length > 0 ? cursorPos : start + openTag.length;
@@ -55,9 +55,9 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
     const text = editData.presentation;
-    if (text.length >= 2000) return;
+    if (text.length >= 10000) return;
     const newText = text.slice(0, start) + char + text.slice(end);
-    setEditData({ ...editData, presentation: newText.slice(0, 2000) });
+    setEditData({ ...editData, presentation: newText.slice(0, 10000) });
     requestAnimationFrame(() => {
       ta.selectionStart = ta.selectionEnd = start + char.length;
       ta.focus();
@@ -167,7 +167,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
 
                 {/* Char counter */}
                 <span className="text-[10px] text-muted-foreground font-mono">
-                  {editData.presentation.length}/2000
+                  {editData.presentation.length}/10000
                 </span>
               </div>
             </div>
@@ -177,10 +177,10 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
               ref={textareaRef}
               value={editData.presentation}
               onChange={(e) => {
-                setEditData({ ...editData, presentation: e.target.value.slice(0, 2000) });
+                setEditData({ ...editData, presentation: e.target.value.slice(0, 10000) });
               }}
               rows={10}
-              maxLength={2000}
+              maxLength={10000}
               className="text-sm resize-none font-mono"
               style={{ whiteSpace: "pre", fontFamily: "'Courier New', monospace", letterSpacing: "0px" }}
               placeholder="Skriv din presentation här... Använd BBCode för formatering: [b]fetstil[/b], [i]kursiv[/i], [color=#FF0000]färg[/color]"
