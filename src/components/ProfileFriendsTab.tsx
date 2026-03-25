@@ -267,7 +267,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 
