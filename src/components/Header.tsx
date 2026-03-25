@@ -248,7 +248,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             {privateZoneItems.map((item) => renderHeaderNavItem(item))}
           </nav>
         }
-        <nav className="hidden md:flex items-center gap-px lg:gap-0.5 shrink min-w-0">
+        <nav className="hidden md:flex items-center gap-0 lg:gap-0.5 shrink min-w-0">
           {user ?
           [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
           renderHeaderNavItem(homeItem)
