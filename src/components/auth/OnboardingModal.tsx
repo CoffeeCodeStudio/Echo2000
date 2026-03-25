@@ -68,7 +68,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const isStep1Valid = gender && city && age;
+  const isStep1Valid = gender && city && age && parseInt(age) >= 25;
   const totalSteps = 3;
 
   const handleGenderSelect = (selectedGender: string) => {
