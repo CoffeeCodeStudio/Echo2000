@@ -2,6 +2,10 @@
 
 **En nostalgisk chatt-community inspirerad av MSN Messenger och LunarStorm — återuppbyggd med modern teknik.**
 
+> ⚠️ **Status: Alpha** — Projektet är under aktiv utveckling. Funktioner kan ändras, gå sönder eller försvinna utan förvarning.
+
+> 🔞 **Åldersgräns: 25+** — Echo2000 riktar sig till vuxna som växte upp med MSN och LunarStorm. Du måste vara minst 25 år för att skapa ett konto.
+
 🌐 **Live**: [echo2000.lovable.app](https://echo2000.lovable.app)
 
 ---
@@ -41,9 +45,11 @@ Echo2000 är en social plattform som återskapar känslan av 2000-talets svenska
 - Medlemslista med sökfunktion
 - Brevlåda (intern post)
 
-### 🤖 Bots
-- BotAdam — automatisk gästboksskrivare vid nya vänskaper
-- Admin-hanterade bots med AI-genererade svar
+### 🤖 Bottar
+- **35+ AI-bottar** med unika personligheter, tonfall och beteenden
+- Bottarna skriver i gästböcker, svarar i chatten och interagerar med communityn
+- Adminpanel för att skapa, konfigurera och hantera bottar (aktivitetsnivå, system-prompt, kontext)
+- Automatisk bot-cron för periodisk aktivitet
 
 ### 🔒 Admin
 - Användarhantering (godkännande, roller, bannlysning)
@@ -110,6 +116,25 @@ npm run dev
 | Variabel | Beskrivning |
 |----------|-------------|
 | `VITE_UNSPLASH_ACCESS_KEY` | Unsplash API-nyckel för bildsökning i bakgrundsväljaren. Hämta gratis på [unsplash.com/developers](https://unsplash.com/developers) |
+
+## 🤝 Bidra
+
+Projektet är i alpha och vi tar gärna emot hjälp! Så här bidrar du:
+
+1. **Forka** repot
+2. Skapa en **feature branch** (`git checkout -b feature/min-grej`)
+3. **Commita** dina ändringar (`git commit -m 'Lägg till min grej'`)
+4. **Pusha** till din branch (`git push origin feature/min-grej`)
+5. Öppna en **Pull Request**
+
+### Riktlinjer
+- Skriv TypeScript — inga `any` om det inte är absolut nödvändigt
+- Använd befintliga design tokens från `index.css` och `tailwind.config.ts`
+- Testa på mobil (390px viewport) och desktop
+- Håll komponenter små och fokuserade
+- Skriv svenska UI-texter, engelska kodkommentarer
+
+Har du idéer men vill inte koda? Öppna ett **Issue** med din tanke!
 
 ## 🌍 Deploy
 
