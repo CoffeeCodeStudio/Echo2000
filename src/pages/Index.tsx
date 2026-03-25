@@ -110,7 +110,7 @@ export default function Index() {
     }
 
     // Skip bots
-    if ((profile as any).is_bot) {
+    if (profile.is_bot) {
       setShowOnboarding(false);
       return;
     }
