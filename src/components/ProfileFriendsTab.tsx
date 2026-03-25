@@ -235,39 +235,37 @@ function FriendAvatar({
   className?: string;
   onClick?: () => void;
 }) {
+  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const initial = (username || "?")[0].toUpperCase();
-  const showFallback = !src || failed;
-
-  if (showFallback) {
-    return (
-      <div
-        onClick={onClick}
-        className={cn(
-          "flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0",
-          onClick && "cursor-pointer",
-          className
-        )}
-        style={{ width: size, height: size, fontSize: size * 0.4 }}
-      >
-        {initial}
-      </div>
-    );
-  }
+  const showImg = !!src && !failed;
 
   return (
-    <img
-      src={src}
-      alt={username}
-      onError={() => setFailed(true)}
+    <div
       onClick={onClick}
       className={cn(
-        "border border-border object-cover shrink-0",
+        "relative flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0 overflow-hidden",
         onClick && "cursor-pointer",
         className
       )}
-      style={{ width: size, height: size }}
-    />
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {/* Always render the letter as fallback layer */}
+      {(!showImg || !loaded) && <span>{initial}</span>}
+      {/* Render img on top if src exists */}
+      {showImg && (
+        <img
+          src={src}
+          alt={username}
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+          className={cn(
+            "absolute inset-0 w-full h-full object-cover",
+            loaded ? "opacity-100" : "opacity-0"
+          )}
+        />
+      )}
+    </div>
   );
 }
 
