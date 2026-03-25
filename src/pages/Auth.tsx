@@ -45,10 +45,12 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && user) {
+    // Only redirect if the user is logged in AND we're not in the middle of
+    // a registration flow (where we sign-up then immediately sign-out).
+    if (!loading && user && mode !== "register") {
       navigate("/");
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, mode]);
 
   const validateForm = () => {
     const schema = mode === "login" ? loginSchema : registerSchema;
@@ -136,15 +138,22 @@ export default function Auth() {
         if (error) {
           toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
         } else if (data.user) {
-          // Auto-confirmed: assign role, then sign out so admin gate works
-          await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
+          // Assign user role, then sign out so admin approval gate works.
+          // We stay in "register" mode so the useEffect redirect doesn't fire
+          // during the brief moment between signUp and signOut.
+          try {
+            await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
+          } catch {
+            // Role insert may fail if RLS blocks it — not critical
+          }
           await supabase.auth.signOut();
+          // Now safe to switch mode
+          setMode("login");
           toast({
             title: "Konto skapat! 🎉",
             description: "Ditt konto väntar på godkännande av en administratör. Du kan logga in när kontot är godkänt.",
             duration: 10000,
           });
-          setMode("login");
           setUsername("");
           setEmail("");
           setPassword("");

@@ -115,12 +115,18 @@ export default function Index() {
       return;
     }
 
-    // Only show for very recently created profiles (within 5 minutes)
-    const createdAt = new Date(profile.created_at).getTime();
+    // Use auth user's created_at (more reliable than profile.created_at)
+    const userCreatedAt = user.created_at ? new Date(user.created_at).getTime() : 0;
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    const isNewAccount = createdAt > fiveMinutesAgo;
+    const isNewAccount = userCreatedAt > fiveMinutesAgo;
 
-    if (isNewAccount && (!profile.gender || !profile.city || !profile.age)) {
+    // Only show onboarding for very new accounts that haven't filled basic info
+    // Check for actual content (not just empty strings which are the defaults)
+    const hasGender = profile.gender && profile.gender.trim().length > 0;
+    const hasCity = profile.city && profile.city.trim().length > 0;
+    const hasAge = profile.age !== null && profile.age > 0;
+
+    if (isNewAccount && (!hasGender || !hasCity || !hasAge)) {
       setShowOnboarding(true);
     } else {
       setShowOnboarding(false);

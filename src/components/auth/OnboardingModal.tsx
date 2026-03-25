@@ -68,7 +68,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const isStep1Valid = gender && city && age;
+  const isStep1Valid = gender && city && age && parseInt(age) >= 25;
   const totalSteps = 3;
 
   const handleGenderSelect = (selectedGender: string) => {
@@ -217,11 +217,14 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                placeholder="Din ålder..."
-                min={13}
+                placeholder="Din ålder (minst 25)..."
+                min={25}
                 max={99}
                 className="h-12 text-base"
               />
+              {age && parseInt(age) < 25 && (
+                <p className="text-xs text-destructive">Du måste vara minst 25 år för att använda Echo2000.</p>
+              )}
             </div>
 
             <Button
