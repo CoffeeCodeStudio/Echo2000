@@ -43,7 +43,7 @@ export function useKlotterCanvas() {
   const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(null);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishComment, setPublishComment] = useState("");
-  const [activeTab, setActiveTab] = useState<"draw" | "gallery">("draw");
+  const [activeTab, setActiveTab] = useState<"draw" | "gallery">("gallery");
   const [isPublishing, setIsPublishing] = useState(false);
 
   const { klotter, loading: klotterLoading, uploadAndSaveKlotter } = useKlotter();
