@@ -3,6 +3,7 @@
  * Main "PROFIL" tab content – thin render shell delegating to sub-components.
  */
 import { FriendActionButtons } from "@/components/friends/FriendActionButtons";
+import { Input } from "@/components/ui/input";
 import type { UserStatus } from "@/components/StatusIndicator";
 import type { EditableProfileData } from "./profile-constants";
 import { ProfileAvatar } from "./ProfileAvatar";
