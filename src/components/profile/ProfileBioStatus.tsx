@@ -20,7 +20,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
     <>
       {/* Bio */}
       <div className="border-t border-border p-4">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase mb-2">Om mig</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase mb-2">Presentation</h3>
         {isEditing ? (
           <Textarea
             value={editData.bio}
