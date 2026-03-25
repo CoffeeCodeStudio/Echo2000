@@ -165,5 +165,9 @@ function NewsArchive() {
 /** Router entry: /news shows archive, /news/:id shows article */
 export default function News() {
   const { id } = useParams<{ id: string }>();
-  return id ? <NewsArticlePage /> : <NewsArchive />;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+      {id ? <NewsArticlePage /> : <NewsArchive />}
+    </div>
+  );
 }
