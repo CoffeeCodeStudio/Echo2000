@@ -66,6 +66,26 @@ export function ProfileInfoSection({
         </div>
       </div>
 
+      {/* Status Message – centered inside card */}
+      <div className="border-t border-border px-4 py-3 text-center">
+        {isEditing ? (
+          <div>
+            <h3 className="text-xs font-bold text-muted-foreground uppercase mb-1">Statusmeddelande</h3>
+            <Input
+              value={editData.status_message}
+              onChange={(e) => setEditData({ ...editData, status_message: e.target.value })}
+              className="text-sm max-w-md mx-auto" placeholder="Vad gör du just nu?"
+            />
+          </div>
+        ) : (
+          displayData.status_message && (
+            <p className="text-sm text-foreground/80 italic">
+              "{displayData.status_message}"
+            </p>
+          )
+        )}
+      </div>
+
       {/* Action Buttons Bar */}
       {!isOwnProfile && userId && (
         <div className="bg-gradient-to-r from-muted/50 via-muted to-muted/50 border-t border-border px-4 py-2">

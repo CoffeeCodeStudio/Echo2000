@@ -32,21 +32,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
         )}
       </div>
 
-      {/* Status Message */}
-      <div className="border-t border-border p-4">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase mb-2">Statusmeddelande</h3>
-        {isEditing ? (
-          <Input
-            value={editData.status_message}
-            onChange={(e) => setEditData({ ...editData, status_message: e.target.value })}
-            className="text-sm" placeholder="Vad gör du just nu?"
-          />
-        ) : (
-          <p className="text-sm text-foreground/80 italic">
-            {displayData.status_message ? `"${displayData.status_message}"` : "Inget statusmeddelande"}
-          </p>
-        )}
-      </div>
 
       {/* Member Since */}
       <div className="border-t border-border px-4 py-2 text-center">
