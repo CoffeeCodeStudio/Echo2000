@@ -610,6 +610,7 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          ascii_presentation: string | null
           avatar_url: string | null
           bio: string | null
           body_type: string | null
@@ -640,6 +641,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          ascii_presentation?: string | null
           avatar_url?: string | null
           bio?: string | null
           body_type?: string | null
@@ -670,6 +672,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          ascii_presentation?: string | null
           avatar_url?: string | null
           bio?: string | null
           body_type?: string | null
