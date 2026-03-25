@@ -34,7 +34,7 @@ export interface EditableProfileData {
   avatar_url: string | null;
   status_message: string;
   bio: string;
-  ascii_presentation: string;
+  presentation: string;
   city: string;
   occupation: string;
   relationship: string;
@@ -58,8 +58,8 @@ export const demoProfile: EditableProfileData = {
   username: "demo_alex",
   avatar_url: null,
   status_message: "Living in the 2000s 🦋",
-  bio: "Hej! Jag är en demo-profil. Logga in för att skapa din egen profil och börja chatta med andra!",
-  ascii_presentation: "",
+  bio: "Hej! Jag är en demo-profil.",
+  presentation: "[b]Hej![/b] Jag är en demo-profil. Logga in för att skapa din egen profil och börja chatta med andra!",
   city: "Stockholm",
   occupation: "Student",
   relationship: "Singel",
@@ -85,7 +85,7 @@ export function toEditableData(profile: Record<string, any> | null): EditablePro
     avatar_url: profile?.avatar_url ?? null,
     status_message: profile?.status_message || "",
     bio: profile?.bio || "",
-    ascii_presentation: profile?.ascii_presentation || "",
+    presentation: profile?.presentation || "",
     city: profile?.city || "",
     occupation: profile?.occupation || "",
     relationship: profile?.relationship || "",
