@@ -826,8 +826,18 @@ async function handleEmailWriting(
     if (friends && friends.length > 0) {
       const humanFriends = friends.filter(f => !botUserIds.has(f.friend_id));
       const pool = humanFriends.length > 0 ? humanFriends : friends;
-      const chosen = pool[Math.floor(Math.random() * pool.length)];
-      targetUserId = chosen.friend_id;
+      // Filter to only admin/mod targets
+      const eligiblePool: typeof pool = [];
+      for (const f of pool) {
+        if (botUserIds.has(f.friend_id)) continue; // skip bots
+        if (await isAdminOrMod(supabase, f.friend_id)) {
+          eligiblePool.push(f);
+        }
+      }
+      if (eligiblePool.length > 0) {
+        const chosen = eligiblePool[Math.floor(Math.random() * eligiblePool.length)];
+        targetUserId = chosen.friend_id;
+      }
     }
 
     if (!targetUserId) {
@@ -838,7 +848,18 @@ async function handleEmailWriting(
         .neq("user_id", bot.user_id as string).limit(20);
 
       if (!activeUsers || activeUsers.length === 0) return;
-      const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+      // Filter to only admin/mod targets
+      const eligibleUsers: typeof activeUsers = [];
+      for (const u of activeUsers) {
+        if (await isAdminOrMod(supabase, u.user_id)) {
+          eligibleUsers.push(u);
+        }
+      }
+      if (eligibleUsers.length === 0) {
+        results[botName].push("Email: no admin/mod target found");
+        return;
+      }
+      const target = eligibleUsers[Math.floor(Math.random() * eligibleUsers.length)];
       targetUserId = target.user_id;
       targetUsername = target.username;
     }
@@ -1667,6 +1688,16 @@ async function handleEmailReplies(
       ? humanSenders[Math.floor(Math.random() * humanSenders.length)]
       : senderIds[Math.floor(Math.random() * senderIds.length)];
 
+    // Only reply to admin/moderator users
+    if (!await isAdminOrMod(supabase, chosenSenderId)) {
+      // Mark emails as read but do not reply
+      for (const email of unreadEmails.filter(e => e.sender_id === chosenSenderId)) {
+        await supabase.from("messages").update({ is_read: true }).eq("id", email.id);
+      }
+      results[botName].push(`Email reply skipped: ${chosenSenderId} not admin/mod`);
+      return false;
+    }
+
     // Get sender profile
     const { data: senderProfile } = await supabase
       .from("profiles").select("username").eq("user_id", chosenSenderId).single();
@@ -1724,6 +1755,22 @@ async function handleEmailReplies(
     results[bot.name as string].push(`Email reply error: ${(e as Error).message}`);
     return false;
   }
+}
+
+// =============================================
+// Helper: check if user has admin or moderator role
+// =============================================
+async function isAdminOrMod(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["admin", "moderator"])
+    .limit(1);
+  return !!(data && data.length > 0);
 }
 
 // =============================================
