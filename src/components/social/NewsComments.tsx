@@ -108,7 +108,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
         ) : (
           comments.map((c) => (
             <div key={c.id} className="flex gap-2 group">
-              <Avatar name={c.author_name} avatarUrl={c.author_avatar} size="sm" className="mt-0.5 shrink-0" />
+              <Avatar name={c.author_name} src={c.author_avatar || undefined} size="sm" className="mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0 bg-muted/30 rounded-lg px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -136,7 +136,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
       {/* New comment form */}
       {user ? (
         <div className="flex gap-2">
-          <Avatar name={profile?.username || ""} avatarUrl={profile?.avatar_url} size="sm" className="mt-1 shrink-0" />
+          <Avatar name={profile?.username || ""} src={profile?.avatar_url || undefined} size="sm" className="mt-1 shrink-0" />
           <div className="flex-1">
             <Textarea
               value={newComment}
