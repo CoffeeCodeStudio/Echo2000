@@ -17,7 +17,6 @@ import { usePresence } from "@/hooks/usePresence";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileHeaderBar } from "./profile/ProfileHeaderBar";
-import { ProfileTabs, type ProfileTabId } from "./profile/ProfileTabs";
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
 import {
   type EditableProfileData,
@@ -27,10 +26,9 @@ import {
 
 interface ProfilePageProps {
   userId?: string;
-  initialTab?: ProfileTabId;
 }
 
-export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
+export function ProfilePage({ userId }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
@@ -41,13 +39,7 @@ export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
   const showDemoMode = !isLoggedIn && !userId;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<ProfileTabId>(initialTab || "profil");
   const [editData, setEditData] = useState<EditableProfileData>(toEditableData(null));
-
-  // Sync initialTab when it changes from parent
-  useEffect(() => {
-    if (initialTab) setActiveTab(initialTab);
-  }, [initialTab]);
 
   // Sync editData when profile loads
   useEffect(() => {
@@ -149,64 +141,36 @@ export function ProfilePage({ userId, initialTab }: ProfilePageProps) {
         onCancel={handleCancel}
       />
 
-      <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} isOwnProfile={isOwnProfile} />
+      {/* Profile content */}
+      <div className="container px-4 py-4 max-w-5xl mx-auto space-y-4">
+        <ProfileInfoSection
+          displayData={displayData}
+          editData={editData}
+          setEditData={setEditData}
+          isEditing={isEditing}
+          isOwnProfile={isOwnProfile}
+          userId={userId}
+          userStatus={userStatus}
+          userActivity={userActivity}
+          lastSeen={lastSeen}
+          memberSince={memberSince}
+        />
 
-      {/* Tab content */}
-      <div className="container px-4 py-4 max-w-5xl mx-auto">
-        {activeTab === "profil" && (
-          <ProfileInfoSection
-            displayData={displayData}
-            editData={editData}
-            setEditData={setEditData}
-            isEditing={isEditing}
-            isOwnProfile={isOwnProfile}
-            userId={userId}
-            userStatus={userStatus}
-            userActivity={userActivity}
-            lastSeen={lastSeen}
-            memberSince={memberSince}
-          />
-        )}
-
-        {activeTab === "gastbok" && profileUserId && (
+        {profileUserId && (
           <div className="bg-card rounded-lg border border-border p-4">
             <ProfileGuestbook profileOwnerId={profileUserId} isOwnProfile={isOwnProfile} />
           </div>
         )}
 
-        {activeTab === "gastbok" && !profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-8 text-center">
-            <p className="text-muted-foreground">📝 Här var det tomt! Skriv något vetja.</p>
-          </div>
-        )}
-
-        {activeTab === "besokare" && isOwnProfile && profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-4">
-            <VisitorLog visitors={visitors} />
-          </div>
-        )}
-
-        {activeTab === "vanner" && profileUserId && (
+        {profileUserId && (
           <div>
             <ProfileFriendsTab userId={profileUserId} />
           </div>
         )}
 
-        {activeTab === "vanner" && !profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-8 text-center">
-            <p className="text-muted-foreground">🌟 Inga vänner ännu</p>
-          </div>
-        )}
-
-        {activeTab === "blog" && (
-          <div className="bg-card rounded-lg border border-border p-8 text-center">
-            <p className="text-muted-foreground">Inga blogginlägg ännu.</p>
-          </div>
-        )}
-
-        {activeTab === "album" && (
-          <div className="bg-card rounded-lg border border-border p-8 text-center">
-            <p className="text-muted-foreground">Inga album uppladdade.</p>
+        {isOwnProfile && profileUserId && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            <VisitorLog visitors={visitors} />
           </div>
         )}
       </div>
