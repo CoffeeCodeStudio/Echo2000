@@ -14,7 +14,7 @@ const corsHeaders = {
 // Status stars rotate based on recent activity.
 // =============================================
 
-const BOT_ACTION_CHANCE = 0.08; // 8% chance per bot per tick
+const BOT_ACTION_CHANCE = 0.15; // 15% chance per bot per tick
 const PROFILE_SURF_COUNT = 3; // Number of bots that surf profiles each tick
 
 serve(async (req) => {
@@ -73,7 +73,7 @@ serve(async (req) => {
     // =============================================
     await handleAutoAcceptFriendRequests(supabase, supabaseUrl, bots, results);
     await handleLajvReplies(supabase, supabaseUrl, bots, results, recentContext);
-
+    await handleProfileVisitReactions(supabase, supabaseUrl, bots, results);
     // Per-bot reactive: only check for unread messages (fast)
     for (const bot of bots) {
       results[bot.name as string] = results[bot.name as string] || [];
@@ -358,7 +358,41 @@ async function handleAutonomousProfileSurfing(
           },
           { onConflict: "profile_owner_id,visitor_id" }
         );
-        if (!error) results[botName].push(`👀 ${target.username}`);
+        if (!error) {
+          results[botName].push(`👀 ${target.username}`);
+
+          // Curious visit: 30% chance to also write a guestbook entry
+          if (Math.random() < 0.30) {
+            try {
+              // Check guestbook cooldown (3 min)
+              const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+              const { data: recentGB } = await supabase
+                .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
+                .gte("created_at", threeMinAgo).limit(1);
+
+              if (!recentGB || recentGB.length === 0) {
+                const { data: targetProfile } = await supabase
+                  .from("profiles").select("city, interests, listens_to").eq("user_id", target.user_id).single();
+
+                const profileCtx = targetProfile
+                  ? `${target.username} bor i ${targetProfile.city || "okänt"}. Intressen: ${targetProfile.interests || "okänt"}.`
+                  : "";
+
+                const res = await callBotRespond(supabaseUrl, {
+                  action: "profile_guestbook_write",
+                  bot_id: bot.id,
+                  target_id: target.user_id,
+                  target_username: target.username,
+                  profile_owner_id: target.user_id,
+                  context: `Du surfade förbi ${target.username}s profil och vill lämna ett kort hej! ${profileCtx}`,
+                });
+                results[botName].push(`📝 GB → ${target.username}: ${res.reply || "unknown"}`);
+              }
+            } catch (gbErr) {
+              // Ignore guestbook errors during surfing
+            }
+          }
+        }
       }
     }
   } catch (e) {
@@ -605,13 +639,7 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
-    // Random delay: 50% chance to skip if < 5 min old
-    const oldestMsg = recentMsgs[recentMsgs.length - 1];
-    const msgAgeMin = (Date.now() - new Date(oldestMsg.created_at).getTime()) / 60000;
-    if (msgAgeMin < 5 && Math.random() < 0.5) {
-      results[bot.name as string].push(`Chat delayed: ${msgAgeMin.toFixed(0)}min old`);
-      return false;
-    }
+    // Always reply to unread messages that are at least 2 min old (no random skip)
 
     const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
@@ -673,9 +701,9 @@ async function runSingleBotLajvPost(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
   const { data: recentLajv } = await supabase
-    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", fiveMinAgo).limit(1);
+    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", twoMinAgo).limit(1);
 
   if (recentLajv && recentLajv.length > 0) {
     results[botName].push("Lajv: cooldown");
@@ -705,9 +733,9 @@ async function runSingleBotGuestbookWrite(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
   const { data: recentWrites } = await supabase
-    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", fiveMinAgo).limit(1);
+    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", threeMinAgo).limit(1);
 
   if (recentWrites && recentWrites.length > 0) {
     results[botName].push("GB write: cooldown");
@@ -1250,6 +1278,110 @@ async function handleMemoryHighscores(
 
     if (!error) results[botName].push(`Memory (${difficulty}): ${score}pts (${moves} drag, ${time}s) 🧠`);
   } catch (e) { console.error("Memory error:", e); }
+}
+
+// =============================================
+// Reactive: when a real user visits a bot's profile,
+// the bot visits back + optionally writes a guestbook entry
+// =============================================
+async function handleProfileVisitReactions(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bots: Record<string, unknown>[],
+  results: Record<string, string[]>
+) {
+  try {
+    const botUserIds = new Set(bots.map(b => b.user_id as string));
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
+
+    // Find recent visits TO bot profiles FROM real users (1-5 min old for natural delay)
+    const { data: recentVisits } = await supabase
+      .from("profile_visits")
+      .select("visitor_id, profile_owner_id, visited_at")
+      .in("profile_owner_id", Array.from(botUserIds))
+      .gte("visited_at", fiveMinAgo)
+      .lte("visited_at", oneMinAgo)
+      .order("visited_at", { ascending: false })
+      .limit(10);
+
+    if (!recentVisits || recentVisits.length === 0) return;
+
+    // Filter to only human visitors
+    const humanVisits = recentVisits.filter(v => !botUserIds.has(v.visitor_id));
+    if (humanVisits.length === 0) return;
+
+    for (const visit of humanVisits) {
+      const bot = bots.find(b => (b.user_id as string) === visit.profile_owner_id);
+      if (!bot) continue;
+      const botName = bot.name as string;
+      results[botName] = results[botName] || [];
+
+      // Check if bot already visited back recently (dedup)
+      const { data: alreadyVisited } = await supabase
+        .from("profile_visits")
+        .select("id")
+        .eq("visitor_id", bot.user_id as string)
+        .eq("profile_owner_id", visit.visitor_id)
+        .gte("visited_at", fiveMinAgo)
+        .limit(1);
+
+      if (alreadyVisited && alreadyVisited.length > 0) continue;
+
+      // Get visitor profile
+      const { data: visitorProfile } = await supabase
+        .from("profiles").select("username, city, interests, listens_to")
+        .eq("user_id", visit.visitor_id).single();
+      const visitorName = visitorProfile?.username || "Okänd";
+
+      // Visit back
+      const { error: visitError } = await supabase.from("profile_visits").upsert(
+        {
+          visitor_id: bot.user_id as string,
+          profile_owner_id: visit.visitor_id,
+          visited_at: new Date().toISOString(),
+        },
+        { onConflict: "profile_owner_id,visitor_id" }
+      );
+      if (!visitError) {
+        results[botName].push(`👀↩️ ${visitorName}`);
+      }
+
+      // Mark bot as active
+      await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("user_id", bot.user_id as string);
+
+      // Write a short guestbook entry on the visitor's profile (70% chance)
+      if (Math.random() < 0.70) {
+        try {
+          // Check guestbook cooldown (3 min)
+          const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+          const { data: recentGB } = await supabase
+            .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
+            .gte("created_at", threeMinAgo).limit(1);
+
+          if (!recentGB || recentGB.length === 0) {
+            const profileCtx = visitorProfile
+              ? `${visitorName} bor i ${visitorProfile.city || "okänt"}. Intressen: ${visitorProfile.interests || "okänt"}.`
+              : "";
+
+            const res = await callBotRespond(supabaseUrl, {
+              action: "profile_guestbook_write",
+              bot_id: bot.id,
+              target_id: visit.visitor_id,
+              target_username: visitorName,
+              profile_owner_id: visit.visitor_id,
+              context: `${visitorName} besökte just din profil! Skriv ett kort, vänligt meddelande i deras gästbok — typ "tack för besöket" eller "kul att du tittade förbi!". ${profileCtx}`,
+            });
+            results[botName].push(`📝↩️ GB → ${visitorName}: ${res.reply || "unknown"}`);
+          }
+        } catch (gbErr) {
+          // Ignore guestbook errors
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Profile visit reactions error:", e);
+  }
 }
 
 
