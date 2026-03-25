@@ -116,7 +116,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
         // Map to MailMessage format
         const mailList: MailMessage[] = messages.map((msg) => {
-          const sender = profiles?.find((p) => p.user_id === msg.sender_id);
+          const sender = fetchedMap.get(msg.sender_id);
           const createdAt = new Date(msg.created_at);
           const now = new Date();
           const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
@@ -134,7 +134,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
           return {
             id: msg.id,
-            from: sender?.username || "Okänd",
+            from: sender?.username || "Borttagen användare",
             fromAvatar: sender?.avatar_url || undefined,
             fromUserId: msg.sender_id,
             subject: msg.subject,
