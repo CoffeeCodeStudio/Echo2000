@@ -124,11 +124,15 @@ export function usePendingFriendRequests() {
     };
   }, [user, fetchRequests]);
 
-  const acceptRequest = async (requestId: string, category: string, howMet: string) => {
+  const acceptRequest = async (requestId: string, category?: string | null, howMet?: string | null) => {
     try {
+      const updateData: Record<string, unknown> = { status: 'accepted' };
+      if (category) updateData.category = category;
+      if (howMet) updateData.how_met = howMet;
+
       const { error } = await supabase
         .from('friends')
-        .update({ status: 'accepted', category, how_met: howMet } as any)
+        .update(updateData as any)
         .eq('id', requestId);
 
       if (error) throw error;

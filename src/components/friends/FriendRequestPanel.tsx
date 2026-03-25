@@ -40,6 +40,19 @@ export function FriendRequestPanel({ open, onOpenChange }: FriendRequestPanelPro
     setSelectedHowMet("Online");
   };
 
+  const handleSkip = async () => {
+    if (!currentRequest) return;
+    setActionLoading(currentRequest.id);
+    const success = await acceptRequest(currentRequest.id, null, null);
+    setActionLoading(null);
+    if (success) {
+      setAcceptStep(3);
+      toast({ title: "Ny vän! 🎉", description: `Du och ${currentRequest.senderProfile.username} är nu vänner!` });
+    } else {
+      toast({ title: "Något gick fel", description: "Försök igen.", variant: "destructive" });
+    }
+  };
+
   const handleNextStep = async () => {
     if (acceptStep === 1) {
       setAcceptStep(2);
