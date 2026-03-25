@@ -605,13 +605,7 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
-    // Random delay: 50% chance to skip if < 5 min old
-    const oldestMsg = recentMsgs[recentMsgs.length - 1];
-    const msgAgeMin = (Date.now() - new Date(oldestMsg.created_at).getTime()) / 60000;
-    if (msgAgeMin < 5 && Math.random() < 0.5) {
-      results[bot.name as string].push(`Chat delayed: ${msgAgeMin.toFixed(0)}min old`);
-      return false;
-    }
+    // Always reply to unread messages that are at least 2 min old (no random skip)
 
     const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
@@ -673,9 +667,9 @@ async function runSingleBotLajvPost(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
   const { data: recentLajv } = await supabase
-    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", fiveMinAgo).limit(1);
+    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", twoMinAgo).limit(1);
 
   if (recentLajv && recentLajv.length > 0) {
     results[botName].push("Lajv: cooldown");
@@ -705,9 +699,9 @@ async function runSingleBotGuestbookWrite(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
   const { data: recentWrites } = await supabase
-    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", fiveMinAgo).limit(1);
+    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", threeMinAgo).limit(1);
 
   if (recentWrites && recentWrites.length > 0) {
     results[botName].push("GB write: cooldown");
