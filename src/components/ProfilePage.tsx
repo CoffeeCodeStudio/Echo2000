@@ -16,7 +16,6 @@ import { ProfileFriendsTab } from "./ProfileFriendsTab";
 import { usePresence } from "@/hooks/usePresence";
 import type { UserStatus } from "./StatusIndicator";
 
-import { ProfileHeaderBar } from "./profile/ProfileHeaderBar";
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
 import {
   type EditableProfileData,
@@ -130,16 +129,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         </div>
       )}
 
-      <ProfileHeaderBar
-        displayData={displayData}
-        isOwnProfile={isOwnProfile}
-        isEditing={isEditing}
-        saving={saving}
-        showDemoMode={showDemoMode}
-        onEdit={() => setIsEditing(true)}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
 
       {/* Profile content */}
       <div className="container px-4 py-4 max-w-5xl mx-auto space-y-4">
@@ -149,11 +138,16 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           setEditData={setEditData}
           isEditing={isEditing}
           isOwnProfile={isOwnProfile}
+          showDemoMode={showDemoMode}
           userId={userId}
           userStatus={userStatus}
           userActivity={userActivity}
           lastSeen={lastSeen}
           memberSince={memberSince}
+          onEdit={() => setIsEditing(true)}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          saving={saving}
         />
 
         {profileUserId && (
