@@ -11,7 +11,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import type { UserStatus } from "./StatusIndicator";
-import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
 import {
@@ -28,7 +27,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
-  const { getUserStatus, getUserActivity } = usePresence();
   const { getUserStatus, getUserActivity } = usePresence();
 
   const isLoggedIn = !!user;
