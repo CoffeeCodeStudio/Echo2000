@@ -1,16 +1,18 @@
 /** KlotterGallery - Gallery view for published klotter drawings with lightbox */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { MessageSquare, ChevronLeft, ChevronRight, X, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar } from "../Avatar";
 import { formatTimeAgo } from "@/lib/format";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { ClickableUsername } from "../ClickableUsername";
 import { GoodVibe } from "./GoodVibe";
 
 interface KlotterItem {
   id: string;
+  user_id?: string;
   author_name: string;
   comment: string | null;
   created_at: string;
@@ -23,11 +25,14 @@ interface KlotterGalleryProps {
   loading: boolean;
   isMobile: boolean;
   onSwitchToDraw: () => void;
+  currentUserId?: string;
+  onDelete?: (id: string) => Promise<boolean>;
 }
 
-export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: KlotterGalleryProps) {
+export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, currentUserId, onDelete }: KlotterGalleryProps) {
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   if (klotter.length === 0) {
     return (
@@ -43,12 +48,22 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
   }
 
   const currentItem = lightboxIndex !== null ? klotter[lightboxIndex] : null;
+  const isOwnItem = currentItem && currentUserId && currentItem.user_id === currentUserId;
 
   const goPrev = () => {
     if (lightboxIndex !== null && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
   };
   const goNext = () => {
     if (lightboxIndex !== null && lightboxIndex < klotter.length - 1) setLightboxIndex(lightboxIndex + 1);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteId || !onDelete) return;
+    const success = await onDelete(pendingDeleteId);
+    if (success) {
+      setLightboxIndex(null);
+    }
+    setPendingDeleteId(null);
   };
 
   return (
@@ -92,9 +107,22 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
                     <p className="text-white/50 text-xs">{formatTimeAgo(currentItem.created_at)}</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8" onClick={() => setLightboxIndex(null)}>
-                  <X className="w-5 h-5" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {isOwnItem && onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-400/70 hover:text-red-400 hover:bg-red-500/10 h-8 w-8"
+                      onClick={() => setPendingDeleteId(currentItem.id)}
+                      title="Radera klotter"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8" onClick={() => setLightboxIndex(null)}>
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
 
               {/* Image */}
@@ -151,6 +179,22 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw }: K
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Radera klotter?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vill du verkligen radera detta klotter? Det går inte att ångra.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Radera</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

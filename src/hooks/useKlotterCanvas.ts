@@ -46,7 +46,7 @@ export function useKlotterCanvas() {
   const [activeTab, setActiveTab] = useState<"draw" | "gallery">("gallery");
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const { klotter, loading: klotterLoading, uploadAndSaveKlotter } = useKlotter();
+  const { klotter, loading: klotterLoading, uploadAndSaveKlotter, deleteKlotter } = useKlotter();
   const { user } = useAuth();
   const context = useOutletContext<LayoutContext>();
   const setHideNavbar = context?.setHideNavbar;
@@ -269,6 +269,7 @@ export function useKlotterCanvas() {
     // Gallery data
     klotter,
     klotterLoading,
+    deleteKlotter,
 
     // Misc
     isMobile,
