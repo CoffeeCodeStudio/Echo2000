@@ -1727,6 +1727,22 @@ async function handleEmailReplies(
 }
 
 // =============================================
+// Helper: check if user has admin or moderator role
+// =============================================
+async function isAdminOrMod(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["admin", "moderator"])
+    .limit(1);
+  return !!(data && data.length > 0);
+}
+
+// =============================================
 // Helper: call bot-respond edge function
 // =============================================
 async function callBotRespond(
