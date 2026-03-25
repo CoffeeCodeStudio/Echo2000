@@ -3,6 +3,7 @@
  * Main "PROFIL" tab content – thin render shell delegating to sub-components.
  */
 import { Edit2, Save, X, Loader2 } from "lucide-react";
+import { AiBadge } from "@/components/AiBadge";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FriendActionButtons } from "@/components/friends/FriendActionButtons";
@@ -31,11 +32,12 @@ interface ProfileInfoSectionProps {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  isBot?: boolean;
 }
 
 export function ProfileInfoSection({
   displayData, editData, setEditData, isEditing, isOwnProfile, showDemoMode, userId,
-  userStatus, userActivity, lastSeen, memberSince, onEdit, onSave, onCancel, saving,
+  userStatus, userActivity, lastSeen, memberSince, onEdit, onSave, onCancel, saving, isBot,
 }: ProfileInfoSectionProps) {
   const navigate = useNavigate();
   const drLoveScore = 73;
@@ -45,9 +47,12 @@ export function ProfileInfoSection({
       <div className="p-4">
         {/* Username + Edit button row */}
         <div className="flex items-start justify-between mb-4">
-          <h1 className="font-display font-bold text-2xl sm:text-3xl uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            {displayData.username}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-display font-bold text-2xl sm:text-3xl uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {displayData.username}
+            </h1>
+            {isBot && <AiBadge />}
+          </div>
           {isOwnProfile && !showDemoMode && (
             <div className="shrink-0">
               {isEditing ? (

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLajv } from '@/contexts/LajvContext';
 import { Avatar } from '../Avatar';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Send, Radio, Clock } from 'lucide-react';
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { AuthDialog } from '../auth/AuthDialog';
 import { toast } from 'sonner';
+import { AiBadge } from '../AiBadge';
 
 export function LajvSection() {
   const { user, loading: authLoading } = useAuth();
@@ -16,7 +18,15 @@ export function LajvSection() {
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [botUserIds, setBotUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch bot user IDs once
+  useEffect(() => {
+    supabase.from('profiles').select('user_id').eq('is_bot', true).then(({ data }) => {
+      if (data) setBotUserIds(new Set(data.map(d => d.user_id)));
+    });
+  }, []);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -136,6 +146,7 @@ export function LajvSection() {
                   >
                     {msg.username}
                   </button>
+                  {botUserIds.has(msg.user_id) && <AiBadge />}
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>

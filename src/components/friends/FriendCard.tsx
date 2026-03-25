@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { PersonalityMeter } from "../PersonalityMeter";
 import { useFriendVotes } from "@/hooks/useFriendVotes";
 import { cn } from "@/lib/utils";
+import { AiBadge } from "../AiBadge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export interface FriendData {
   friendshipStatus: string;
   isIncoming: boolean;
   category: FriendCategory;
+  isBot?: boolean;
 }
 
 interface FriendCardProps {
@@ -93,6 +95,7 @@ export function FriendCard({
             >
               {friend.name}
             </span>
+            {friend.isBot && <AiBadge />}
             {friend.isBestFriend && (
               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
             )}
