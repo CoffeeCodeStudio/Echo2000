@@ -119,6 +119,7 @@ export function FriendRequestPanel({ open, onOpenChange }: FriendRequestPanelPro
               onSelectHowMet={setSelectedHowMet}
               onNext={handleNextStep}
               onBack={handleBack}
+              onSkip={handleSkip}
               loading={actionLoading === currentRequest.id}
             />
           ) : loading ? (
