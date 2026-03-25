@@ -1375,17 +1375,17 @@ h6 {
     box-shadow: 0 0 6px hsl(var(--primary) / 0.8);
   }
 
-  /* Tablet (768-1024): icons only, no labels */
+  /* Tablet (768-1024): icons only, no labels, compact spacing */
   @media (min-width: 768px) and (max-width: 1024px) {
     .header-nav-item {
-      padding: 4px;
-      min-width: 28px;
-      border-radius: 6px;
+      padding: 3px;
+      min-width: 24px;
+      border-radius: 5px;
       gap: 0;
     }
 
     .header-nav-icon {
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .header-nav-label {
