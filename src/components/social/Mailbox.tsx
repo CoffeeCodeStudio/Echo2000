@@ -87,32 +87,22 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
           return;
         }
 
-        // Get sender profiles
+        // Get sender profiles using .or() for better RLS compatibility
         const senderIds = [...new Set(messages.map((m) => m.sender_id))];
         const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id, username, avatar_url")
-          .in("user_id", senderIds);
+          .or(senderIds.map(id => `user_id.eq.${id}`).join(","));
 
-        // Fallback: individually fetch any senders missing from batch query
         const fetchedMap = new Map<string, { username: string; avatar_url: string | null }>();
         profiles?.forEach((p) => fetchedMap.set(p.user_id, { username: p.username, avatar_url: p.avatar_url }));
 
-        const missingSenderIds = senderIds.filter((id) => !fetchedMap.has(id));
-        if (missingSenderIds.length > 0) {
-          for (const senderId of missingSenderIds) {
-            const { data: individual } = await supabase
-              .from("profiles")
-              .select("user_id, username, avatar_url")
-              .eq("user_id", senderId)
-              .single();
-            if (individual) {
-              fetchedMap.set(individual.user_id, { username: individual.username, avatar_url: individual.avatar_url });
-            } else {
-              fetchedMap.set(senderId, { username: "Borttagen användare", avatar_url: null });
-            }
+        // Mark truly missing senders
+        senderIds.forEach((id) => {
+          if (!fetchedMap.has(id)) {
+            fetchedMap.set(id, { username: "Borttagen användare", avatar_url: null });
           }
-        }
+        });
 
         // Map to MailMessage format
         const mailList: MailMessage[] = messages.map((msg) => {
