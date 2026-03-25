@@ -9,11 +9,8 @@ import { Button } from "./ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { ProfileGuestbook } from "./ProfileGuestbook";
-import { VisitorLog } from "./VisitorLog";
-import { useProfileVisits } from "@/hooks/useProfileVisits";
-import { ProfileFriendsTab } from "./ProfileFriendsTab";
 import { usePresence } from "@/hooks/usePresence";
+import type { UserStatus } from "./StatusIndicator";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
@@ -31,7 +28,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
-  const { visitors } = useProfileVisits(userId);
+  const { getUserStatus, getUserActivity } = usePresence();
   const { getUserStatus, getUserActivity } = usePresence();
 
   const isLoggedIn = !!user;
@@ -149,24 +146,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           onCancel={handleCancel}
           saving={saving}
         />
-
-        {profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-4">
-            <ProfileGuestbook profileOwnerId={profileUserId} isOwnProfile={isOwnProfile} />
-          </div>
-        )}
-
-        {profileUserId && (
-          <div>
-            <ProfileFriendsTab userId={profileUserId} />
-          </div>
-        )}
-
-        {isOwnProfile && profileUserId && (
-          <div className="bg-card rounded-lg border border-border p-4">
-            <VisitorLog visitors={visitors} />
-          </div>
-        )}
       </div>
     </div>
   );
