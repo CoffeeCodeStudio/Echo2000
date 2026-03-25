@@ -77,7 +77,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
   return (
     <>
       {/* Presentation */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-6">
         <h3 className="text-xs font-bold text-muted-foreground uppercase mb-2">Presentation</h3>
 
         {isEditing ? (
@@ -223,19 +223,22 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
           <>
             {presentationText ? (
               <div
-                className={cn("text-sm rounded relative overflow-hidden", displayData.presentation_bg_url ? "p-4" : "")}
-                style={displayData.presentation_bg_url ? {
-                  backgroundImage: `url(${displayData.presentation_bg_url})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                } : undefined}
+                className={cn("text-sm rounded relative", displayData.presentation_bg_url ? "" : "")}
+                style={{
+                  minHeight: "300px",
+                  ...(displayData.presentation_bg_url ? {
+                    backgroundImage: `url(${displayData.presentation_bg_url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  } : {}),
+                }}
               >
                 {displayData.presentation_bg_url && (
-                  <div className="absolute inset-0 bg-black/50" />
+                  <div className="absolute inset-0 bg-black/50 rounded" />
                 )}
                 <div
-                  className={cn("relative z-10", displayData.presentation_bg_url ? "text-white" : "text-foreground/80")}
-                  style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                  className={cn("relative z-10 p-6", displayData.presentation_bg_url ? "text-white" : "text-foreground/80")}
+                  style={{ wordBreak: "break-word", maxWidth: "100%" }}
                   dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
                 />
               </div>

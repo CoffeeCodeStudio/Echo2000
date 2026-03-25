@@ -161,7 +161,7 @@ export default function Index() {
         );
 
       case "gastbok":
-        return <ProfilePage initialTab="gastbok" />;
+        return <ProfilePage />;
 
       case "mejl":
         if (userRole === 'admin' || userRole === 'moderator') {
@@ -210,7 +210,7 @@ export default function Index() {
         return <ProfilePage />;
 
       case "besokare":
-        return <ProfilePage initialTab="besokare" />;
+        return <ProfilePage />;
 
       default:
         return null;
