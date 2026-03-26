@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { replaceEmoteCodes } from './social/PixelEmotes';
+import { sanitizeAvatarUrl } from '@/lib/avatar-url';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { AiBadge } from "../AiBadge";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 
 interface MemberProfile {
   user_id: string;
