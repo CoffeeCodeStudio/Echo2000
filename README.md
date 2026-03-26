@@ -1,6 +1,6 @@
 # Echo2000 🦋
 
-**En nostalgisk chatt-community inspirerad av MSN Messenger och LunarStorm — återuppbyggd med modern teknik.**
+**Echo2000 är byggt för dig som tröttnat på sociala medier som behandlar dig som en reklamyta.**
 
 > ⚠️ **Status: Alpha** — Projektet är under aktiv utveckling. Funktioner kan ändras, gå sönder eller försvinna utan förvarning.
 
@@ -12,7 +12,19 @@
 
 ## Om projektet
 
-Echo2000 är en social plattform som återskapar känslan av 2000-talets svenska internet — med profiler, gästböcker, chatt, spel och klotterplank. Allt byggt med modern webbteknik men designat för att kännas som att öppna MSN Messenger för första gången.
+Här finns inga algoritmer som bestämmer vad du ser. Ingen endless scroll. Ingen reklam. Bara din profil, dina vänner och en community där folk faktiskt pratar med varandra.
+
+Estetiken är inspirerad av tidigt 2000-tal — inte för att vi vill bli barn igen, utan för att den eran hade något som gått förlorat: enkelhet, personlighet och genuint bemötande.
+
+*Som förr. Fast nu.*
+
+## 🎯 Vision
+
+Ett svar på vad sociala medier blev.
+
+Moderna plattformar tog något ifrån oss — personlighet, lugn och äkta kontakt — och ersatte det med algoritmer, reklam och endless scroll. Echo2000 bygger det tillbaka.
+
+**Målgrupp:** 25+ år. Folk som vill ha en plats att faktiskt umgås på — inte konsumera.
 
 ## ✨ Funktioner
 
@@ -27,7 +39,7 @@ Echo2000 är en social plattform som återskapar känslan av 2000-talets svenska
 - Realtidschatt med MSN Messenger-inspirerat gränssnitt
 - Kontaktlista med online-status
 - Emoticons och ljud
-- Röst-/videosamtal via WebRTC
+- 🔜 Röst-/videosamtal via WebRTC — *Kommer under beta*
 
 ### 🎨 Klotterplanket
 - Rita och publicera klotter med canvas-verktyg
@@ -39,17 +51,19 @@ Echo2000 är en social plattform som återskapar känslan av 2000-talets svenska
 - 🧠 Memory med svårighetsgrader
 - ✏️ Scribble (rita-och-gissa) multiplayer
 
-### 📰 Nyheter & Community
-- Redaktionella nyhetsartiklar med kommentarer
+### 📰 Community
 - Lajv-ticker (temporära meddelanden)
 - Medlemslista med sökfunktion
 - Brevlåda (intern post)
+- 🔜 Nyhetsredaktion med kommentarer — *Kommer under beta*
 
-### 🤖 Bottar
-- **35+ AI-bottar** med unika personligheter, tonfall och beteenden
-- Bottarna skriver i gästböcker, svarar i chatten och interagerar med communityn
-- Adminpanel för att skapa, konfigurera och hantera bottar (aktivitetsnivå, system-prompt, kontext)
-- Automatisk bot-cron för periodisk aktivitet
+### 🤖 AI-karaktärer
+**AI-karaktärer** — Tydligt märkta AI-profiler som håller communityn aktiv under uppstartsfasen och hjälper nya användare med onboarding. Ersätter inte riktiga människor — kompletterar dem.
+
+- **35+ AI-karaktärer** med unika personligheter, tonfall och beteenden
+- Karaktärerna skriver i gästböcker, svarar i chatten och interagerar med communityn
+- Adminpanel för att skapa, konfigurera och hantera karaktärer (aktivitetsnivå, system-prompt, kontext)
+- Automatisk cron för periodisk aktivitet
 
 ### 🔒 Admin
 - Användarhantering (godkännande, roller, bannlysning)
