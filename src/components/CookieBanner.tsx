@@ -19,6 +19,11 @@ export function CookieBanner() {
     setVisible(false);
   };
 
+  const decline = () => {
+    localStorage.setItem(COOKIE_KEY, "declined");
+    setVisible(false);
+  };
+
   if (!visible) return null;
 
   return (
@@ -28,6 +33,9 @@ export function CookieBanner() {
         <p className="text-sm text-muted-foreground flex-1">
           Echo2000 använder cookies för att förbättra din upplevelse.
         </p>
+        <Button size="sm" variant="outline" onClick={decline}>
+          Neka
+        </Button>
         <Button size="sm" onClick={accept}>
           Godkänn
         </Button>
