@@ -197,16 +197,16 @@ export default function Auth() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-md overflow-y-auto py-8">
       <button
         onClick={() => navigate("/")}
-        className="absolute top-4 right-4 z-[60] p-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="fixed top-4 right-4 z-[60] p-2 text-muted-foreground hover:text-foreground transition-colors"
         aria-label="Stäng"
       >
         <X className="w-6 h-6" />
       </button>
 
-      <div className="w-full max-w-md mx-4 relative">
+      <div className="w-full max-w-md mx-4 relative my-auto">
         <div className="text-center mb-6">
           <div className="font-display font-black text-3xl tracking-tight mb-2">
             <span className="text-foreground">ECHO</span>
