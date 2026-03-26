@@ -6,6 +6,7 @@
  */
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Snowflake } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Flake {
   x: number;
@@ -104,6 +105,7 @@ function SnowCanvas({ flakeCount, className = "" }: SnowCanvasProps) {
 }
 
 export function Snowfall() {
+  const isMobile = useIsMobile();
   const [enabled, setEnabled] = useState(() => {
     try {
       return localStorage.getItem("echo2000-snow") !== "off";
@@ -127,13 +129,16 @@ export function Snowfall() {
 
   const showSnow = enabled && !isClearView;
 
+  const backCount = isMobile ? 18 : 40;
+  const frontCount = isMobile ? 6 : 15;
+
   return (
     <>
       {/* Back layer — behind content */}
-      {showSnow && <SnowCanvas flakeCount={40} className="z-0 pointer-events-none" />}
+      {showSnow && <SnowCanvas flakeCount={backCount} className="z-0 pointer-events-none" />}
 
-      {/* Front layer — subtle foreground depth */}
-      {showSnow && <SnowCanvas flakeCount={15} className="z-10 pointer-events-none opacity-50" />}
+      {/* Front layer — subtle foreground depth (skip on mobile) */}
+      {showSnow && !isMobile && <SnowCanvas flakeCount={frontCount} className="z-10 pointer-events-none opacity-50" />}
 
       {/* Toggle button */}
       <button
