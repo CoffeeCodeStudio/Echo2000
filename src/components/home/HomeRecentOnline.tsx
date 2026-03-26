@@ -23,7 +23,7 @@ export function HomeRecentOnline() {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("user_id, username, avatar_url, is_bot, last_seen")
+          .select("user_id, username, avatar_url, is_bot, last_seen, age, gender")
           .order("last_seen", { ascending: false })
           .limit(10);
         if (data) setMembers(data);
