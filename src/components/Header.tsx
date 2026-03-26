@@ -37,6 +37,7 @@ interface HeaderProps {
 
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [friendRequestOpen, setFriendRequestOpen] = useState(false);
 
   const { user, loading, signOut } = useAuth();
@@ -130,6 +131,22 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
   { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
   { id: "besokare" as Tab, label: "SPANARE", emoji: "👀", animationClass: "scale-in" }];
+
+  // Fetch pending approval count for admin badge
+  useEffect(() => {
+    if (!isAdmin) { setPendingCount(0); return; }
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_approved", false)
+        .eq("is_bot", false);
+      setPendingCount(count ?? 0);
+    };
+    fetchPending();
+    const interval = setInterval(fetchPending, 30_000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
 
   // Community zone items (right group)
@@ -315,10 +332,15 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/admin")}
-                className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
+                className="relative text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
                 aria-label="Admin">
                       <Shield className="w-4 h-4" />
                       <span className="hidden sm:inline">Admin</span>
+                      {pendingCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse">
+                          {pendingCount}
+                        </span>
+                      )}
                     </Button>
               }
                   <DropdownMenu>
