@@ -252,23 +252,18 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
 
             <div className="space-y-2">
               <Label className="text-base font-semibold">Sysselsättning</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {occupationOptions.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setOccupation(option)}
-                    className={cn(
-                      "py-3 px-4 rounded-lg border-2 font-medium transition-all",
-                      occupation === option
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+              <Select value={occupation} onValueChange={setOccupation}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Välj..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {occupationOptions.map((option) => (
+                    <SelectItem key={option} value={option} className="text-base py-3">
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
