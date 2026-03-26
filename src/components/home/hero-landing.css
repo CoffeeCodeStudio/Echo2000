@@ -110,6 +110,15 @@
   pointer-events: none;
   z-index: 1;
   filter: drop-shadow(0 0 8px rgba(216, 97, 62, 0.2));
+  will-change: transform, opacity;
+}
+
+/* ===== Mobile: smaller icons ===== */
+@media (max-width: 640px) {
+  .hero-floating-icon {
+    font-size: calc(var(--icon-size, 28px) * 0.7) !important;
+    filter: none;
+  }
 }
 
 /* ===== Glitch text effect ===== */
