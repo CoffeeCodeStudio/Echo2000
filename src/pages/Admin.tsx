@@ -154,8 +154,13 @@ export default function Admin() {
           <Button variant={activeTab === "moderate" ? "default" : "outline"} onClick={() => setActiveTab("moderate")}>
             <Activity className="w-4 h-4 mr-2" />Moderering
           </Button>
-          <Button variant={activeTab === "images" ? "default" : "outline"} onClick={() => setActiveTab("images")}>
+          <Button variant={activeTab === "images" ? "default" : "outline"} onClick={() => setActiveTab("images")} className="relative">
             <ImageIcon className="w-4 h-4 mr-2" />Bildgranskning
+            {pendingImageCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {pendingImageCount}
+              </span>
+            )}
           </Button>
           <Button variant={activeTab === "bots" ? "default" : "outline"} onClick={() => setActiveTab("bots")}>
             <Bot className="w-4 h-4 mr-2" />AI-Botar
