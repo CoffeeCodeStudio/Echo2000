@@ -119,6 +119,25 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
   const showGuestbook = (!isOwnProfile && !showDemoMode && profileUserId) || showSection === "gastbok";
   const showVisitors = isOwnProfile && showSection === "besokare";
 
+  // Spanare-only view: skip profile card, show only visitor log
+  if (showVisitors) {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+        <div className="container px-4 py-4 max-w-5xl mx-auto">
+          <div className="bg-card rounded-lg border border-border p-4">
+            {visitorsLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <VisitorLog visitors={visitors} />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
       {/* Demo Mode Banner */}
@@ -162,19 +181,6 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
             profileOwnerId={profileUserId}
             isOwnProfile={isOwnProfile}
           />
-        )}
-
-        {/* Visitor log — shown on own profile via besokare tab */}
-        {showVisitors && (
-          <div className="bg-card rounded-lg border border-border p-4">
-            {visitorsLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <VisitorLog visitors={visitors} />
-            )}
-          </div>
         )}
       </div>
     </div>
