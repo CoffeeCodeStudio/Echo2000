@@ -15,7 +15,7 @@ interface AvatarUpload {
   username?: string;
 }
 
-export function AdminImageReview() {
+export function AdminImageReview({ onCountChange }: { onCountChange?: () => void }) {
   const [uploads, setUploads] = useState<AvatarUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
