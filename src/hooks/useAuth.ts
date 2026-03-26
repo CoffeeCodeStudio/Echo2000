@@ -54,7 +54,7 @@ export function useAuth() {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (email: string, password: string, username: string, joinReason?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -62,6 +62,7 @@ export function useAuth() {
         emailRedirectTo: window.location.origin,
         data: {
           username,
+          join_reason: joinReason || '',
         },
       },
     });

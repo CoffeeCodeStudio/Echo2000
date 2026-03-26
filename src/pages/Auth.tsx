@@ -145,7 +145,7 @@ export default function Auth() {
           return;
         }
 
-        const { data, error } = await signUp(email, password, username);
+        const { data, error } = await signUp(email, password, username, joinReason.trim());
         if (error) {
           toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
         } else if (data.user) {
