@@ -1,10 +1,10 @@
 /**
  * @module HeroLanding
- * 2026 Premium Nostalgia hero for logged-out users.
- * Kinetic typography, glassmorphism pills, refined CTA.
+ * Cinematic retro hero with CRT boot-up, floating icons, glitch typography,
+ * typewriter subtitle, and a pulsating CTA.
  */
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
 import { Snowfall } from "./Snowfall";
@@ -16,14 +16,53 @@ interface MemberAvatar {
   avatar_url: string | null;
 }
 
+/* ── floating retro icons ── */
+const FLOATING_ICONS = [
+  { emoji: "💾", x: "8%",  y: "15%", size: "32px", dur: "7s",  delay: "0s",   opacity: 0.25, rotS: -8,  rotE: 8 },
+  { emoji: "📟", x: "85%", y: "12%", size: "28px", dur: "9s",  delay: "1s",   opacity: 0.2,  rotS: 5,   rotE: -5 },
+  { emoji: "📀", x: "12%", y: "70%", size: "36px", dur: "8s",  delay: "0.5s", opacity: 0.2,  rotS: -12, rotE: 12 },
+  { emoji: "🖥️", x: "90%", y: "65%", size: "30px", dur: "6s",  delay: "2s",   opacity: 0.18, rotS: 3,   rotE: -3 },
+  { emoji: "📞", x: "18%", y: "42%", size: "24px", dur: "10s", delay: "1.5s", opacity: 0.15, rotS: -6,  rotE: 6 },
+  { emoji: "🎵", x: "78%", y: "38%", size: "26px", dur: "7s",  delay: "3s",   opacity: 0.2,  rotS: 10,  rotE: -10 },
+  { emoji: "✉️", x: "50%", y: "80%", size: "22px", dur: "11s", delay: "0.8s", opacity: 0.15, rotS: -4,  rotE: 4 },
+  { emoji: "🌐", x: "35%", y: "10%", size: "20px", dur: "8s",  delay: "2.5s", opacity: 0.12, rotS: 6,   rotE: -6 },
+  { emoji: "📱", x: "65%", y: "75%", size: "24px", dur: "9s",  delay: "1.2s", opacity: 0.18, rotS: -8,  rotE: 8 },
+  { emoji: "🎧", x: "42%", y: "55%", size: "20px", dur: "12s", delay: "3.5s", opacity: 0.12, rotS: 3,   rotE: -3 },
+];
+
+/* ── typewriter hook ── */
+function useTypewriter(text: string, speed = 40, startDelay = 1800) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    let idx = 0;
+    const start = () => {
+      timer = setInterval(() => {
+        idx++;
+        setDisplayed(text.slice(0, idx));
+        if (idx >= text.length) {
+          clearInterval(timer);
+          setDone(true);
+        }
+      }, speed);
+    };
+    const delayTimer = setTimeout(start, startDelay);
+    return () => { clearTimeout(delayTimer); clearInterval(timer); };
+  }, [text, speed, startDelay]);
+
+  return { displayed, done };
+}
+
 /* ── avatar with initial-letter fallback ── */
 function MemberBubble({ member, index }: { member: MemberAvatar; index: number }) {
   const initial = member.username.charAt(0).toUpperCase();
   const hasAvatar = !!member.avatar_url;
-  const delay = `${index * 0.08}s`;
+  const delay = `${2.2 + index * 0.1}s`;
 
   const baseClass =
-    "w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary/50 animate-kinetic-slide-up";
+    "w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary/50 hero-reveal";
 
   return hasAvatar ? (
     <img
@@ -51,10 +90,7 @@ function SocialProofSkeleton() {
     <div className="flex flex-col items-center gap-3 mt-10 animate-pulse">
       <div className="flex -space-x-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted/30 border-2 border-border"
-          />
+          <div key={i} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted/30 border-2 border-border" />
         ))}
       </div>
       <div className="h-4 w-48 rounded-full bg-muted/20" />
@@ -68,16 +104,16 @@ function SocialProof({ members, loading }: { members: MemberAvatar[]; loading: b
   if (members.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-3 mt-10">
+    <div className="flex flex-col items-center gap-3 mt-10 hero-reveal" style={{ animationDelay: "2.8s" }}>
       <div className="flex -space-x-3">
         {members.map((m, i) => (
           <MemberBubble key={m.id} member={m} index={i} />
         ))}
       </div>
-      <p className="text-muted-foreground text-sm flex items-center gap-1.5">
+      <p className="text-sm flex items-center gap-1.5" style={{ color: "#8bb8c8" }}>
         <Users className="w-4 h-4" />
         <span>
-          <strong className="text-foreground">{members.length}+</strong> medlemmar har redan gått med
+          <strong className="text-white">{members.length}+</strong> medlemmar har redan gått med
         </span>
       </p>
     </div>
@@ -92,11 +128,26 @@ const visionItems = [
   { emoji: "❤️", text: "Gemenskap" },
 ];
 
+/* ── nostalgic ticker ── */
+const tickerText = "★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Spel ★ MSN-chatt ★ Lajv ★ DJ-spellista ★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Spel ★ MSN-chatt ★ Lajv ★ DJ-spellista ★ ";
+
 /* ── main component ── */
 export function HeroLanding() {
   const navigate = useNavigate();
   const [members, setMembers] = useState<MemberAvatar[]>([]);
   const [loading, setLoading] = useState(true);
+  const [booted, setBooted] = useState(false);
+  const [grainActive, setGrainActive] = useState(false);
+
+  const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
+  const { displayed: typedText, done: typingDone } = useTypewriter(subtitle, 35, 1600);
+
+  useEffect(() => {
+    // Trigger boot animation
+    const t1 = setTimeout(() => setBooted(true), 100);
+    const t2 = setTimeout(() => setGrainActive(true), 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -115,27 +166,74 @@ export function HeroLanding() {
     fetchMembers();
   }, []);
 
-  return (
-    <div className="flex-1 overflow-y-auto scrollbar-nostalgic" style={{ background: "linear-gradient(to bottom, #2D6B81 0%, #1e4e62 100%)" }}>
-      <div
-        className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative"
+  const floatingIcons = useMemo(() => (
+    FLOATING_ICONS.map((icon, i) => (
+      <span
+        key={i}
+        className="hero-floating-icon"
+        style={{
+          left: icon.x,
+          top: icon.y,
+          "--icon-size": icon.size,
+          "--float-duration": icon.dur,
+          "--float-delay": icon.delay,
+          "--icon-opacity": icon.opacity,
+          "--rot-start": `${icon.rotS}deg`,
+          "--rot-end": `${icon.rotE}deg`,
+        } as React.CSSProperties}
+        aria-hidden="true"
       >
+        {icon.emoji}
+      </span>
+    ))
+  ), []);
+
+  return (
+    <div
+      className={`flex-1 overflow-y-auto scrollbar-nostalgic ${booted ? "hero-crt-boot" : "opacity-0"}`}
+      style={{ background: "linear-gradient(135deg, #1a3a4a 0%, #2D6B81 35%, #1e4e62 70%, #163040 100%)" }}
+    >
+      {/* CRT scanlines */}
+      <div className="hero-scanlines" />
+
+      {/* VHS grain */}
+      <div className={`hero-grain ${grainActive ? "active" : ""}`} />
+
+      <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative">
         {/* Snowfall layers */}
         <Snowfall />
 
-        {/* Headline — Trebuchet MS */}
-        <h1 className="font-bold text-center max-w-4xl" style={{ fontFamily: "'Trebuchet MS', sans-serif" }}>
+        {/* Floating retro icons */}
+        {floatingIcons}
+
+        {/* Nostalgic ticker tape at top */}
+        <div
+          className="absolute top-0 left-0 right-0 hero-ticker py-2 hero-reveal"
+          style={{
+            animationDelay: "1.2s",
+            background: "rgba(0,0,0,0.25)",
+            borderBottom: "1px solid rgba(90, 148, 171, 0.3)",
+          }}
+        >
+          <span className="hero-ticker-text text-xs font-medium" style={{ color: "#5A94AB" }}>
+            {tickerText}
+          </span>
+        </div>
+
+        {/* Headline — with glitch effect */}
+        <h1 className="font-bold text-center max-w-4xl relative z-10" style={{ fontFamily: "'Trebuchet MS', sans-serif" }}>
           <span
-            className="block text-3xl sm:text-5xl md:text-7xl text-white animate-kinetic-slide-up"
-            style={{ lineHeight: 1.1, letterSpacing: "-0.03em" }}
+            className="block text-3xl sm:text-5xl md:text-7xl text-white hero-reveal"
+            style={{ lineHeight: 1.1, letterSpacing: "-0.03em", animationDelay: "0.6s" }}
           >
             Välkommen hem till
           </span>
           <span className="block mt-1 sm:mt-2">
             <span
-              className="text-4xl sm:text-6xl md:text-8xl animate-kinetic-blur-in"
+              className="hero-glitch-text text-4xl sm:text-6xl md:text-8xl hero-reveal"
+              data-text="2000"
               style={{
-                animationDelay: "0.2s",
+                animationDelay: "0.9s",
                 lineHeight: 1.1,
                 background: "linear-gradient(to bottom, #d8613e 0%, #b40c06 100%)",
                 WebkitBackgroundClip: "text",
@@ -146,37 +244,55 @@ export function HeroLanding() {
               2000
             </span>
             <span
-              className="text-4xl sm:text-6xl md:text-8xl text-white/90 animate-kinetic-blur-in"
-              style={{ animationDelay: "0.35s", lineHeight: 1.1 }}
+              className="text-4xl sm:text-6xl md:text-8xl text-white/90 hero-reveal"
+              style={{ animationDelay: "1.1s", lineHeight: 1.1 }}
             >
               -talet
             </span>
           </span>
         </h1>
 
+        {/* Typewriter subtitle */}
         <p
-          className="mt-5 sm:mt-8 text-base sm:text-lg md:text-xl text-center max-w-2xl animate-kinetic-slide-up"
-          style={{ lineHeight: 1.65, letterSpacing: "0.3px", animationDelay: "0.3s", color: "#ccd5d8", fontFamily: "'Trebuchet MS', sans-serif" }}
+          className="mt-5 sm:mt-8 text-base sm:text-lg md:text-xl text-center max-w-2xl relative z-10 hero-reveal"
+          style={{
+            lineHeight: 1.65,
+            letterSpacing: "0.3px",
+            animationDelay: "1.3s",
+            color: "#ccd5d8",
+            fontFamily: "'Trebuchet MS', sans-serif",
+            minHeight: "3.3em",
+          }}
         >
-          En nostalgisk community inspirerad av MSN&nbsp;Messenger, LunarStorm
-          och Playahead — fast med dagens teknik.
+          {typedText}
+          {!typingDone && <span className="hero-cursor" />}
         </p>
 
-        {/* Vision pills — Lunar glass style */}
+        {/* Vision pills */}
         <div
-          className="flex flex-wrap justify-center gap-2.5 sm:gap-3 mt-7 animate-kinetic-slide-up"
-          style={{ animationDelay: "0.4s" }}
+          className="flex flex-wrap justify-center gap-2.5 sm:gap-3 mt-7 relative z-10 hero-reveal"
+          style={{ animationDelay: "1.5s" }}
         >
-          {visionItems.map((v) => (
+          {visionItems.map((v, i) => (
             <span
               key={v.text}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-medium text-white/90 select-none"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-medium text-white/90 select-none transition-transform hover:scale-105"
               style={{
-                background: "#1e4e62",
+                background: "linear-gradient(135deg, #1e4e62 0%, #163040 100%)",
                 border: "1px solid #5A94AB",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
-              <span aria-hidden="true" style={{ filter: "drop-shadow(0 0 3px rgba(216,97,62,0.5))" }}>{v.emoji}</span> {v.text}
+              <span
+                aria-hidden="true"
+                style={{
+                  filter: "drop-shadow(0 0 4px rgba(216,97,62,0.6))",
+                  display: "inline-block",
+                }}
+              >
+                {v.emoji}
+              </span>
+              {v.text}
             </span>
           ))}
         </div>
@@ -184,22 +300,36 @@ export function HeroLanding() {
         {/* CTA */}
         <button
           onClick={() => navigate("/auth")}
-          className="hero-cta-button mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] animate-kinetic-slide-up"
-          style={{ animationDelay: "0.5s", fontFamily: "'Trebuchet MS', sans-serif" }}
+          className="hero-cta-button pulse-ring mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] relative z-10 hero-reveal"
+          style={{ animationDelay: "1.8s", fontFamily: "'Trebuchet MS', sans-serif" }}
         >
           Skapa din profil
         </button>
 
         <button
           onClick={() => navigate("/auth")}
-          className="mt-4 text-sm hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center animate-kinetic-slide-up cursor-pointer"
-          style={{ animationDelay: "0.55s", color: "#ccd5d8" }}
+          className="mt-4 text-sm hover:text-primary transition-colors underline underline-offset-4 min-h-[44px] flex items-center cursor-pointer relative z-10 hero-reveal"
+          style={{ animationDelay: "2s", color: "#8bb8c8" }}
         >
           Har du redan konto? Logga in
         </button>
 
         {/* Social proof */}
         <SocialProof members={members} loading={loading} />
+
+        {/* Bottom feature marquee */}
+        <div
+          className="absolute bottom-0 left-0 right-0 hero-reveal"
+          style={{
+            animationDelay: "2.5s",
+            background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
+            padding: "16px 0 8px",
+          }}
+        >
+          <p className="text-center text-xs" style={{ color: "#5A94AB", letterSpacing: "2px" }}>
+            ━━━ ALPHA v0.9 ━━━ COMMUNITY FÖR OSS SOM MINNS 56K-MODEM ━━━
+          </p>
+        </div>
       </div>
     </div>
   );
