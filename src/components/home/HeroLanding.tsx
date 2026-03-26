@@ -231,19 +231,6 @@ export function HeroLanding() {
         {/* Floating retro icons */}
         {floatingIcons}
 
-        {/* Nostalgic ticker tape at top */}
-        <div
-          className="absolute top-0 left-0 right-0 hero-ticker py-2 hero-reveal"
-          style={{
-            animationDelay: "1.2s",
-            background: "rgba(0,0,0,0.25)",
-            borderBottom: "1px solid rgba(90, 148, 171, 0.3)",
-          }}
-        >
-          <span className="hero-ticker-text text-xs font-medium" style={{ color: "#5A94AB" }}>
-            {tickerText}
-          </span>
-        </div>
 
         {/* Headline — with glitch effect */}
         <h1 className="font-bold text-center max-w-4xl relative z-10" style={{ fontFamily: "'Trebuchet MS', sans-serif" }}>
