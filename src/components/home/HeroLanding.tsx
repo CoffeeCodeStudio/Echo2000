@@ -140,6 +140,7 @@ export function HeroLanding() {
   const [loading, setLoading] = useState(true);
   const [booted, setBooted] = useState(false);
   const [grainActive, setGrainActive] = useState(false);
+  const isMobile = useIsMobile();
   const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
   const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
