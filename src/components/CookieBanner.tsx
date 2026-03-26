@@ -19,6 +19,11 @@ export function CookieBanner() {
     setVisible(false);
   };
 
+  const decline = () => {
+    localStorage.setItem(COOKIE_KEY, "declined");
+    setVisible(false);
+  };
+
   if (!visible) return null;
 
   return (
