@@ -28,7 +28,7 @@ export function BentoCard({ title, icon, children, className = "", contentClassN
         <h3 className="font-display font-bold text-sm tracking-wide">{title}</h3>
       </div>
       {/* Content */}
-      <div className={`${contentClassName ?? "px-4 py-3"} flex-1`} style={{ padding: contentClassName ? undefined : undefined }}>{children}</div>
+      <div className={`${contentClassName ?? "px-4 py-3"} flex-1`}>{children}</div>
     </div>
   );
 }
