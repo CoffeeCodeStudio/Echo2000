@@ -199,7 +199,7 @@ export function HeroLanding() {
 
   return (
     <div
-      className={`flex-1 overflow-y-auto scrollbar-nostalgic ${booted ? "hero-crt-boot" : "opacity-0"}`}
+      className={`flex-1 overflow-hidden ${booted ? "hero-crt-boot" : "opacity-0"}`}
       style={{ background: "linear-gradient(135deg, #1a3a4a 0%, #2D6B81 35%, #1e4e62 70%, #163040 100%)" }}
     >
       {/* CRT scanlines */}
