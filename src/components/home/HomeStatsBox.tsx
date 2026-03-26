@@ -39,16 +39,19 @@ export function HomeStatsBox() {
   useEffect(() => {
     const fetchStats = async () => {
       if (user) {
-        const [{ count: memberCount }, { count: msgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
+        // Small delay to ensure auth session is propagated to supabase client
+        await new Promise(r => setTimeout(r, 300));
+        const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
           supabase.from("profiles").select("*", { count: "exact", head: true }),
           supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+          supabase.from("messages").select("*", { count: "exact", head: true }),
           supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
           supabase.from("klotter").select("*", { count: "exact", head: true }),
         ]);
         setStats({
           members: memberCount ?? 0,
           online: 0,
-          messages: msgCount ?? 0,
+          messages: (chatMsgCount ?? 0) + (mailMsgCount ?? 0),
           guestbook: gbCount ?? 0,
           klotter: klCount ?? 0,
         });
