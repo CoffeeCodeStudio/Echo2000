@@ -165,7 +165,7 @@ export function MemberGrid() {
               className="nostalgia-card p-4 flex flex-col items-center gap-2 hover:border-primary/50 transition-all hover:-translate-y-0.5"
             >
               <div className="relative">
-                <Avatar name={member.username} src={member.avatar_url} size="lg" />
+                <Avatar name={member.username} src={sanitizeAvatarUrl(member.avatar_url) || undefined} size="lg" />
                 <div className="absolute -bottom-0.5 -right-0.5">
                   <StatusIndicator status={member._status} size="md" />
                 </div>

@@ -195,7 +195,7 @@ export function ProfileGuestbook({
               <div className="flex items-start gap-3">
                 <ClickableUsername
                   username={entry.author_name}
-                  avatarUrl={entry.author_avatar}
+                  avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
                   showAvatar
                   avatarSize="sm"
                 />
