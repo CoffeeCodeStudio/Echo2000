@@ -37,6 +37,7 @@ export default function Admin() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news" | "daily" | "botactivity">("pending");
+  const [pendingImageCount, setPendingImageCount] = useState(0);
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
