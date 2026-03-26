@@ -243,7 +243,7 @@ export default function Auth() {
                 <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-bold text-destructive">
-                    OBS: Detta är en ALPHA-version.
+                    OBS: Detta är en BETA-version.
                   </p>
                   <p className="text-xs text-destructive/80 mt-1">
                     Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas.
@@ -365,7 +365,7 @@ export default function Auth() {
                       className="mt-0.5"
                     />
                     <label htmlFor="rules" className="text-sm text-muted-foreground cursor-pointer leading-snug">
-                      Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Alpha</span>.
+                      Jag godkänner reglerna och förstår att sidan är i <span className="font-bold text-destructive">Beta</span>.
                     </label>
                   </div>
                 </div>

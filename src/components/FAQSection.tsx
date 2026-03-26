@@ -75,7 +75,7 @@ const faqItems: FAQItem[] = [
     answer: "AI-konton är tydligt märkta med en AI-badge på profilen.",
   },
   {
-    question: "Vad är Alpha?",
+    question: "Vad är Beta?",
     answer: "Sidan är under aktiv utveckling. Funktioner kan ändras och vi söker just nu de första testarna.",
   },
   {
@@ -237,7 +237,7 @@ export function FAQSection() {
           </h2>
           <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
             <p>Echo2000 är <strong className="text-foreground">inte</strong> anslutet till, sponsrat av eller affilierat med LunarStorm, Microsoft, MSN eller något annat företag. Alla varumärken tillhör sina respektive ägare.</p>
-            <p>Echo2000 är i <strong className="text-destructive">alpha-fas</strong> och kan innehålla buggar, ofärdiga funktioner och oväntade ändringar. Data kan komma att återställas under utvecklingsperioden.</p>
+            <p>Echo2000 är i <strong className="text-destructive">beta-fas</strong> och kan innehålla buggar, ofärdiga funktioner och oväntade ändringar. Data kan komma att återställas under utvecklingsperioden.</p>
             <p>Plattformen förbehåller sig rätten att moderera och ta bort innehåll som bryter mot community-reglerna utan föregående varning.</p>
           </div>
         </section>
@@ -265,7 +265,7 @@ export function FAQSection() {
           <p>
             <a href="/villkor" className="text-primary hover:underline">Användarvillkor</a>
           </p>
-          <p>© 2026 Echo2000 Alpha</p>
+          <p>© 2026 Echo2000 Beta</p>
         </footer>
       </div>
     </div>
