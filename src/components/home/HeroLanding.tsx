@@ -139,13 +139,17 @@ export function HeroLanding() {
   const [loading, setLoading] = useState(true);
   const [booted, setBooted] = useState(false);
   const [grainActive, setGrainActive] = useState(false);
+  const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
   const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
   const { displayed: typedText, done: typingDone } = useTypewriter(subtitle, 35, 1600);
 
   useEffect(() => {
-    // Trigger boot animation
-    const t1 = setTimeout(() => setBooted(true), 100);
+    // Trigger boot animation + sound
+    const t1 = setTimeout(() => {
+      setBooted(true);
+      playCrtSound();
+    }, 100);
     const t2 = setTimeout(() => setGrainActive(true), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
