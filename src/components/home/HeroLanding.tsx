@@ -144,7 +144,7 @@ export function HeroLanding() {
   const isMobile = useIsMobile();
   const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
-  const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
+  const subtitle = "Chatta med folk. Bygg din profil. Inga algoritmer.";
   const { displayed: typedText, done: typingDone } = useTypewriter(subtitle, 35, 1600);
 
   useEffect(() => {
