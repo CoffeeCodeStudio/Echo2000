@@ -15,25 +15,21 @@ import { AvatarPicker, avatarOptions, type AvatarOption } from "../AvatarPicker"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  occupationOptions,
+  relationshipOptions,
+  genderOptions,
+} from "../profile/profile-constants";
 
 // Import avatars for gender defaults
 import avatarBoyBlue from "@/assets/avatars/avatar-boy-blue.png";
 import avatarGirlPink from "@/assets/avatars/avatar-girl-pink.png";
 import avatarRobot from "@/assets/avatars/avatar-robot.png";
 
-const genderOptions = [
+const genderDisplayOptions = [
   { value: "Kille", label: "Kille", emoji: "👦", defaultAvatar: avatarBoyBlue },
   { value: "Tjej", label: "Tjej", emoji: "👧", defaultAvatar: avatarGirlPink },
   { value: "Annat", label: "Annat", emoji: "🌈", defaultAvatar: avatarRobot },
-];
-
-const relationshipOptions = [
-  "Singel",
-  "Kär",
-  "Sambo", 
-  "Gift",
-  "Letar",
-  "Komplicerat",
 ];
 
 const interestOptions = [
@@ -46,9 +42,6 @@ const interestOptions = [
   { id: "trance", label: "Trance", emoji: "🎧" },
   { id: "hiphop", label: "Hiphop", emoji: "🎤" },
 ];
-
-const occupationOptions = ["Jobbar", "Pluggar", "Arbetssökande"];
-const smokingOptions = ["Ja", "Nej", "Fest"];
 
 interface OnboardingModalProps {
   userId: string;
