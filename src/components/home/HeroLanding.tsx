@@ -131,7 +131,7 @@ const visionItems = [
 ];
 
 /* ── nostalgic ticker ── */
-const tickerText = "★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Spel ★ MSN-chatt ★ Lajv ★ DJ-spellista ★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Spel ★ MSN-chatt ★ Lajv ★ DJ-spellista ★ ";
+const tickerText = "★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Lajv ★ och mycket mer... ★ Gästbok ★ Profilbilder ★ Vänner ★ Status ★ Klotterplank ★ Lajv ★ och mycket mer... ";
 
 /* ── main component ── */
 export function HeroLanding() {
