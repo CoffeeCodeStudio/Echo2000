@@ -78,7 +78,7 @@ export function HomeStatsBox() {
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-1.5">
         <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
-        <StatRow icon={<Wifi className="w-4 h-4 text-online" />} label="Online" value={totalOnline} />
+        
         <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
         <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
         <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
