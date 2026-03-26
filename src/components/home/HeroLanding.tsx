@@ -208,7 +208,7 @@ export function HeroLanding() {
       {/* VHS grain — skip on mobile for performance */}
       {!isMobile && <div className={`hero-grain ${grainActive ? "active" : ""}`} />}
 
-      <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 py-10 sm:py-16 relative">
+      <div className="h-full flex flex-col items-center justify-center px-4 py-10 sm:py-16 relative">
         {/* Snowfall + sound controls */}
         <Snowfall />
 
