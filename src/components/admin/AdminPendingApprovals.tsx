@@ -22,6 +22,7 @@ interface PendingUser {
   user_id: string;
   created_at: string;
   avatar_url: string | null;
+  join_reason: string | null;
 }
 
 interface AdminPendingApprovalsProps {

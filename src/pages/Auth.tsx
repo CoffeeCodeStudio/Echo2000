@@ -309,6 +309,24 @@ export default function Auth() {
 
               {mode === "register" && (
                 <div className="space-y-2">
+                  <Label htmlFor="joinReason">Varför vill du gå med i Echo2000?</Label>
+                  <Textarea
+                    id="joinReason"
+                    placeholder="Berätta kort om dig själv och varför du vill bli medlem..."
+                    value={joinReason}
+                    onChange={(e) => setJoinReason(e.target.value.slice(0, 500))}
+                    className="min-h-[80px] resize-none"
+                    disabled={isLoading}
+                    maxLength={500}
+                  />
+                  <p className={`text-xs text-right ${joinReason.trim().length < 20 ? 'text-muted-foreground' : 'text-primary'}`}>
+                    {joinReason.length}/500
+                  </p>
+                </div>
+              )}
+
+              {mode === "register" && (
+                <div className="space-y-2">
                   <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
                     <Checkbox
                       id="age"
