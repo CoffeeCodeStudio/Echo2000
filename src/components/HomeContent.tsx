@@ -3,17 +3,17 @@
  * Main home page layout – Lunar theme.
  * Shows HeroLanding for guests, Lunar dashboard for logged-in users.
  */
-import "./hero-landing.css";
+import "./home/hero-landing.css";
 import { useAuth } from "@/hooks/useAuth";
-import { HeroLanding } from "./HeroLanding";
-import { NewsFeed } from "../social/NewsFeed";
-import { HomeStatsBox } from "./HomeStatsBox";
-import { HomeVisionBox } from "./HomeVisionBox";
-import { HomeSocialBox } from "./HomeSocialBox";
-import { HomeRecentOnline } from "./HomeRecentOnline";
-import { HomeActivityFeed } from "./HomeActivityFeed";
-import { HomeRecentKlotter } from "./HomeRecentKlotter";
-import { ClearViewToggle } from "./ClearViewToggle";
+import { HeroLanding } from "./home/HeroLanding";
+import { NewsFeed } from "./social/NewsFeed";
+import { HomeStatsBox } from "./home/HomeStatsBox";
+import { HomeVisionBox } from "./home/HomeVisionBox";
+import { HomeSocialBox } from "./home/HomeSocialBox";
+import { HomeRecentOnline } from "./home/HomeRecentOnline";
+import { HomeActivityFeed } from "./home/HomeActivityFeed";
+import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
+import { ClearViewToggle } from "./home/ClearViewToggle";
 
 export function HomeContent() {
   const { user, loading } = useAuth();
