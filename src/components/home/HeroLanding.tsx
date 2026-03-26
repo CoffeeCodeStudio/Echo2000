@@ -6,7 +6,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users } from "lucide-react";
+import { Users, Volume2, VolumeX } from "lucide-react";
+import { useCrtBootSound } from "@/hooks/useCrtBootSound";
 import { Snowfall } from "./Snowfall";
 
 /* ── types ── */
