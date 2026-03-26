@@ -8,6 +8,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Volume2, VolumeX } from "lucide-react";
 import { useCrtBootSound } from "@/hooks/useCrtBootSound";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Snowfall } from "./Snowfall";
 
 /* ── types ── */
@@ -139,6 +140,7 @@ export function HeroLanding() {
   const [loading, setLoading] = useState(true);
   const [booted, setBooted] = useState(false);
   const [grainActive, setGrainActive] = useState(false);
+  const isMobile = useIsMobile();
   const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
   const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
@@ -171,8 +173,10 @@ export function HeroLanding() {
     fetchMembers();
   }, []);
 
+  const visibleIcons = isMobile ? FLOATING_ICONS.slice(0, 5) : FLOATING_ICONS;
+
   const floatingIcons = useMemo(() => (
-    FLOATING_ICONS.map((icon, i) => (
+    visibleIcons.map((icon, i) => (
       <span
         key={i}
         className="hero-floating-icon"
@@ -191,7 +195,7 @@ export function HeroLanding() {
         {icon.emoji}
       </span>
     ))
-  ), []);
+  ), [visibleIcons]);
 
   return (
     <div
@@ -201,8 +205,8 @@ export function HeroLanding() {
       {/* CRT scanlines */}
       <div className="hero-scanlines" />
 
-      {/* VHS grain */}
-      <div className={`hero-grain ${grainActive ? "active" : ""}`} />
+      {/* VHS grain — skip on mobile for performance */}
+      {!isMobile && <div className={`hero-grain ${grainActive ? "active" : ""}`} />}
 
       <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative">
         {/* Snowfall + sound controls */}
