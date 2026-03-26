@@ -3,6 +3,7 @@
  * Main "PROFIL" tab content – thin render shell delegating to sub-components.
  */
 import { Edit2, Save, X, Loader2 } from "lucide-react";
+import { ProfileShareButton } from "./ProfileShareButton";
 import { AiBadge } from "@/components/AiBadge";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export function ProfileInfoSection({
   const drLoveScore = 73;
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden">
+    <div id="profile-card-capture" className="bg-card rounded-lg border border-border overflow-hidden">
       <div className="p-4">
         {/* Username + Edit button row */}
         <div className="flex items-start justify-between mb-4">
@@ -53,26 +54,31 @@ export function ProfileInfoSection({
             </h1>
             {isBot && <AiBadge />}
           </div>
-          {isOwnProfile && !showDemoMode && (
-            <div className="shrink-0">
-              {isEditing ? (
-                <div className="flex gap-2">
-                  <Button size="sm" variant="default" onClick={onSave} disabled={saving}>
-                    {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-                    Spara
+          <div className="flex items-center gap-2 shrink-0">
+            {!showDemoMode && (
+              <ProfileShareButton targetId="profile-card-capture" username={displayData.username} />
+            )}
+            {isOwnProfile && !showDemoMode && (
+              <>
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="default" onClick={onSave} disabled={saving}>
+                      {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
+                      Spara
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={onCancel}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={onEdit}>
+                    <Edit2 className="w-4 h-4 mr-1" />
+                    Redigera
                   </Button>
-                  <Button size="sm" variant="outline" onClick={onCancel}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button size="sm" variant="outline" onClick={onEdit}>
-                  <Edit2 className="w-4 h-4 mr-1" />
-                  Redigera
-                </Button>
-              )}
-            </div>
-          )}
+                )}
+              </>
+            )}
+          </div>
           {showDemoMode && (
             <Button size="sm" variant="default" onClick={() => navigate("/auth")} className="shrink-0">
               Logga in
