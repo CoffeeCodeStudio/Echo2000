@@ -6,7 +6,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users } from "lucide-react";
+import { Users, Volume2, VolumeX } from "lucide-react";
+import { useCrtBootSound } from "@/hooks/useCrtBootSound";
 import { Snowfall } from "./Snowfall";
 
 /* ── types ── */
@@ -138,13 +139,17 @@ export function HeroLanding() {
   const [loading, setLoading] = useState(true);
   const [booted, setBooted] = useState(false);
   const [grainActive, setGrainActive] = useState(false);
+  const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
   const subtitle = "En nostalgisk community inspirerad av MSN Messenger, LunarStorm och Playahead — fast med dagens teknik.";
   const { displayed: typedText, done: typingDone } = useTypewriter(subtitle, 35, 1600);
 
   useEffect(() => {
-    // Trigger boot animation
-    const t1 = setTimeout(() => setBooted(true), 100);
+    // Trigger boot animation + sound
+    const t1 = setTimeout(() => {
+      setBooted(true);
+      playCrtSound();
+    }, 100);
     const t2 = setTimeout(() => setGrainActive(true), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
@@ -200,8 +205,24 @@ export function HeroLanding() {
       <div className={`hero-grain ${grainActive ? "active" : ""}`} />
 
       <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative">
-        {/* Snowfall layers */}
+        {/* Snowfall + sound controls */}
         <Snowfall />
+
+        {/* CRT sound mute toggle */}
+        <button
+          onClick={toggleMute}
+          className="fixed top-12 right-20 z-50 p-1.5 rounded-full transition-all duration-200 hover:scale-110"
+          style={{
+            background: "rgba(30, 78, 98, 0.7)",
+            border: "1px solid rgba(90, 148, 171, 0.4)",
+            color: muted ? "rgba(139, 184, 200, 0.5)" : "#8bb8c8",
+          }}
+          title={muted ? "Slå på CRT-ljud" : "Stäng av CRT-ljud"}
+          aria-label={muted ? "Slå på CRT-ljud" : "Stäng av CRT-ljud"}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+
 
         {/* Floating retro icons */}
         {floatingIcons}
