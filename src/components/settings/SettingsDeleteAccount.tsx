@@ -20,8 +20,11 @@ export function SettingsDeleteAccount() {
     if (!user) return;
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("delete_user_cascade", { p_user_id: user.id });
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        body: { action: "delete_self" },
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       await signOut();
       toast({ title: "Kontot raderat", description: "Ditt konto och all data har raderats permanent." });
       navigate("/auth");
