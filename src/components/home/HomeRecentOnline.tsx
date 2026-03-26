@@ -9,6 +9,7 @@ import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 import { AiBadge } from "../AiBadge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 
 const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
@@ -84,8 +85,8 @@ export function HomeRecentOnline() {
                       className="relative w-full aspect-square rounded-sm border border-border hover:border-primary/60 transition-all cursor-pointer group"
                       style={{ overflow: 'hidden' }}
                     >
-                      {m.avatar_url && !brokenImgs.has(m.user_id) ? (
-                        <img src={m.avatar_url} alt={m.username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" onError={() => setBrokenImgs(prev => new Set(prev).add(m.user_id))} />
+                      {sanitizeAvatarUrl(m.avatar_url) && !brokenImgs.has(m.user_id) ? (
+                        <img src={sanitizeAvatarUrl(m.avatar_url)!} alt={m.username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" onError={() => setBrokenImgs(prev => new Set(prev).add(m.user_id))} />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center font-bold text-foreground text-sm">
                           {initials}
