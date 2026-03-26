@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
 export function HomeRecentOnline() {
-  const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null }[]>([]);
+  const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null; age?: number | null; gender?: string | null }[]>([]);
   const { user } = useAuth();
   const { getUserStatus } = usePresence();
   const navigate = useNavigate();
