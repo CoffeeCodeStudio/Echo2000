@@ -67,7 +67,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
 
   const handleGenderSelect = (selectedGender: string) => {
     setGender(selectedGender);
-    const genderOption = genderOptions.find(g => g.value === selectedGender);
+    const genderOption = genderDisplayOptions.find(g => g.value === selectedGender);
     if (genderOption && !avatarUrl) {
       setAvatarUrl(genderOption.defaultAvatar);
     }
@@ -171,7 +171,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
             <div className="space-y-3">
               <Label className="text-base font-semibold">Kön *</Label>
               <div className="grid grid-cols-3 gap-3">
-                {genderOptions.map((option) => (
+                {genderDisplayOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
