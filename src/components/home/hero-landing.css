@@ -71,6 +71,7 @@
 
 .hero-crt-boot {
   animation: crt-boot 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, filter, opacity;
 }
 
 /* ===== Scanline overlay ===== */
