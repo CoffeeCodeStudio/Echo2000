@@ -81,7 +81,8 @@ export function HomeRecentOnline() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-                      className="relative aspect-square rounded-sm overflow-hidden border border-border hover:border-primary/60 transition-all cursor-pointer group"
+                      className="relative aspect-square rounded-sm border border-border hover:border-primary/60 transition-all cursor-pointer group"
+                      style={{ overflow: 'hidden' }}
                     >
                       {m.avatar_url && !brokenImgs.has(m.user_id) ? (
                         <img src={m.avatar_url} alt={m.username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" onError={() => setBrokenImgs(prev => new Set(prev).add(m.user_id))} />
