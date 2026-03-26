@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, User, Info, AlertTriangle, X } from "lucide-react";
 import { z } from "zod";
@@ -33,6 +34,7 @@ export default function Auth() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [joinReason, setJoinReason] = useState("");
   const [acceptedRules, setAcceptedRules] = useState(false);
   const [confirmedAge, setConfirmedAge] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -78,6 +80,15 @@ export default function Auth() {
       toast({
         title: "Fyll i alla fält",
         description: "Du måste bekräfta din ålder, godkänna villkoren och reglerna för att skapa ett konto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (mode === "register" && joinReason.trim().length < 20) {
+      toast({
+        title: "Berätta mer",
+        description: "Skriv minst 20 tecken om varför du vill gå med.",
         variant: "destructive",
       });
       return;
@@ -146,6 +157,15 @@ export default function Auth() {
           } catch {
             // Role insert may fail if RLS blocks it — not critical
           }
+          // Save join reason to profile
+          try {
+            await supabase
+              .from("profiles")
+              .update({ join_reason: joinReason.trim() } as any)
+              .eq("user_id", data.user.id);
+          } catch {
+            // Not critical if it fails
+          }
           await supabase.auth.signOut();
           // Now safe to switch mode
           setMode("login");
@@ -157,6 +177,7 @@ export default function Auth() {
           setUsername("");
           setEmail("");
           setPassword("");
+          setJoinReason("");
           setAcceptedRules(false);
           setConfirmedAge(false);
           setAcceptedTerms(false);
@@ -288,6 +309,24 @@ export default function Auth() {
 
               {mode === "register" && (
                 <div className="space-y-2">
+                  <Label htmlFor="joinReason">Varför vill du gå med i Echo2000?</Label>
+                  <Textarea
+                    id="joinReason"
+                    placeholder="Berätta kort om dig själv och varför du vill bli medlem..."
+                    value={joinReason}
+                    onChange={(e) => setJoinReason(e.target.value.slice(0, 500))}
+                    className="min-h-[80px] resize-none"
+                    disabled={isLoading}
+                    maxLength={500}
+                  />
+                  <p className={`text-xs text-right ${joinReason.trim().length < 20 ? 'text-muted-foreground' : 'text-primary'}`}>
+                    {joinReason.length}/500
+                  </p>
+                </div>
+              )}
+
+              {mode === "register" && (
+                <div className="space-y-2">
                   <div className="flex items-start space-x-3 p-3 bg-muted/50 border border-border">
                     <Checkbox
                       id="age"
@@ -341,7 +380,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms))}
+                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms || joinReason.trim().length < 20))}
               >
                 {isLoading ? (
                   <>

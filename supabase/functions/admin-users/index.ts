@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
       case "list_pending": {
         const { data, error } = await adminClient
           .from("profiles")
-          .select("id, username, user_id, created_at, avatar_url, is_approved")
+          .select("id, username, user_id, created_at, avatar_url, is_approved, join_reason")
           .eq("is_approved", false)
           .order("created_at", { ascending: true });
         if (error) throw error;

@@ -22,6 +22,7 @@ interface PendingUser {
   user_id: string;
   created_at: string;
   avatar_url: string | null;
+  join_reason: string | null;
 }
 
 interface AdminPendingApprovalsProps {
@@ -123,6 +124,11 @@ export function AdminPendingApprovals({ onRefresh }: AdminPendingApprovalsProps)
                   Registrerad {new Date(user.created_at).toLocaleDateString("sv-SE")}{" "}
                   {new Date(user.created_at).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
                 </p>
+                {user.join_reason && (
+                  <p className="text-xs text-foreground/80 mt-1 italic border-l-2 border-primary/40 pl-2">
+                    "{user.join_reason}"
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button
