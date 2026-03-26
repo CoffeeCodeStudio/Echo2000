@@ -3,7 +3,7 @@ import { BentoCard } from "./BentoCard";
 
 function VisionItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
       {icon}
       <span>{text}</span>
     </div>
