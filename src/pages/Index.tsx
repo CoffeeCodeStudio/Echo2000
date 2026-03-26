@@ -167,7 +167,7 @@ export default function Index() {
         );
 
       case "gastbok":
-        return <ProfilePage />;
+        return <ProfilePage showSection="gastbok" />;
 
       case "mejl":
         return <Mailbox onUnreadCountChange={handleUnreadCountChange} />;
@@ -216,7 +216,7 @@ export default function Index() {
         return <ProfilePage />;
 
       case "besokare":
-        return <ProfilePage />;
+        return <ProfilePage showSection="besokare" />;
 
       default:
         return null;

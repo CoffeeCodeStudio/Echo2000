@@ -10,9 +10,12 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
+import { useProfileVisits } from "@/hooks/useProfileVisits";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
+import { ProfileGuestbook } from "./ProfileGuestbook";
+import { VisitorLog } from "./VisitorLog";
 import {
   type EditableProfileData,
   demoProfile,
@@ -21,13 +24,18 @@ import {
 
 interface ProfilePageProps {
   userId?: string;
+  /** Which sub-section to show below the profile card */
+  showSection?: "profile" | "gastbok" | "besokare";
 }
 
-export function ProfilePage({ userId }: ProfilePageProps) {
+export function ProfilePage({ userId, showSection }: ProfilePageProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { profile, loading, saving, isOwnProfile, updateProfile } = useProfile(userId);
   const { getUserStatus, getUserActivity } = usePresence();
+
+  const profileUserId = profile?.user_id || userId || user?.id;
+  const { visitors, loading: visitorsLoading } = useProfileVisits(profileUserId);
 
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -81,18 +89,14 @@ export function ProfilePage({ userId }: ProfilePageProps) {
       ? editData
       : toEditableData(profile);
 
-  const profileUserId = profile?.user_id || userId || user?.id;
-
   // Derive status: use presence for real users, last_seen fallback for bots
   const presenceStatus: UserStatus = profileUserId ? getUserStatus(profileUserId) : "offline";
   const userStatus: UserStatus = (() => {
-    // If presence says online/away, trust it
     if (presenceStatus !== "offline") return presenceStatus;
-    // Fallback: check last_seen (critical for bots who don't use Presence channel)
     if (profile?.last_seen) {
       const lastSeenMs = Date.now() - new Date(profile.last_seen).getTime();
-      if (lastSeenMs < 3 * 60 * 1000) return "online";    // < 3 min
-      if (lastSeenMs < 8 * 60 * 1000) return "away";      // 3-8 min
+      if (lastSeenMs < 3 * 60 * 1000) return "online";
+      if (lastSeenMs < 8 * 60 * 1000) return "away";
     }
     return "offline";
   })();
@@ -107,6 +111,13 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         hour: "2-digit", minute: "2-digit",
       })
     : null;
+
+  // Determine what to show below the card:
+  // - Viewing someone else's profile → always show guestbook
+  // - Own profile with showSection="gastbok" → show guestbook
+  // - Own profile with showSection="besokare" → show visitor log
+  const showGuestbook = (!isOwnProfile && !showDemoMode && profileUserId) || showSection === "gastbok";
+  const showVisitors = isOwnProfile && showSection === "besokare";
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
@@ -123,7 +134,6 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           </div>
         </div>
       )}
-
 
       {/* Profile content */}
       <div className="container px-4 py-4 max-w-5xl mx-auto space-y-4">
@@ -145,6 +155,27 @@ export function ProfilePage({ userId }: ProfilePageProps) {
           saving={saving}
           isBot={profile?.is_bot}
         />
+
+        {/* Guestbook — shown for visitors on other profiles, and own profile via gastbok tab */}
+        {showGuestbook && profileUserId && (
+          <ProfileGuestbook
+            profileOwnerId={profileUserId}
+            isOwnProfile={isOwnProfile}
+          />
+        )}
+
+        {/* Visitor log — shown on own profile via besokare tab */}
+        {showVisitors && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            {visitorsLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <VisitorLog visitors={visitors} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

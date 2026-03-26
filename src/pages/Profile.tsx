@@ -75,5 +75,5 @@ export default function Profile() {
     );
   }
 
-  return <ProfilePage userId={userId || undefined} />;
+  return <ProfilePage userId={userId || undefined} showSection="gastbok" />;
 }
