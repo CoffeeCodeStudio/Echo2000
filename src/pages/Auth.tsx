@@ -34,6 +34,7 @@ export default function Auth() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [joinReason, setJoinReason] = useState("");
   const [acceptedRules, setAcceptedRules] = useState(false);
   const [confirmedAge, setConfirmedAge] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
