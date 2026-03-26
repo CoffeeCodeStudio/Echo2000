@@ -132,6 +132,22 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
   { id: "besokare" as Tab, label: "SPANARE", emoji: "👀", animationClass: "scale-in" }];
 
+  // Fetch pending approval count for admin badge
+  useEffect(() => {
+    if (!isAdmin) { setPendingCount(0); return; }
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_approved", false)
+        .eq("is_bot", false);
+      setPendingCount(count ?? 0);
+    };
+    fetchPending();
+    const interval = setInterval(fetchPending, 30_000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
 
   // Community zone items (right group)
   const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
