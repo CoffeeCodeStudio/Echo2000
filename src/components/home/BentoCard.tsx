@@ -9,6 +9,7 @@ interface BentoCardProps {
   icon?: ReactNode;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   span?: "default" | "wide" | "tall";
 }
 
