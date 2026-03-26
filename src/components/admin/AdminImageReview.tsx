@@ -121,6 +121,7 @@ export function AdminImageReview({ onCountChange }: { onCountChange?: () => void
       setShowDenyInput(null);
       setDenyReasons((prev) => ({ ...prev, [upload.id]: "" }));
       fetchUploads();
+      onCountChange?.();
     } catch {
       toast({ title: "Fel", description: "Kunde inte neka bilden.", variant: "destructive" });
     } finally {
