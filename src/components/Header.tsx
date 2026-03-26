@@ -386,12 +386,6 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           {/* Radio control */}
           <HeaderRadio />
 
-          {/* Status Box */}
-          <div className="status-box-dark">
-            <div className="online-dot-dark"></div>
-            <span className="count-dark hidden sm:inline">{onlineCount} JUST NU</span>
-            <span className="count-dark sm:hidden">{onlineCount}</span>
-          </div>
         </div>
       </div>
       {/* Friend Request Panel */}
