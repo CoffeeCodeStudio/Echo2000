@@ -24,7 +24,7 @@ export function HomeRecentKlotter() {
         .from("klotter")
         .select("id, image_url, author_name, comment, created_at")
         .order("created_at", { ascending: false })
-        .limit(6);
+        .limit(4);
       if (data) setItems(data);
     };
     fetch();
@@ -43,7 +43,7 @@ export function HomeRecentKlotter() {
 
   return (
     <BentoCard title="Klotterplanket" icon={<Palette className="w-4 h-4" />}>
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-2 gap-1.5">
         {items.map((k) => (
           <div
             key={k.id}
