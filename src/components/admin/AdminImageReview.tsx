@@ -74,6 +74,7 @@ export function AdminImageReview({ onCountChange }: { onCountChange?: () => void
 
       toast({ title: "Bild godkänd", description: `${upload.username}s profilbild har godkänts.` });
       fetchUploads();
+      onCountChange?.();
     } catch (err: any) {
       console.error("Approve error:", err);
       toast({ title: "Fel", description: err?.message || "Kunde inte godkänna bilden.", variant: "destructive" });
