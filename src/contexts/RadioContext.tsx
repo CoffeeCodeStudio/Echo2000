@@ -37,6 +37,7 @@ const RADIO_STATIONS: RadioStation[] = [
   { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
   { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
   { id: "starfm", name: "Star FM", url: "https://fm05-ice.stream.khz.se/fm05_mp3?platform=web", genre: "Hits/Classic rock" },
+  { id: "skuggrum", name: "Skuggrum", url: "https://cdn1.suno.ai/269897b1-7baf-4216-842b-b88ced764662.mp3", genre: "Electro-pop / Hip Hop" },
 ];
 
 const RadioContext = createContext<RadioContextType | null>(null);
