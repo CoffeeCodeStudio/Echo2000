@@ -380,7 +380,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms))}
+                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms || joinReason.trim().length < 20))}
               >
                 {isLoading ? (
                   <>
