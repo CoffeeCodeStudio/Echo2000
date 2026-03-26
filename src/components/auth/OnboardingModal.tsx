@@ -240,7 +240,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Välj..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[200]">
                   {relationshipOptions.map((option) => (
                     <SelectItem key={option} value={option} className="text-base py-3">
                       {option}
