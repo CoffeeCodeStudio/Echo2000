@@ -124,10 +124,11 @@ function SocialProof({ members, loading }: { members: MemberAvatar[]; loading: b
 
 /* ── vision pills ── */
 const visionItems = [
-  { emoji: "💬", text: "MSN-chatt" },
-  { emoji: "🎮", text: "Retro-spel" },
+  { emoji: "📖", text: "Gästbok" },
+  { emoji: "👤", text: "Profilbilder" },
+  { emoji: "❤️", text: "Vänner" },
   { emoji: "🎨", text: "Klotterplank" },
-  { emoji: "❤️", text: "Gemenskap" },
+  { emoji: "📡", text: "Lajv" },
 ];
 
 /* ── nostalgic ticker ── */
