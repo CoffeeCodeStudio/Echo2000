@@ -14,6 +14,7 @@ const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
 export function HomeRecentOnline() {
   const [members, setMembers] = useState<{ user_id: string; username: string; avatar_url: string | null; is_bot?: boolean; last_seen?: string | null; age?: number | null; gender?: string | null }[]>([]);
+  const [brokenImgs, setBrokenImgs] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { getUserStatus } = usePresence();
   const navigate = useNavigate();
@@ -82,8 +83,8 @@ export function HomeRecentOnline() {
                       onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
                       className="relative aspect-square rounded-sm overflow-hidden border border-border hover:border-primary/60 transition-all cursor-pointer group"
                     >
-                      {m.avatar_url ? (
-                        <img src={m.avatar_url} alt={m.username} className="w-full h-full object-cover" loading="lazy" />
+                      {m.avatar_url && !brokenImgs.has(m.user_id) ? (
+                        <img src={m.avatar_url} alt={m.username} className="w-full h-full object-cover" loading="lazy" onError={() => setBrokenImgs(prev => new Set(prev).add(m.user_id))} />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center font-bold text-foreground text-sm">
                           {initials}
