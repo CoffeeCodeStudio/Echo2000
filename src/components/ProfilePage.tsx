@@ -138,6 +138,20 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
     );
   }
 
+  // Gästbok-only view: skip profile card, show only guestbook
+  if (showSection === "gastbok" && isOwnProfile && profileUserId) {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+        <div className="container px-4 py-4 max-w-5xl mx-auto">
+          <ProfileGuestbook
+            profileOwnerId={profileUserId}
+            isOwnProfile={isOwnProfile}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
       {/* Demo Mode Banner */}
