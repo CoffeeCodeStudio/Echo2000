@@ -78,8 +78,19 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) {
+        // If the session was already gone server-side, clear locally anyway
+        console.warn('Sign-out warning:', error.message);
+      }
+    } catch (e) {
+      console.warn('Sign-out exception, clearing local state:', e);
+    }
+    // Always clear local state regardless of server response
+    setSession(null);
+    setUser(null);
+    return { error: null };
   };
 
   return {
