@@ -7,8 +7,8 @@ import { BentoCard } from "./BentoCard";
 
 function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex items-center gap-2 text-muted-foreground shrink-0">{icon} {label}</span>
+    <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+      <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
       <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
     </div>
   );
