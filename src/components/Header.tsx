@@ -113,6 +113,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         variant: "destructive"
       });
     } else {
+      onTabChange?.("hem");
+      navigate("/", { replace: true, state: { tab: "hem" } });
       toast({
         title: "Du är utloggad",
         description: "Ses snart igen!"
