@@ -177,6 +177,7 @@ export default function Auth() {
           setUsername("");
           setEmail("");
           setPassword("");
+          setJoinReason("");
           setAcceptedRules(false);
           setConfirmedAge(false);
           setAcceptedTerms(false);
