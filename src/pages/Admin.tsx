@@ -55,6 +55,14 @@ export default function Admin() {
     if (!loading) checkAdminStatus();
   }, [user, loading]);
 
+  const fetchPendingImageCount = async () => {
+    const { count } = await supabase
+      .from("avatar_uploads")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending_approval");
+    setPendingImageCount(count ?? 0);
+  };
+
   const fetchData = async () => {
     if (!isAdmin) return;
     const [profilesRes, rolesRes] = await Promise.all([
@@ -63,6 +71,7 @@ export default function Admin() {
     ]);
     if (profilesRes.data) setUsers(profilesRes.data);
     if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
+    fetchPendingImageCount();
   };
 
   useEffect(() => { fetchData(); }, [isAdmin]);
