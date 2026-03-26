@@ -325,7 +325,7 @@ export function HeroLanding() {
         {/* CTA */}
         <button
           onClick={() => navigate("/auth")}
-          className="hero-cta-button pulse-ring mt-8 sm:mt-10 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] relative z-10 hero-reveal"
+          className="hero-cta-button mt-8 sm:mt-10 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] relative z-10 hero-reveal"
           style={{ animationDelay: "1.8s", fontFamily: "'Trebuchet MS', sans-serif" }}
         >
           Skapa din profil
