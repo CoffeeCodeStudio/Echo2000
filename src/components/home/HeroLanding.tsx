@@ -205,8 +205,24 @@ export function HeroLanding() {
       <div className={`hero-grain ${grainActive ? "active" : ""}`} />
 
       <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-16 sm:py-24 relative">
-        {/* Snowfall layers */}
+        {/* Snowfall + sound controls */}
         <Snowfall />
+
+        {/* CRT sound mute toggle */}
+        <button
+          onClick={toggleMute}
+          className="fixed top-12 right-20 z-50 p-1.5 rounded-full transition-all duration-200 hover:scale-110"
+          style={{
+            background: "rgba(30, 78, 98, 0.7)",
+            border: "1px solid rgba(90, 148, 171, 0.4)",
+            color: muted ? "rgba(139, 184, 200, 0.5)" : "#8bb8c8",
+          }}
+          title={muted ? "Slå på CRT-ljud" : "Stäng av CRT-ljud"}
+          aria-label={muted ? "Slå på CRT-ljud" : "Stäng av CRT-ljud"}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+
 
         {/* Floating retro icons */}
         {floatingIcons}
