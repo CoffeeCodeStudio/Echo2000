@@ -203,13 +203,91 @@ export function FAQSection() {
             <Lock className="w-5 h-5 text-primary" />
             Integritetspolicy
           </h2>
-          <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
-            <p><strong className="text-foreground">Vad vi samlar in:</strong> Användarnamn, e-postadress och den profildata du själv väljer att fylla i (stad, ålder, intressen m.m.).</p>
-            <p><strong className="text-foreground">Lagring:</strong> All data lagras säkert via vår molntjänst med kryptering.</p>
-            <p><strong className="text-foreground">Radering:</strong> Du kan när som helst begära radering av ditt konto och all tillhörande data via Profil → Inställningar → Radera konto, eller genom att kontakta oss.</p>
-            <p><strong className="text-foreground">Cookies:</strong> Vi använder nödvändiga cookies för att hålla dig inloggad och förbättra upplevelsen. Inga tredjepartscookies för reklam.</p>
-            <p><strong className="text-foreground">Kontakt för datarättigheter:</strong>{" "}
-              <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-4 text-sm text-muted-foreground">
+            
+            <div>
+              <p className="font-bold text-foreground mb-1">Personuppgiftsansvarig</p>
+              <p>Echo2000-projektet ansvarar för behandlingen av dina personuppgifter. Kontakta oss på{" "}
+                <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>{" "}
+                vid frågor om hur vi hanterar dina uppgifter.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Vilka uppgifter vi samlar in</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Kontouppgifter:</strong> Användarnamn, e-postadress, lösenord (hashat/krypterat).</li>
+                <li><strong>Profildata:</strong> Information du själv väljer att fylla i — stad, ålder, intressen, presentation m.m.</li>
+                <li><strong>Användargenererat innehåll:</strong> Meddelanden, gästboksinlägg, klotter, kommentarer.</li>
+                <li><strong>Teknisk data:</strong> IP-adress vid registrering/inloggning, tidsstämplar för aktivitet.</li>
+                <li><strong>Uppladdade filer:</strong> Profilbilder som du laddar upp.</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Rättslig grund för behandling (Art. 6 GDPR)</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Avtal (Art. 6.1b):</strong> Behandling som krävs för att tillhandahålla tjänsten (konto, meddelanden, profil).</li>
+                <li><strong>Berättigat intresse (Art. 6.1f):</strong> Säkerhet, missbrukshantering och förbättring av tjänsten.</li>
+                <li><strong>Samtycke (Art. 6.1a):</strong> Cookies utöver nödvändiga (om tillämpligt).</li>
+                <li><strong>Rättslig förpliktelse (Art. 6.1c):</strong> Lagring som krävs enligt lag, t.ex. vid polisanmälan av olagligt innehåll.</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Cookies & lokal lagring</p>
+              <p>Vi använder <strong>endast nödvändiga cookies</strong> för autentisering (sessionscookies). Inga tredjepartscookies, inga reklamcookies, inga analytics-trackers. Vi använder localStorage i din webbläsare för att spara inställningar (tema, ljud m.m.).</p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Lagringstider</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Kontodata:</strong> Sparas så länge ditt konto är aktivt. Raderas inom 30 dagar efter kontoborttagning.</li>
+                <li><strong>Meddelanden & innehåll:</strong> Sparas så länge kontot finns. Raderas vid kontoborttagning.</li>
+                <li><strong>Lajv-meddelanden:</strong> Raderas automatiskt efter 12 timmar.</li>
+                <li><strong>IP-adresser:</strong> Sparas i autentiseringsloggar i upp till 90 dagar.</li>
+                <li><strong>Profilbilder:</strong> Raderas vid kontoborttagning eller när du byter bild.</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Dataöverföring & molntjänster</p>
+              <p>Din data lagras säkert via molntjänster med kryptering. Dataöverföringar utanför EU/EES sker med stöd av <strong>EU:s standardavtalsklausuler (SCC)</strong> eller andra godkända skyddsmekanismer enligt GDPR kap. V.</p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Delning med tredje part</p>
+              <p>Vi delar <strong>inte</strong> dina personuppgifter med tredje part i marknadsförings- eller reklamsyfte. Data kan delas med myndigheter om vi är skyldiga enligt lag (t.ex. vid utredning av brott).</p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Dina rättigheter</p>
+              <p className="mb-1">Enligt GDPR har du följande rättigheter:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Tillgång (Art. 15):</strong> Begära en kopia av dina personuppgifter.</li>
+                <li><strong>Rättelse (Art. 16):</strong> Korrigera felaktiga uppgifter (kan göras direkt i profilen).</li>
+                <li><strong>Radering (Art. 17):</strong> Begära radering av ditt konto och alla tillhörande uppgifter via Inställningar → Radera konto, eller kontakta oss.</li>
+                <li><strong>Begränsning (Art. 18):</strong> Begära att vi begränsar behandlingen av dina uppgifter.</li>
+                <li><strong>Dataportabilitet (Art. 20):</strong> Begära att få dina uppgifter i ett maskinläsbart format.</li>
+                <li><strong>Invändning (Art. 21):</strong> Invända mot behandling baserad på berättigat intresse.</li>
+                <li><strong>Återkalla samtycke:</strong> Du kan när som helst återkalla ditt cookie-samtycke genom att rensa dina webbläsarinställningar.</li>
+              </ul>
+              <p className="mt-2">Kontakta{" "}
+                <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>{" "}
+                för att utöva dina rättigheter. Vi besvarar din begäran inom 30 dagar.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Rätt att klaga hos tillsynsmyndigheten</p>
+              <p>Om du anser att vi hanterar dina personuppgifter felaktigt har du rätt att lämna in ett klagomål till{" "}
+                <strong>Integritetsskyddsmyndigheten (IMY)</strong>:{" "}
+                <a href="https://www.imy.se" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.imy.se</a>
+              </p>
+            </div>
+
+            <p className="text-xs text-muted-foreground/70 pt-2 border-t border-border">
+              Senast uppdaterad: mars 2026
             </p>
           </div>
         </section>
