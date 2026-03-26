@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
-import { Avatar } from "../Avatar";
 import { StatusIndicator } from "../StatusIndicator";
 import type { UserStatus } from "../StatusIndicator";
 import { Users } from "lucide-react";
 import { BentoCard } from "./BentoCard";
 import { AiBadge } from "../AiBadge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 const BOT_ONLINE_THRESHOLD_MS = 8 * 60 * 1000;
 
