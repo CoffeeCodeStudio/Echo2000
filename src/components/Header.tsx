@@ -212,7 +212,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             {counts.newVisitors > 9 ? "9+" : counts.newVisitors}
           </span>
         )}
-        {hasNotice && !isHeart && item.id !== "besokare" && <span className="header-nav-dot" />}
+        {item.id === "gastbok" && counts.guestbookNew > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
+            {counts.guestbookNew > 9 ? "9+" : counts.guestbookNew}
+          </span>
+        )}
+        {hasNotice && !isHeart && item.id !== "besokare" && item.id !== "gastbok" && <span className="header-nav-dot" />}
       </div>);
 
   };

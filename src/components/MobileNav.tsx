@@ -46,7 +46,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
 
   const moreTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
     { id: "vanner", emoji: "❤️", label: "Vänner" },
-    { id: "gastbok", emoji: "👣", label: "Gästbok" },
+    { id: "gastbok", emoji: "👣", label: "Gästbok", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
     { id: "besokare", emoji: "👀", label: "Spanare", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
     
     { id: "traffar", emoji: "📅", label: "Träffar" },
