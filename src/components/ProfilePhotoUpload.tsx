@@ -40,19 +40,19 @@ export function ProfilePhotoUpload({ onUploadComplete }: ProfilePhotoUploadProps
 
       if (uploadError) throw uploadError;
 
-      // Get signed URL
-      const { data: signedData } = await supabase.storage
+      // Get public URL (bucket is public, URLs never expire)
+      const { data: publicData } = supabase.storage
         .from("profile-photos")
-        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
+        .getPublicUrl(filePath);
 
-      if (!signedData?.signedUrl) throw new Error("Kunde inte skapa URL");
+      if (!publicData?.publicUrl) throw new Error("Kunde inte skapa URL");
 
       // Create avatar_upload record with pending status
       const { error: insertError } = await supabase
         .from("avatar_uploads")
         .insert({
           user_id: user.id,
-          image_url: signedData.signedUrl,
+          image_url: publicData.publicUrl,
           status: "pending_approval",
         });
 
