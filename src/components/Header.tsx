@@ -247,7 +247,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
       <div className="hidden sm:block bg-[#1a4456] border-b border-border overflow-hidden">
         <div className="marquee-container">
           <span className="marquee-text text-xs text-[#E6EEF2] font-medium">
-            ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Alpha-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
+            ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Beta-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
           </span>
         </div>
       </div>
@@ -267,7 +267,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
           </div>
-          <span className="alpha-badge">ALPHA</span>
+          <span className="beta-badge">BETA</span>
         </div>
 
 

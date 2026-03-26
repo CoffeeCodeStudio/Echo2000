@@ -352,7 +352,7 @@ export function HeroLanding() {
           }}
         >
           <p className="text-center text-xs" style={{ color: "#5A94AB", letterSpacing: "2px" }}>
-            ━━━ ALPHA v0.9 ━━━ COMMUNITY FÖR OSS SOM MINNS 56K-MODEM ━━━
+            ━━━ BETA v1.0 ━━━ COMMUNITY FÖR OSS SOM MINNS 56K-MODEM ━━━
           </p>
         </div>
       </div>
