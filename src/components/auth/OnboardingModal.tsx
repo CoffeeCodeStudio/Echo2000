@@ -15,25 +15,22 @@ import { AvatarPicker, avatarOptions, type AvatarOption } from "../AvatarPicker"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  occupationOptions,
+  relationshipOptions,
+} from "../profile/profile-constants";
+
+const smokingOptions = ["Ja", "Nej", "Ibland"];
 
 // Import avatars for gender defaults
 import avatarBoyBlue from "@/assets/avatars/avatar-boy-blue.png";
 import avatarGirlPink from "@/assets/avatars/avatar-girl-pink.png";
 import avatarRobot from "@/assets/avatars/avatar-robot.png";
 
-const genderOptions = [
+const genderDisplayOptions = [
   { value: "Kille", label: "Kille", emoji: "👦", defaultAvatar: avatarBoyBlue },
   { value: "Tjej", label: "Tjej", emoji: "👧", defaultAvatar: avatarGirlPink },
   { value: "Annat", label: "Annat", emoji: "🌈", defaultAvatar: avatarRobot },
-];
-
-const relationshipOptions = [
-  "Singel",
-  "Kär",
-  "Sambo", 
-  "Gift",
-  "Letar",
-  "Komplicerat",
 ];
 
 const interestOptions = [
@@ -46,9 +43,6 @@ const interestOptions = [
   { id: "trance", label: "Trance", emoji: "🎧" },
   { id: "hiphop", label: "Hiphop", emoji: "🎤" },
 ];
-
-const occupationOptions = ["Jobbar", "Pluggar", "Arbetssökande"];
-const smokingOptions = ["Ja", "Nej", "Fest"];
 
 interface OnboardingModalProps {
   userId: string;
@@ -73,7 +67,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
 
   const handleGenderSelect = (selectedGender: string) => {
     setGender(selectedGender);
-    const genderOption = genderOptions.find(g => g.value === selectedGender);
+    const genderOption = genderDisplayOptions.find(g => g.value === selectedGender);
     if (genderOption && !avatarUrl) {
       setAvatarUrl(genderOption.defaultAvatar);
     }
@@ -177,7 +171,7 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
             <div className="space-y-3">
               <Label className="text-base font-semibold">Kön *</Label>
               <div className="grid grid-cols-3 gap-3">
-                {genderOptions.map((option) => (
+                {genderDisplayOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
@@ -258,23 +252,18 @@ export function OnboardingModal({ userId, onComplete }: OnboardingModalProps) {
 
             <div className="space-y-2">
               <Label className="text-base font-semibold">Sysselsättning</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {occupationOptions.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setOccupation(option)}
-                    className={cn(
-                      "py-3 px-4 rounded-lg border-2 font-medium transition-all",
-                      occupation === option
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+              <Select value={occupation} onValueChange={setOccupation}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Välj..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {occupationOptions.map((option) => (
+                    <SelectItem key={option} value={option} className="text-base py-3">
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
