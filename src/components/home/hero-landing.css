@@ -257,3 +257,50 @@
 .hero-grain.active {
   opacity: 1;
 }
+
+/* ===== Respect prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-crt-boot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .hero-floating-icon,
+  .hero-ticker-text,
+  .hero-grain,
+  .hero-scanlines,
+  .hero-cursor,
+  .hero-cta-button::after {
+    animation: none !important;
+  }
+  .hero-glitch-text::before,
+  .hero-glitch-text::after {
+    animation: none !important;
+    display: none;
+  }
+  .hero-reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+  .hero-cta-button.pulse-ring {
+    animation: none;
+  }
+}
+
+/* ===== Mobile: simplify CRT boot ===== */
+@media (max-width: 640px) {
+  .hero-crt-boot {
+    animation-duration: 1s;
+  }
+  .hero-glitch-text::before,
+  .hero-glitch-text::after {
+    display: none;
+  }
+  .hero-scanlines {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+}
