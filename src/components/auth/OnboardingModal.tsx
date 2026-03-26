@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 import {
   occupationOptions,
   relationshipOptions,
-  genderOptions,
 } from "../profile/profile-constants";
+
+const smokingOptions = ["Ja", "Nej", "Ibland"];
 
 // Import avatars for gender defaults
 import avatarBoyBlue from "@/assets/avatars/avatar-boy-blue.png";
