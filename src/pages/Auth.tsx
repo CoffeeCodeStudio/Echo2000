@@ -85,6 +85,15 @@ export default function Auth() {
       return;
     }
 
+    if (mode === "register" && joinReason.trim().length < 20) {
+      toast({
+        title: "Berätta mer",
+        description: "Skriv minst 20 tecken om varför du vill gå med.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -147,6 +156,15 @@ export default function Auth() {
             await supabase.from("user_roles").insert({ user_id: data.user.id, role: "user" as any });
           } catch {
             // Role insert may fail if RLS blocks it — not critical
+          }
+          // Save join reason to profile
+          try {
+            await supabase
+              .from("profiles")
+              .update({ join_reason: joinReason.trim() } as any)
+              .eq("user_id", data.user.id);
+          } catch {
+            // Not critical if it fails
           }
           await supabase.auth.signOut();
           // Now safe to switch mode
