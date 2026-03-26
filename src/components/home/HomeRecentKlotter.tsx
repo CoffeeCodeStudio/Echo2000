@@ -13,21 +13,42 @@ interface KlotterItem {
   author_name: string;
   comment: string | null;
   created_at: string;
+  signed_url?: string;
+}
+
+function extractStoragePath(imageUrl: string): string {
+  if (!imageUrl.startsWith('http')) return imageUrl;
+  const publicMatch = imageUrl.match(/\/object\/public\/klotter\/(.+)$/);
+  if (publicMatch) return publicMatch[1];
+  const signMatch = imageUrl.match(/\/object\/sign\/klotter\/(.+?)(\?|$)/);
+  if (signMatch) return signMatch[1];
+  return imageUrl;
 }
 
 export function HomeRecentKlotter() {
   const [items, setItems] = useState<KlotterItem[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchItems = async () => {
       const { data } = await supabase
         .from("klotter")
         .select("id, image_url, author_name, comment, created_at")
         .order("created_at", { ascending: false })
         .limit(4);
-      if (data) setItems(data);
+      if (!data || data.length === 0) return;
+
+      const paths = data.map(d => extractStoragePath(d.image_url));
+      const { data: signed } = await supabase.storage
+        .from('klotter')
+        .createSignedUrls(paths, 3600);
+
+      const resolved = data.map((d, i) => ({
+        ...d,
+        signed_url: signed?.[i]?.signedUrl || d.image_url,
+      }));
+      setItems(resolved);
     };
-    fetch();
+    fetchItems();
   }, []);
 
   if (items.length === 0) {
@@ -51,9 +72,9 @@ export function HomeRecentKlotter() {
             title={k.comment ? `${k.author_name}: ${k.comment}` : k.author_name}
           >
             <img
-              src={k.image_url}
+              src={k.signed_url || k.image_url}
               alt={k.comment || "Klotter"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-white"
               loading="lazy"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
