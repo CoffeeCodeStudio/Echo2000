@@ -180,7 +180,7 @@ export default function Admin() {
         {activeTab === "list" && <AdminUserList users={users} userRoles={userRoles} onRefresh={fetchData} />}
         {activeTab === "create" && <AdminCreateUser onUserCreated={fetchData} />}
         {activeTab === "moderate" && <AdminContentModeration />}
-        {activeTab === "images" && <AdminImageReview />}
+        {activeTab === "images" && <AdminImageReview onCountChange={fetchPendingImageCount} />}
         {activeTab === "bots" && (
           <>
             <AdminBotSpawner />

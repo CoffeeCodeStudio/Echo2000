@@ -15,7 +15,7 @@ interface AvatarUpload {
   username?: string;
 }
 
-export function AdminImageReview() {
+export function AdminImageReview({ onCountChange }: { onCountChange?: () => void }) {
   const [uploads, setUploads] = useState<AvatarUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -74,6 +74,7 @@ export function AdminImageReview() {
 
       toast({ title: "Bild godkänd", description: `${upload.username}s profilbild har godkänts.` });
       fetchUploads();
+      onCountChange?.();
     } catch (err: any) {
       console.error("Approve error:", err);
       toast({ title: "Fel", description: err?.message || "Kunde inte godkänna bilden.", variant: "destructive" });
@@ -120,6 +121,7 @@ export function AdminImageReview() {
       setShowDenyInput(null);
       setDenyReasons((prev) => ({ ...prev, [upload.id]: "" }));
       fetchUploads();
+      onCountChange?.();
     } catch {
       toast({ title: "Fel", description: "Kunde inte neka bilden.", variant: "destructive" });
     } finally {
