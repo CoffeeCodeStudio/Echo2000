@@ -70,26 +70,44 @@ export function HomeRecentOnline() {
       {sortedMembers.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {sortedMembers.map((m) => (
-            <button
-              key={m.user_id}
-              onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-              className="flex flex-col items-center gap-1 p-1.5 rounded hover:bg-white/10 transition-colors min-h-[44px] cursor-pointer"
-            >
-              <div className="relative">
-                <Avatar name={m.username} src={m.avatar_url} size="sm" />
-                <div className="absolute -bottom-0.5 -right-0.5">
-                  <StatusIndicator status={m._status} size="sm" />
-                </div>
-              </div>
-              <span className="text-[10px] truncate w-full text-center text-muted-foreground flex items-center justify-center gap-0.5">
-                {m.username}
-                {m.is_bot && <AiBadge className="text-[8px] px-1 py-0" />}
-              </span>
-            </button>
-          ))}
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <div className="grid grid-cols-5 gap-2">
+            {sortedMembers.map((m) => {
+              const initials = m.username.slice(0, 2).toUpperCase();
+              const infoLine = [m.age ? `${m.age} år` : null, m.gender].filter(Boolean).join(", ");
+              return (
+                <Tooltip key={m.user_id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
+                      className="relative aspect-square rounded-sm overflow-hidden border border-border hover:border-primary/60 transition-all cursor-pointer group"
+                    >
+                      {m.avatar_url ? (
+                        <img src={m.avatar_url} alt={m.username} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center font-bold text-foreground text-sm">
+                          {initials}
+                        </div>
+                      )}
+                      <div className="absolute bottom-0.5 right-0.5">
+                        <StatusIndicator status={m._status} size="sm" />
+                      </div>
+                      {m.is_bot && (
+                        <div className="absolute top-0.5 left-0.5">
+                          <AiBadge className="text-[7px] px-0.5 py-0" />
+                        </div>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    <p className="font-bold">{m.username}</p>
+                    {infoLine && <p className="text-muted-foreground">{infoLine}</p>}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </TooltipProvider>
       )}
     </BentoCard>
   );
