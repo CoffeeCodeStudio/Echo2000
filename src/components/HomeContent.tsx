@@ -25,8 +25,8 @@ export function HomeContent() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic" style={{ background: "hsl(var(--lunar-bg))" }}>
       {/* Hero header */}
-      <section className="py-3 md:py-4 text-center px-4">
-        <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight mb-1">
+      <section className="py-2 md:py-3 text-center px-4">
+        <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight mb-0.5">
           <span className="text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>
             Echo
           </span>
@@ -37,9 +37,9 @@ export function HomeContent() {
         <p className="text-white/70 text-[10px] sm:text-xs max-w-lg mx-auto leading-snug">Som förr. Fast nu</p>
       </section>
 
-      {/* Stats + Vision */}
-      <section className="px-3 sm:px-4 pb-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+      {/* Stats + Vision — collapsed into one compact row */}
+      <section className="px-3 sm:px-4 pb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-stretch">
           <HomeStatsBox />
           <HomeVisionBox />
         </div>
@@ -47,9 +47,9 @@ export function HomeContent() {
 
       {/* Bento grid */}
       <section className="px-3 sm:px-4 pb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-fr">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 auto-rows-fr">
           {/* Column 1: Online members + Activity feed */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <HomeRecentOnline />
             <HomeActivityFeed />
           </div>
@@ -60,7 +60,7 @@ export function HomeContent() {
           </div>
 
           {/* Column 3: Klotter + Social */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <HomeRecentKlotter />
             <HomeSocialBox />
           </div>

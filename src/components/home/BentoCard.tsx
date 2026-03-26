@@ -27,7 +27,7 @@ export function BentoCard({ title, icon, children, className = "", span = "defau
         <h3 className="font-display font-bold text-sm tracking-wide">{title}</h3>
       </div>
       {/* Content */}
-      <div className="p-4 flex-1">{children}</div>
+      <div className="px-4 py-3 flex-1">{children}</div>
     </div>
   );
 }

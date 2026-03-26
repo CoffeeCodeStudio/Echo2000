@@ -7,8 +7,8 @@ import { BentoCard } from "./BentoCard";
 
 function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex items-center gap-2 text-muted-foreground shrink-0">{icon} {label}</span>
+    <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+      <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
       <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
     </div>
   );
@@ -73,7 +73,7 @@ export function HomeStatsBox() {
 
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
-      <div className="space-y-2.5">
+      <div className="space-y-1.5">
         <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
         <StatRow icon={<Wifi className="w-4 h-4 text-online" />} label="Online" value={totalOnline} />
         <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />

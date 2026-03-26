@@ -133,7 +133,7 @@ export function HomeActivityFeed() {
 
       // Sort by timestamp descending, take top 8
       results.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      setItems(results.slice(0, 8));
+      setItems(results.slice(0, 6));
     };
 
     fetchActivity();

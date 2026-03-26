@@ -3,7 +3,7 @@ import { BentoCard } from "./BentoCard";
 
 function VisionItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
       {icon}
       <span>{text}</span>
     </div>
@@ -13,7 +13,7 @@ function VisionItem({ icon, text }: { icon: React.ReactNode; text: string }) {
 export function HomeVisionBox() {
   return (
     <BentoCard title="Vår Vision" icon={<Lightbulb className="w-4 h-4" />}>
-      <div className="space-y-2.5">
+      <div className="space-y-1.5">
         <VisionItem icon={<Gamepad2 className="w-4 h-4 text-primary" />} text="Spel & Tävlingar" />
         <VisionItem icon={<Palette className="w-4 h-4 text-accent" />} text="Konst & Kreativitet" />
         <VisionItem icon={<Heart className="w-4 h-4 text-destructive" />} text="Gemenskap & Vänskap" />
