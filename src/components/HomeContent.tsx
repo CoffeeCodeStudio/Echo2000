@@ -11,8 +11,8 @@ import { HomeStatsBox } from "./home/HomeStatsBox";
 import { HomeVisionBox } from "./home/HomeVisionBox";
 import { HomeSocialBox } from "./home/HomeSocialBox";
 import { HomeRecentOnline } from "./home/HomeRecentOnline";
-import { HomeLajvBox } from "./home/HomeLajvBox";
-import { HomeDjBox } from "./home/HomeDjBox";
+import { HomeActivityFeed } from "./home/HomeActivityFeed";
+import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { ClearViewToggle } from "./home/ClearViewToggle";
 
 export function HomeContent() {
@@ -48,16 +48,21 @@ export function HomeContent() {
       {/* Bento grid */}
       <section className="px-3 sm:px-4 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-fr">
-          <div className="sm:col-span-2 lg:col-span-1">
+          {/* Column 1: Online members + Activity feed */}
+          <div className="flex flex-col gap-3">
             <HomeRecentOnline />
+            <HomeActivityFeed />
           </div>
-          <div className="sm:col-span-2 lg:col-span-1">
+
+          {/* Column 2: News feed */}
+          <div className="sm:col-span-1">
             <NewsFeed />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+
+          {/* Column 3: Klotter + Social */}
+          <div className="flex flex-col gap-3">
+            <HomeRecentKlotter />
             <HomeSocialBox />
-            <HomeLajvBox />
-            <HomeDjBox />
           </div>
         </div>
       </section>

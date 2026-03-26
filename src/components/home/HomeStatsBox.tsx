@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, MessageCircle, Wifi, BarChart3 } from "lucide-react";
+import { Users, MessageCircle, Wifi, BarChart3, BookOpen, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
@@ -15,7 +15,7 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 }
 
 export function HomeStatsBox() {
-  const [stats, setStats] = useState({ members: 0, online: 0, messages: 0 });
+  const [stats, setStats] = useState({ members: 0, online: 0, messages: 0, guestbook: 0, klotter: 0 });
   const [onlineBotCount, setOnlineBotCount] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
@@ -39,11 +39,19 @@ export function HomeStatsBox() {
   useEffect(() => {
     const fetchStats = async () => {
       if (user) {
-        const [{ count: memberCount }, { count: msgCount }] = await Promise.all([
+        const [{ count: memberCount }, { count: msgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
           supabase.from("profiles").select("*", { count: "exact", head: true }),
           supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+          supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
+          supabase.from("klotter").select("*", { count: "exact", head: true }),
         ]);
-        setStats({ members: memberCount ?? 0, online: 0, messages: msgCount ?? 0 });
+        setStats({
+          members: memberCount ?? 0,
+          online: 0,
+          messages: msgCount ?? 0,
+          guestbook: gbCount ?? 0,
+          klotter: klCount ?? 0,
+        });
       } else {
         try {
           const res = await fetch(
@@ -52,7 +60,7 @@ export function HomeStatsBox() {
           );
           if (res.ok) {
             const data = await res.json();
-            setStats({ members: data.stats.members, online: 0, messages: data.stats.messages });
+            setStats({ members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 });
           }
         } catch {}
       }
@@ -65,10 +73,12 @@ export function HomeStatsBox() {
 
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
         <StatRow icon={<Wifi className="w-4 h-4 text-online" />} label="Online" value={totalOnline} />
         <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
+        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
+        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
       </div>
     </BentoCard>
   );
