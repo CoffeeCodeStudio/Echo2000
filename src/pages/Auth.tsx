@@ -87,8 +87,8 @@ export default function Auth() {
 
     if (mode === "register" && joinReason.trim().length < 20) {
       toast({
-        title: "Berätta mer",
-        description: "Skriv minst 20 tecken om varför du vill gå med.",
+        title: "Fyll i hela ansökan",
+        description: "Du måste skriva minst 20 tecken om varför du vill gå med och kryssa i alla tre rutorna.",
         variant: "destructive",
       });
       return;
@@ -380,7 +380,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || (mode === "register" && (!acceptedRules || !confirmedAge || !acceptedTerms || joinReason.trim().length < 20))}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>
