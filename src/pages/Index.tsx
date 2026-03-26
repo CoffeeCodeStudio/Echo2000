@@ -216,7 +216,7 @@ export default function Index() {
         return <ProfilePage />;
 
       case "besokare":
-        return <ProfilePage />;
+        return <ProfilePage showSection="besokare" />;
 
       default:
         return null;
