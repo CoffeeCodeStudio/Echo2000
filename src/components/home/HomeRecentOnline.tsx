@@ -71,7 +71,7 @@ export function HomeRecentOnline() {
         <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (
         <TooltipProvider delayDuration={200}>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-0.5">
             {sortedMembers.map((m) => {
               const initials = m.username.slice(0, 2).toUpperCase();
               const infoLine = [m.age ? `${m.age} år` : null, m.gender].filter(Boolean).join(", ");
