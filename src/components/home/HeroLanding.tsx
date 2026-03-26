@@ -279,7 +279,7 @@ export function HeroLanding() {
 
         {/* Typewriter subtitle */}
         <p
-          className="mt-5 sm:mt-8 text-base sm:text-lg md:text-xl text-center max-w-2xl relative z-10 hero-reveal"
+          className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-center max-w-2xl relative z-10 hero-reveal"
           style={{
             lineHeight: 1.65,
             letterSpacing: "0.3px",
@@ -325,7 +325,7 @@ export function HeroLanding() {
         {/* CTA */}
         <button
           onClick={() => navigate("/auth")}
-          className="hero-cta-button pulse-ring mt-10 sm:mt-12 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] relative z-10 hero-reveal"
+          className="hero-cta-button pulse-ring mt-8 sm:mt-10 px-10 sm:px-14 py-4 sm:py-5 text-base sm:text-lg font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[52px] relative z-10 hero-reveal"
           style={{ animationDelay: "1.8s", fontFamily: "'Trebuchet MS', sans-serif" }}
         >
           Skapa din profil
