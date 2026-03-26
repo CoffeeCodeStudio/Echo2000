@@ -67,7 +67,7 @@ export function HomeRecentOnline() {
     });
 
   return (
-    <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />}>
+    <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />} contentClassName="p-1">
       {sortedMembers.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (

@@ -9,6 +9,7 @@ interface BentoCardProps {
   icon?: ReactNode;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   span?: "default" | "wide" | "tall";
 }
 
@@ -18,7 +19,7 @@ const spanClasses = {
   tall: "sm:row-span-2",
 };
 
-export function BentoCard({ title, icon, children, className = "", span = "default" }: BentoCardProps) {
+export function BentoCard({ title, icon, children, className = "", contentClassName, span = "default" }: BentoCardProps) {
   return (
     <div className={`glass-card flex flex-col ${spanClasses[span]} ${className}`}>
       {/* Lunar orange gradient header */}
@@ -27,7 +28,7 @@ export function BentoCard({ title, icon, children, className = "", span = "defau
         <h3 className="font-display font-bold text-sm tracking-wide">{title}</h3>
       </div>
       {/* Content */}
-      <div className="px-4 py-3 flex-1">{children}</div>
+      <div className={`${contentClassName ?? "px-4 py-3"} flex-1`}>{children}</div>
     </div>
   );
 }
