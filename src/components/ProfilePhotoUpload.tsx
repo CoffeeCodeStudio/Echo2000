@@ -58,6 +58,35 @@ export function ProfilePhotoUpload({ onUploadComplete }: ProfilePhotoUploadProps
 
       if (insertError) throw insertError;
 
+      // Notify all admins about pending photo review
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", user.id)
+        .single();
+
+      const username = profile?.username || "Okänd";
+
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      if (adminRoles && adminRoles.length > 0) {
+        const notifications = adminRoles
+          .filter((r) => r.user_id !== user.id)
+          .map((r) => ({
+            sender_id: user.id,
+            recipient_id: r.user_id,
+            subject: `📸 Ny profilbild väntar: ${username}`,
+            content: `${username} har laddat upp en ny profilbild som väntar på granskning.\n\nGå till Admin → Bildgranskning för att godkänna eller neka.`,
+          }));
+
+        if (notifications.length > 0) {
+          await supabase.from("messages").insert(notifications);
+        }
+      }
+
       toast({
         title: "Bild uppladdad!",
         description: "Din bild granskas av en moderator innan den visas för andra.",
