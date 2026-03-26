@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { replaceEmoteCodes } from './social/PixelEmotes';
+import { sanitizeAvatarUrl } from '@/lib/avatar-url';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -194,7 +195,7 @@ export function ProfileGuestbook({
               <div className="flex items-start gap-3">
                 <ClickableUsername
                   username={entry.author_name}
-                  avatarUrl={entry.author_avatar}
+                  avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
                   showAvatar
                   avatarSize="sm"
                 />

@@ -8,6 +8,7 @@ import { GoodVibe } from "./GoodVibe";
 import { EmotePicker, replaceEmoteCodes } from "./PixelEmotes";
 import { ClickableUsername } from "../ClickableUsername";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -328,7 +329,7 @@ export function Guestbook() {
                 <div className="flex gap-3">
                   {/* Avatar only */}
                   <Avatar 
-                    src={entry.author_avatar || undefined}
+                    src={sanitizeAvatarUrl(entry.author_avatar) || undefined}
                     name={entry.author_name}
                     size="md"
                     showStatus={false}

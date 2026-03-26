@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 
 interface AvatarProps {
   src?: string;
@@ -50,7 +51,7 @@ export function Avatar({
       >
         {src ? (
           <img 
-            src={src} 
+            src={sanitizeAvatarUrl(src) || src} 
             alt={name} 
             loading="lazy"
             className="w-full h-full object-cover"
