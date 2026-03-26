@@ -624,6 +624,7 @@ export type Database = {
           is_admin: boolean
           is_approved: boolean
           is_bot: boolean
+          join_reason: string | null
           last_seen: string | null
           likes: string | null
           listens_to: string | null
@@ -656,6 +657,7 @@ export type Database = {
           is_admin?: boolean
           is_approved?: boolean
           is_bot?: boolean
+          join_reason?: string | null
           last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
@@ -688,6 +690,7 @@ export type Database = {
           is_admin?: boolean
           is_approved?: boolean
           is_bot?: boolean
+          join_reason?: string | null
           last_seen?: string | null
           likes?: string | null
           listens_to?: string | null
