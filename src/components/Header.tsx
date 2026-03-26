@@ -207,7 +207,12 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
             {pendingCount > 9 ? "9+" : pendingCount}
           </span>
         )}
-        {hasNotice && !isHeart && <span className="header-nav-dot" />}
+        {item.id === "besokare" && counts.newVisitors > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
+            {counts.newVisitors > 9 ? "9+" : counts.newVisitors}
+          </span>
+        )}
+        {hasNotice && !isHeart && item.id !== "besokare" && <span className="header-nav-dot" />}
       </div>);
 
   };
