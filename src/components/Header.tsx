@@ -85,24 +85,27 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   };
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const checkRoles = async () => {
       if (!user) {
         setIsAdmin(false);
+        setIsPrivileged(false);
         return;
       }
 
       try {
-        const { data } = await supabase.rpc("has_role", {
-          _user_id: user.id,
-          _role: "admin"
-        });
-        setIsAdmin(data === true);
+        const [{ data: adminData }, { data: modData }] = await Promise.all([
+          supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+          supabase.rpc("has_role", { _user_id: user.id, _role: "moderator" }),
+        ]);
+        setIsAdmin(adminData === true);
+        setIsPrivileged(adminData === true || modData === true);
       } catch {
         setIsAdmin(false);
+        setIsPrivileged(false);
       }
     };
 
-    checkAdminStatus();
+    checkRoles();
   }, [user]);
 
   const handleSignOut = async () => {
@@ -129,7 +132,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Private zone items (middle group)
   const privateZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
   { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
-  { id: "mejl", label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
+  ...(isPrivileged ? [{ id: "mejl" as Tab, label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" }] : []),
   { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
   { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
   { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
