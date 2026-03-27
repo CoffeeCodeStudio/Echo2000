@@ -50,7 +50,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   const mainTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
     { id: "hem", emoji: "🏠", label: "HEM" },
     { id: "folk", emoji: "🌐", label: "FOLK" },
-    ...(isPrivileged ? [{ id: "mejl" as Tab, emoji: "✉️", label: "MEJL", badge: counts.unreadMail > 0 ? counts.unreadMail : undefined }] : []),
+    { id: "mejl" as Tab, emoji: "✉️", label: "MEJL", badge: counts.unreadMail > 0 ? counts.unreadMail : undefined },
     { id: "chatt", emoji: "🖊️", label: "CHATT" },
     { id: "profil", emoji: "👤", label: "PROFIL", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
   ];

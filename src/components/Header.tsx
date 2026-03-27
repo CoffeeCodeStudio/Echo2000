@@ -132,7 +132,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   // Private zone items (middle group)
   const privateZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
   { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
-  ...(isPrivileged ? [{ id: "mejl" as Tab, label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" }] : []),
+  { id: "mejl" as Tab, label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" },
   { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
   { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
   { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
