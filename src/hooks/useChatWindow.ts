@@ -181,7 +181,7 @@ export function useChatWindow() {
       if (e2) throw e2;
       toast({
         title: "Meddelanden raderade",
-        description: "Alla dina chattmeddelanden har raderats.",
+        description: "Konversationen har raderats.",
       });
       setSelectedContact(null);
       setShowContactList(true);
