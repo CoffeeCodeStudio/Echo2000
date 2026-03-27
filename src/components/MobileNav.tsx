@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
@@ -16,6 +17,16 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   const { counts } = useNotifications();
   const { user } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [isPrivileged, setIsPrivileged] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsPrivileged(false); return; }
+    Promise.all([
+      supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+      supabase.rpc("has_role", { _user_id: user.id, _role: "moderator" }),
+    ]).then(([{ data: a }, { data: m }]) => setIsPrivileged(a === true || m === true))
+      .catch(() => setIsPrivileged(false));
+  }, [user]);
 
   if (!user) {
     return (
@@ -39,7 +50,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   const mainTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
     { id: "hem", emoji: "🏠", label: "HEM" },
     { id: "folk", emoji: "🌐", label: "FOLK" },
-    { id: "mejl", emoji: "✉️", label: "MEJL", badge: counts.unreadMail > 0 ? counts.unreadMail : undefined },
+    ...(isPrivileged ? [{ id: "mejl" as Tab, emoji: "✉️", label: "MEJL", badge: counts.unreadMail > 0 ? counts.unreadMail : undefined }] : []),
     { id: "chatt", emoji: "🖊️", label: "CHATT" },
     { id: "profil", emoji: "👤", label: "PROFIL", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
   ];
