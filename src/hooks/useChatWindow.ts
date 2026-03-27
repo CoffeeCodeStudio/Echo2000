@@ -165,16 +165,18 @@ export function useChatWindow() {
   }, [selectedContact, user, soundEnabled, playSound, sendDbMessage, userDisplayName]);
 
   const handleClearAllMessages = async () => {
-    if (!user) return;
+    if (!user || !selectedContact) return;
     try {
       const { error: e1 } = await supabase
         .from("chat_messages")
         .delete()
-        .eq("sender_id", user.id);
+        .eq("sender_id", user.id)
+        .eq("recipient_id", selectedContact.id);
       if (e1) throw e1;
       const { error: e2 } = await supabase
         .from("chat_messages")
         .delete()
+        .eq("sender_id", selectedContact.id)
         .eq("recipient_id", user.id);
       if (e2) throw e2;
       toast({

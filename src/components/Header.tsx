@@ -37,6 +37,7 @@ interface HeaderProps {
 
 export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPrivileged, setIsPrivileged] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [friendRequestOpen, setFriendRequestOpen] = useState(false);
 
