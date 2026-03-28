@@ -163,6 +163,6 @@ function getActivityFromPath(pathname: string): string {
   if (pathname === '/news' || pathname.startsWith('/news/')) return 'Läser nyheter';
   if (pathname === '/auth') return 'Loggar in';
   if (pathname === '/admin') return 'Administrerar';
-  // Check hash/tab context from the main page
+  if (pathname === '/settings') return 'Ändrar inställningar';
   return 'Surfar runt';
 }
