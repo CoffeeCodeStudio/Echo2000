@@ -197,7 +197,7 @@ export default function Index() {
               </div>
               <h2 className="font-display font-bold text-xl mb-2">UNDER UTVECKLING</h2>
               <p className="text-muted-foreground">
-                Spel öppnar senare under Alpha-perioden!
+                Spel öppnar senare under Spel öppnar senare under Beta-perioden!!
               </p>
             </div>
           </div>
