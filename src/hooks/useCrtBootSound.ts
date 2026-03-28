@@ -22,10 +22,8 @@ export function useCrtBootSound() {
 
   const play = useCallback(() => {
     if (played.current || muted) return;
-    if (sessionStorage.getItem(PLAYED_KEY)) return;
 
     played.current = true;
-    sessionStorage.setItem(PLAYED_KEY, "1");
 
     try {
       const ctx = new AudioContext();
