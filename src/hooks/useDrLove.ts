@@ -43,34 +43,18 @@ export function useDrLove(targetUserId?: string): DrLoveResult {
     const calculate = async () => {
       setLoading(true);
       try {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("interests, listens_to, city, relationship, gender, looking_for")
-          .in("user_id", [user.id, targetUserId]);
-
-        if (!profiles || profiles.length < 2) {
-          setLoading(false);
-          return;
-        }
-
-        const mine = profiles.find((_, i) => {
-          // Match by checking which profile belongs to the viewer
-          // We fetched both, so we need to identify them
-          return true;
-        });
-
-        // Re-fetch individually for clarity
-        const { data: myProfile } = await supabase
-          .from("profiles")
-          .select("interests, listens_to, city, relationship, gender, looking_for")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        const { data: theirProfile } = await supabase
-          .from("profiles")
-          .select("interests, listens_to, city, relationship, gender, looking_for")
-          .eq("user_id", targetUserId)
-          .maybeSingle();
+        const [{ data: myProfile }, { data: theirProfile }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("interests, listens_to, city, relationship, gender, looking_for")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("profiles")
+            .select("interests, listens_to, city, relationship, gender, looking_for")
+            .eq("user_id", targetUserId)
+            .maybeSingle(),
+        ]);
 
         if (!myProfile || !theirProfile) {
           setLoading(false);
