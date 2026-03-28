@@ -22,9 +22,8 @@ interface ProfileBasicInfoProps {
 /** Try to detect which län a city belongs to (for existing profiles). */
 function detectLän(city: string): string {
   if (!city) return "";
-  const { svenskaLän } = require("./profile-constants");
   for (const [län, cities] of Object.entries(svenskaLän)) {
-    if ((cities as string[]).some((c) => c.toLowerCase() === city.toLowerCase())) return län;
+    if (cities.some((c) => c.toLowerCase() === city.toLowerCase())) return län;
   }
   return "";
 }
