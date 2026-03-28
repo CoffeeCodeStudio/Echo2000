@@ -5,11 +5,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { BentoCard } from "./BentoCard";
 
-function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+function StatRow({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: number; loading?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
       <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
-      <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
+      {loading ? (
+        <span className="w-8 h-4 bg-muted animate-pulse rounded" />
+      ) : (
+        <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
+      )}
     </div>
   );
 }
