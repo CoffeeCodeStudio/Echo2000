@@ -5,26 +5,43 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { BentoCard } from "./BentoCard";
 
-function StatRow({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: number; loading?: boolean }) {
+const CACHE_KEY = "echo2000_stats";
+
+interface Stats {
+  members: number;
+  online: number;
+  messages: number;
+  guestbook: number;
+  klotter: number;
+}
+
+function loadCached(): Stats {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { members: 0, online: 0, messages: 0, guestbook: 0, klotter: 0 };
+}
+
+function saveCache(s: Stats) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(s)); } catch {}
+}
+
+function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
       <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
-      {loading ? (
-        <span className="w-8 h-4 bg-muted animate-pulse rounded" />
-      ) : (
-        <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
-      )}
+      <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
     </div>
   );
 }
 
 export function HomeStatsBox() {
-  const [stats, setStats] = useState<{ members: number; online: number; messages: number; guestbook: number; klotter: number } | null>(null);
+  const [stats, setStats] = useState<Stats>(loadCached);
   const [onlineBotCount, setOnlineBotCount] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
 
-  // Fetch online bot count
   useEffect(() => {
     const fetchOnlineBots = async () => {
       const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
@@ -40,22 +57,23 @@ export function HomeStatsBox() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchStats = useCallback(async (isFirst: boolean) => {
+  const fetchStats = useCallback(async () => {
     if (user) {
-      if (isFirst) await new Promise(r => setTimeout(r, 300));
-      const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
+      // Fire all queries independently — update stats progressively
+      supabase.from("profiles").select("*", { count: "exact", head: true }).then(({ count }) => {
+        setStats(prev => { const next = { ...prev, members: count ?? 0 }; saveCache(next); return next; });
+      });
+      Promise.all([
         supabase.from("chat_messages").select("*", { count: "exact", head: true }),
         supabase.from("messages").select("*", { count: "exact", head: true }),
-        supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
-        supabase.from("klotter").select("*", { count: "exact", head: true }),
-      ]);
-      setStats({
-        members: memberCount ?? 0,
-        online: 0,
-        messages: (chatMsgCount ?? 0) + (mailMsgCount ?? 0),
-        guestbook: gbCount ?? 0,
-        klotter: klCount ?? 0,
+      ]).then(([{ count: chatCount }, { count: mailCount }]) => {
+        setStats(prev => { const next = { ...prev, messages: (chatCount ?? 0) + (mailCount ?? 0) }; saveCache(next); return next; });
+      });
+      supabase.from("profile_guestbook").select("*", { count: "exact", head: true }).then(({ count }) => {
+        setStats(prev => { const next = { ...prev, guestbook: count ?? 0 }; saveCache(next); return next; });
+      });
+      supabase.from("klotter").select("*", { count: "exact", head: true }).then(({ count }) => {
+        setStats(prev => { const next = { ...prev, klotter: count ?? 0 }; saveCache(next); return next; });
       });
     } else {
       try {
@@ -65,28 +83,28 @@ export function HomeStatsBox() {
         );
         if (res.ok) {
           const data = await res.json();
-          setStats({ members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 });
+          const next = { members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 };
+          setStats(next);
+          saveCache(next);
         }
       } catch {}
     }
   }, [user]);
 
-  // Initial fetch + polling
   useEffect(() => {
-    fetchStats(true);
-    const interval = setInterval(() => fetchStats(false), 30_000);
+    fetchStats();
+    const interval = setInterval(fetchStats, 30_000);
     return () => clearInterval(interval);
   }, [fetchStats]);
 
-  // Realtime: refresh immediately on guestbook/klotter changes
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel("stats-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_guestbook" }, () => fetchStats(false))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "klotter" }, () => fetchStats(false))
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "profile_guestbook" }, () => fetchStats(false))
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "klotter" }, () => fetchStats(false))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_guestbook" }, () => fetchStats())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "klotter" }, () => fetchStats())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "profile_guestbook" }, () => fetchStats())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "klotter" }, () => fetchStats())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchStats]);
@@ -96,10 +114,10 @@ export function HomeStatsBox() {
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-1.5">
-        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats?.members ?? 0} loading={!stats} />
-        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats?.messages ?? 0} loading={!stats} />
-        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats?.guestbook ?? 0} loading={!stats} />
-        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats?.klotter ?? 0} loading={!stats} />
+        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
+        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
+        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
+        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
       </div>
     </BentoCard>
   );
