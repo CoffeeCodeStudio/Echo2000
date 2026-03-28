@@ -5,17 +5,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
 import { BentoCard } from "./BentoCard";
 
-function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+function StatRow({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: number; loading?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
       <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
-      <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
+      {loading ? (
+        <span className="w-8 h-4 bg-muted animate-pulse rounded" />
+      ) : (
+        <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
+      )}
     </div>
   );
 }
 
 export function HomeStatsBox() {
-  const [stats, setStats] = useState({ members: 0, online: 0, messages: 0, guestbook: 0, klotter: 0 });
+  const [stats, setStats] = useState<{ members: number; online: number; messages: number; guestbook: number; klotter: number } | null>(null);
   const [onlineBotCount, setOnlineBotCount] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
@@ -39,7 +43,7 @@ export function HomeStatsBox() {
   useEffect(() => {
     const fetchStats = async () => {
       if (user) {
-        await new Promise(r => setTimeout(r, 300));
+        if (!stats) await new Promise(r => setTimeout(r, 300));
         const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
           supabase.from("profiles").select("*", { count: "exact", head: true }),
           supabase.from("chat_messages").select("*", { count: "exact", head: true }),
@@ -78,11 +82,11 @@ export function HomeStatsBox() {
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-1.5">
-        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
+        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats?.members ?? 0} loading={!stats} />
         
-        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
-        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
-        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
+        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats?.messages ?? 0} loading={!stats} />
+        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats?.guestbook ?? 0} loading={!stats} />
+        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats?.klotter ?? 0} loading={!stats} />
       </div>
     </BentoCard>
   );
