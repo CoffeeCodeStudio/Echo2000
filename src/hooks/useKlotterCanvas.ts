@@ -88,8 +88,8 @@ export function useKlotterCanvas() {
         if (idx === 0) return;
         const prev = action.points[idx - 1];
         ctx.beginPath();
-        ctx.moveTo(prev.x * dpr, prev.y * dpr);
-        ctx.lineTo(point.x * dpr, point.y * dpr);
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(point.x, point.y);
         ctx.strokeStyle = point.color;
         ctx.lineWidth = point.size * dpr;
         ctx.lineCap = "round";
@@ -110,11 +110,9 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawActions(ctx, history, historyIndex);
   }, [history, historyIndex, drawActions]);
 
@@ -128,11 +126,9 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawActions(ctx, historyRef.current, historyIndexRef.current);
   }, [drawActions]);
 
@@ -171,17 +167,11 @@ export function useKlotterCanvas() {
   const getPointerPosition = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
-
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-
-    // Scale from CSS pixels to canvas pixels
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
     return {
-      x: (e.clientX - rect.left) * scaleX / dpr,
-      y: (e.clientY - rect.top) * scaleY / dpr,
+      x: (e.clientX - rect.left) * dpr,
+      y: (e.clientY - rect.top) * dpr,
     };
   };
 
@@ -208,8 +198,8 @@ export function useKlotterCanvas() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.beginPath();
-    ctx.moveTo(lastPoint.x * dpr, lastPoint.y * dpr);
-    ctx.lineTo(pos.x * dpr, pos.y * dpr);
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(pos.x, pos.y);
     ctx.strokeStyle = currentColor;
     ctx.lineWidth = brushSize * dpr;
     ctx.lineCap = "round";
