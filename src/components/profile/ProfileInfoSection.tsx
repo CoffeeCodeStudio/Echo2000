@@ -171,3 +171,44 @@ export function ProfileInfoSection({
     </div>
   );
 }
+
+/** Animated Dr. Love score counter */
+function DrLoveBar({ score, message }: { score: number; message: string }) {
+  const [displayed, setDisplayed] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    const duration = 1200;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out quad
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setDisplayed(Math.round(eased * score));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  }, [score]);
+
+  return (
+    <div ref={ref} className="bg-muted/30 border-t border-border px-4 py-2 animate-fade-in">
+      <div className="flex items-center gap-2 text-xs">
+        <Heart
+          className="w-3.5 h-3.5 text-accent shrink-0 animate-[pulse_1s_ease-in-out_3]"
+        />
+        <span className="font-bold text-accent">DR. LOVE:</span>
+        <span className="text-muted-foreground">
+          <span className="tabular-nums font-semibold text-foreground">{displayed}%</span>
+          {" "}— {message}
+        </span>
+      </div>
+    </div>
+  );
+}
