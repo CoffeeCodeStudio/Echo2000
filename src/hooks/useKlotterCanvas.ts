@@ -201,18 +201,20 @@ export function useKlotterCanvas() {
     const pos = getPointerPosition(e);
     if (!ctx || !pos) return;
 
-    // Always reset the transform before drawing to prevent drift
-    applyDprTransform(ctx);
-
+    const dpr = window.devicePixelRatio || 1;
     const currentColor = isEraser ? BG_COLOR : color;
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.beginPath();
-    ctx.moveTo(lastPoint.x, lastPoint.y);
-    ctx.lineTo(pos.x, pos.y);
+    ctx.moveTo(lastPoint.x * dpr, lastPoint.y * dpr);
+    ctx.lineTo(pos.x * dpr, pos.y * dpr);
     ctx.strokeStyle = currentColor;
-    ctx.lineWidth = brushSize;
+    ctx.lineWidth = brushSize * dpr;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
+    ctx.restore();
 
     setCurrentAction((prev) => [...prev, { ...pos, color: currentColor, size: brushSize }]);
     setLastPoint(pos);
