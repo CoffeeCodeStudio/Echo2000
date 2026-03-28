@@ -1,4 +1,4 @@
-/** Select options for profile fields used in edit mode. */
+/** Select options for profile fields used in edit mode – 00s nostalgia edition. */
 
 export const occupationOptions = [
   "Student", "Högstadiet", "Gymnasiet", "Universitet", "Arbetssökande",
@@ -11,15 +11,55 @@ export const relationshipOptions = [
 ];
 
 export const personalityOptions = [
-  "Självsäker", "Blyg", "Social", "Lugn", "Energisk", "Kreativ", "Analytisk", "Spontan",
+  "Självsäker", "Blyg", "Social", "Lugn", "Energisk", "Kreativ",
+  "Analytisk", "Spontan", "Mystisk", "Rampljuset", "Emo", "Nördig",
 ];
 
 export const hairColorOptions = [
-  "Blond", "Ljusblondin", "Brunett", "Svart", "Röd", "Färgglada", "Grå", "Annat",
+  "Blond", "Ljusblondin", "Brunett", "Svart", "Röd", "Rosa slingor",
+  "Blåsvart", "Färgglada", "Grå", "Rakat", "Annat",
 ];
 
 export const bodyTypeOptions = [
   "Smal", "Normal", "Atletisk", "Kurvig", "Medellång", "Annat",
+];
+
+export const clothingOptions = [
+  "Baggy jeans & hoodie", "Slim jeans & sneakers", "Emo-stil", "Skater-kläder",
+  "Preppy", "Streetwear", "Vintage", "Sportig", "Goth", "Hippie-boho",
+  "Casual", "Dressed up", "Allt svart", "Band-tisha & Converse", "Annat",
+];
+
+export const likesOptions = [
+  "Musik", "Gaming", "Skateboard", "MSN", "Fika", "Bio", "Kompisar",
+  "Fotboll", "Hästar", "Rita", "Dansa", "Träna", "Resa", "Fotografera",
+  "Lajv", "Läsa manga", "Cosplay", "Snowboard", "Surfa", "Shoppa",
+];
+
+export const eatsOptions = [
+  "Pizza", "Tacos", "Kebab", "Nudlar", "Sushi", "Hamburgare", "Godis",
+  "Falafel", "Mamma's mat", "Allt möjligt", "Vegetariskt", "Veganskt",
+  "Kattmat (ironiskt)", "Glass", "Pannkakor", "Burritos", "Annat",
+];
+
+export const listensToOptions = [
+  "Kent", "Robyn", "Blink-182", "Linkin Park", "Eminem", "Britney Spears",
+  "The Hives", "Millencolin", "Green Day", "Paramore", "MCR", "Evanescence",
+  "50 Cent", "Håkan Hellström", "Backstreet Boys", "Avril Lavigne",
+  "Good Charlotte", "Sum 41", "Bon Iver", "Radiohead", "Allt möjligt", "Annat",
+];
+
+export const prefersOptions = [
+  "Hänga med kompisar", "Datorspel hela natten", "LAN-party", "Skejta",
+  "Mysa hemma", "Gå på konsert", "Stranden", "Café", "Stad", "Landet",
+  "Gymmet", "Ute i naturen", "Hemmakontoret", "Afterwork", "Bio", "Annat",
+];
+
+export const interestsOptions = [
+  "Retro gaming", "Webbutveckling", "Musik", "Film", "Anime", "Manga",
+  "Skateboard", "Fotografi", "Mode", "Konst", "Träning", "Matlagning",
+  "Podcasts", "YouTube", "Vinyl", "Brädspel", "Cosplay", "Programmering",
+  "Inredning", "Resor", "Natur", "Djur", "Politik", "Historia", "Annat",
 ];
 
 export const lookingForOptions = [
