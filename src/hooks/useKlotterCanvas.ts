@@ -171,11 +171,17 @@ export function useKlotterCanvas() {
   const getPointerPosition = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
+
     const rect = canvas.getBoundingClientRect();
-    // Return CSS-space coordinates (ctx.scale(dpr) maps these to device pixels)
+    const dpr = window.devicePixelRatio || 1;
+
+    // Scale from CSS pixels to canvas pixels
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: (e.clientX - rect.left) * scaleX / dpr,
+      y: (e.clientY - rect.top) * scaleY / dpr,
     };
   };
 
