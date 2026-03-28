@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun, Lock, Bot, FileWarning } from "lucide-react";
+import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun, Lock, Bot, FileWarning, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FAQItem {
@@ -332,6 +332,22 @@ export function FAQSection() {
             <p>Echo2000 är <strong className="text-foreground">inte</strong> anslutet till, sponsrat av eller affilierat med LunarStorm, Microsoft, MSN eller något annat företag. Alla varumärken tillhör sina respektive ägare.</p>
             <p>Echo2000 är i <strong className="text-destructive">beta-fas</strong> och kan innehålla buggar, ofärdiga funktioner och oväntade ändringar. Data kan komma att återställas under utvecklingsperioden.</p>
             <p>Plattformen förbehåller sig rätten att moderera och ta bort innehåll som bryter mot community-reglerna utan föregående varning.</p>
+          </div>
+        </section>
+
+        {/* Om Echo2000 */}
+        <section className="mb-10">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <Info className="w-5 h-5 text-primary" />
+            Om Echo2000
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
+            <p>Echo2000 är ett soloprojekt byggt 100% med no-code/low-code.</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong className="text-foreground">Frontend:</strong> React 18 + TypeScript + Tailwind CSS + shadcn/ui (via Lovable)</li>
+              <li><strong className="text-foreground">Backend / Auth / Realtime:</strong> Lovable Cloud (PostgreSQL med RLS, Realtime, Auth, Edge Functions)</li>
+            </ul>
+            <p><strong className="text-foreground">Målet:</strong> kombinera klassisk 2000-tals webbkänsla med moderna funktioner som faktiskt fungerar.</p>
           </div>
         </section>
 
