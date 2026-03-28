@@ -28,7 +28,7 @@ export const COLORS = [
 ];
 export const MOBILE_COLORS = [COLORS[0], COLORS[1], COLORS[2], COLORS[4], COLORS[7]];
 export const BRUSH_SIZES = [4, 8, 14, 22, 32];
-export const BG_COLOR = "#1e2540";
+export const BG_COLOR = "#FFFFFF";
 
 export function useKlotterCanvas() {
   const isMobile = useIsMobile();
