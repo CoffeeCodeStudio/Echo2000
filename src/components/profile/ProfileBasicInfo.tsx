@@ -2,11 +2,12 @@
  * @module ProfileBasicInfo
  * Inline display/edit for gender, age, city, status, spanar_in, and activity.
  */
+import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { StatusIndicator, type UserStatus } from "@/components/StatusIndicator";
-import { genderOptions, type EditableProfileData } from "./profile-constants";
+import { genderOptions, ageOptions, länOptions, getCitiesForLän, type EditableProfileData } from "./profile-constants";
 
 interface ProfileBasicInfoProps {
   displayData: EditableProfileData;
@@ -18,9 +19,34 @@ interface ProfileBasicInfoProps {
   lastSeen: string | null;
 }
 
+/** Try to detect which län a city belongs to (for existing profiles). */
+function detectLän(city: string): string {
+  if (!city) return "";
+  const { svenskaLän } = require("./profile-constants");
+  for (const [län, cities] of Object.entries(svenskaLän)) {
+    if ((cities as string[]).some((c) => c.toLowerCase() === city.toLowerCase())) return län;
+  }
+  return "";
+}
+
 export function ProfileBasicInfo({
   displayData, editData, setEditData, isEditing, userStatus, userActivity, lastSeen,
 }: ProfileBasicInfoProps) {
+
+  // Parse län from city for existing data
+  const currentLän = useMemo(() => detectLän(editData.city), [editData.city]);
+  const availableCities = useMemo(() => getCitiesForLän(currentLän), [currentLän]);
+
+  const handleLänChange = (län: string) => {
+    const cities = getCitiesForLän(län);
+    // Auto-select first city when changing län
+    setEditData((prev) => ({ ...prev, city: cities[0] || "" }));
+  };
+
+  const handleCityChange = (city: string) => {
+    setEditData((prev) => ({ ...prev, city }));
+  };
+
   return (
     <div className="mb-4">
       <div className="flex items-center gap-2 flex-wrap">
@@ -33,17 +59,27 @@ export function ProfileBasicInfo({
                   {genderOptions.map((g) => (<SelectItem key={g} value={g}>{g}</SelectItem>))}
                 </SelectContent>
               </Select>
-              <Input
-                value={editData.age?.toString() || ""}
-                onChange={(e) => setEditData({ ...editData, age: e.target.value ? parseInt(e.target.value) : null })}
-                className="w-16 h-7 text-xs" type="number" placeholder="Ålder"
-              />
+              <Select value={editData.age?.toString() || ""} onValueChange={(v) => setEditData({ ...editData, age: v ? parseInt(v) : null })}>
+                <SelectTrigger className="w-20 h-7 text-xs"><SelectValue placeholder="Ålder" /></SelectTrigger>
+                <SelectContent className="max-h-48">
+                  {ageOptions.map((a) => (<SelectItem key={a} value={a}>{a}</SelectItem>))}
+                </SelectContent>
+              </Select>
               <span className="text-sm">år från</span>
-              <Input
-                value={editData.city}
-                onChange={(e) => setEditData({ ...editData, city: e.target.value })}
-                className="w-28 h-7 text-xs" placeholder="Stad"
-              />
+              <Select value={currentLän} onValueChange={handleLänChange}>
+                <SelectTrigger className="w-36 h-7 text-xs"><SelectValue placeholder="Välj län..." /></SelectTrigger>
+                <SelectContent className="max-h-48">
+                  {länOptions.map((l) => (<SelectItem key={l} value={l}>{l}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              {availableCities.length > 0 && (
+                <Select value={editData.city} onValueChange={handleCityChange}>
+                  <SelectTrigger className="w-32 h-7 text-xs"><SelectValue placeholder="Välj stad..." /></SelectTrigger>
+                  <SelectContent className="max-h-48">
+                    {availableCities.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           ) : (
             <span className="text-sm">
