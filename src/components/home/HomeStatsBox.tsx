@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Users, MessageCircle, BarChart3, BookOpen, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,11 +27,33 @@ function saveCache(s: Stats) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(s)); } catch {}
 }
 
+function useCountUp(target: number, duration = 600) {
+  const [display, setDisplay] = useState(target);
+  const prev = useRef(target);
+  useEffect(() => {
+    const from = prev.current;
+    prev.current = target;
+    if (from === target) { setDisplay(target); return; }
+    const start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setDisplay(Math.round(from + (target - from) * ease));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return display;
+}
+
 function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  const displayed = useCountUp(value);
   return (
     <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
       <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
-      <span className="font-bold text-foreground shrink-0">{value.toLocaleString("sv-SE")}</span>
+      <span className="font-bold text-foreground shrink-0">{displayed.toLocaleString("sv-SE")}</span>
     </div>
   );
 }
