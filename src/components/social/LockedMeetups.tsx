@@ -45,7 +45,7 @@ export function LockedMeetups() {
           </div>
           <h2 className="font-display font-bold text-xl mb-2">UNDER UTVECKLING</h2>
           <p className="text-muted-foreground">
-            Denna sektion öppnar senare under Alpha-perioden!
+            Denna sektion öppnar senare under Denna sektion öppnar senare under Beta-perioden!!
           </p>
         </div>
       </div>

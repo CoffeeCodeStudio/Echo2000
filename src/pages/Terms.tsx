@@ -20,7 +20,7 @@ export default function Terms() {
         <div className="text-sm text-muted-foreground space-y-4">
           <div className="p-3 bg-muted/40 border border-border">
             <p className="font-bold text-foreground mb-1">1. Allmänt</p>
-            <p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. Tjänsten är i Alpha-fas och tillhandahålls utan garantier.</p>
+            <p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. <p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. Tjänsten är i Beta-fas och tillhandahålls utan garantier.</p> och tillhandahålls utan garantier.</p>
           </div>
 
           <div className="p-3 bg-muted/40 border border-border">
@@ -55,10 +55,10 @@ export default function Terms() {
           </div>
 
           <div className="p-3 bg-muted/40 border border-border">
-            <p className="font-bold text-foreground mb-1">7. Alpha-status & ansvarsfrihet</p>
+            <p className="font-bold text-foreground mb-1"><p className="font-bold text-foreground mb-1">7. Beta-status & ansvarsfrihet</p> & ansvarsfrihet</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
               <li>Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas <strong>utan förvarning</strong>.</li>
-              <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Alpha-perioden.</li>
+              <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Beta-perioden.</li>.</li>
               <li>Genom att använda tjänsten accepterar du att den tillhandahålls <strong>"i befintligt skick"</strong> utan garantier.</li>
             </ul>
           </div>
@@ -91,7 +91,7 @@ export default function Terms() {
           </div>
 
           <p className="text-xs text-muted-foreground/70 text-center pt-2">
-            Senast uppdaterad: mars 2026 · © 2026 Echo2000 Alpha
+            Senast uppdaterad: mars 2026 · © 2026 Senast uppdaterad: mars 2026 · © 2026 Echo2000 Beta
           </p>
         </div>
       </div>
