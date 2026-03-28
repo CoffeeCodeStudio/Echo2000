@@ -27,10 +27,10 @@ export function HomeContent() {
       {/* Hero header */}
       <section className="py-2 md:py-3 text-center px-4">
         <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight mb-0.5">
-          <span className="bg-clip-text text-transparent bg-gradient-to-b from-[#d8613e] to-[#b40c06] drop-shadow-[0_0_8px_rgba(216,97,62,0.4)]">
+          <span className="bg-clip-text text-transparent bg-gradient-to-b from-[#d8613e] to-[#b40c06] animate-[glow-pulse-orange_3s_ease-in-out_infinite]">
             Echo
           </span>
-          <span className="bg-clip-text text-transparent bg-gradient-to-b from-[#5ABEDC] to-[#2D6B81] drop-shadow-[0_0_8px_rgba(90,190,220,0.4)]">
+          <span className="bg-clip-text text-transparent bg-gradient-to-b from-[#5ABEDC] to-[#2D6B81] animate-[glow-pulse-teal_3s_ease-in-out_infinite]">
             2000
           </span>
         </h1>

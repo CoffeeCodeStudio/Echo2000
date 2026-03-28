@@ -1,5 +1,15 @@
 @tailwind base;
 
+@keyframes glow-pulse-orange {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(216, 97, 62, 0.3)); }
+  50% { filter: drop-shadow(0 0 14px rgba(216, 97, 62, 0.6)) drop-shadow(0 0 4px rgba(255, 140, 80, 0.3)); }
+}
+
+@keyframes glow-pulse-teal {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(90, 190, 220, 0.3)); }
+  50% { filter: drop-shadow(0 0 14px rgba(90, 190, 220, 0.6)) drop-shadow(0 0 4px rgba(120, 220, 255, 0.3)); }
+}
+
 /* MSN Shake animation */
 @keyframes shake {
   0%,
