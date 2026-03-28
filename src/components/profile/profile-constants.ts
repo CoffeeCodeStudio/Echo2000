@@ -68,6 +68,39 @@ export const lookingForOptions = [
 
 export const genderOptions = ["Kille", "Tjej", "Annat"];
 
+export const ageOptions = Array.from({ length: 96 }, (_, i) => (i + 25).toString());
+
+/** Swedish län → cities mapping */
+export const svenskaLän: Record<string, string[]> = {
+  "Blekinge": ["Karlskrona", "Karlshamn", "Ronneby", "Sölvesborg", "Olofström"],
+  "Dalarna": ["Falun", "Borlänge", "Mora", "Ludvika", "Avesta", "Hedemora", "Leksand", "Rättvik", "Säter"],
+  "Gotland": ["Visby", "Hemse", "Slite", "Klintehamn"],
+  "Gävleborg": ["Gävle", "Sandviken", "Hudiksvall", "Söderhamn", "Bollnäs", "Ljusdal"],
+  "Halland": ["Halmstad", "Varberg", "Kungsbacka", "Falkenberg", "Laholm"],
+  "Jämtland": ["Östersund", "Sveg", "Krokom", "Strömsund", "Åre"],
+  "Jönköping": ["Jönköping", "Huskvarna", "Nässjö", "Värnamo", "Gislaved", "Vetlanda", "Tranås"],
+  "Kalmar": ["Kalmar", "Västervik", "Oskarshamn", "Nybro", "Vimmerby"],
+  "Kronoberg": ["Växjö", "Ljungby", "Älmhult", "Alvesta", "Markaryd", "Tingsryd"],
+  "Norrbotten": ["Luleå", "Piteå", "Boden", "Kiruna", "Gällivare", "Haparanda", "Kalix"],
+  "Skåne": ["Malmö", "Helsingborg", "Lund", "Kristianstad", "Landskrona", "Trelleborg", "Ängelholm", "Hässleholm", "Eslöv", "Ystad", "Höganäs", "Staffanstorp", "Lomma", "Simrishamn"],
+  "Stockholm": ["Stockholm", "Solna", "Sundbyberg", "Nacka", "Huddinge", "Södertälje", "Norrtälje", "Haninge", "Täby", "Lidingö", "Vallentuna", "Tyresö", "Upplands Väsby", "Järfälla", "Sigtuna", "Botkyrka"],
+  "Södermanland": ["Nyköping", "Eskilstuna", "Katrineholm", "Strängnäs", "Flen", "Oxelösund"],
+  "Uppsala": ["Uppsala", "Enköping", "Östhammar", "Tierp", "Knivsta"],
+  "Värmland": ["Karlstad", "Kristinehamn", "Arvika", "Säffle", "Hagfors", "Sunne", "Filipstad"],
+  "Västerbotten": ["Umeå", "Skellefteå", "Lycksele", "Vindeln", "Robertsfors"],
+  "Västernorrland": ["Sundsvall", "Härnösand", "Örnsköldsvik", "Kramfors", "Sollefteå", "Ånge"],
+  "Västmanland": ["Västerås", "Köping", "Sala", "Fagersta", "Hallstahammar", "Surahammar", "Arboga"],
+  "Västra Götaland": ["Göteborg", "Borås", "Trollhättan", "Skövde", "Uddevalla", "Lidköping", "Alingsås", "Mölndal", "Kungälv", "Lerum", "Partille", "Mariestad", "Falköping", "Vänersborg"],
+  "Örebro": ["Örebro", "Kumla", "Hallsberg", "Karlskoga", "Lindesberg", "Askersund", "Degerfors"],
+  "Östergötland": ["Linköping", "Norrköping", "Motala", "Mjölby", "Finspång", "Åtvidaberg"],
+};
+
+export const länOptions = Object.keys(svenskaLän).sort();
+
+export function getCitiesForLän(län: string): string[] {
+  return svenskaLän[län] || [];
+}
+
 /** Shape of profile data when in edit mode. */
 export interface EditableProfileData {
   username: string;
