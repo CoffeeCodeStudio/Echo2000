@@ -39,7 +39,6 @@ export function HomeStatsBox() {
   useEffect(() => {
     const fetchStats = async () => {
       if (user) {
-        // Small delay to ensure auth session is propagated to supabase client
         await new Promise(r => setTimeout(r, 300));
         const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
           supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -69,6 +68,8 @@ export function HomeStatsBox() {
       }
     };
     fetchStats();
+    const interval = setInterval(fetchStats, 30_000);
+    return () => clearInterval(interval);
   }, [user]);
 
   // Combine real online users + online bots
