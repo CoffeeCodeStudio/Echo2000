@@ -51,6 +51,12 @@ export function useKlotterCanvas() {
   const context = useOutletContext<LayoutContext>();
   const setHideNavbar = context?.setHideNavbar;
 
+  // Keep a ref to history/historyIndex so the resize handler always has current data
+  const historyRef = useRef(history);
+  const historyIndexRef = useRef(historyIndex);
+  useEffect(() => { historyRef.current = history; }, [history]);
+  useEffect(() => { historyIndexRef.current = historyIndex; }, [historyIndex]);
+
   // ---------------------------------------------------------------------------
   // Side-effects
   // ---------------------------------------------------------------------------
@@ -63,49 +69,22 @@ export function useKlotterCanvas() {
     return () => { if (setHideNavbar) setHideNavbar(false); };
   }, [showPublishModal, isMobile, setHideNavbar]);
 
-  // Initialize canvas with proper DPI scaling
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      ctx.fillStyle = BG_COLOR;
-      ctx.fillRect(0, 0, rect.width, rect.height);
-      redrawCanvas();
-    };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-    return () => window.removeEventListener("resize", resizeCanvas);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  /**
+   * Apply the correct DPR transform to the context.
+   * Always resets to identity first to prevent accumulation.
+   */
+  const applyDprTransform = useCallback((ctx: CanvasRenderingContext2D) => {
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // Canvas redraw
-  // ---------------------------------------------------------------------------
-
-  const redrawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr, dpr);
-    ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    for (let i = 0; i <= historyIndex; i++) {
-      const action = history[i];
+  /**
+   * Draw a list of actions onto the context.
+   * Assumes the DPR transform is already applied.
+   */
+  const drawActions = useCallback((ctx: CanvasRenderingContext2D, actions: DrawAction[], upTo: number) => {
+    for (let i = 0; i <= upTo; i++) {
+      const action = actions[i];
       if (!action) continue;
       action.points.forEach((point, idx) => {
         if (idx === 0) return;
@@ -120,7 +99,61 @@ export function useKlotterCanvas() {
         ctx.stroke();
       });
     }
-  }, [history, historyIndex]);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Canvas redraw
+  // ---------------------------------------------------------------------------
+
+  const redrawCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    applyDprTransform(ctx);
+    ctx.fillStyle = BG_COLOR;
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    drawActions(ctx, history, historyIndex);
+  }, [history, historyIndex, applyDprTransform, drawActions]);
+
+  /**
+   * Same as redrawCanvas but reads from refs — used by the resize handler
+   * so it always has the latest history regardless of closure staleness.
+   */
+  const redrawFromRefs = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    applyDprTransform(ctx);
+    ctx.fillStyle = BG_COLOR;
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    drawActions(ctx, historyRef.current, historyIndexRef.current);
+  }, [applyDprTransform, drawActions]);
+
+  // Initialize canvas with proper DPI scaling
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      // Set the canvas bitmap size to match display pixels
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      // Redraw with current history (from refs to avoid stale closure)
+      redrawFromRefs();
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, [redrawFromRefs]);
 
   useEffect(() => { redrawCanvas(); }, [historyIndex, redrawCanvas]);
 
@@ -128,14 +161,26 @@ export function useKlotterCanvas() {
   // Pointer handlers
   // ---------------------------------------------------------------------------
 
+  /**
+   * Convert a pointer event to CSS-space coordinates relative to the canvas.
+   * Uses clientX/clientY (not pageX/pageY) to avoid scroll-offset issues.
+   * The ratio canvas.width/rect.width naturally equals devicePixelRatio,
+   * but computing it from the actual values handles any CSS transforms too.
+   */
   const getPointerPosition = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    // Return CSS-space coordinates (ctx.scale(dpr) maps these to device pixels)
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
   };
 
   const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Capture the pointer so we receive events even if finger/cursor moves outside
+    (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
     const pos = getPointerPosition(e);
     if (!pos) return;
     setIsDrawing(true);
@@ -149,6 +194,9 @@ export function useKlotterCanvas() {
     const ctx = canvas?.getContext("2d");
     const pos = getPointerPosition(e);
     if (!ctx || !pos) return;
+
+    // Always reset the transform before drawing to prevent drift
+    applyDprTransform(ctx);
 
     const currentColor = isEraser ? BG_COLOR : color;
     ctx.beginPath();
@@ -189,8 +237,10 @@ export function useKlotterCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (ctx && canvas) {
+      const rect = canvas.getBoundingClientRect();
+      applyDprTransform(ctx);
       ctx.fillStyle = BG_COLOR;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, rect.width, rect.height);
     }
   };
 
