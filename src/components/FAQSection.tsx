@@ -335,6 +335,22 @@ export function FAQSection() {
           </div>
         </section>
 
+        {/* Om Echo2000 */}
+        <section className="mb-10">
+          <h2 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
+            <Info className="w-5 h-5 text-primary" />
+            Om Echo2000
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground">
+            <p>Echo2000 är ett soloprojekt byggt 100% med no-code/low-code.</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong className="text-foreground">Frontend:</strong> React 18 + TypeScript + Tailwind CSS + shadcn/ui (via Lovable)</li>
+              <li><strong className="text-foreground">Backend / Auth / Realtime:</strong> Lovable Cloud (PostgreSQL med RLS, Realtime, Auth, Edge Functions)</li>
+            </ul>
+            <p><strong className="text-foreground">Målet:</strong> kombinera klassisk 2000-tals webbkänsla med moderna funktioner som faktiskt fungerar.</p>
+          </div>
+        </section>
+
         {/* Contact Section */}
         <section className="mt-10 text-center">
           <div className="bg-card border border-border rounded-lg p-6">
