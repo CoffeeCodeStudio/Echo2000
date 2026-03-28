@@ -2,7 +2,7 @@
  * @module ProfileInfoSection
  * Main "PROFIL" tab content – thin render shell delegating to sub-components.
  */
-import { Edit2, Save, X, Loader2 } from "lucide-react";
+import { Edit2, Save, X, Loader2, Heart } from "lucide-react";
 import { ProfileShareButton } from "./ProfileShareButton";
 import { AiBadge } from "@/components/AiBadge";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ import { ProfileBasicInfo } from "./ProfileBasicInfo";
 import { ProfileFieldsGrid } from "./ProfileFieldsGrid";
 import { ProfileLookingFor } from "./ProfileLookingFor";
 import { ProfileBioStatus } from "./ProfileBioStatus";
+import { useDrLove } from "@/hooks/useDrLove";
 
 interface ProfileInfoSectionProps {
   displayData: EditableProfileData;
@@ -42,7 +43,9 @@ export function ProfileInfoSection({
   userStatus, userActivity, lastSeen, memberSince, onEdit, onSave, onCancel, saving, isBot,
 }: ProfileInfoSectionProps) {
   const navigate = useNavigate();
-  const drLoveScore = 73;
+  const { score: drLoveScore, message: drLoveMessage, loading: drLoveLoading } = useDrLove(
+    !isOwnProfile ? userId : undefined
+  );
 
   return (
     <div id="profile-card-capture" className="bg-card rounded-lg border border-border overflow-hidden">
@@ -153,12 +156,13 @@ export function ProfileInfoSection({
       )}
 
       {/* Dr. Love */}
-      {!isOwnProfile && (
+      {!isOwnProfile && !drLoveLoading && (
         <div className="bg-muted/30 border-t border-border px-4 py-2">
           <div className="flex items-center gap-2 text-xs">
+            <Heart className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="font-bold text-accent">DR. LOVE:</span>
             <span className="text-muted-foreground">
-              {drLoveScore}% kan funka om du klär ut dig till chimpans och drar ett skämt!
+              {drLoveScore}% — {drLoveMessage}
             </span>
           </div>
         </div>
