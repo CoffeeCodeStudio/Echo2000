@@ -70,13 +70,8 @@ export function useKlotterCanvas() {
   }, [showPublishModal, isMobile, setHideNavbar]);
 
   /**
-   * Apply the correct DPR transform to the context.
-   * Always resets to identity first to prevent accumulation.
-   */
-  const applyDprTransform = useCallback((ctx: CanvasRenderingContext2D) => {
-    const dpr = window.devicePixelRatio || 1;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }, []);
+
+
 
   /**
    * Draw a list of actions onto the context.
