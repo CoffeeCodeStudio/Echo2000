@@ -268,7 +268,7 @@ export function FAQSection() {
                 <li><strong>Rättelse (Art. 16):</strong> Korrigera felaktiga uppgifter (kan göras direkt i profilen).</li>
                 <li><strong>Radering (Art. 17):</strong> Begära radering av ditt konto och alla tillhörande uppgifter via Inställningar → Radera konto, eller kontakta oss.</li>
                 <li><strong>Begränsning (Art. 18):</strong> Begära att vi begränsar behandlingen av dina uppgifter.</li>
-                <li><strong><li><strong>Dataportabilitet (Art. 20):</strong> Du kan begära att få ut dina personuppgifter genom att kontakta oss på <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a> så hjälper vi dig inom 30 dagar.</li></li>
+                <li><strong>Dataportabilitet (Art. 20):</strong> Du kan begära att få ut dina personuppgifter genom att kontakta oss på <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a> så hjälper vi dig inom 30 dagar.</li> (Art. 20):</strong> Du kan begära att få ut dina personuppgifter genom att kontakta oss på <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a> så hjälper vi dig inom 30 dagar.</li></li>
                 <li><strong>Invändning (Art. 21):</strong> Invända mot behandling baserad på berättigat intresse.</li>
                 <li><strong>Återkalla samtycke:</strong> Du kan när som helst återkalla ditt cookie-samtycke genom att rensa dina webbläsarinställningar.</li>
               </ul>
