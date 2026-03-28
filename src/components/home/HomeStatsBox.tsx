@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Users, MessageCircle, Wifi, BarChart3, BookOpen, Palette } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Users, MessageCircle, BarChart3, BookOpen, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
@@ -20,11 +20,11 @@ function StatRow({ icon, label, value, loading }: { icon: React.ReactNode; label
 
 export function HomeStatsBox() {
   const [stats, setStats] = useState<{ members: number; online: number; messages: number; guestbook: number; klotter: number } | null>(null);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const [onlineBotCount, setOnlineBotCount] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
 
-  // Fetch online bot count (bots with last_seen within 10 min)
+  // Fetch online bot count
   useEffect(() => {
     const fetchOnlineBots = async () => {
       const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
@@ -40,50 +40,63 @@ export function HomeStatsBox() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (user) {
-        if (!stats) await new Promise(r => setTimeout(r, 300));
-        const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
-          supabase.from("profiles").select("*", { count: "exact", head: true }),
-          supabase.from("chat_messages").select("*", { count: "exact", head: true }),
-          supabase.from("messages").select("*", { count: "exact", head: true }),
-          supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
-          supabase.from("klotter").select("*", { count: "exact", head: true }),
-        ]);
-        setStats({
-          members: memberCount ?? 0,
-          online: 0,
-          messages: (chatMsgCount ?? 0) + (mailMsgCount ?? 0),
-          guestbook: gbCount ?? 0,
-          klotter: klCount ?? 0,
-        });
-      } else {
-        try {
-          const res = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-stats`,
-            { headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            setStats({ members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 });
-          }
-        } catch {}
-      }
-    };
-    fetchStats();
-    const interval = setInterval(fetchStats, 30_000);
-    return () => clearInterval(interval);
+  const fetchStats = useCallback(async (isFirst: boolean) => {
+    if (user) {
+      if (isFirst) await new Promise(r => setTimeout(r, 300));
+      const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+        supabase.from("messages").select("*", { count: "exact", head: true }),
+        supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
+        supabase.from("klotter").select("*", { count: "exact", head: true }),
+      ]);
+      setStats({
+        members: memberCount ?? 0,
+        online: 0,
+        messages: (chatMsgCount ?? 0) + (mailMsgCount ?? 0),
+        guestbook: gbCount ?? 0,
+        klotter: klCount ?? 0,
+      });
+    } else {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-stats`,
+          { headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setStats({ members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 });
+        }
+      } catch {}
+    }
   }, [user]);
 
-  // Combine real online users + online bots
+  // Initial fetch + polling
+  useEffect(() => {
+    fetchStats(true);
+    const interval = setInterval(() => fetchStats(false), 30_000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  // Realtime: refresh immediately on guestbook/klotter changes
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("stats-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_guestbook" }, () => fetchStats(false))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "klotter" }, () => fetchStats(false))
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "profile_guestbook" }, () => fetchStats(false))
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "klotter" }, () => fetchStats(false))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchStats]);
+
   const totalOnline = (onlineUsers?.size ?? 0) + onlineBotCount;
 
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-1.5">
         <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats?.members ?? 0} loading={!stats} />
-        
         <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats?.messages ?? 0} loading={!stats} />
         <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats?.guestbook ?? 0} loading={!stats} />
         <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats?.klotter ?? 0} loading={!stats} />
