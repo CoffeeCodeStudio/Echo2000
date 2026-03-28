@@ -372,9 +372,17 @@ export default function Auth() {
               )}
 
               {mode === "register" && (
-                <p className="text-center text-xs text-muted-foreground italic py-1">
-                  Endast för oss som minns 56k-modem och brända CD-skivor 💿
-                </p>
+                <div className="space-y-1">
+                  <p className="text-center text-xs text-muted-foreground">
+                    Genom att registrera dig godkänner du även vår{" "}
+                    <a href="/regler" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                      integritetspolicy
+                    </a>.
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground italic py-1">
+                    Endast för oss som minns 56k-modem och brända CD-skivor 💿
+                  </p>
+                </div>
               )}
 
               <Button

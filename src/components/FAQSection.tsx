@@ -88,7 +88,7 @@ const faqItems: FAQItem[] = [
   },
   {
     question: "Hur anmäler jag någon?",
-    answer: "Klicka på de tre prickarna vid ett inlägg eller profil och välj \"Anmäl\". Beskriv kort vad som hänt så kollar vi på det. Anonymt, självklart.",
+    answer: "Rapporteringsfunktion är under utveckling. Under beta — kontakta oss direkt på hej@coffeecodestudio.se och beskriv vad som hänt så hanterar vi det skyndsamt.",
   },
   {
     question: "Kan jag radera mitt konto?",
@@ -259,6 +259,21 @@ export function FAQSection() {
               <p className="font-bold text-foreground mb-1">Delning med tredje part</p>
               <p>Vi delar <strong>inte</strong> dina personuppgifter med tredje part i marknadsförings- eller reklamsyfte. Data kan delas med myndigheter om vi är skyldiga enligt lag (t.ex. vid utredning av brott).</p>
             </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Dataintrång (Art. 33–34)</p>
+              <p>Vid en säkerhetsincident som påverkar dina personuppgifter kommer vi att meddela berörda användare via <strong>e-post inom 72 timmar</strong> från att vi fick kännedom om incidenten, i enlighet med GDPR Art. 33–34. Vi rapporterar också incidenten till <strong>Integritetsskyddsmyndigheten (IMY)</strong> när så krävs.</p>
+            </div>
+
+            <div>
+              <p className="font-bold text-foreground mb-1">Tredjepartstjänster vi använder</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Google Fonts</strong> (fonts.googleapis.com) — typsnitt laddas från Googles servrar vid sidladdning.</li>
+                <li><strong>Unsplash</strong> (unsplash.com) — bakgrundsbilder i profiler, valda bilder laddas från Unsplash CDN.</li>
+                <li><strong>Supabase</strong> — databaslagring och autentisering, data lagras inom EU/EES med SCC-skydd.</li>
+              </ul>
+            </div>
+
 
             <div>
               <p className="font-bold text-foreground mb-1">Dina rättigheter</p>

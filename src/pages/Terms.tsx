@@ -30,7 +30,7 @@ export default function Terms() {
 
           <div className="p-3 bg-muted/40 border border-border">
             <p className="font-bold text-foreground mb-1">3. Uppförande</p>
-            <p>Positiv energi är ett krav. Negativitet, personangrepp och delande av personliga problem i publika utrymmen är förbjudet. Måttligt svärande är tillåtet.</p>
+            <p>Positiv energi är ett krav. Negativitet, personangrepp och delande av personliga problem i publika utrymmen är förbjudet. Måttligt svärande är tillåtet. Administratörer kan granska publikt innehåll för att säkerställa att community-reglerna följs.</p>
           </div>
 
           <div className="p-3 bg-muted/40 border border-border">
