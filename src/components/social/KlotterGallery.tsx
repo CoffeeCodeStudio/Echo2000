@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { ClickableUsername } from "../ClickableUsername";
 import { GoodVibe } from "./GoodVibe";
+import { ReportButton } from "./ReportButton";
 
 interface KlotterItem {
   id: string;
@@ -168,7 +169,18 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
                     </p>
                   )}
                 </div>
-                <GoodVibe targetType="klotter" targetId={currentItem.id} className="shrink-0" />
+                <div className="flex items-center gap-2 shrink-0">
+                  <GoodVibe targetType="klotter" targetId={currentItem.id} />
+                  {currentUserId && currentItem.user_id !== currentUserId && (
+                    <ReportButton
+                      contentType="klotter"
+                      contentId={currentItem.id}
+                      contentAuthor={currentItem.author_name}
+                      contentPreview={currentItem.comment ?? undefined}
+                      className="flex items-center gap-1 text-xs text-white/50 hover:text-red-400 transition-colors"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Counter */}

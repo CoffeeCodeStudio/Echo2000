@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, MessageCircle, Loader2, Info, Trash2, AlertTriangle } from "lucide-react";
+import { ReportButton } from "./ReportButton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { Avatar } from "../Avatar";
 import { Button } from "../ui/button";
@@ -371,6 +372,14 @@ export function Guestbook() {
                         <MessageCircle className="w-4 h-4" />
                         Svara
                       </button>
+                      {user && entry.user_id !== user.id && (
+                        <ReportButton
+                          contentType="gästboksinlägg"
+                          contentId={entry.id}
+                          contentAuthor={entry.author_name}
+                          contentPreview={entry.message}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
