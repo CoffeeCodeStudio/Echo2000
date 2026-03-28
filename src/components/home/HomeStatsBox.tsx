@@ -82,11 +82,11 @@ export function HomeStatsBox() {
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
       <div className="space-y-1.5">
-        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
+        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats?.members ?? 0} loading={!stats} />
         
-        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
-        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
-        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
+        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats?.messages ?? 0} loading={!stats} />
+        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats?.guestbook ?? 0} loading={!stats} />
+        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats?.klotter ?? 0} loading={!stats} />
       </div>
     </BentoCard>
   );
