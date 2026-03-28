@@ -197,9 +197,16 @@ function DrLoveBar({ score, message }: { score: number; message: string }) {
     requestAnimationFrame(tick);
   }, [score]);
 
+  const pct = score > 0 ? (displayed / score) * score : 0;
+
   return (
-    <div ref={ref} className="bg-muted/30 border-t border-border px-4 py-2 animate-fade-in">
-      <div className="flex items-center gap-2 text-xs">
+    <div ref={ref} className="relative border-t border-border px-4 py-2 animate-fade-in overflow-hidden">
+      {/* Progress bar background */}
+      <div
+        className="absolute inset-0 bg-accent/10 origin-left transition-none"
+        style={{ width: `${pct}%` }}
+      />
+      <div className="relative flex items-center gap-2 text-xs">
         <Heart
           className="w-3.5 h-3.5 text-accent shrink-0 animate-[pulse_1s_ease-in-out_3]"
         />
