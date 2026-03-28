@@ -43,7 +43,7 @@ export function HomeStatsBox() {
   useEffect(() => {
     const fetchStats = async () => {
       if (user) {
-        await new Promise(r => setTimeout(r, 300));
+        if (!stats) await new Promise(r => setTimeout(r, 300));
         const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: gbCount }, { count: klCount }] = await Promise.all([
           supabase.from("profiles").select("*", { count: "exact", head: true }),
           supabase.from("chat_messages").select("*", { count: "exact", head: true }),
