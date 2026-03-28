@@ -20,7 +20,7 @@ function StatRow({ icon, label, value, loading }: { icon: React.ReactNode; label
 
 export function HomeStatsBox() {
   const [stats, setStats] = useState<{ members: number; online: number; messages: number; guestbook: number; klotter: number } | null>(null);
-  const [onlineBotCount, setOnlineBotCount] = useState(0);
+  const [refreshTick, setRefreshTick] = useState(0);
   const { user } = useAuth();
   const { onlineUsers } = usePresence();
 
