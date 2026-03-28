@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { replaceEmoteCodes } from './social/PixelEmotes';
+import { ReportButton } from './social/ReportButton';
 import { sanitizeAvatarUrl } from '@/lib/avatar-url';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -219,6 +220,16 @@ export function ProfileGuestbook({
                         >
                           <MessageSquare className="w-3 h-3" />
                         </Button>
+                      )}
+                      {/* Report button */}
+                      {user && entry.author_id !== user.id && (
+                        <ReportButton
+                          contentType="gästboksinlägg"
+                          contentId={entry.id}
+                          contentAuthor={entry.author_name}
+                          contentPreview={entry.message}
+                          variant="icon"
+                        />
                       )}
                       {/* Delete button - for profile owner OR entry author */}
                       {user && ((isOwnProfile && profileOwnerId === user.id) || entry.author_id === user.id) && (

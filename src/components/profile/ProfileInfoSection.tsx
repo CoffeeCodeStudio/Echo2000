@@ -8,6 +8,7 @@ import { AiBadge } from "@/components/AiBadge";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FriendActionButtons } from "@/components/friends/FriendActionButtons";
+import { ReportButton } from "@/components/social/ReportButton";
 import { Input } from "@/components/ui/input";
 import type { UserStatus } from "@/components/StatusIndicator";
 import type { EditableProfileData } from "./profile-constants";
@@ -141,8 +142,13 @@ export function ProfileInfoSection({
 
       {/* Action Buttons Bar */}
       {!isOwnProfile && userId && (
-        <div className="bg-gradient-to-r from-muted/50 via-muted to-muted/50 border-t border-border px-4 py-2">
+        <div className="bg-gradient-to-r from-muted/50 via-muted to-muted/50 border-t border-border px-4 py-2 flex items-center justify-between">
           <FriendActionButtons targetUserId={userId} targetUsername={displayData.username} />
+          <ReportButton
+            contentType="profil"
+            contentId={userId}
+            contentAuthor={displayData.username}
+          />
         </div>
       )}
 
