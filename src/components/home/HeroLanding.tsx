@@ -244,7 +244,7 @@ export function HeroLanding() {
           <span className="block mt-1 sm:mt-2">
             <span
               className="hero-glitch-text text-4xl sm:text-6xl md:text-8xl hero-reveal"
-              data-text="Echo2000"
+              data-text="Echo"
               style={{
                 animationDelay: "0.9s",
                 lineHeight: 1.1,
@@ -254,7 +254,21 @@ export function HeroLanding() {
                 backgroundClip: "text",
               }}
             >
-              Echo2000
+              Echo
+            </span>
+            <span
+              className="hero-glitch-text text-4xl sm:text-6xl md:text-8xl hero-reveal"
+              data-text="2000"
+              style={{
+                animationDelay: "1.1s",
+                lineHeight: 1.1,
+                background: "linear-gradient(to bottom, #5ABEDC 0%, #2D6B81 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              2000
             </span>
           </span>
         </h1>
