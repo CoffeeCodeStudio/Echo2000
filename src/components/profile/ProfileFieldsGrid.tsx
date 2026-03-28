@@ -6,7 +6,8 @@ import { ProfileField } from "./ProfileField";
 import {
   type EditableProfileData,
   personalityOptions, relationshipOptions, occupationOptions,
-  hairColorOptions, bodyTypeOptions,
+  hairColorOptions, bodyTypeOptions, clothingOptions, likesOptions,
+  eatsOptions, listensToOptions, prefersOptions, interestsOptions,
 } from "./profile-constants";
 
 interface ProfileFieldsGridProps {
@@ -26,13 +27,13 @@ export function ProfileFieldsGrid({ displayData, editData, setEditData, isEditin
       <ProfileField label="Civilstånd:" value={displayData.relationship} editValue={editData.relationship} isEditing={isEditing} options={relationshipOptions} onChange={set("relationship")} />
       <ProfileField label="Sysselsättn.:" value={displayData.occupation} editValue={editData.occupation} isEditing={isEditing} options={occupationOptions} onChange={set("occupation")} />
       <ProfileField label="Boende:" value={displayData.city} editValue={editData.city} isEditing={isEditing} isText onChange={set("city")} />
-      <ProfileField label="Föredrar:" value={displayData.prefers} editValue={editData.prefers} isEditing={isEditing} isText onChange={set("prefers")} />
-      <ProfileField label="Gillar:" value={displayData.likes} editValue={editData.likes} isEditing={isEditing} isText onChange={set("likes")} />
-      <ProfileField label="Lyssnar På:" value={displayData.listens_to} editValue={editData.listens_to} isEditing={isEditing} isText onChange={set("listens_to")} />
-      <ProfileField label="Äter helst:" value={displayData.eats} editValue={editData.eats} isEditing={isEditing} isText onChange={set("eats")} />
+      <ProfileField label="Föredrar:" value={displayData.prefers} editValue={editData.prefers} isEditing={isEditing} options={prefersOptions} onChange={set("prefers")} />
+      <ProfileField label="Gillar:" value={displayData.likes} editValue={editData.likes} isEditing={isEditing} options={likesOptions} onChange={set("likes")} />
+      <ProfileField label="Lyssnar På:" value={displayData.listens_to} editValue={editData.listens_to} isEditing={isEditing} options={listensToOptions} onChange={set("listens_to")} />
+      <ProfileField label="Äter helst:" value={displayData.eats} editValue={editData.eats} isEditing={isEditing} options={eatsOptions} onChange={set("eats")} />
       <ProfileField label="Hårfärg:" value={displayData.hair_color} editValue={editData.hair_color} isEditing={isEditing} options={hairColorOptions} onChange={set("hair_color")} />
-      <ProfileField label="Intressen:" value={displayData.interests} editValue={editData.interests} isEditing={isEditing} isText onChange={set("interests")} />
-      <ProfileField label="Kläder:" value={displayData.clothing} editValue={editData.clothing} isEditing={isEditing} isText onChange={set("clothing")} />
+      <ProfileField label="Intressen:" value={displayData.interests} editValue={editData.interests} isEditing={isEditing} options={interestsOptions} onChange={set("interests")} />
+      <ProfileField label="Kläder:" value={displayData.clothing} editValue={editData.clothing} isEditing={isEditing} options={clothingOptions} onChange={set("clothing")} />
       <ProfileField label="Kropp:" value={displayData.body_type} editValue={editData.body_type} isEditing={isEditing} options={bodyTypeOptions} onChange={set("body_type")} />
     </div>
   );
