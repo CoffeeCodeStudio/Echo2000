@@ -83,7 +83,10 @@ export function ProfileBasicInfo({
           ) : (
             <span className="text-sm">
               {displayData.gender || "Ej angivet"}, {displayData.age || "?"} år från{" "}
-              <span className="text-primary font-medium">{displayData.city || "Okänt"}</span>
+              <span className="text-primary font-medium">
+                {displayData.city || "Okänt"}
+                {detectLän(displayData.city) && `, ${detectLän(displayData.city)}`}
+              </span>
             </span>
           )}
         </span>
