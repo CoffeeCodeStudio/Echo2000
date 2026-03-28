@@ -83,6 +83,9 @@ export function useKlotterCanvas() {
    * Assumes the DPR transform is already applied.
    */
   const drawActions = useCallback((ctx: CanvasRenderingContext2D, actions: DrawAction[], upTo: number) => {
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     for (let i = 0; i <= upTo; i++) {
       const action = actions[i];
       if (!action) continue;
@@ -90,15 +93,16 @@ export function useKlotterCanvas() {
         if (idx === 0) return;
         const prev = action.points[idx - 1];
         ctx.beginPath();
-        ctx.moveTo(prev.x, prev.y);
-        ctx.lineTo(point.x, point.y);
+        ctx.moveTo(prev.x * dpr, prev.y * dpr);
+        ctx.lineTo(point.x * dpr, point.y * dpr);
         ctx.strokeStyle = point.color;
-        ctx.lineWidth = point.size;
+        ctx.lineWidth = point.size * dpr;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.stroke();
       });
     }
+    ctx.restore();
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -111,12 +115,13 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    applyDprTransform(ctx);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
     drawActions(ctx, history, historyIndex);
-  }, [history, historyIndex, applyDprTransform, drawActions]);
+  }, [history, historyIndex, drawActions]);
 
   /**
    * Same as redrawCanvas but reads from refs — used by the resize handler
@@ -128,12 +133,13 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    applyDprTransform(ctx);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
     drawActions(ctx, historyRef.current, historyIndexRef.current);
-  }, [applyDprTransform, drawActions]);
+  }, [drawActions]);
 
   // Initialize canvas with proper DPI scaling
   useEffect(() => {
