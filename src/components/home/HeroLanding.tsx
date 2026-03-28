@@ -144,7 +144,7 @@ export function HeroLanding() {
   const isMobile = useIsMobile();
   const { muted, toggleMute, play: playCrtSound } = useCrtBootSound();
 
-  const subtitle = "Chatta med folk. Bygg din profil. Inga algoritmer.";
+  const subtitle = "Chatta med folk. Bygg din profil. Inga algoritmer. Som förr, fast nu.";
   const { displayed: typedText, done: typingDone } = useTypewriter(subtitle, 35, 1600);
 
   useEffect(() => {
@@ -239,12 +239,12 @@ export function HeroLanding() {
             className="block text-3xl sm:text-5xl md:text-7xl text-white hero-reveal"
             style={{ lineHeight: 1.1, letterSpacing: "-0.03em", animationDelay: "0.6s" }}
           >
-            Välkommen hem till
+            Välkommen till
           </span>
           <span className="block mt-1 sm:mt-2">
             <span
               className="hero-glitch-text text-4xl sm:text-6xl md:text-8xl hero-reveal"
-              data-text="2000"
+              data-text="Echo2000"
               style={{
                 animationDelay: "0.9s",
                 lineHeight: 1.1,
@@ -254,13 +254,7 @@ export function HeroLanding() {
                 backgroundClip: "text",
               }}
             >
-              2000
-            </span>
-            <span
-              className="text-4xl sm:text-6xl md:text-8xl text-white/90 hero-reveal"
-              style={{ animationDelay: "1.1s", lineHeight: 1.1 }}
-            >
-              -talet
+              Echo2000
             </span>
           </span>
         </h1>
