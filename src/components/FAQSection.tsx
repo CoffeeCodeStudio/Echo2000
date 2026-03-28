@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun, Lock, Bot, FileWarning } from "lucide-react";
+import { ChevronDown, Shield, Heart, MessageCircle, Ban, AlertTriangle, Sparkles, Sun, Lock, Bot, FileWarning, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FAQItem {
