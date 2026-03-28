@@ -245,10 +245,9 @@ export function useKlotterCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (ctx && canvas) {
-      const rect = canvas.getBoundingClientRect();
-      applyDprTransform(ctx);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = BG_COLOR;
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   };
 
