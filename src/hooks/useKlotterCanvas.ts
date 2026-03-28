@@ -70,19 +70,17 @@ export function useKlotterCanvas() {
   }, [showPublishModal, isMobile, setHideNavbar]);
 
   /**
-   * Apply the correct DPR transform to the context.
-   * Always resets to identity first to prevent accumulation.
-   */
-  const applyDprTransform = useCallback((ctx: CanvasRenderingContext2D) => {
-    const dpr = window.devicePixelRatio || 1;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }, []);
+
+
 
   /**
    * Draw a list of actions onto the context.
    * Assumes the DPR transform is already applied.
    */
   const drawActions = useCallback((ctx: CanvasRenderingContext2D, actions: DrawAction[], upTo: number) => {
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     for (let i = 0; i <= upTo; i++) {
       const action = actions[i];
       if (!action) continue;
@@ -90,15 +88,16 @@ export function useKlotterCanvas() {
         if (idx === 0) return;
         const prev = action.points[idx - 1];
         ctx.beginPath();
-        ctx.moveTo(prev.x, prev.y);
-        ctx.lineTo(point.x, point.y);
+        ctx.moveTo(prev.x * dpr, prev.y * dpr);
+        ctx.lineTo(point.x * dpr, point.y * dpr);
         ctx.strokeStyle = point.color;
-        ctx.lineWidth = point.size;
+        ctx.lineWidth = point.size * dpr;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.stroke();
       });
     }
+    ctx.restore();
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -111,12 +110,13 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    applyDprTransform(ctx);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
     drawActions(ctx, history, historyIndex);
-  }, [history, historyIndex, applyDprTransform, drawActions]);
+  }, [history, historyIndex, drawActions]);
 
   /**
    * Same as redrawCanvas but reads from refs — used by the resize handler
@@ -128,12 +128,13 @@ export function useKlotterCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    applyDprTransform(ctx);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG_COLOR;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, rect.width * dpr, rect.height * dpr);
     drawActions(ctx, historyRef.current, historyIndexRef.current);
-  }, [applyDprTransform, drawActions]);
+  }, [drawActions]);
 
   // Initialize canvas with proper DPI scaling
   useEffect(() => {
@@ -195,18 +196,20 @@ export function useKlotterCanvas() {
     const pos = getPointerPosition(e);
     if (!ctx || !pos) return;
 
-    // Always reset the transform before drawing to prevent drift
-    applyDprTransform(ctx);
-
+    const dpr = window.devicePixelRatio || 1;
     const currentColor = isEraser ? BG_COLOR : color;
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.beginPath();
-    ctx.moveTo(lastPoint.x, lastPoint.y);
-    ctx.lineTo(pos.x, pos.y);
+    ctx.moveTo(lastPoint.x * dpr, lastPoint.y * dpr);
+    ctx.lineTo(pos.x * dpr, pos.y * dpr);
     ctx.strokeStyle = currentColor;
-    ctx.lineWidth = brushSize;
+    ctx.lineWidth = brushSize * dpr;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
+    ctx.restore();
 
     setCurrentAction((prev) => [...prev, { ...pos, color: currentColor, size: brushSize }]);
     setLastPoint(pos);
@@ -237,10 +240,9 @@ export function useKlotterCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (ctx && canvas) {
-      const rect = canvas.getBoundingClientRect();
-      applyDprTransform(ctx);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = BG_COLOR;
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   };
 
