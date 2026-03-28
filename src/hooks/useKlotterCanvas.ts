@@ -24,7 +24,7 @@ export interface DrawAction {
 
 export const COLORS = [
   "#F59E0B", "#3B82F6", "#8B5CF6", "#10B981",
-  "#EF4444", "#EC4899", "#F4D06F", "#FFFFFF", "#1e2540",
+  "#EF4444", "#EC4899", "#F4D06F", "#FFFFFF", "#000000",
 ];
 export const MOBILE_COLORS = [COLORS[0], COLORS[1], COLORS[2], COLORS[4], COLORS[7]];
 export const BRUSH_SIZES = [4, 8, 14, 22, 32];
