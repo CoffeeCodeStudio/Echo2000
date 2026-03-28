@@ -208,7 +208,7 @@ export function FAQSection() {
             <div>
               <p className="font-bold text-foreground mb-1">Personuppgiftsansvarig</p>
               <p>Echo2000-projektet ansvarar för behandlingen av dina personuppgifter. Kontakta oss på{" "}
-                <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>{" "}
+                <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a>{" "}
                 vid frågor om hur vi hanterar dina uppgifter.
               </p>
             </div>
@@ -273,7 +273,7 @@ export function FAQSection() {
                 <li><strong>Återkalla samtycke:</strong> Du kan när som helst återkalla ditt cookie-samtycke genom att rensa dina webbläsarinställningar.</li>
               </ul>
               <p className="mt-2">Kontakta{" "}
-                <a href="mailto:support@echo2000.se" className="text-primary hover:underline">support@echo2000.se</a>{" "}
+                <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a>{" "}
                 för att utöva dina rättigheter. Vi besvarar din begäran inom 30 dagar.
               </p>
             </div>
@@ -330,10 +330,10 @@ export function FAQSection() {
               Skicka ett mejl till oss så svarar vi så fort vi kan.
             </p>
             <a
-              href="mailto:support@echo2000.se"
+              href="mailto:hej@coffeecodestudio.se"
               className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium"
             >
-              support@echo2000.se
+              hej@coffeecodestudio.se
             </a>
           </div>
         </section>
