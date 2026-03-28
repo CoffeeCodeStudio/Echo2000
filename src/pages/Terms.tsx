@@ -86,7 +86,7 @@ export default function Terms() {
           <div className="p-3 bg-muted/40 border border-border">
             <p className="font-bold text-foreground mb-1">12. Kontakt</p>
             <p>Frågor om dessa villkor eller dina rättigheter? Kontakta oss på{" "}
-              <a href="<a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a>.</a>.
+              <a href="mailto:hej@coffeecodestudio.se" className="text-primary hover:underline">hej@coffeecodestudio.se</a>.
             </p>
           </div>
 
