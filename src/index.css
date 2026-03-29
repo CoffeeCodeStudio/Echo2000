@@ -129,13 +129,13 @@ h6 {
   :root {
     /* Retro Lunar palette — muted, eye-friendly */
     --background: 195 48% 34%;
-    --foreground: 197 55% 14%;
+    --foreground: 200 40% 8%;
 
     --card: 200 24% 92%;
-    --card-foreground: 197 55% 14%;
+    --card-foreground: 200 40% 8%;
 
     --popover: 200 20% 88%;
-    --popover-foreground: 197 55% 14%;
+    --popover-foreground: 200 40% 8%;
 
     /* Lunar orange accent */
     --primary: 14 85% 44%;
@@ -146,11 +146,11 @@ h6 {
     --secondary-foreground: 200 24% 92%;
 
     --muted: 200 18% 82%;
-    --muted-foreground: 197 30% 40%;
+    --muted-foreground: 200 20% 32%;
 
     /* Sky accent */
     --accent: 197 37% 51%;
-    --accent-foreground: 197 55% 14%;
+    --accent-foreground: 200 40% 8%;
 
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -212,19 +212,19 @@ h6 {
   /* Dark mode inherits same palette */
   .dark {
     --background: 195 48% 34%;
-    --foreground: 197 55% 14%;
+    --foreground: 200 40% 8%;
     --card: 200 24% 92%;
-    --card-foreground: 197 55% 14%;
+    --card-foreground: 200 40% 8%;
     --popover: 200 20% 88%;
-    --popover-foreground: 197 55% 14%;
+    --popover-foreground: 200 40% 8%;
     --primary: 14 85% 44%;
     --primary-foreground: 0 0% 100%;
     --secondary: 195 40% 28%;
     --secondary-foreground: 200 24% 92%;
     --muted: 200 18% 82%;
-    --muted-foreground: 197 30% 40%;
+    --muted-foreground: 200 20% 32%;
     --accent: 197 37% 51%;
-    --accent-foreground: 197 55% 14%;
+    --accent-foreground: 200 40% 8%;
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 197 37% 51%;
