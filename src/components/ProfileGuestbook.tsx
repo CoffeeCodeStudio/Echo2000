@@ -191,7 +191,7 @@ export function ProfileGuestbook({
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="bg-card rounded-lg border border-border p-3"
+              className="bg-card rounded-lg border border-border p-3 overflow-hidden"
             >
               <div className="flex items-start gap-3 overflow-hidden">
                 <div className="shrink-0">
