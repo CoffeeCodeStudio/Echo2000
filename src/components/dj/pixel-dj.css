@@ -265,9 +265,9 @@
 
 .pixel-dj-playlist-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
-  padding: 0.2rem 0.25rem;
+  padding: 0.3rem 0.25rem;
   border-radius: 2px;
   font-family: monospace;
   font-size: 0.6rem;
@@ -287,19 +287,50 @@
 .pixel-dj-playlist-num {
   color: hsl(var(--muted-foreground));
   min-width: 1.2em;
+  padding-top: 1px;
+}
+
+.pixel-dj-playlist-track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .pixel-dj-playlist-name {
-  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 600;
 }
 
+.pixel-dj-playlist-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .pixel-dj-playlist-artist {
   color: hsl(var(--muted-foreground));
   font-size: 0.5rem;
+}
+
+.pixel-dj-playlist-uploader {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.5rem;
+  color: hsl(var(--primary) / 0.7);
+}
+
+.pixel-dj-playlist-uploader-pic {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  object-fit: cover;
+  image-rendering: auto;
 }
 
 .pixel-dj-playlist-playing {

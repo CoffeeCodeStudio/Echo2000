@@ -102,8 +102,20 @@ export function PixelDj({ compact = false }: { compact?: boolean }) {
                 )}
               >
                 <span className="pixel-dj-playlist-num">{i + 1}.</span>
-                <span className="pixel-dj-playlist-name">{track.title}</span>
-                <span className="pixel-dj-playlist-artist">{track.artist}</span>
+                <div className="pixel-dj-playlist-track-info">
+                  <span className="pixel-dj-playlist-name">{track.title}</span>
+                  <div className="pixel-dj-playlist-meta">
+                    <span className="pixel-dj-playlist-artist">{track.artist}</span>
+                    {track.uploader_username && (
+                      <span className="pixel-dj-playlist-uploader">
+                        {track.uploader_avatar && (
+                          <img src={track.uploader_avatar} alt="" className="pixel-dj-playlist-uploader-pic" />
+                        )}
+                        @{track.uploader_username}
+                      </span>
+                    )}
+                  </div>
+                </div>
                 {currentTrack?.id === track.id && isPlaying && (
                   <span className="pixel-dj-playlist-playing">▶</span>
                 )}
