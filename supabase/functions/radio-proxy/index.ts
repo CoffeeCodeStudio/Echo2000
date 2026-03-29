@@ -62,20 +62,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // SECURITY: Validate API key to prevent unauthorized proxy abuse
-  const apikey = req.headers.get("apikey");
-  const expectedKey = Deno.env.get("SUPABASE_ANON_KEY");
-  
-  if (!apikey || apikey !== expectedKey) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, 
-        status: 401 
-      }
-    );
-  }
-
   // SECURITY: Rate limiting - 20 requests per minute per IP
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!checkRateLimit(clientIp, 20)) {
