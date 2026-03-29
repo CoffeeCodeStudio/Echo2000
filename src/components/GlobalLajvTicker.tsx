@@ -56,13 +56,14 @@ export function GlobalLajvTicker() {
             Just nu finns inga aktiva lajvsändningar
           </span>
         ) : currentMessage ? (
-          <div className="flex items-center gap-3 text-sm animate-fade-in">
-            <Avatar
-              name={currentMessage.username}
-              src={currentMessage.avatar_url || undefined}
-              size="sm"
-              className="w-6 h-6 shrink-0"
-            />
+          <div className="flex items-center gap-2 text-sm animate-fade-in">
+            <div className="shrink-0 w-5 h-5 rounded-full overflow-hidden">
+              <Avatar
+                name={currentMessage.username}
+                src={currentMessage.avatar_url || undefined}
+                size="sm"
+              />
+            </div>
             <span className="font-semibold shrink-0 max-w-[100px] truncate" style={{ color: '#E6EEF2' }}>
               {currentMessage.username}:
             </span>
