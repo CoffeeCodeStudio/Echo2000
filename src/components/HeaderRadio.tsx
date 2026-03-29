@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4 } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4, Disc3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
@@ -9,6 +10,54 @@ function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
   useEffect(() => { ref.current = value; }, [value]);
   return ref.current;
+}
+
+interface StationButtonProps {
+  station: { id: string; name: string; genre: string; isDj?: boolean; uploaderName?: string };
+  isCurrent: boolean;
+  isPlaying: boolean;
+  onSelect: (station: any) => void;
+  isDj?: boolean;
+}
+
+function StationButton({ station, isCurrent, isPlaying, onSelect, isDj }: StationButtonProps) {
+  return (
+    <button
+      onClick={() => onSelect(station)}
+      className={cn(
+        "w-full p-3 text-left rounded-lg border transition-all",
+        "hover:bg-muted/50 hover:border-primary/30",
+        "active:scale-[0.98]",
+        isCurrent ? "bg-primary/10 border-primary/40 shadow-sm" : "border-transparent"
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-sm truncate">{station.name}</p>
+            {isDj && (
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+                DJ
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">{station.genre}</p>
+          {isDj && station.uploaderName && (
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+              by @{station.uploaderName}
+            </p>
+          )}
+        </div>
+        {isCurrent && isPlaying && (
+          <div className="flex gap-0.5 ml-2">
+            <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
+            <span className="w-1 h-4 bg-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
+            <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
+          </div>
+        )}
+      </div>
+    </button>
+  );
 }
 
 export function HeaderRadio() {
@@ -65,7 +114,8 @@ export function HeaderRadio() {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
-  // Radio visible for all users
+  const radioStations = useMemo(() => stations.filter(s => !s.isDj), [stations]);
+  const djStations = useMemo(() => stations.filter(s => s.isDj), [stations]);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -197,39 +247,43 @@ export function HeaderRadio() {
 
           {/* Station list */}
           <div className="max-h-60 overflow-y-auto scrollbar-nostalgic p-3">
+            {/* Live Radio Section */}
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
-              Kanaler
+              📻 Live Radio
             </h3>
             <div className="space-y-1.5">
-              {stations.map((station) =>
-            <button
-              key={station.id}
-              onClick={() => selectStation(station)}
-              className={cn(
-                "w-full p-3 text-left rounded-lg border transition-all",
-                "hover:bg-muted/50 hover:border-primary/30",
-                "active:scale-[0.98]",
-                currentStation?.id === station.id ?
-                "bg-primary/10 border-primary/40 shadow-sm" :
-                "border-transparent"
-              )}>
-
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{station.name}</p>
-                      <p className="text-xs text-muted-foreground">{station.genre}</p>
-                    </div>
-                    {currentStation?.id === station.id && isPlaying &&
-                <div className="flex gap-0.5 ml-2">
-                        <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1 h-4 bg-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
-                      </div>
-                }
-                  </div>
-                </button>
-            )}
+              {radioStations.map((station) => (
+                <StationButton
+                  key={station.id}
+                  station={station}
+                  isCurrent={currentStation?.id === station.id}
+                  isPlaying={isPlaying}
+                  onSelect={selectStation}
+                />
+              ))}
             </div>
+
+            {/* Divider */}
+            {djStations.length > 0 && (
+              <>
+                <div className="my-3 border-t border-border" />
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+                  🎵 Community DJ
+                </h3>
+                <div className="space-y-1.5 rounded-lg bg-muted/20 p-1.5">
+                  {djStations.map((station) => (
+                    <StationButton
+                      key={station.id}
+                      station={station}
+                      isCurrent={currentStation?.id === station.id}
+                      isPlaying={isPlaying}
+                      onSelect={selectStation}
+                      isDj
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Footer hint */}
