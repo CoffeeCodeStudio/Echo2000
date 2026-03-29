@@ -35,14 +35,38 @@ function DjQuickPlay() {
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all text-[10px] sm:text-xs font-mono text-primary hover:scale-105 active:scale-95"
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all text-[10px] font-mono text-primary hover:scale-105 active:scale-95"
       title={isDjPlaying ? "Pausa Community DJ" : "Spela Community DJ"}
     >
-      <Music className="w-3 h-3" />
-      <span className="hidden sm:inline">{djStation.name}</span>
       {isDjPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+      <span className="max-w-[60px] truncate">{djStation.name}</span>
     </button>
   );
+}
+
+function DjEqualizer({ active }: { active: boolean }) {
+  return (
+    <div className="flex items-end gap-[2px] h-3">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="w-[3px] rounded-sm bg-primary/70"
+          style={{
+            height: active ? undefined : `${3 + (i % 3) * 2}px`,
+            animation: active
+              ? `dj-eq-bar 0.${4 + i * 2}s ease-in-out infinite alternate`
+              : "none",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DjEqualizerWidget() {
+  const { isPlaying, currentStation } = useRadio();
+  const isDjPlaying = isPlaying && currentStation?.isDj;
+  return <DjEqualizer active={!!isDjPlaying} />;
 }
 
 export function HomeContent() {
@@ -65,8 +89,9 @@ export function HomeContent() {
           </span>
         </h1>
         <div className="flex items-center justify-center gap-3">
-          <p className="text-white/70 text-[10px] sm:text-xs leading-snug">Som förr. Fast nu</p>
           <DjQuickPlay />
+          <p className="text-white/70 text-[10px] sm:text-xs leading-snug">Som förr. Fast nu</p>
+          <DjEqualizerWidget />
         </div>
       </section>
 

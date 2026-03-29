@@ -1,3 +1,8 @@
+@keyframes dj-eq-bar {
+  0% { height: 3px; }
+  100% { height: 12px; }
+}
+
 @tailwind base;
 
 @keyframes glow-pulse-orange {
