@@ -1,0 +1,257 @@
+/* ============================
+   Pixel DJ – Retro 00-tals
+   ============================ */
+
+.pixel-dj-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+  border: 2px solid hsl(var(--primary) / 0.3);
+  image-rendering: pixelated;
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-dj-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    hsl(var(--primary) / 0.03) 2px,
+    hsl(var(--primary) / 0.03) 4px
+  );
+  pointer-events: none;
+}
+
+.pixel-dj-compact {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* DJ booth with avatar + disc */
+.pixel-dj-booth {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.pixel-dj-avatar {
+  width: 28px;
+  height: 28px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)) 25%,
+    hsl(var(--accent)) 25%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--primary)) 50%,
+    hsl(var(--primary)) 75%,
+    hsl(var(--accent)) 75%
+  );
+  background-size: 8px 8px;
+  border-radius: 4px;
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 0 2px 0 hsl(var(--primary) / 0.5);
+}
+
+.pixel-dj-spinning {
+  animation: dj-bob 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes dj-bob {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(-2px); }
+}
+
+.pixel-dj-disc {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: conic-gradient(
+    hsl(var(--foreground)) 0deg,
+    hsl(var(--muted-foreground)) 90deg,
+    hsl(var(--foreground)) 180deg,
+    hsl(var(--muted-foreground)) 270deg,
+    hsl(var(--foreground)) 360deg
+  );
+  border: 2px solid hsl(var(--foreground) / 0.6);
+}
+
+.pixel-dj-disc::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+}
+
+.pixel-dj-disc-spin {
+  animation: disc-spin 1.5s linear infinite;
+}
+
+@keyframes disc-spin {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+/* Track info */
+.pixel-dj-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pixel-dj-now-playing {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pixel-dj-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: hsl(var(--primary));
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.pixel-dj-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}
+
+.pixel-dj-artist {
+  font-size: 0.6rem;
+  color: hsl(var(--muted-foreground));
+  font-family: monospace;
+}
+
+/* Progress bar */
+.pixel-dj-progress {
+  height: 4px;
+  background: hsl(var(--muted));
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+}
+
+.pixel-dj-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+  transition: width 0.25s linear;
+  image-rendering: pixelated;
+}
+
+/* Controls */
+.pixel-dj-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pixel-dj-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.pixel-dj-btn:hover {
+  background: hsl(var(--accent));
+  border-color: hsl(var(--primary));
+}
+
+.pixel-dj-btn-play {
+  width: 28px;
+  height: 28px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+.pixel-dj-btn-play:hover {
+  background: hsl(var(--primary) / 0.8);
+}
+
+/* Volume */
+.pixel-dj-volume {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.pixel-dj-volume-slider {
+  width: 50px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: hsl(var(--muted));
+  border-radius: 2px;
+  outline: none;
+}
+
+.pixel-dj-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: hsl(var(--primary));
+  cursor: pointer;
+}
+
+/* Idle state */
+.pixel-dj-idle {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.2) 25%,
+    hsl(var(--muted-foreground) / 0.2) 50%,
+    hsl(var(--muted)) 50%,
+    hsl(var(--muted)) 75%,
+    hsl(var(--muted-foreground) / 0.2) 75%
+  );
+  background-size: 8px 8px;
+  border-radius: 6px;
+  animation: idle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes idle-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}

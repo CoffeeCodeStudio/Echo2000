@@ -208,6 +208,48 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_tracks: {
+        Row: {
+          added_by: string | null
+          artist: string
+          created_at: string
+          duration_seconds: number | null
+          file_url: string
+          genre: string | null
+          id: string
+          is_active: boolean
+          play_count: number
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          added_by?: string | null
+          artist?: string
+          created_at?: string
+          duration_seconds?: number | null
+          file_url: string
+          genre?: string | null
+          id?: string
+          is_active?: boolean
+          play_count?: number
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          added_by?: string | null
+          artist?: string
+          created_at?: string
+          duration_seconds?: number | null
+          file_url?: string
+          genre?: string | null
+          id?: string
+          is_active?: boolean
+          play_count?: number
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       friend_votes: {
         Row: {
           created_at: string
