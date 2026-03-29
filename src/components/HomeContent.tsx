@@ -14,6 +14,36 @@ import { HomeRecentOnline } from "./home/HomeRecentOnline";
 import { HomeActivityFeed } from "./home/HomeActivityFeed";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { ClearViewToggle } from "./home/ClearViewToggle";
+import { useRadio } from "@/contexts/RadioContext";
+import { Play, Pause, Music } from "lucide-react";
+
+function DjQuickPlay() {
+  const { isPlaying, currentStation, stations, selectStation, pause } = useRadio();
+  const djStation = stations.find(s => s.isDj);
+  const isDjPlaying = isPlaying && currentStation?.isDj;
+
+  if (!djStation) return null;
+
+  const handleClick = async () => {
+    if (isDjPlaying) {
+      pause();
+    } else {
+      await selectStation(djStation);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all text-[10px] sm:text-xs font-mono text-primary hover:scale-105 active:scale-95"
+      title={isDjPlaying ? "Pausa Community DJ" : "Spela Community DJ"}
+    >
+      <Music className="w-3 h-3" />
+      <span className="hidden sm:inline">{djStation.name}</span>
+      {isDjPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+    </button>
+  );
+}
 
 export function HomeContent() {
   const { user, loading } = useAuth();
@@ -34,7 +64,10 @@ export function HomeContent() {
             2000
           </span>
         </h1>
-        <p className="text-white/70 text-[10px] sm:text-xs max-w-lg mx-auto leading-snug">Som förr. Fast nu</p>
+        <div className="flex items-center justify-center gap-3">
+          <p className="text-white/70 text-[10px] sm:text-xs leading-snug">Som förr. Fast nu</p>
+          <DjQuickPlay />
+        </div>
       </section>
 
       {/* Stats + Vision — collapsed into one compact row */}
