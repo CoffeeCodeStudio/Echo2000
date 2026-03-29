@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RadioStation {
   id: string;
@@ -32,14 +33,13 @@ interface RadioContextType {
   audioRef: React.RefObject<HTMLAudioElement>;
 }
 
-const RADIO_STATIONS: RadioStation[] = [
+const LIVE_RADIO_STATIONS: RadioStation[] = [
   { id: "p3", name: "Sveriges Radio P3", url: "https://sverigesradio.se/topsy/direkt/164-hi.mp3", genre: "Pop/Hits", hasMetadata: true },
   { id: "p1", name: "Sveriges Radio P1", url: "https://sverigesradio.se/topsy/direkt/132-hi.mp3", genre: "Nyheter/Kultur", hasMetadata: true },
   { id: "p2", name: "Sveriges Radio P2", url: "https://sverigesradio.se/topsy/direkt/2562-hi.mp3", genre: "Klassiskt", hasMetadata: true },
   { id: "p4stockholm", name: "P4 Stockholm", url: "https://sverigesradio.se/topsy/direkt/701-hi.mp3", genre: "Lokalt", hasMetadata: true },
   { id: "dingatastockholm", name: "Din Gata", url: "https://sverigesradio.se/topsy/direkt/2576-hi.mp3", genre: "Urban", hasMetadata: true },
   { id: "starfm", name: "Star FM", url: "https://fm05-ice.stream.khz.se/fm05_mp3?platform=web", genre: "Hits/Classic rock" },
-  { id: "skuggrum", name: "Skuggrum", url: "https://cdn1.suno.ai/269897b1-7baf-4216-842b-b88ced764662.mp3", genre: "Electro-pop / Hip Hop", isDj: true, uploaderName: "El-Magnifico" },
 ];
 
 const RadioContext = createContext<RadioContextType | null>(null);
@@ -58,8 +58,53 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [isMuted, setIsMuted] = useState(false);
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null);
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
+  const [djStations, setDjStations] = useState<RadioStation[]>([]);
   
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Fetch DJ tracks from database
+  useEffect(() => {
+    const fetchDjTracks = async () => {
+      const { data: tracks } = await supabase
+        .from("dj_tracks")
+        .select("id, title, artist, file_url, genre, added_by")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+      if (!tracks || tracks.length === 0) {
+        setDjStations([]);
+        return;
+      }
+
+      // Fetch uploader names
+      const uploaderIds = [...new Set(tracks.filter(t => t.added_by).map(t => t.added_by!))];
+      let profileMap: Record<string, string> = {};
+      if (uploaderIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username")
+          .in("user_id", uploaderIds);
+        if (profiles) {
+          for (const p of profiles) {
+            profileMap[p.user_id] = p.username;
+          }
+        }
+      }
+
+      setDjStations(tracks.map(t => ({
+        id: `dj-${t.id}`,
+        name: t.title,
+        url: t.file_url,
+        genre: t.genre || "Community DJ",
+        isDj: true,
+        uploaderName: t.added_by ? profileMap[t.added_by] || t.artist : t.artist,
+      })));
+    };
+
+    fetchDjTracks();
+  }, []);
+
+  const stations = [...LIVE_RADIO_STATIONS, ...djStations];
 
   // Fetch metadata for current radio station
   const fetchRadioMetadata = useCallback(async (stationId: string) => {
@@ -167,7 +212,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         isMuted,
         currentStation,
         nowPlaying,
-        stations: RADIO_STATIONS,
+        stations,
         play,
         pause,
         setVolume,
