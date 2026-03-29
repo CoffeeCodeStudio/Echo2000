@@ -49,20 +49,15 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
 
   const mainTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
     { id: "hem", emoji: "🏠", label: "HEM" },
-    { id: "folk", emoji: "🌐", label: "FOLK" },
-    ...(isPrivileged ? [{ id: "mejl" as Tab, emoji: "✉️", label: "MEJL", badge: counts.unreadMail > 0 ? counts.unreadMail : undefined }] : []),
-    { id: "chatt", emoji: "🖊️", label: "CHATT" },
-    { id: "profil", emoji: "👤", label: "PROFIL", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
+    { id: "gastbok", emoji: "👣", label: "GÄSTBOK", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
+    { id: "profil", emoji: "👤", label: "PROFIL" },
+    { id: "vanner", emoji: "❤️", label: "VÄNNER" },
   ];
 
   const moreTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
-    { id: "vanner", emoji: "❤️", label: "Vänner" },
-    { id: "gastbok", emoji: "👣", label: "Gästbok", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
+    { id: "folk", emoji: "🌐", label: "Folk" },
     { id: "besokare", emoji: "👀", label: "Spanare", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
-    
-    { id: "traffar", emoji: "📅", label: "Träffar" },
     { id: "klotterplanket", emoji: "🎨", label: "Klotter" },
-    { id: "spel", emoji: "🎮", label: "Spel" },
     { id: "faq", emoji: "❓", label: "FAQ" },
   ];
 
