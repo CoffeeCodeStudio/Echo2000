@@ -159,9 +159,20 @@ export function LajvSection() {
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
-                <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
+                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
+                  </div>
+                  {user && msg.user_id === user.id && (
+                    <button
+                      onClick={() => handleDelete(msg.id)}
+                      className="flex items-center gap-1 text-destructive/70 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Radera
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
