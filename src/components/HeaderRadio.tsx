@@ -33,6 +33,16 @@ export function HeaderRadio() {
     selectStation
   } = useRadio();
 
+  // Celebration: trigger on isPlaying false → true
+  const prevPlaying = usePrevious(isPlaying);
+  useEffect(() => {
+    if (isPlaying && prevPlaying === false) {
+      setCelebrating(true);
+      const timer = setTimeout(() => setCelebrating(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isPlaying, prevPlaying]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,8 +76,9 @@ export function HeaderRadio() {
         className={cn(
           "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all relative",
           "hover:bg-muted/50",
-          isPlaying ? "text-primary" : "text-muted-foreground hover:text-foreground",
-          !isPlaying && "radio-attention"
+          isPlaying ? "text-primary radio-playing" : "text-muted-foreground hover:text-foreground",
+          !isPlaying && "radio-attention",
+          celebrating && "radio-celebrate"
         )}
         aria-label="Öppna radio">
 
