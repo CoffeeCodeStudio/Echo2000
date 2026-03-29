@@ -197,39 +197,43 @@ export function HeaderRadio() {
 
           {/* Station list */}
           <div className="max-h-60 overflow-y-auto scrollbar-nostalgic p-3">
+            {/* Live Radio Section */}
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
-              Kanaler
+              📻 Live Radio
             </h3>
             <div className="space-y-1.5">
-              {stations.map((station) =>
-            <button
-              key={station.id}
-              onClick={() => selectStation(station)}
-              className={cn(
-                "w-full p-3 text-left rounded-lg border transition-all",
-                "hover:bg-muted/50 hover:border-primary/30",
-                "active:scale-[0.98]",
-                currentStation?.id === station.id ?
-                "bg-primary/10 border-primary/40 shadow-sm" :
-                "border-transparent"
-              )}>
-
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{station.name}</p>
-                      <p className="text-xs text-muted-foreground">{station.genre}</p>
-                    </div>
-                    {currentStation?.id === station.id && isPlaying &&
-                <div className="flex gap-0.5 ml-2">
-                        <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1 h-4 bg-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
-                      </div>
-                }
-                  </div>
-                </button>
-            )}
+              {radioStations.map((station) => (
+                <StationButton
+                  key={station.id}
+                  station={station}
+                  isCurrent={currentStation?.id === station.id}
+                  isPlaying={isPlaying}
+                  onSelect={selectStation}
+                />
+              ))}
             </div>
+
+            {/* Divider */}
+            {djStations.length > 0 && (
+              <>
+                <div className="my-3 border-t border-border" />
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+                  🎵 Community DJ
+                </h3>
+                <div className="space-y-1.5 rounded-lg bg-muted/20 p-1.5">
+                  {djStations.map((station) => (
+                    <StationButton
+                      key={station.id}
+                      station={station}
+                      isCurrent={currentStation?.id === station.id}
+                      isPlaying={isPlaying}
+                      onSelect={selectStation}
+                      isDj
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Footer hint */}
