@@ -386,7 +386,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
         {/* Inbox View */}
         {view === "inbox" && !loading && (
-          <div className="nostalgia-card overflow-hidden">
+          <div className="nostalgia-card overflow-hidden max-w-full">
             <div className="flex items-center gap-2 p-3 border-b border-border bg-muted/30">
               <Inbox className="w-4 h-4 text-primary" />
               <span className="font-semibold text-sm">Inkorg</span>
@@ -448,7 +448,7 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
         {/* Read Mail View */}
         {view === "read" && selectedMail && (
-          <div className="nostalgia-card p-4">
+          <div className="nostalgia-card p-4 overflow-hidden">
             <div className="flex items-start gap-3 mb-4">
               <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
               <div className="flex-1">
@@ -459,8 +459,8 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                 <p className="text-xs text-muted-foreground">{selectedMail.timestamp}</p>
               </div>
             </div>
-            <div className="border-t border-border pt-4">
-              <p className="text-sm whitespace-pre-line text-foreground">{selectedMail.content}</p>
+            <div className="border-t border-border pt-4 overflow-hidden">
+              <p className="text-sm whitespace-pre-line text-foreground break-words overflow-wrap-anywhere [overflow-wrap:anywhere] [word-break:break-word]">{selectedMail.content}</p>
             </div>
             <div className="flex gap-2 mt-6">
               <Button variant="msn" onClick={handleReply}>
