@@ -193,22 +193,24 @@ export function ProfileGuestbook({
               key={entry.id}
               className="bg-card rounded-lg border border-border p-3"
             >
-              <div className="flex items-start gap-3">
-                <ClickableUsername
-                  username={entry.author_name}
-                  avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
-                  showAvatar
-                  avatarSize="sm"
-                />
+              <div className="flex items-start gap-3 overflow-hidden">
+                <div className="shrink-0">
+                  <ClickableUsername
+                    username={entry.author_name}
+                    avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
+                    showAvatar
+                    avatarSize="sm"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-xs text-muted-foreground truncate">
                       {formatDistanceToNow(new Date(entry.created_at), {
                         addSuffix: true,
                         locale: sv,
                       })}
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       {/* Reply button */}
                       {user && (
                         <Button
