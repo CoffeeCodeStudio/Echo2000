@@ -35,11 +35,12 @@ function DjQuickPlay() {
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all text-[10px] font-mono text-primary hover:scale-105 active:scale-95"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/80 hover:bg-primary text-primary-foreground transition-all text-[11px] font-bold shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
       title={isDjPlaying ? "Pausa Community DJ" : "Spela Community DJ"}
     >
-      {isDjPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-      <span className="max-w-[60px] truncate">{djStation.name}</span>
+      <Music className="w-3.5 h-3.5" />
+      {isDjPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+      <span className="max-w-[80px] truncate">{djStation.name}</span>
     </button>
   );
 }
