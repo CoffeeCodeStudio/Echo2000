@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
