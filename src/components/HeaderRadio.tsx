@@ -48,7 +48,7 @@ export function HeaderRadio() {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
-  if (!user) return null;
+  // Radio visible for all users
 
   return (
     <div className="relative" ref={dropdownRef}>
