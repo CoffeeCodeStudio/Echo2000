@@ -3,7 +3,7 @@
  * Presentation (BBCode-formatted) and member-since footer sections.
  */
 import { useRef, useState, useCallback } from "react";
-import { Calendar, Eye, EyeOff } from "lucide-react";
+import { Calendar, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,8 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const COLLAPSED_HEIGHT = 200;
 
   const wrapSelection = useCallback((openTag: string, closeTag: string) => {
     const ta = textareaRef.current;
@@ -222,25 +224,53 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
         ) : (
           <>
             {presentationText ? (
-              <div
-                className={cn("text-sm rounded relative", displayData.presentation_bg_url ? "" : "")}
-                style={{
-                  minHeight: "300px",
-                  ...(displayData.presentation_bg_url ? {
-                    backgroundImage: `url(${displayData.presentation_bg_url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  } : {}),
-                }}
-              >
-                {displayData.presentation_bg_url && (
-                  <div className="absolute inset-0 bg-black/50 rounded" />
-                )}
+              <div className="relative">
                 <div
-                  className={cn("relative z-10 p-6", displayData.presentation_bg_url ? "text-white" : "text-foreground/80")}
-                  style={{ wordBreak: "break-word", maxWidth: "100%" }}
-                  dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
-                />
+                  className={cn("text-sm rounded relative overflow-hidden transition-all duration-300")}
+                  style={{
+                    maxHeight: expanded ? "none" : `${COLLAPSED_HEIGHT}px`,
+                    minHeight: expanded ? "200px" : undefined,
+                    ...(displayData.presentation_bg_url ? {
+                      backgroundImage: `url(${displayData.presentation_bg_url})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    } : {}),
+                  }}
+                >
+                  {displayData.presentation_bg_url && (
+                    <div className="absolute inset-0 bg-black/50 rounded" />
+                  )}
+                  <div
+                    className={cn("relative z-10 p-6", displayData.presentation_bg_url ? "text-white" : "text-foreground/80")}
+                    style={{ wordBreak: "break-word", maxWidth: "100%" }}
+                    dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
+                  />
+                  {/* Fade overlay when collapsed */}
+                  {!expanded && (
+                    <div className={cn(
+                      "absolute bottom-0 left-0 right-0 h-16 z-20 pointer-events-none",
+                      displayData.presentation_bg_url
+                        ? "bg-gradient-to-t from-black/80 to-transparent"
+                        : "bg-gradient-to-t from-card to-transparent"
+                    )} />
+                  )}
+                </div>
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="w-full flex items-center justify-center gap-1 py-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  {expanded ? (
+                    <>
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      Visa mindre
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      Visa mer
+                    </>
+                  )}
+                </button>
               </div>
             ) : (
               <p className="text-sm text-foreground/80">Ingen presentation ännu...</p>
