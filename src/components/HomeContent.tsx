@@ -63,6 +63,12 @@ function DjEqualizer({ active }: { active: boolean }) {
   );
 }
 
+function DjEqualizerWidget() {
+  const { isPlaying, currentStation } = useRadio();
+  const isDjPlaying = isPlaying && currentStation?.isDj;
+  return <DjEqualizer active={!!isDjPlaying} />;
+}
+
 export function HomeContent() {
   const { user, loading } = useAuth();
 
