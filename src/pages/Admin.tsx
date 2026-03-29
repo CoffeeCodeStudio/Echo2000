@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper, Clock, Megaphone, BarChart3 } from "lucide-react";
+import { Loader2, Shield, ArrowLeft, UserPlus, Users, Activity, ImageIcon, Bot, Newspaper, Clock, Megaphone, BarChart3, Music } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { AdminCreateUser } from "@/components/admin/AdminCreateUser";
 import { AdminContentModeration } from "@/components/admin/AdminContentModeration";
@@ -15,6 +15,7 @@ import { AdminPendingApprovals } from "@/components/admin/AdminPendingApprovals"
 import { AdminBotSpawner } from "@/components/admin/AdminBotSpawner";
 import { AdminDailyNews } from "@/components/admin/AdminDailyNews";
 import { AdminBotActivity } from "@/components/admin/AdminBotActivity";
+import AdminDjManager from "@/components/admin/AdminDjManager";
 
 interface Profile {
   id: string;
@@ -36,7 +37,7 @@ export default function Admin() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news" | "daily" | "botactivity">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "list" | "create" | "moderate" | "images" | "bots" | "news" | "daily" | "botactivity" | "dj">("pending");
   const [pendingImageCount, setPendingImageCount] = useState(0);
 
   const { user, loading } = useAuth();
@@ -174,6 +175,9 @@ export default function Admin() {
           <Button variant={activeTab === "botactivity" ? "default" : "outline"} onClick={() => setActiveTab("botactivity")}>
             <BarChart3 className="w-4 h-4 mr-2" />Bot-aktivitet
           </Button>
+          <Button variant={activeTab === "dj" ? "default" : "outline"} onClick={() => setActiveTab("dj")}>
+            <Music className="w-4 h-4 mr-2" />DJ Echo
+          </Button>
         </div>
 
         {activeTab === "pending" && <AdminPendingApprovals onRefresh={fetchData} />}
@@ -190,6 +194,7 @@ export default function Admin() {
         {activeTab === "news" && <AdminNewsManager />}
         {activeTab === "daily" && <AdminDailyNews />}
         {activeTab === "botactivity" && <AdminBotActivity />}
+        {activeTab === "dj" && <AdminDjManager />}
       </div>
     </div>
   );
