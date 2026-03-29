@@ -151,14 +151,14 @@ export function LajvSection() {
                 <div className="flex items-center gap-2 mb-1">
                   <button
                     onClick={() => navigate(`/profile/${encodeURIComponent(msg.username)}`)}
-                    className="font-semibold text-sm truncate hover:text-primary hover:underline transition-colors cursor-pointer"
+                    className="font-bold text-sm truncate text-primary hover:text-primary/80 hover:underline transition-colors cursor-pointer"
                   >
                     {msg.username}
                   </button>
                   {botUserIds.has(msg.user_id) && <AiBadge />}
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
-                <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
+                <p className="text-sm break-words text-card-foreground font-medium">{msg.message}</p>
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
