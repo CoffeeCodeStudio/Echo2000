@@ -55,12 +55,14 @@ export default function AdminDjManager() {
         .from("dj-tracks")
         .getPublicUrl(path);
 
+      const { data: { user } } = await supabase.auth.getUser();
       const { error: dbError } = await supabase.from("dj_tracks").insert({
         title: title.trim(),
         artist: artist.trim() || "Suno AI",
         file_url: publicUrl,
         genre: genre.trim() || null,
         sort_order: tracks.length,
+        added_by: user?.id || null,
       });
 
       if (dbError) throw dbError;
