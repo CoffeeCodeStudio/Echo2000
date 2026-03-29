@@ -61,6 +61,15 @@ export function LajvSection() {
     return diffMins;
   };
 
+  const handleDelete = async (msgId: string) => {
+    const { error } = await supabase.from('lajv_messages').delete().eq('id', msgId);
+    if (error) {
+      toast.error('Kunde inte radera meddelandet');
+    } else {
+      toast.success('Meddelandet raderat');
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
