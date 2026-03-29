@@ -5,6 +5,12 @@ import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/useAuth";
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => { ref.current = value; }, [value]);
+  return ref.current;
+}
+
 export function HeaderRadio() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
