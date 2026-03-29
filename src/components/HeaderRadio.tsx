@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4 } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ChevronDown, Music4, Disc3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
@@ -65,7 +66,8 @@ export function HeaderRadio() {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
-  // Radio visible for all users
+  const radioStations = useMemo(() => stations.filter(s => !s.isDj), [stations]);
+  const djStations = useMemo(() => stations.filter(s => s.isDj), [stations]);
 
   return (
     <div className="relative" ref={dropdownRef}>
