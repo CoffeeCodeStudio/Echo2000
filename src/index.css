@@ -1023,7 +1023,7 @@ h6 {
     border-radius: 8px;
     transition: all 0.2s ease;
     position: relative;
-    color: hsl(var(--muted-foreground));
+    color: rgba(255, 255, 255, 0.7);
     min-width: 48px;
     background: none;
     border: none;
