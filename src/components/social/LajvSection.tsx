@@ -5,7 +5,7 @@ import { Avatar } from '../Avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import { Send, Radio, Clock } from 'lucide-react';
+import { Send, Radio, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { AuthDialog } from '../auth/AuthDialog';
@@ -59,6 +59,15 @@ export function LajvSection() {
     const diffMs = expires.getTime() - now.getTime();
     const diffMins = Math.max(0, Math.floor(diffMs / 60000));
     return diffMins;
+  };
+
+  const handleDelete = async (msgId: string) => {
+    const { error } = await supabase.from('lajv_messages').delete().eq('id', msgId);
+    if (error) {
+      toast.error('Kunde inte radera meddelandet');
+    } else {
+      toast.success('Meddelandet raderat');
+    }
   };
 
   if (authLoading) {
@@ -150,9 +159,20 @@ export function LajvSection() {
                   <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
                 </div>
                 <p className="text-sm break-words text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{msg.message}</p>
-                <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
+                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{getTimeRemaining(msg.expires_at)} min kvar</span>
+                  </div>
+                  {user && msg.user_id === user.id && (
+                    <button
+                      onClick={() => handleDelete(msg.id)}
+                      className="flex items-center gap-1 text-destructive/70 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Radera
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
