@@ -10,6 +10,9 @@ export interface DjTrack {
   genre: string | null;
   play_count: number;
   sort_order: number;
+  added_by: string | null;
+  uploader_username?: string;
+  uploader_avatar?: string | null;
 }
 
 export function useDjTracks() {
@@ -33,7 +36,25 @@ export function useDjTracks() {
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
     if (data && data.length > 0) {
-      setTracks(data);
+      // Fetch uploader profiles for tracks with added_by
+      const uploaderIds = [...new Set(data.filter(t => t.added_by).map(t => t.added_by!))];
+      let profileMap: Record<string, { username: string; avatar_url: string | null }> = {};
+      if (uploaderIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, username, avatar_url")
+          .in("user_id", uploaderIds);
+        if (profiles) {
+          for (const p of profiles) {
+            profileMap[p.user_id] = { username: p.username, avatar_url: p.avatar_url };
+          }
+        }
+      }
+      setTracks(data.map(t => ({
+        ...t,
+        uploader_username: t.added_by ? profileMap[t.added_by]?.username : undefined,
+        uploader_avatar: t.added_by ? profileMap[t.added_by]?.avatar_url : undefined,
+      })));
     }
   };
 
