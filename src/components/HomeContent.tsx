@@ -88,9 +88,9 @@ export function HomeContent() {
             2000
           </span>
         </h1>
-        <div className="flex items-center justify-center gap-3">
+        <p className="text-white/70 text-[10px] sm:text-xs leading-snug">Som förr. Fast nu</p>
+        <div className="flex items-center justify-center gap-3 mt-1">
           <DjQuickPlay />
-          <p className="text-white/70 text-[10px] sm:text-xs leading-snug">Som förr. Fast nu</p>
           <DjEqualizerWidget />
         </div>
       </section>
