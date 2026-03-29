@@ -5,9 +5,16 @@ import { useRadio } from "@/contexts/RadioContext";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/useAuth";
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => { ref.current = value; }, [value]);
+  return ref.current;
+}
+
 export function HeaderRadio() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -25,6 +32,16 @@ export function HeaderRadio() {
     toggleMute,
     selectStation
   } = useRadio();
+
+  // Celebration: trigger on isPlaying false → true
+  const prevPlaying = usePrevious(isPlaying);
+  useEffect(() => {
+    if (isPlaying && prevPlaying === false) {
+      setCelebrating(true);
+      const timer = setTimeout(() => setCelebrating(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isPlaying, prevPlaying]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -59,8 +76,9 @@ export function HeaderRadio() {
         className={cn(
           "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all relative",
           "hover:bg-muted/50",
-          isPlaying ? "text-primary" : "text-muted-foreground hover:text-foreground",
-          !isPlaying && "radio-attention"
+          isPlaying ? "text-primary radio-playing" : "text-muted-foreground hover:text-foreground",
+          !isPlaying && "radio-attention",
+          celebrating && "radio-celebrate"
         )}
         aria-label="Öppna radio">
 
