@@ -57,20 +57,30 @@ export function HeaderRadio() {
         ref={buttonRef}
         onClick={handleToggle}
         className={cn(
-          "flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all",
+          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all relative",
           "hover:bg-muted/50",
-          isPlaying ? "text-primary" : "text-muted-foreground hover:text-foreground"
+          isPlaying ? "text-primary" : "text-muted-foreground hover:text-foreground",
+          !isPlaying && "radio-attention"
         )}
         aria-label="Öppna radio">
 
         <Music4 className={cn("w-4 h-4", isPlaying && "animate-pulse")} />
-        {isPlaying &&
-        <div className="hidden sm:flex gap-0.5">
-            <span className="w-0.5 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
-            <span className="w-0.5 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-            <span className="w-0.5 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
-          </div>
-        }
+
+        {/* Equalizer bars - always visible */}
+        <div className="flex gap-0.5 items-end h-4">
+          <span className={cn("w-0.5 rounded-full transition-all", isPlaying ? "bg-primary animate-eq-1 h-3" : "bg-muted-foreground/60 animate-eq-idle-1 h-1.5")} />
+          <span className={cn("w-0.5 rounded-full transition-all", isPlaying ? "bg-primary animate-eq-2 h-4" : "bg-muted-foreground/60 animate-eq-idle-2 h-2")} />
+          <span className={cn("w-0.5 rounded-full transition-all", isPlaying ? "bg-primary animate-eq-3 h-2" : "bg-muted-foreground/60 animate-eq-idle-3 h-1")} />
+        </div>
+
+        {/* Label */}
+        <span className={cn(
+          "text-[10px] font-bold uppercase tracking-wider hidden sm:inline",
+          isPlaying ? "text-primary" : "text-muted-foreground"
+        )}>
+          {isPlaying ? "Live" : "Radio"}
+        </span>
+
         <ChevronDown className={cn(
           "w-3 h-3 transition-transform hidden sm:block",
           isOpen && "rotate-180"
