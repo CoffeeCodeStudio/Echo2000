@@ -5,7 +5,7 @@ import { Avatar } from '../Avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import { Send, Radio, Clock } from 'lucide-react';
+import { Send, Radio, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { AuthDialog } from '../auth/AuthDialog';
