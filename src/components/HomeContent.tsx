@@ -4,6 +4,7 @@
  * Shows HeroLanding for guests, Lunar dashboard for logged-in users.
  */
 import "./home/hero-landing.css";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { HeroLanding } from "./home/HeroLanding";
 import { NewsFeed } from "./social/NewsFeed";
