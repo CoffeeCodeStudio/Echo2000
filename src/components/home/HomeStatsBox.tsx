@@ -81,22 +81,14 @@ export function HomeStatsBox() {
 
   const fetchStats = useCallback(async () => {
     if (user) {
-      // Fire all queries independently — update stats progressively
-      supabase.from("profiles").select("*", { count: "exact", head: true }).then(({ count }) => {
-        setStats(prev => { const next = { ...prev, members: count ?? 0 }; saveCache(next); return next; });
-      });
-      Promise.all([
-        supabase.from("chat_messages").select("*", { count: "exact", head: true }),
-        supabase.from("messages").select("*", { count: "exact", head: true }),
-      ]).then(([{ count: chatCount }, { count: mailCount }]) => {
-        setStats(prev => { const next = { ...prev, messages: (chatCount ?? 0) + (mailCount ?? 0) }; saveCache(next); return next; });
-      });
-      supabase.from("profile_guestbook").select("*", { count: "exact", head: true }).then(({ count }) => {
-        setStats(prev => { const next = { ...prev, guestbook: count ?? 0 }; saveCache(next); return next; });
-      });
-      supabase.from("klotter").select("*", { count: "exact", head: true }).then(({ count }) => {
-        setStats(prev => { const next = { ...prev, klotter: count ?? 0 }; saveCache(next); return next; });
-      });
+      // Single RPC call for all counts
+      const { data, error } = await supabase.rpc('get_community_stats');
+      if (!error && data) {
+        const d = data as { members: number; messages: number; guestbook: number; klotter: number };
+        const next: Stats = { members: d.members, online: 0, messages: d.messages, guestbook: d.guestbook, klotter: d.klotter };
+        setStats(next);
+        saveCache(next);
+      }
     } else {
       try {
         const res = await fetch(
