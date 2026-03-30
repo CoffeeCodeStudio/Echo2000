@@ -63,6 +63,7 @@ export default function AdminDjManager() {
         genre: genre.trim() || null,
         sort_order: tracks.length,
         added_by: user?.id || null,
+        is_active: true,
       });
 
       if (dbError) throw dbError;
