@@ -30,17 +30,24 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
     if (!user || !effectiveOwnerId || user.id === effectiveOwnerId) return;
 
     try {
-      // Upsert: insert or update if already visited
+      // Delete any existing visit from today, then insert a fresh one
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      await supabase
+        .from('profile_visits')
+        .delete()
+        .eq('profile_owner_id', effectiveOwnerId)
+        .eq('visitor_id', user.id)
+        .gte('visited_at', todayStart.toISOString());
+
       const { error } = await supabase
         .from('profile_visits')
-        .upsert(
-          {
-            profile_owner_id: effectiveOwnerId,
-            visitor_id: user.id,
-            visited_at: new Date().toISOString(),
-          },
-          { onConflict: 'profile_owner_id,visitor_id' }
-        );
+        .insert({
+          profile_owner_id: effectiveOwnerId,
+          visitor_id: user.id,
+          visited_at: new Date().toISOString(),
+        });
 
       if (error) {
         console.error('Error logging visit:', error);
@@ -65,7 +72,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
         .select('id, visitor_id, visited_at')
         .eq('profile_owner_id', effectiveOwnerId)
         .order('visited_at', { ascending: false })
-        .limit(5);
+        .limit(20);
 
       if (visitError) {
         console.error('Error fetching visits:', visitError);

@@ -954,6 +954,7 @@ export type Database = {
         Returns: undefined
       }
       sync_approved_avatars: { Args: never; Returns: number }
+      utc_date: { Args: { ts: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "banned"

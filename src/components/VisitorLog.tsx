@@ -49,7 +49,7 @@ export function VisitorLog({ visitors, className }: VisitorLogProps) {
         </p>
       ) : (
         <div className="space-y-1">
-          {visitors.slice(0, 10).map((visitor) => (
+          {visitors.map((visitor) => (
             <div
               key={visitor.id}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
