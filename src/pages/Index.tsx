@@ -46,6 +46,7 @@ export default function Index() {
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { setActivity } = usePresence();
+  const { isPlaying, currentStation } = useRadio();
   const { markGuestbookRead, markVisitorsRead } = useNotifications();
 
   // Fetch user role
