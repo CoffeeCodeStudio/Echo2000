@@ -50,9 +50,9 @@ export function ProfileInfoSection({
 
   return (
     <div id="profile-card-capture" className="bg-card rounded-lg border border-border overflow-hidden">
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         {/* Username + Edit button row */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-2 sm:mb-4">
           <div className="flex items-center gap-2">
             <h1 className="font-display font-bold text-2xl sm:text-3xl uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {displayData.username}
@@ -91,7 +91,7 @@ export function ProfileInfoSection({
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-6">
           <ProfileAvatar
             displayData={displayData}
             editData={editData}

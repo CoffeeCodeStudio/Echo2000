@@ -22,7 +22,7 @@ export function ProfileFieldsGrid({ displayData, editData, setEditData, isEditin
     setEditData((prev) => ({ ...prev, [key]: v }));
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-1 text-xs sm:text-sm">
       <ProfileField label="Personlighet:" value={displayData.personality} editValue={editData.personality} isEditing={isEditing} options={personalityOptions} onChange={set("personality")} />
       <ProfileField label="Civilstånd:" value={displayData.relationship} editValue={editData.relationship} isEditing={isEditing} options={relationshipOptions} onChange={set("relationship")} />
       <ProfileField label="Sysselsättn.:" value={displayData.occupation} editValue={editData.occupation} isEditing={isEditing} options={occupationOptions} onChange={set("occupation")} />
