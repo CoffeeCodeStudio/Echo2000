@@ -20,12 +20,6 @@ interface ProfileFieldProps {
   onChange: (value: string) => void;
 }
 
-/**
- * A single profile detail row that renders either a read-only value or an
- * inline editor (text input, select dropdown, or multi-select) depending on `isEditing`.
- *
- * When `multiSelect` is true, values are stored as comma-separated strings.
- */
 export function ProfileField({
   label,
   value,
@@ -39,7 +33,6 @@ export function ProfileField({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -59,14 +52,14 @@ export function ProfileField({
   };
 
   return (
-    <div className="flex gap-1">
-      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
+    <div className="flex flex-col gap-0.5 py-0.5">
+      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">{label}</span>
       {isEditing ? (
         isText ? (
           <Input
             value={editValue}
             onChange={(e) => onChange(e.target.value)}
-            className="h-6 text-xs px-1 flex-1 min-w-0"
+            className="h-7 text-xs px-1.5 flex-1 min-w-0"
             placeholder="..."
           />
         ) : multiSelect ? (
@@ -75,7 +68,7 @@ export function ProfileField({
               type="button"
               onClick={() => setOpen(!open)}
               className={cn(
-                "flex items-center w-full h-6 text-xs px-1 rounded border border-input bg-background text-left truncate",
+                "flex items-center w-full h-7 text-xs px-1.5 rounded border border-input bg-background text-left truncate",
                 "hover:border-primary/50 transition-colors"
               )}
             >
@@ -115,7 +108,7 @@ export function ProfileField({
           </div>
         ) : (
           <Select value={editValue || ""} onValueChange={onChange}>
-            <SelectTrigger className="h-6 text-xs px-1 flex-1 min-w-0">
+            <SelectTrigger className="h-7 text-xs px-1.5 flex-1 min-w-0">
               <SelectValue placeholder="Välj..." />
             </SelectTrigger>
             <SelectContent>
@@ -128,7 +121,7 @@ export function ProfileField({
           </Select>
         )
       ) : (
-        <span className="text-primary break-words">{value || "Ej angivet"}</span>
+        <span className="text-primary text-xs font-medium break-words leading-snug">{value || "–"}</span>
       )}
     </div>
   );

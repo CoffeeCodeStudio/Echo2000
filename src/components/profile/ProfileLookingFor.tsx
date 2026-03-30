@@ -23,19 +23,19 @@ export function ProfileLookingFor({ displayData, editData, setEditData, isEditin
   };
 
   return (
-    <div className="mt-2 sm:mt-4">
-      <span className="text-sm text-muted-foreground">Letar efter:</span>
-      <div className="flex flex-wrap gap-1 mt-1">
+    <div className="border-t border-border/30 pt-3">
+      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Letar efter</span>
+      <div className="flex flex-wrap gap-1.5 mt-1.5">
         {isEditing ? (
           lookingForOptions.map((option) => (
             <button
               key={option}
               onClick={() => toggle(option)}
               className={cn(
-                "px-2 py-0.5 text-xs rounded border transition-all",
+                "px-2.5 py-1 text-xs border transition-all",
                 editData.looking_for.includes(option)
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-muted text-muted-foreground border-border hover:border-primary/50"
+                  : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
               )}
             >
               {option}
@@ -43,12 +43,12 @@ export function ProfileLookingFor({ displayData, editData, setEditData, isEditin
           ))
         ) : displayData.looking_for.length > 0 ? (
           displayData.looking_for.map((item) => (
-            <span key={item} className="px-2 py-0.5 text-xs rounded bg-primary/10 text-primary border border-primary/20">
+            <span key={item} className="px-2.5 py-1 text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
               {item}
             </span>
           ))
         ) : (
-          <span className="text-xs text-muted-foreground">Ej angivet</span>
+          <span className="text-xs text-muted-foreground">–</span>
         )}
       </div>
     </div>
