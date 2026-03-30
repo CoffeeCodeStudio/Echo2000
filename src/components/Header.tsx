@@ -179,8 +179,8 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Top bar: logo + status */}
-      <div className="bg-[#ddd] border-b border-[#999] flex items-center justify-between px-2 py-1">
+      {/* Top bar: logo + status — polished gradient */}
+      <div className="bg-gradient-to-b from-[#5a5a5a] to-[#444] border-b-2 border-primary/60 flex items-center justify-between px-2 py-1.5 shadow-sm">
         <div className="flex items-center gap-2">
           <div
             className="cursor-pointer flex items-center"
@@ -190,13 +190,14 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           >
             <img
               alt="Echo2000"
-              className="h-5 w-auto object-contain"
+              className="h-5 w-auto object-contain brightness-[1.8] contrast-[1.1]"
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
           </div>
           <span className="beta-badge">BETA</span>
           {user && (
-            <span className="text-[10px] text-[#666]">
+            <span className="text-[10px] text-white/60 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.6)]" />
               {onlineCount} online
             </span>
           )}
@@ -210,13 +211,13 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   {isAdmin && (
                     <button
                       onClick={() => navigate("/admin")}
-                      className="relative px-2 py-1 text-[10px] font-bold text-[#333] bg-[#ddd] border border-[#999] hover:bg-[#ccc] flex items-center gap-1"
+                      className="relative px-2 py-1 text-[10px] font-bold text-white/80 bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1 transition-colors"
                       aria-label="Admin"
                     >
                       <Shield className="w-3 h-3" />
                       <span className="hidden sm:inline">Admin</span>
                       {pendingCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-[#cc0000] text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5">
+                        <span className="absolute -top-1 -right-1 bg-[#cc0000] text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 shadow-[0_1px_3px_rgba(204,0,0,0.4)]">
                           {pendingCount}
                         </span>
                       )}
@@ -225,7 +226,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
-                        className="px-2 py-1 text-[10px] font-bold text-[#333] bg-[#ddd] border border-[#999] hover:bg-[#ccc] flex items-center gap-1"
+                        className="px-2 py-1 text-[10px] font-bold text-white/80 bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1 transition-colors"
                         aria-label="Användarmeny"
                       >
                         <User className="w-3 h-3" />
@@ -248,7 +249,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
               ) : (
                 <button
                   onClick={() => navigate("/auth")}
-                  className="px-2 py-1 text-[10px] font-bold text-white bg-[#ff6600] border border-[#cc5500] hover:bg-[#e55c00] flex items-center gap-1"
+                  className="px-3 py-1 text-[10px] font-bold text-white bg-primary border border-primary/60 hover:brightness-110 flex items-center gap-1 transition-all shadow-sm"
                   aria-label="Logga in"
                 >
                   <LogIn className="w-3 h-3" />
@@ -263,7 +264,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
       {/* Nav tabs — desktop only */}
       {user && (
-        <div className="hidden md:flex items-stretch bg-[#ddd] border-b border-[#999]">
+        <div className="hidden md:flex items-stretch bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] border-b border-[#aaa]">
           {/* Home */}
           <div
             onClick={() => onTabChange?.("hem")}
