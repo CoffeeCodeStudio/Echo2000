@@ -100,8 +100,9 @@ export default function Auth() {
       if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
-          if (!error.message.includes("Invalid login credentials")) {
-            toast({ title: "Fel", description: error.message, variant: "destructive" });
+          console.error("Login error:", error);
+          if (!error.message?.includes("Invalid login credentials")) {
+            toast({ title: "Fel", description: "Inloggningen misslyckades. Försök igen.", variant: "destructive" });
           } else {
             toast({ title: "Inloggning misslyckades", description: "Fel e-post eller lösenord", variant: "destructive" });
           }
