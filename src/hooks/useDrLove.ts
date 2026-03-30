@@ -84,36 +84,36 @@ export function useDrLove(targetUserId?: string): DrLoveResult {
           compatScore += 10;
         }
 
-        // Relationship — compatible statuses add 10%
-        const singleStatuses = ["singel", "single", "det är komplicerat", ""];
+        // Relationship — compatible statuses add 10% (only if actually filled in)
+        const myRel = (myProfile.relationship || "").toLowerCase().trim();
+        const theirRel = (theirProfile.relationship || "").toLowerCase().trim();
+        const singleStatuses = ["singel", "single", "det är komplicerat"];
         if (
-          singleStatuses.includes((myProfile.relationship || "").toLowerCase()) &&
-          singleStatuses.includes((theirProfile.relationship || "").toLowerCase())
+          myRel && theirRel &&
+          singleStatuses.includes(myRel) &&
+          singleStatuses.includes(theirRel)
         ) {
           compatScore += 10;
         }
 
-        // Gender + looking_for — compatible match adds 20%
-        const myGender = (myProfile.gender || "").toLowerCase();
-        const theirGender = (theirProfile.gender || "").toLowerCase();
-        const myLookingFor: string[] = (myProfile.looking_for || []).map((s: string) => s.toLowerCase());
-        const theirLookingFor: string[] = (theirProfile.looking_for || []).map((s: string) => s.toLowerCase());
+        // Gender + looking_for — compatible match adds 20% (only if both have values)
+        const myGender = (myProfile.gender || "").toLowerCase().trim();
+        const theirGender = (theirProfile.gender || "").toLowerCase().trim();
+        const myLookingFor: string[] = (myProfile.looking_for || []).map((s: string) => s.toLowerCase()).filter(Boolean);
+        const theirLookingFor: string[] = (theirProfile.looking_for || []).map((s: string) => s.toLowerCase()).filter(Boolean);
 
-        const iLookForThem =
-          myLookingFor.length === 0 ||
-          myLookingFor.some((l) => l.includes("vänskap") || l.includes("chatt") || theirGender.includes(l) || l.includes(theirGender));
-        const theyLookForMe =
-          theirLookingFor.length === 0 ||
-          theirLookingFor.some((l) => l.includes("vänskap") || l.includes("chatt") || myGender.includes(l) || l.includes(myGender));
+        if (myLookingFor.length > 0 && theirLookingFor.length > 0 && myGender && theirGender) {
+          const iLookForThem =
+            myLookingFor.some((l) => l.includes("vänskap") || l.includes("chatt") || theirGender.includes(l) || l.includes(theirGender));
+          const theyLookForMe =
+            theirLookingFor.some((l) => l.includes("vänskap") || l.includes("chatt") || myGender.includes(l) || l.includes(myGender));
 
-        if (iLookForThem && theyLookForMe) {
-          compatScore += 20;
+          if (iLookForThem && theyLookForMe) {
+            compatScore += 20;
+          }
         }
 
-        // Random factor ±5%
-        const randomFactor = Math.floor(Math.random() * 11) - 5;
-        compatScore += randomFactor;
-
+        // No random factor — deterministic score
         // Clamp 10-99
         const finalScore = Math.max(10, Math.min(99, compatScore));
         setScore(finalScore);
