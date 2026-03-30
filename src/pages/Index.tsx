@@ -76,8 +76,17 @@ export default function Index() {
     }
   }, [activeTab, user, markVisitorsRead]);
 
-  // Update activity based on active tab
+  // Update activity based on active tab + radio state
   useEffect(() => {
+    // Radio playing takes priority
+    if (isPlaying && currentStation) {
+      const radioLabel = currentStation.isDj
+        ? `Lyssnar på DJ: ${currentStation.name}`
+        : `Lyssnar på ${currentStation.name}`;
+      setActivity(radioLabel);
+      return;
+    }
+
     const tabActivityMap: Record<string, string> = {
       hem: 'Surfar runt',
       chatt: 'Chattar',
@@ -94,7 +103,7 @@ export default function Index() {
       faq: 'Läser FAQ',
     };
     setActivity(tabActivityMap[activeTab] || 'Surfar runt');
-  }, [activeTab, setActivity]);
+  }, [activeTab, setActivity, isPlaying, currentStation]);
 
   // Handle tab from navigation state
   useEffect(() => {
