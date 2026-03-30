@@ -126,15 +126,15 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-4">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      <div className="flex justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
 
   if (friends.length === 0) {
     return (
-      <p className="text-center text-muted-foreground py-4 text-xs">
+      <p className="text-center text-muted-foreground py-8 text-sm">
         🌟 Inga vänner ännu
       </p>
     );
@@ -142,109 +142,109 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
   return (
     <>
-    <div className="flex flex-col lg:flex-row lg:gap-2 gap-2">
-      {/* ── LEFT COLUMN ── */}
-      <div className="flex-1 min-w-0">
-        {/* BÄSTA VÄNNER */}
-        <BestFriendsRow bestFriends={bestFriends} onNavigate={goToProfile} />
+      <div className="flex flex-col lg:flex-row gap-3">
+        {/* ── LEFT COLUMN ── */}
+        <div className="flex-1 min-w-0 space-y-3">
+          {/* BÄSTA VÄNNER */}
+          <BestFriendsRow bestFriends={bestFriends} onNavigate={goToProfile} />
 
-        {/* FRIENDS TABLE */}
-        <div className="border border-border mt-1 bg-card">
-          {/* Table header — desktop/tablet */}
-          <table className="w-full border-collapse hidden sm:table">
-            <thead>
-              <tr className="bg-muted border-b border-border">
-                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-10">Bild</th>
-                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5">Namn</th>
-                <th className="text-center text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-14">Status</th>
-                <th className="text-left text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-24 hidden md:table-cell">Senast</th>
-                {isOwnProfile && (
-                  <th className="text-center text-[11px] font-bold text-foreground uppercase px-1 py-0.5 w-12">Bästis</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
+          {/* FRIENDS TABLE */}
+          <div className="border border-[hsl(var(--lunar-box-border))] bg-card overflow-hidden">
+            {/* Table — desktop/tablet */}
+            <table className="w-full border-collapse hidden sm:table">
+              <thead>
+                <tr className="border-b border-[hsl(var(--lunar-box-border))]">
+                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Avatar</th>
+                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 bg-muted/60">Användarnamn</th>
+                  <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-16 bg-muted/60">Online</th>
+                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-28 hidden md:table-cell bg-muted/60">Senast inloggad</th>
+                  {isOwnProfile && (
+                    <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Bästis</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(grouped).map(([category, catFriends]) => (
+                  <CategoryGroup
+                    key={category}
+                    category={category}
+                    friends={catFriends}
+                    getUserStatus={getUserStatus}
+                    isOwnProfile={isOwnProfile}
+                    onNavigate={goToProfile}
+                    onToggleBestFriend={handleToggleBestFriend}
+                    colSpan={isOwnProfile ? 5 : 4}
+                  />
+                ))}
+              </tbody>
+            </table>
+
+            {/* Mobile list */}
+            <div className="sm:hidden">
               {Object.entries(grouped).map(([category, catFriends]) => (
-                <CategoryGroup
-                  key={category}
-                  category={category}
-                  friends={catFriends}
-                  getUserStatus={getUserStatus}
-                  isOwnProfile={isOwnProfile}
-                  onNavigate={goToProfile}
-                  onToggleBestFriend={handleToggleBestFriend}
-                  colSpan={isOwnProfile ? 5 : 4}
-                />
-              ))}
-            </tbody>
-          </table>
-
-          {/* Mobile list */}
-          <div className="sm:hidden">
-            {Object.entries(grouped).map(([category, catFriends]) => (
-              <div key={category}>
-                <div className="lunar-box-header px-2 py-1">
-                  <span className="text-[11px] font-bold uppercase">{category}</span>
-                </div>
-                {catFriends.map((friend, i) => {
-                  const status = getUserStatus(friend.id);
-                  return (
-                    <div
-                      key={friend.id}
-                      className={cn(
-                        "flex items-center gap-2 px-1 py-0.5 border-b border-border/40 hover:bg-muted/60",
-                        i % 2 === 0 ? "bg-card" : "bg-muted/30"
-                      )}
-                    >
+                <div key={category}>
+                  <div className="lunar-box-header px-3 py-1.5">
+                    <span className="text-xs font-bold uppercase">{category}</span>
+                  </div>
+                  {catFriends.map((friend, i) => {
+                    const status = getUserStatus(friend.id);
+                    return (
                       <div
-                        className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
-                        onClick={() => goToProfile(friend.username)}
+                        key={friend.id}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 border-b border-border/30",
+                          i % 2 === 0 ? "bg-card" : "bg-muted/20"
+                        )}
                       >
-                        <FriendAvatar
-                          src={friend.avatar_url}
-                          username={friend.username}
-                          size={28}
-                        />
-                        <span className="text-[11px] font-medium text-foreground flex-1 truncate">
-                          {friend.username}
-                        </span>
-                        <OnlineDot status={status} />
-                      </div>
-                      {isOwnProfile && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (friend.is_best_friend) {
-                              setPendingRemove({ friendshipId: friend.friendshipId, username: friend.username });
-                            } else {
-                              handleToggleBestFriend(friend.friendshipId, false);
-                            }
-                          }}
-                          className="p-1 shrink-0"
-                          title={friend.is_best_friend ? "Ta bort som bästis" : "Lägg till som bästis"}
+                        <div
+                          className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                          onClick={() => goToProfile(friend.username)}
                         >
-                          <input
-                            type="checkbox"
-                            checked={friend.is_best_friend}
-                            readOnly
-                            className="w-3.5 h-3.5 accent-[hsl(var(--primary))] cursor-pointer pointer-events-none"
+                          <FriendAvatar
+                            src={friend.avatar_url}
+                            username={friend.username}
+                            size={36}
                           />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                          <span className="text-xs font-medium text-foreground flex-1 truncate">
+                            {friend.username}
+                          </span>
+                          <OnlineDot status={status} />
+                        </div>
+                        {isOwnProfile && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (friend.is_best_friend) {
+                                setPendingRemove({ friendshipId: friend.friendshipId, username: friend.username });
+                              } else {
+                                handleToggleBestFriend(friend.friendshipId, false);
+                              }
+                            }}
+                            className="p-1 shrink-0"
+                            title={friend.is_best_friend ? "Ta bort som bästis" : "Lägg till som bästis"}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={friend.is_best_friend}
+                              readOnly
+                              className="w-4 h-4 accent-[hsl(var(--primary))] cursor-pointer pointer-events-none"
+                            />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── RIGHT SIDEBAR ── */}
-      <div className="lg:w-56 shrink-0">
-        <PersonalityBox userId={userId} isOwnProfile={isOwnProfile} />
+        {/* ── RIGHT SIDEBAR ── */}
+        <div className="lg:w-64 shrink-0">
+          <PersonalityBox userId={userId} isOwnProfile={isOwnProfile} />
+        </div>
       </div>
-    </div>
 
       {/* Confirmation dialog for removing best friend on mobile */}
       <AlertDialog open={!!pendingRemove} onOpenChange={(open) => { if (!open) setPendingRemove(null); }}>
@@ -277,7 +277,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 function FriendAvatar({
   src,
   username,
-  size = 28,
+  size = 36,
   className = "",
   onClick,
 }: {
@@ -296,15 +296,13 @@ function FriendAvatar({
     <div
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0 overflow-hidden",
+        "relative flex items-center justify-center border border-border bg-muted text-foreground font-bold shrink-0 overflow-hidden rounded-sm",
         onClick && "cursor-pointer",
         className
       )}
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      style={{ width: size, height: size, fontSize: size * 0.38 }}
     >
-      {/* Always render the letter as fallback layer */}
       {(!showImg || !loaded) && <span>{initial}</span>}
-      {/* Render img on top if src exists */}
       {showImg && (
         <img
           src={src}
@@ -327,8 +325,8 @@ function OnlineDot({ status }: { status: UserStatus }) {
   return (
     <span
       className={cn(
-        "inline-block w-[10px] h-[10px] rounded-full shrink-0",
-        status === "online" ? "bg-green-500" : "bg-muted-foreground/40"
+        "inline-block w-2.5 h-2.5 rounded-full shrink-0",
+        status === "online" ? "bg-green-500" : "bg-muted-foreground/30"
       )}
     />
   );
@@ -345,42 +343,42 @@ function BestFriendsRow({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scroll = (dir: "left" | "right") =>
-    scrollRef.current?.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -180 : 180, behavior: "smooth" });
 
   return (
-    <div className="border border-border bg-card">
-      <div className="lunar-box-header px-2 py-1">
-        <h3 className="text-[11px] font-bold uppercase">
-          ⭐ Bästa Vänner
+    <div className="border border-[hsl(var(--lunar-box-border))] bg-card overflow-hidden">
+      <div className="lunar-box-header px-3 py-1.5">
+        <h3 className="text-xs font-bold uppercase tracking-wide">
+          Bästa Vänner
         </h3>
       </div>
-      <div className="p-1.5">
+      <div className="p-3">
         {bestFriends.length === 0 ? (
-          <p className="text-[10px] text-muted-foreground px-1">Inga bästa vänner markerade.</p>
+          <p className="text-xs text-muted-foreground">Inga bästa vänner markerade.</p>
         ) : (
           <div className="relative">
             {bestFriends.length > 5 && (
               <button
                 onClick={() => scroll("left")}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card border border-border p-0.5"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-card/90 border border-border p-1 hover:bg-muted transition-colors"
               >
-                <ChevronLeft className="w-3 h-3 text-primary" />
+                <ChevronLeft className="w-4 h-4 text-primary" />
               </button>
             )}
-            <div ref={scrollRef} className="flex gap-1.5 overflow-x-auto scrollbar-none">
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-none px-1">
               {bestFriends.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => onNavigate(f.username)}
-                  className="shrink-0 flex flex-col items-center gap-0.5 hover:opacity-80"
+                  className="shrink-0 flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
                 >
                   <FriendAvatar
                     src={f.avatar_url}
                     username={f.username}
-                    size={64}
-                    className="border-2 !border-primary"
+                    size={72}
+                    className="border-2 !border-primary rounded-sm"
                   />
-                  <span className="text-[10px] text-foreground font-medium truncate max-w-[64px] text-center leading-tight">
+                  <span className="text-[11px] text-foreground font-medium truncate max-w-[72px] text-center leading-tight">
                     {f.username}
                   </span>
                 </button>
@@ -389,9 +387,9 @@ function BestFriendsRow({
             {bestFriends.length > 5 && (
               <button
                 onClick={() => scroll("right")}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card border border-border p-0.5"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-card/90 border border-border p-1 hover:bg-muted transition-colors"
               >
-                <ChevronRight className="w-3 h-3 text-primary" />
+                <ChevronRight className="w-4 h-4 text-primary" />
               </button>
             )}
           </div>
@@ -422,61 +420,57 @@ function CategoryGroup({
 }) {
   return (
     <>
-      {/* Category header row — uses lunar-box-header gradient */}
+      {/* Category header row */}
       <tr>
-        <td colSpan={colSpan} className="lunar-box-header px-2 py-0.5">
-          <span className="text-[11px] font-bold uppercase">
+        <td colSpan={colSpan} className="lunar-box-header px-3 py-1.5">
+          <span className="text-xs font-bold uppercase tracking-wide">
             {category}
           </span>
         </td>
       </tr>
       {friends.map((friend, i) => {
         const status = getUserStatus(friend.id);
-        const genderAge = [friend.gender, friend.age].filter(Boolean).join(", ");
         return (
           <tr
             key={friend.id}
             className={cn(
-              "border-b border-border/30 hover:bg-muted/50",
-              i % 2 === 0 ? "bg-card" : "bg-muted/25"
+              "border-b border-border/20 hover:bg-muted/40 transition-colors",
+              i % 2 === 0 ? "bg-card" : "bg-muted/15"
             )}
           >
-            <td className="px-1 py-0.5">
+            <td className="px-3 py-1.5">
               <FriendAvatar
                 src={friend.avatar_url}
                 username={friend.username}
-                size={28}
+                size={36}
                 onClick={() => onNavigate(friend.username)}
               />
             </td>
-            <td className="px-1 py-0.5">
+            <td className="px-3 py-1.5">
               <span
-                className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+                className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
                 onClick={() => onNavigate(friend.username)}
               >
                 {friend.username}
               </span>
-              {genderAge && (
-                <span className="text-[10px] text-muted-foreground ml-1">({genderAge})</span>
-              )}
             </td>
-            <td className="px-1 py-0.5 text-center">
+            <td className="px-3 py-1.5 text-center">
               <div className="flex justify-center">
                 <OnlineDot status={status} />
               </div>
             </td>
-            <td className="px-1 py-0.5 hidden md:table-cell">
-              <span className="text-[10px] text-muted-foreground">
+            <td className="px-3 py-1.5 hidden md:table-cell">
+              <span className="text-[11px] text-muted-foreground">
                 {friend.last_seen ? formatTimeAgo(friend.last_seen) : "–"}
               </span>
             </td>
             {isOwnProfile && (
-              <td className="px-1 py-0.5 text-center">
+              <td className="px-3 py-1.5 text-center">
                 <input
                   type="checkbox"
                   checked={friend.is_best_friend}
                   onChange={() => onToggleBestFriend(friend.friendshipId, friend.is_best_friend)}
-                  className="w-3 h-3 accent-[hsl(var(--primary))] cursor-pointer"
+                  className="w-3.5 h-3.5 accent-[hsl(var(--primary))] cursor-pointer"
                 />
               </td>
             )}
@@ -493,13 +487,13 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
   const { voteCounts, userVotes, totalVotes, toggleVote, loading } = useFriendVotes(userId);
 
   return (
-    <div className="border border-border bg-card">
-      <div className="lunar-box-header px-2 py-1">
-        <h3 className="text-[11px] font-bold uppercase">
-          🎭 Personlighet
+    <div className="border border-[hsl(var(--lunar-box-border))] bg-card overflow-hidden">
+      <div className="lunar-box-header px-3 py-1.5">
+        <h3 className="text-xs font-bold uppercase tracking-wide">
+          Personlighet
         </h3>
       </div>
-      <div className="p-1.5 space-y-0.5">
+      <div className="p-3 space-y-2">
         {VOTE_CATEGORIES.map((cat) => {
           const count = voteCounts[cat] || 0;
           const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
@@ -510,17 +504,17 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
               onClick={() => !isOwnProfile && toggleVote(cat)}
               disabled={loading || isOwnProfile}
               className={cn(
-                "w-full flex items-center gap-1.5 text-left py-px hover:opacity-80 transition-opacity",
-                (loading || isOwnProfile) && "opacity-50 cursor-not-allowed"
+                "w-full flex items-center gap-2 text-left hover:opacity-80 transition-opacity",
+                (loading || isOwnProfile) && "opacity-60 cursor-not-allowed"
               )}
             >
               <span className={cn(
-                "text-[10px] w-20 shrink-0 truncate leading-tight",
+                "text-[11px] w-16 shrink-0 truncate",
                 voted ? "text-primary font-bold" : "text-foreground"
               )}>
                 {cat}
               </span>
-              <div className="flex-1 h-2.5 bg-muted/50 border border-border/40 overflow-hidden">
+              <div className="flex-1 h-3.5 bg-muted/40 border border-border/30 overflow-hidden">
                 <div
                   className="h-full transition-all duration-300"
                   style={{
@@ -529,13 +523,13 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
                   }}
                 />
               </div>
-              <span className="text-[9px] text-muted-foreground w-7 text-right font-mono shrink-0">
+              <span className="text-[10px] text-muted-foreground w-8 text-right font-mono shrink-0">
                 {pct}%
               </span>
             </button>
           );
         })}
-        <p className="text-[9px] text-muted-foreground text-right pt-0.5">
+        <p className="text-[10px] text-muted-foreground text-right pt-1">
           {totalVotes} röst{totalVotes !== 1 ? "er" : ""} totalt
         </p>
       </div>
