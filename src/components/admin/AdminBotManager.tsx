@@ -73,7 +73,7 @@ export function AdminBotManager() {
       cron_interval: bot.cron_interval,
     } as any).eq("id", bot.id);
     
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
+    if (error) { console.error("Update bot error:", error); toast({ title: "Fel", description: "Kunde inte spara botinställningar.", variant: "destructive" }); }
     else toast({ title: "Sparat", description: `${bot.name} uppdaterad.` });
     setSaving(null);
   };
