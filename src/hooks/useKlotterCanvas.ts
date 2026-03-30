@@ -132,25 +132,27 @@ export function useKlotterCanvas() {
     drawActions(ctx, historyRef.current, historyIndexRef.current);
   }, [drawActions]);
 
-  // Initialize canvas with proper DPI scaling
+  // Initialize canvas with proper DPI scaling — use ResizeObserver to catch
+  // container reflows (tab switches, toolbar changes) that don't fire window resize.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       const dpr = window.devicePixelRatio || 1;
-      // Set the canvas bitmap size to match display pixels
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      // Redraw with current history (from refs to avoid stale closure)
       redrawFromRefs();
     };
 
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-    return () => window.removeEventListener("resize", resizeCanvas);
-  }, [redrawFromRefs]);
+
+    const ro = new ResizeObserver(() => resizeCanvas());
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, [redrawFromRefs, activeTab]);
 
   useEffect(() => { redrawCanvas(); }, [historyIndex, redrawCanvas]);
 
