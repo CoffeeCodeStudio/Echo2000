@@ -62,7 +62,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Fetch DJ tracks from database
+  // Fetch DJ tracks from database - refetch when auth state changes
   useEffect(() => {
     const fetchDjTracks = async () => {
       const { data: tracks } = await supabase
@@ -102,6 +102,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     };
 
     fetchDjTracks();
+
+    // Re-fetch when auth state changes (e.g. user logs in)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchDjTracks();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const stations = [...LIVE_RADIO_STATIONS, ...djStations];
