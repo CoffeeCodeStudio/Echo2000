@@ -35,6 +35,8 @@ Deno.serve(async (req) => {
         stats: {
           members: memberCount ?? 0,
           messages: msgCount ?? 0,
+          guestbook: guestbookCount ?? 0,
+          klotter: klotterCount ?? 0,
         },
         recentMembers: recentMembers ?? [],
       }),
