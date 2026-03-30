@@ -62,8 +62,8 @@ export function PersonalityMeter({
                 className={cn(
                   "h-full rounded-full transition-all duration-500",
                   hasVoted
-                    ? "bg-gradient-to-r from-primary to-primary/70"
-                    : "bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/20"
+                    ? "bg-gradient-to-r from-[#ff6600] to-[#ff6600]/70"
+                    : "bg-gradient-to-r from-[#ff6600]/30 to-[#ff6600]/15"
                 )}
                 style={{ width: `${percentage}%` }}
               />
