@@ -97,7 +97,7 @@ export function HomeStatsBox() {
         );
         if (res.ok) {
           const data = await res.json();
-          const next = { members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: 0, klotter: 0 };
+          const next = { members: data.stats.members, online: 0, messages: data.stats.messages, guestbook: data.stats.guestbook ?? 0, klotter: data.stats.klotter ?? 0 };
           setStats(next);
           saveCache(next);
         }

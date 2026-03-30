@@ -16,9 +16,11 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Fetch stats counts
-    const [{ count: memberCount }, { count: msgCount }] = await Promise.all([
+    const [{ count: memberCount }, { count: msgCount }, { count: guestbookCount }, { count: klotterCount }] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+      supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
+      supabase.from("klotter").select("*", { count: "exact", head: true }),
     ]);
 
     // Fetch 10 most recent members (only public fields)
@@ -33,6 +35,8 @@ Deno.serve(async (req) => {
         stats: {
           members: memberCount ?? 0,
           messages: msgCount ?? 0,
+          guestbook: guestbookCount ?? 0,
+          klotter: klotterCount ?? 0,
         },
         recentMembers: recentMembers ?? [],
       }),
