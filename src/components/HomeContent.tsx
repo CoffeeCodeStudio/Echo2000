@@ -9,7 +9,7 @@ import { NewsFeed } from "./social/NewsFeed";
 import { HomeSocialBox } from "./home/HomeSocialBox";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { useRadio } from "@/contexts/RadioContext";
-import { Play, Pause, SkipForward, Volume2 } from "lucide-react";
+import { Play, Pause, SkipForward, Volume2, Radio } from "lucide-react";
 
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
@@ -39,23 +39,23 @@ function DjQuickPlay() {
 
   return (
     <div className="inline-flex items-center gap-1">
-      <button onClick={handlePlay} className="px-2 py-0.5 text-[10px] font-bold bg-[#ff6600] text-white border border-[#cc5500] hover:bg-[#e55c00] flex items-center gap-1">
+      <button onClick={handlePlay} className="px-2 py-0.5 text-[10px] font-bold bg-primary text-primary-foreground border border-[hsl(24,100%,40%)] hover:opacity-90 flex items-center gap-1 transition-opacity">
         {isPlaying && currentStation?.isDj ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
         DJ
       </button>
       {isPlaying && currentStation?.isDj && djStations.length > 1 && (
-        <button onClick={handleNext} className="px-1 py-0.5 bg-[#ddd] border border-[#999] hover:bg-[#ccc]">
+        <button onClick={handleNext} className="px-1 py-0.5 bg-muted border border-border hover:bg-accent/20 transition-colors">
           <SkipForward className="w-3 h-3" />
         </button>
       )}
       <div className="relative" ref={volRef}>
-        <button onClick={() => setShowVolume(!showVolume)} className="px-1 py-0.5 bg-[#ddd] border border-[#999] hover:bg-[#ccc]">
+        <button onClick={() => setShowVolume(!showVolume)} className="px-1 py-0.5 bg-muted border border-border hover:bg-accent/20 transition-colors">
           <Volume2 className="w-3 h-3" />
         </button>
         {showVolume && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-[#999] p-2 z-50 w-24">
-            <input type="range" min="0" max="100" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className="w-full" />
-            <div className="text-[9px] text-center text-[#666]">{volume}%</div>
+          <div className="absolute top-full right-0 mt-1 bg-card border border-border p-2 z-50 w-24">
+            <input type="range" min="0" max="100" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className="w-full accent-primary" />
+            <div className="text-[9px] text-center text-muted-foreground">{volume}%</div>
           </div>
         )}
       </div>
@@ -70,24 +70,28 @@ export function HomeContent() {
   if (!user) return <HeroLanding />;
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-[#e5e5e5]">
-      {/* Welcome header */}
-      <div className="bg-white border-b border-[#999] px-3 py-2 flex items-center justify-between">
-        <div>
-          <span className="text-[13px] font-bold text-[#222]">
-            Välkommen till <span className="text-[#ff6600]">Echo2000</span>
-          </span>
-          <span className="text-[10px] text-[#666] ml-2">Som förr. Fast nu.</span>
+    <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+      {/* Welcome header — polished with gradient */}
+      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Radio className="w-4 h-4 text-primary" />
+          <div>
+            <span className="text-[13px] font-bold text-foreground">
+              Välkommen till <span className="text-primary">Echo2000</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
+          </div>
         </div>
         <DjQuickPlay />
       </div>
 
-      {/* Main content — stacked flat boxes */}
+      {/* Main content — three-column layout */}
       <div className="p-2 flex flex-col lg:flex-row gap-2">
         {/* Left column */}
-        <div className="flex flex-col gap-2 lg:w-[200px] lg:shrink-0">
+        <div className="flex flex-col gap-2 lg:w-[210px] lg:shrink-0">
           <HomeStatsBox />
           <HomeVisionBox />
+          <HomeSocialBox />
         </div>
 
         {/* Center column */}
@@ -100,7 +104,6 @@ export function HomeContent() {
         <div className="flex flex-col gap-2 lg:w-[240px] lg:shrink-0">
           <HomeActivityFeed />
           <HomeRecentKlotter />
-          <HomeSocialBox />
         </div>
       </div>
     </div>

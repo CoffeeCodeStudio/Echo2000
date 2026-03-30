@@ -1,6 +1,6 @@
 /**
  * @module HomeRecentKlotter
- * Thumbnail gallery of the latest klotter drawings.
+ * Thumbnail gallery of the latest klotter drawings — polished retro.
  */
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +56,7 @@ export function HomeRecentKlotter() {
       <BentoCard title="Klotterplanket" icon={<Palette className="w-4 h-4" />}>
         <div className="flex flex-col items-center justify-center text-center min-h-[60px]">
           <Palette className="w-7 h-7 text-muted-foreground/20 mb-2" />
-          <p className="text-sm text-muted-foreground">Inga klotter ännu</p>
+          <p className="text-[11px] text-muted-foreground">Inga klotter ännu</p>
         </div>
       </BentoCard>
     );
@@ -68,7 +68,7 @@ export function HomeRecentKlotter() {
         {items.map((k) => (
           <div
             key={k.id}
-            className="relative aspect-square rounded overflow-hidden border border-border/30 bg-muted/20 group"
+            className="relative aspect-square overflow-hidden border border-border bg-card group"
             title={k.comment ? `${k.author_name}: ${k.comment}` : k.author_name}
           >
             <img
@@ -78,7 +78,7 @@ export function HomeRecentKlotter() {
               loading="lazy"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <p className="text-[9px] text-white truncate">{k.author_name}</p>
+              <p className="text-[9px] text-white truncate font-bold">{k.author_name}</p>
             </div>
           </div>
         ))}

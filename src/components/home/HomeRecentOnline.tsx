@@ -68,12 +68,12 @@ export function HomeRecentOnline() {
     });
 
   return (
-    <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />} contentClassName="p-1">
+    <BentoCard title="Senaste Inloggade" icon={<Users className="w-4 h-4" />} contentClassName="p-1.5">
       {sortedMembers.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
+        <p className="text-[11px] text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (
         <TooltipProvider delayDuration={200}>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {sortedMembers.slice(0, 5).map((m) => {
               const initials = m.username.slice(0, 2).toUpperCase();
               const infoLine = [m.age ? `${m.age} år` : null, m.gender].filter(Boolean).join(", ");
@@ -82,13 +82,13 @@ export function HomeRecentOnline() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => navigate(`/profile/${encodeURIComponent(m.username)}`)}
-                      className="relative w-full aspect-square rounded-sm border border-border hover:border-primary/60 transition-all cursor-pointer group"
+                      className="relative w-full aspect-square border border-border hover:border-primary transition-colors cursor-pointer group"
                       style={{ overflow: 'hidden' }}
                     >
                       {sanitizeAvatarUrl(m.avatar_url) && !brokenImgs.has(m.user_id) ? (
                         <img src={sanitizeAvatarUrl(m.avatar_url)!} alt={m.username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" onError={() => setBrokenImgs(prev => new Set(prev).add(m.user_id))} />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center font-bold text-foreground text-sm">
+                        <div className="w-full h-full bg-muted flex items-center justify-center font-bold text-foreground text-sm">
                           {initials}
                         </div>
                       )}
@@ -100,6 +100,10 @@ export function HomeRecentOnline() {
                           <AiBadge className="text-[7px] px-0.5 py-0" />
                         </div>
                       )}
+                      {/* Username overlay on hover */}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-0.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[8px] text-white truncate text-center font-bold">{m.username}</p>
+                      </div>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">

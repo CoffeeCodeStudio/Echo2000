@@ -3,9 +3,9 @@ import { BentoCard } from "./BentoCard";
 
 function VisionItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+    <div className="flex items-center gap-1.5 py-1 border-b border-border/30 last:border-0">
       {icon}
-      <span>{text}</span>
+      <span className="text-[11px] text-muted-foreground">{text}</span>
     </div>
   );
 }
@@ -13,16 +13,14 @@ function VisionItem({ icon, text }: { icon: React.ReactNode; text: string }) {
 export function HomeVisionBox() {
   return (
     <BentoCard title="Vår Vision" icon={<Lightbulb className="w-4 h-4" />}>
-      <div className="space-y-1.5">
-        <VisionItem icon={<Gamepad2 className="w-4 h-4 text-primary" />} text="Spel & Tävlingar" />
-        <VisionItem icon={<Palette className="w-4 h-4 text-accent" />} text="Konst & Kreativitet" />
-        <VisionItem icon={<Heart className="w-4 h-4 text-destructive" />} text="Gemenskap & Vänskap" />
-        <div className="flex items-start gap-2 pt-2 mt-1 border-t border-[hsl(var(--glass-border))]">
-          <div className="flex-shrink-0">
-            <Bot className="w-7 h-7 text-primary" />
-          </div>
-          <div className="relative bg-muted/40 border border-border rounded-xl px-3 py-1.5 text-xs text-muted-foreground break-words">
-            <div className="absolute -left-1.5 top-2 w-0 h-0 border-t-[5px] border-t-transparent border-r-[6px] border-r-border border-b-[5px] border-b-transparent" />
+      <div>
+        <VisionItem icon={<Gamepad2 className="w-3.5 h-3.5 text-primary" />} text="Spel & Tävlingar" />
+        <VisionItem icon={<Palette className="w-3.5 h-3.5 text-primary" />} text="Konst & Kreativitet" />
+        <VisionItem icon={<Heart className="w-3.5 h-3.5 text-destructive" />} text="Gemenskap & Vänskap" />
+        <div className="flex items-start gap-2 pt-2 mt-1 border-t border-border/40">
+          <Bot className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+          <div className="relative bg-muted border border-border px-2.5 py-1.5 text-[11px] text-muted-foreground">
+            <div className="absolute -left-1 top-2 w-0 h-0 border-t-4 border-t-transparent border-r-[5px] border-r-border border-b-4 border-b-transparent" />
             Vad väntar du på? Inget MSN-virus här inte!
           </div>
         </div>
