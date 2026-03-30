@@ -32,58 +32,61 @@ export function NewsFeed() {
         .select("id, title, content, image_url, icon, author_name, created_at")
         .eq("is_published", true)
         .order("created_at", { ascending: false })
-        .limit(2);
+        .limit(3);
       if (data) setArticles(data as NewsArticle[]);
     };
     fetchArticles();
   }, []);
 
   return (
-    <div className="glass-card flex flex-col h-full">
-      <div className="lunar-box-header flex items-center gap-2 px-4 py-2">
-        <Newspaper className="w-4 h-4 text-white/90" />
-        <h3 className="font-display font-bold text-sm tracking-wide">Senaste Nytt</h3>
+    <div className="border border-[#999] bg-card">
+      <div className="lunar-box-header flex items-center gap-2 px-3 py-1.5">
+        <Newspaper className="w-3.5 h-3.5 text-white/90" />
+        <span>Senaste Nytt</span>
       </div>
-      <div className="divide-y divide-[hsl(var(--lunar-box-border))] flex-1">
+
+      <div className="divide-y divide-[#ccc]">
         {articles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-6 text-muted-foreground">
-            <Newspaper className="w-8 h-8 mb-2 opacity-30" />
-            <span className="text-xs">Inga nyheter ännu</span>
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <Newspaper className="w-8 h-8 mb-2 opacity-20" />
+            <span className="text-[11px]">Inga nyheter ännu</span>
           </div>
         ) : (
-          articles.map((article) => (
+          articles.map((article, i) => (
             <Link
               to={`/news/${article.id}`}
               key={article.id}
-              className="p-3.5 flex gap-3 hover:bg-white/5 transition-colors cursor-pointer block group"
+              className="px-3 py-2.5 flex gap-2.5 hover:bg-[#eee] transition-colors cursor-pointer group"
+              style={{ background: i % 2 === 0 ? "transparent" : "rgba(0,0,0,0.02)" }}
             >
               {article.image_url ? (
                 <img
                   src={article.image_url}
                   alt=""
                   loading="lazy"
-                  className="w-10 h-10 rounded object-cover flex-shrink-0 border border-[hsl(var(--lunar-box-border))]"
+                  className="w-11 h-11 object-cover flex-shrink-0 border border-[#999]"
                 />
               ) : (
-                <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xl">
+                <div className="w-11 h-11 bg-[#eee] border border-[#999] flex items-center justify-center flex-shrink-0 text-lg">
                   {article.icon}
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{article.icon}</span>
-                  <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">{article.title}</span>
+                  <span className="font-bold text-[12px] text-foreground truncate group-hover:text-primary transition-colors leading-tight">
+                    {article.title}
+                  </span>
                   {isRecent(article.created_at) && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-primary/20 text-primary rounded-full">NY!</span>
+                    <span className="news-new-badge">NY!</span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{article.content}</p>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-snug">{article.content}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[10px] text-muted-foreground/60">
                     {formatDate(article.created_at)} · {article.author_name}
                   </span>
                   <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
-                    Läs mer <ChevronRight className="w-3 h-3" />
+                    Läs <ChevronRight className="w-3 h-3" />
                   </span>
                 </div>
               </div>
@@ -91,11 +94,12 @@ export function NewsFeed() {
           ))
         )}
       </div>
+
       <Link
         to="/news"
-        className="flex items-center justify-center gap-1 py-2.5 text-xs font-bold text-primary hover:bg-white/5 transition-colors border-t border-[hsl(var(--lunar-box-border))]"
+        className="flex items-center justify-center gap-1 py-2 text-[11px] font-bold text-primary hover:bg-[#eee] transition-colors border-t border-[#ccc] uppercase tracking-wide"
       >
-        Visa alla nyheter <ChevronRight className="w-3 h-3" />
+        Alla nyheter <ChevronRight className="w-3 h-3" />
       </Link>
     </div>
   );
