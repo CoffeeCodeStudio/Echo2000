@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
+import { useRadio } from "@/contexts/RadioContext";
 
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { HomeContent } from "@/components/HomeContent";
@@ -45,6 +46,7 @@ export default function Index() {
   const { user } = useAuth();
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { setActivity } = usePresence();
+  const { isPlaying, currentStation } = useRadio();
   const { markGuestbookRead, markVisitorsRead } = useNotifications();
 
   // Fetch user role
@@ -74,8 +76,17 @@ export default function Index() {
     }
   }, [activeTab, user, markVisitorsRead]);
 
-  // Update activity based on active tab
+  // Update activity based on active tab + radio state
   useEffect(() => {
+    // Radio playing takes priority
+    if (isPlaying && currentStation) {
+      const radioLabel = currentStation.isDj
+        ? `Lyssnar på DJ: ${currentStation.name}`
+        : `Lyssnar på ${currentStation.name}`;
+      setActivity(radioLabel);
+      return;
+    }
+
     const tabActivityMap: Record<string, string> = {
       hem: 'Surfar runt',
       chatt: 'Chattar',
@@ -92,7 +103,7 @@ export default function Index() {
       faq: 'Läser FAQ',
     };
     setActivity(tabActivityMap[activeTab] || 'Surfar runt');
-  }, [activeTab, setActivity]);
+  }, [activeTab, setActivity, isPlaying, currentStation]);
 
   // Handle tab from navigation state
   useEffect(() => {
