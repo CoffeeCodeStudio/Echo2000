@@ -128,7 +128,7 @@ export function ProfileField({
           </Select>
         )
       ) : (
-        <span className="text-primary truncate">{value || "Ej angivet"}</span>
+        <span className="text-primary break-words">{value || "Ej angivet"}</span>
       )}
     </div>
   );
