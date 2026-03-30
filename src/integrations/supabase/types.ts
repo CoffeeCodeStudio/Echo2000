@@ -663,7 +663,6 @@ export type Database = {
           hair_color: string | null
           id: string
           interests: string | null
-          is_admin: boolean
           is_approved: boolean
           is_bot: boolean
           join_reason: string | null
@@ -696,7 +695,6 @@ export type Database = {
           hair_color?: string | null
           id?: string
           interests?: string | null
-          is_admin?: boolean
           is_approved?: boolean
           is_bot?: boolean
           join_reason?: string | null
@@ -729,7 +727,6 @@ export type Database = {
           hair_color?: string | null
           id?: string
           interests?: string | null
-          is_admin?: boolean
           is_approved?: boolean
           is_bot?: boolean
           join_reason?: string | null
