@@ -4,7 +4,7 @@
  * Shows HeroLanding for guests, Lunar dashboard for logged-in users.
  */
 import "./home/hero-landing.css";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { HeroLanding } from "./home/HeroLanding";
 import { NewsFeed } from "./social/NewsFeed";
@@ -21,6 +21,18 @@ import { Play, Pause, Music, SkipForward, Volume1, Volume2, VolumeX } from "luci
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
   const [showVolume, setShowVolume] = useState(false);
+  const volRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showVolume) return;
+    const handler = (e: MouseEvent) => {
+      if (volRef.current && !volRef.current.contains(e.target as Node)) {
+        setShowVolume(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showVolume]);
   const djStations = stations.filter(s => s.isDj);
   const isDjPlaying = isPlaying && currentStation?.isDj;
 
@@ -65,27 +77,29 @@ function DjQuickPlay() {
           <SkipForward className="w-3.5 h-3.5" />
         </button>
       )}
-      <button
-        onClick={() => setShowVolume(v => !v)}
-        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted/60 hover:bg-muted text-foreground/70 hover:text-foreground transition-all shadow-sm hover:scale-110 active:scale-95"
-        title={`Volym: ${volumePct}%`}
-      >
-        <VolumeIcon className="w-3.5 h-3.5" />
-      </button>
-      {showVolume && (
-        <div className="absolute top-full mt-2 right-0 flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-full px-3 py-1.5 shadow-lg z-50">
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={volume}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="w-20 h-1 accent-primary cursor-pointer"
-          />
-          <span className="text-[10px] font-mono text-muted-foreground w-7 text-right">{volumePct}%</span>
-        </div>
-      )}
+      <div ref={volRef} className="relative">
+        <button
+          onClick={() => setShowVolume(v => !v)}
+          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted/60 hover:bg-muted text-foreground/70 hover:text-foreground transition-all shadow-sm hover:scale-110 active:scale-95"
+          title={`Volym: ${volumePct}%`}
+        >
+          <VolumeIcon className="w-3.5 h-3.5" />
+        </button>
+        {showVolume && (
+          <div className="absolute top-full mt-2 right-0 flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-full px-3 py-1.5 shadow-lg z-50">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={volume}
+              onChange={(e) => setVolume(Number(e.target.value))}
+              className="w-20 h-1 accent-primary cursor-pointer"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground w-7 text-right">{volumePct}%</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
