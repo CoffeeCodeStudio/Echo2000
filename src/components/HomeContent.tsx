@@ -4,6 +4,7 @@
  * Shows HeroLanding for guests, Lunar dashboard for logged-in users.
  */
 import "./home/hero-landing.css";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { HeroLanding } from "./home/HeroLanding";
 import { NewsFeed } from "./social/NewsFeed";
@@ -15,10 +16,11 @@ import { HomeActivityFeed } from "./home/HomeActivityFeed";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { ClearViewToggle } from "./home/ClearViewToggle";
 import { useRadio } from "@/contexts/RadioContext";
-import { Play, Pause, Music, SkipForward } from "lucide-react";
+import { Play, Pause, Music, SkipForward, Volume1, Volume2, VolumeX } from "lucide-react";
 
 function DjQuickPlay() {
-  const { isPlaying, currentStation, stations, selectStation, pause } = useRadio();
+  const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
+  const [showVolume, setShowVolume] = useState(false);
   const djStations = stations.filter(s => s.isDj);
   const isDjPlaying = isPlaying && currentStation?.isDj;
 
@@ -40,8 +42,11 @@ function DjQuickPlay() {
     await selectStation(djStations[nextIndex]);
   };
 
+  const VolumeIcon = volume === 0 ? VolumeX : volume < 0.4 ? Volume1 : Volume2;
+  const volumePct = Math.round(volume * 100);
+
   return (
-    <div className="inline-flex items-center gap-1">
+    <div className="inline-flex items-center gap-1 relative">
       <button
         onClick={handleClick}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/80 hover:bg-primary text-primary-foreground transition-all text-[11px] font-bold shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
@@ -59,6 +64,27 @@ function DjQuickPlay() {
         >
           <SkipForward className="w-3.5 h-3.5" />
         </button>
+      )}
+      <button
+        onClick={() => setShowVolume(v => !v)}
+        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-muted/60 hover:bg-muted text-foreground/70 hover:text-foreground transition-all shadow-sm hover:scale-110 active:scale-95"
+        title={`Volym: ${volumePct}%`}
+      >
+        <VolumeIcon className="w-3.5 h-3.5" />
+      </button>
+      {showVolume && (
+        <div className="absolute top-full mt-2 right-0 flex items-center gap-2 bg-card/95 backdrop-blur-sm border border-border rounded-full px-3 py-1.5 shadow-lg z-50">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            className="w-20 h-1 accent-primary cursor-pointer"
+          />
+          <span className="text-[10px] font-mono text-muted-foreground w-7 text-right">{volumePct}%</span>
+        </div>
       )}
     </div>
   );
