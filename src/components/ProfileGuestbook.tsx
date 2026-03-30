@@ -199,7 +199,7 @@ export function ProfileGuestbook({
                 <div className="shrink-0">
                   <ClickableUsername
                     username={entry.author_name}
-                    avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
+                    avatarUrl={getAvatar(entry.author_id, entry.author_avatar)}
                     showAvatar
                     avatarSize="sm"
                   />
