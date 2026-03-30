@@ -332,7 +332,7 @@ export function Guestbook() {
                 <div className="flex gap-3">
                   {/* Avatar only */}
                   <Avatar 
-                    src={sanitizeAvatarUrl(entry.author_avatar) || undefined}
+                    src={getAvatar(entry.user_id, entry.author_avatar)}
                     name={entry.author_name}
                     size="md"
                     showStatus={false}
