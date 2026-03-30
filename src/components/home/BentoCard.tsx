@@ -1,6 +1,6 @@
 /**
  * @module BentoCard
- * Flat early-2000s section box with dark header bar.
+ * Polished early-2000s section box with gradient header and orange accent.
  */
 import type { ReactNode } from "react";
 
@@ -11,6 +11,7 @@ interface BentoCardProps {
   className?: string;
   contentClassName?: string;
   span?: "default" | "wide" | "tall";
+  headerAction?: ReactNode;
 }
 
 const spanClasses = {
@@ -19,16 +20,17 @@ const spanClasses = {
   tall: "sm:row-span-2",
 };
 
-export function BentoCard({ title, icon, children, className = "", contentClassName, span = "default" }: BentoCardProps) {
+export function BentoCard({ title, icon, children, className = "", contentClassName, span = "default", headerAction }: BentoCardProps) {
   return (
     <div className={`glass-card flex flex-col ${spanClasses[span]} ${className}`}>
-      {/* Flat dark header */}
-      <div className="lunar-box-header flex items-center gap-1.5 px-2 py-1.5">
-        {icon && <span className="text-white/80 [&>svg]:w-3 [&>svg]:h-3">{icon}</span>}
-        <h3 className="font-bold text-[11px] tracking-wide uppercase">{title}</h3>
+      {/* Polished header with gradient + orange bottom accent */}
+      <div className="lunar-box-header flex items-center gap-1.5 px-2.5 py-1.5">
+        {icon && <span className="text-white/90 [&>svg]:w-3.5 [&>svg]:h-3.5">{icon}</span>}
+        <h3 className="font-bold text-[11px] tracking-wide uppercase flex-1">{title}</h3>
+        {headerAction && <span className="ml-auto">{headerAction}</span>}
       </div>
       {/* Content */}
-      <div className={`${contentClassName ?? "px-2 py-2"} flex-1 text-[11px]`}>{children}</div>
+      <div className={`${contentClassName ?? "px-2.5 py-2.5"} flex-1 text-[11px]`}>{children}</div>
     </div>
   );
 }

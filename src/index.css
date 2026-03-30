@@ -161,12 +161,12 @@ body {
   .glass-card::before { display: none; }
   .glass-card:hover { transform: none; }
 
-  /* Section header — flat dark bar with white text */
+  /* Section header — polished dark bar with orange accent line */
   .lunar-box-header {
-    background: #555;
+    background: linear-gradient(180deg, #5a5a5a 0%, #444 100%);
     color: #fff;
     border-radius: 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 2px solid hsl(var(--primary));
     font-family: Verdana, Tahoma, Geneva, sans-serif;
     font-size: 11px;
     font-weight: 700;

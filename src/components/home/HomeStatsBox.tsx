@@ -38,7 +38,7 @@ function useCountUp(target: number, duration = 600) {
     let raf: number;
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const ease = 1 - Math.pow(1 - t, 3);
       setDisplay(Math.round(from + (target - from) * ease));
       if (t < 1) raf = requestAnimationFrame(tick);
     };
@@ -51,9 +51,14 @@ function useCountUp(target: number, duration = 600) {
 function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   const displayed = useCountUp(value);
   return (
-    <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
-      <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">{icon} {label}</span>
-      <span className="font-bold text-foreground shrink-0">{displayed.toLocaleString("sv-SE")}</span>
+    <div className="flex items-center justify-between gap-2 py-1 border-b border-border/30 last:border-0">
+      <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0">
+        {icon}
+        <span className="uppercase tracking-wide text-[10px]">{label}</span>
+      </span>
+      <span className="font-bold text-[12px] text-foreground tabular-nums shrink-0">
+        {displayed.toLocaleString("sv-SE")}
+      </span>
     </div>
   );
 }
@@ -81,7 +86,6 @@ export function HomeStatsBox() {
 
   const fetchStats = useCallback(async () => {
     if (user) {
-      // Single RPC call for all counts
       const { data, error } = await supabase.rpc('get_community_stats');
       if (!error && data) {
         const d = data as { members: number; messages: number; guestbook: number; klotter: number };
@@ -123,15 +127,13 @@ export function HomeStatsBox() {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchStats]);
 
-  const totalOnline = (onlineUsers?.size ?? 0) + onlineBotCount;
-
   return (
     <BentoCard title="Snabbstatistik" icon={<BarChart3 className="w-4 h-4" />}>
-      <div className="space-y-1.5">
-        <StatRow icon={<Users className="w-4 h-4 text-primary" />} label="Medlemmar" value={stats.members} />
-        <StatRow icon={<MessageCircle className="w-4 h-4 text-accent" />} label="Meddelanden" value={stats.messages} />
-        <StatRow icon={<BookOpen className="w-4 h-4 text-accent" />} label="Gästboksinlägg" value={stats.guestbook} />
-        <StatRow icon={<Palette className="w-4 h-4 text-primary" />} label="Klotterteckningar" value={stats.klotter} />
+      <div>
+        <StatRow icon={<Users className="w-3.5 h-3.5 text-primary" />} label="Medlemmar" value={stats.members} />
+        <StatRow icon={<MessageCircle className="w-3.5 h-3.5 text-primary" />} label="Meddelanden" value={stats.messages} />
+        <StatRow icon={<BookOpen className="w-3.5 h-3.5 text-primary" />} label="Gästboksinlägg" value={stats.guestbook} />
+        <StatRow icon={<Palette className="w-3.5 h-3.5 text-primary" />} label="Klotter" value={stats.klotter} />
       </div>
     </BentoCard>
   );

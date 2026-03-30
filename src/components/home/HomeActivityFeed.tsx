@@ -1,7 +1,6 @@
 /**
  * @module HomeActivityFeed
- * Live feed of recent community activity — guestbook entries, new members,
- * klotter posts — to make the home page feel alive even when few are online.
+ * Live feed of recent community activity — polished retro style.
  */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,8 +20,8 @@ interface ActivityItem {
 }
 
 const ICON_MAP = {
-  guestbook: <BookOpen className="w-3.5 h-3.5 text-accent shrink-0" />,
-  member: <UserPlus className="w-3.5 h-3.5 text-online shrink-0" />,
+  guestbook: <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />,
+  member: <UserPlus className="w-3.5 h-3.5 text-primary shrink-0" />,
   klotter: <Palette className="w-3.5 h-3.5 text-primary shrink-0" />,
   news_comment: <MessageCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />,
 };
@@ -43,7 +42,6 @@ export function HomeActivityFeed() {
     const fetchActivity = async () => {
       const results: ActivityItem[] = [];
 
-      // Fetch latest guestbook entries
       const { data: guestbook } = await supabase
         .from("profile_guestbook")
         .select("id, author_name, created_at, profile_owner_id")
@@ -51,7 +49,6 @@ export function HomeActivityFeed() {
         .limit(5);
 
       if (guestbook) {
-        // Get profile owner usernames
         const ownerIds = [...new Set(guestbook.map((g) => g.profile_owner_id))];
         const { data: owners } = await supabase
           .from("profiles")
@@ -72,7 +69,6 @@ export function HomeActivityFeed() {
         }
       }
 
-      // Fetch newest members
       const { data: newMembers } = await supabase
         .from("profiles")
         .select("user_id, username, created_at")
@@ -93,7 +89,6 @@ export function HomeActivityFeed() {
         }
       }
 
-      // Fetch latest klotter
       const { data: klotter } = await supabase
         .from("klotter")
         .select("id, author_name, created_at, comment")
@@ -112,7 +107,6 @@ export function HomeActivityFeed() {
         }
       }
 
-      // Fetch latest news comments
       const { data: comments } = await supabase
         .from("news_comments")
         .select("id, author_name, created_at, content")
@@ -131,9 +125,8 @@ export function HomeActivityFeed() {
         }
       }
 
-      // Sort by timestamp descending, take top 8
       results.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      setItems(results.slice(0, 6));
+      setItems(results.slice(0, 8));
     };
 
     fetchActivity();
@@ -142,22 +135,22 @@ export function HomeActivityFeed() {
   return (
     <BentoCard title="Senaste Aktivitet" icon={<Activity className="w-4 h-4" />}>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">Laddar aktivitet...</p>
+        <p className="text-[11px] text-muted-foreground text-center py-4">Laddar aktivitet...</p>
       ) : (
-        <div className="space-y-1.5">
+        <div className="divide-y divide-border/30">
           {items.map((item) => (
             <button
               key={item.id}
               onClick={() => item.link && navigate(item.link)}
-              className={`w-full flex items-start gap-2 text-left px-2 py-1.5 rounded transition-colors text-xs ${
-                item.link ? "hover:bg-white/10 cursor-pointer" : "cursor-default"
+              className={`w-full flex items-start gap-2 text-left px-1.5 py-1.5 transition-colors text-[11px] ${
+                item.link ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"
               }`}
             >
               {ICON_MAP[item.type]}
               <div className="min-w-0 flex-1">
-                <span className="font-semibold text-foreground">{item.username}</span>{" "}
+                <span className="font-bold text-foreground">{item.username}</span>{" "}
                 <span className="text-muted-foreground">{item.text}</span>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">{timeAgo(item.timestamp)}</p>
+                <p className="text-[9px] text-muted-foreground/60 mt-0.5">{timeAgo(item.timestamp)}</p>
               </div>
             </button>
           ))}
