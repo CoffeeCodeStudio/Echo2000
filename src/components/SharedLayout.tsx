@@ -69,7 +69,7 @@ export function SharedLayout() {
       </div>
 
       {/* Mobile bottom navigation — only for logged-in users */}
-      {user && !hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} isVisible={scrollNavVisible} />}
+      {user && !hideNavbar && <MobileNav activeTab={activeTab} onTabChange={handleTabChange} isVisible={true} />}
     </div>
   );
 }
