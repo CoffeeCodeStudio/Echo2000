@@ -46,6 +46,7 @@ export function ProfileGuestbook({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { getAvatar } = useLiveAvatars(entries.map(e => e.author_id));
 
   const handleSubmit = async () => {
     if (!newMessage.trim()) return;
