@@ -47,7 +47,7 @@ export function ProfileBasicInfo({
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-2 sm:mb-4">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-foreground">
           {isEditing ? (

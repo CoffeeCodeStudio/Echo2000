@@ -23,7 +23,7 @@ export function ProfileLookingFor({ displayData, editData, setEditData, isEditin
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-2 sm:mt-4">
       <span className="text-sm text-muted-foreground">Letar efter:</span>
       <div className="flex flex-wrap gap-1 mt-1">
         {isEditing ? (

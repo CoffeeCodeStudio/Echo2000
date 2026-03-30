@@ -91,7 +91,7 @@ export function ProfileInfoSection({
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-6">
           <ProfileAvatar
             displayData={displayData}
             editData={editData}
