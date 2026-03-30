@@ -9,6 +9,7 @@ import { Textarea } from "../ui/textarea";
 import { Trash2, MessageSquare, Send } from "lucide-react";
 import { formatTimeAgo } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 
 interface Comment {
   id: string;
@@ -29,6 +30,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
+  const [liveAvatars, setLiveAvatars] = useState<Record<string, string | null>>({});
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +64,24 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
       .select("*")
       .eq("article_id", articleId)
       .order("created_at", { ascending: true });
-    if (data) setComments(data as Comment[]);
+    if (data) {
+      setComments(data as Comment[]);
+      // Fetch live avatars for all unique user_ids
+      const userIds = [...new Set(data.map((c: Comment) => c.user_id))];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, avatar_url")
+          .in("user_id", userIds);
+        if (profiles) {
+          const map: Record<string, string | null> = {};
+          for (const p of profiles) {
+            map[p.user_id] = p.avatar_url;
+          }
+          setLiveAvatars(map);
+        }
+      }
+    }
     setLoading(false);
   };
 
@@ -92,6 +111,13 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
     await supabase.from("news_comments").delete().eq("id", commentId);
   };
 
+  /** Get the freshest avatar: live from profiles, falling back to stored */
+  const getAvatar = (c: Comment): string | undefined => {
+    const live = liveAvatars[c.user_id];
+    const url = live !== undefined ? live : c.author_avatar;
+    return sanitizeAvatarUrl(url) || undefined;
+  };
+
   return (
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-3">
@@ -108,8 +134,8 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
         ) : (
           comments.map((c) => (
             <div key={c.id} className="flex gap-2 group">
-              <Avatar name={c.author_name} src={c.author_avatar || undefined} size="sm" className="mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0 bg-muted/30 rounded-lg px-3 py-2">
+              <Avatar name={c.author_name} src={getAvatar(c)} size="sm" className="mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0 bg-muted/30 px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <ClickableUsername username={c.author_name} className="text-xs font-bold text-foreground" />
@@ -136,7 +162,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
       {/* New comment form */}
       {user ? (
         <div className="flex gap-2">
-          <Avatar name={profile?.username || ""} src={profile?.avatar_url || undefined} size="sm" className="mt-1 shrink-0" />
+          <Avatar name={profile?.username || ""} src={sanitizeAvatarUrl(profile?.avatar_url) || undefined} size="sm" className="mt-1 shrink-0" />
           <div className="flex-1">
             <Textarea
               value={newComment}
