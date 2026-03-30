@@ -49,55 +49,58 @@ export function ProfileInfoSection({
   );
 
   return (
-    <div id="profile-card-capture" className="bg-card rounded-lg border border-border overflow-hidden">
-      <div className="p-2 sm:p-4">
-        {/* Username + Edit button row */}
-        <div className="flex items-start justify-between mb-2 sm:mb-4">
-          <div className="flex items-center gap-2">
-            <h1 className="font-display font-bold text-2xl sm:text-3xl uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {displayData.username}
-            </h1>
-            {isBot && <AiBadge />}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {!showDemoMode && (
-              <ProfileShareButton targetId="profile-card-capture" username={displayData.username} />
-            )}
-            {isOwnProfile && !showDemoMode && (
-              <>
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="default" onClick={onSave} disabled={saving}>
-                      {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-                      Spara
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={onCancel}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={onEdit}>
-                    <Edit2 className="w-4 h-4 mr-1" />
-                    Redigera
+    <div id="profile-card-capture" className="bg-white border border-[#999]">
+      {/* Username header bar */}
+      <div className="bg-[#555] text-white px-2 py-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h1 className="font-bold text-[13px] uppercase">
+            {displayData.username}
+          </h1>
+          {isBot && <AiBadge />}
+        </div>
+        <div className="flex items-center gap-1">
+          {!showDemoMode && (
+            <ProfileShareButton targetId="profile-card-capture" username={displayData.username} />
+          )}
+          {isOwnProfile && !showDemoMode && (
+            <>
+              {isEditing ? (
+                <div className="flex gap-1">
+                  <Button size="sm" variant="default" onClick={onSave} disabled={saving} className="text-[10px] h-6 px-2 rounded-none">
+                    {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+                    Spara
                   </Button>
-                )}
-              </>
-            )}
-          </div>
+                  <Button size="sm" variant="outline" onClick={onCancel} className="text-[10px] h-6 px-2 rounded-none bg-[#ddd] text-[#333] border-[#999]">
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ) : (
+                <Button size="sm" variant="outline" onClick={onEdit} className="text-[10px] h-6 px-2 rounded-none bg-[#ddd] text-[#333] border-[#999]">
+                  <Edit2 className="w-3 h-3 mr-1" />
+                  Redigera
+                </Button>
+              )}
+            </>
+          )}
           {showDemoMode && (
-            <Button size="sm" variant="default" onClick={() => navigate("/auth")} className="shrink-0">
+            <Button size="sm" onClick={() => navigate("/auth")} className="text-[10px] h-6 px-2 rounded-none bg-[#ff6600] text-white border-[#cc5500]">
               Logga in
             </Button>
           )}
         </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-6">
-          <ProfileAvatar
-            displayData={displayData}
-            editData={editData}
-            setEditData={setEditData}
-            isEditing={isEditing}
-          />
+      {/* Profile content */}
+      <div className="p-2">
+        <div className="flex gap-3">
+          <div className="shrink-0">
+            <ProfileAvatar
+              displayData={displayData}
+              editData={editData}
+              setEditData={setEditData}
+              isEditing={isEditing}
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <ProfileBasicInfo
               displayData={displayData}
@@ -125,34 +128,28 @@ export function ProfileInfoSection({
       </div>
 
       {/* Status Message */}
-      <div className="border-t border-border px-4 py-3 text-center">
+      <div className="border-t border-[#ccc] px-2 py-1.5 text-center bg-[#f5f5f5]">
         {isEditing ? (
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase mb-1">Statusmeddelande</h3>
+            <h3 className="text-[10px] font-bold text-[#666] uppercase mb-1">Statusmeddelande</h3>
             <Input
               value={editData.status_message}
               onChange={(e) => setEditData({ ...editData, status_message: e.target.value })}
-              className="text-sm max-w-md mx-auto" placeholder="Vad gör du just nu?"
+              className="text-[11px] max-w-md mx-auto h-6 rounded-none border-[#999]" placeholder="Vad gör du just nu?"
             />
           </div>
         ) : (
           displayData.status_message && (
-            <p className="text-sm text-foreground/80 italic">
-              "{displayData.status_message}"
-            </p>
+            <p className="text-[11px] text-[#555] italic">"{displayData.status_message}"</p>
           )
         )}
       </div>
 
-      {/* Action Buttons Bar */}
+      {/* Action Buttons */}
       {!isOwnProfile && userId && (
-        <div className="bg-gradient-to-r from-muted/50 via-muted to-muted/50 border-t border-border px-4 py-2 flex items-center justify-between">
+        <div className="bg-[#eee] border-t border-[#ccc] px-2 py-1.5 flex items-center justify-between">
           <FriendActionButtons targetUserId={userId} targetUsername={displayData.username} />
-          <ReportButton
-            contentType="profil"
-            contentId={userId}
-            contentAuthor={displayData.username}
-          />
+          <ReportButton contentType="profil" contentId={userId} contentAuthor={displayData.username} />
         </div>
       )}
 
