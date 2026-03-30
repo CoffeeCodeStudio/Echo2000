@@ -54,7 +54,7 @@ export function useRadio() {
 
 export function RadioProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(0.7);
+  const [volume, setVolumeState] = useState(0.05);
   const [isMuted, setIsMuted] = useState(false);
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null);
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
