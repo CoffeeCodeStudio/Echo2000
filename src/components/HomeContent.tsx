@@ -15,33 +15,52 @@ import { HomeActivityFeed } from "./home/HomeActivityFeed";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { ClearViewToggle } from "./home/ClearViewToggle";
 import { useRadio } from "@/contexts/RadioContext";
-import { Play, Pause, Music } from "lucide-react";
+import { Play, Pause, Music, SkipForward } from "lucide-react";
 
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause } = useRadio();
-  const djStation = stations.find(s => s.isDj);
+  const djStations = stations.filter(s => s.isDj);
   const isDjPlaying = isPlaying && currentStation?.isDj;
 
-  if (!djStation) return null;
+  if (djStations.length === 0) return null;
+
+  const currentDjIndex = djStations.findIndex(s => s.id === currentStation?.id);
+  const activeDjStation = currentDjIndex >= 0 ? djStations[currentDjIndex] : djStations[0];
 
   const handleClick = async () => {
     if (isDjPlaying) {
       pause();
     } else {
-      await selectStation(djStation);
+      await selectStation(activeDjStation);
     }
   };
 
+  const handleNext = async () => {
+    const nextIndex = (currentDjIndex + 1) % djStations.length;
+    await selectStation(djStations[nextIndex]);
+  };
+
   return (
-    <button
-      onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/80 hover:bg-primary text-primary-foreground transition-all text-[11px] font-bold shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
-      title={isDjPlaying ? "Pausa Community DJ" : "Spela Community DJ"}
-    >
-      <Music className="w-3.5 h-3.5" />
-      {isDjPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-      <span className="max-w-[80px] truncate">{djStation.name}</span>
-    </button>
+    <div className="inline-flex items-center gap-1">
+      <button
+        onClick={handleClick}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/80 hover:bg-primary text-primary-foreground transition-all text-[11px] font-bold shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
+        title={isDjPlaying ? "Pausa Community DJ" : "Spela Community DJ"}
+      >
+        <Music className="w-3.5 h-3.5" />
+        {isDjPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+        <span className="max-w-[80px] truncate">{activeDjStation.name}</span>
+      </button>
+      {djStations.length > 1 && (
+        <button
+          onClick={handleNext}
+          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/60 hover:bg-primary text-primary-foreground transition-all shadow-sm hover:scale-110 active:scale-95"
+          title="Nästa DJ-låt"
+        >
+          <SkipForward className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
