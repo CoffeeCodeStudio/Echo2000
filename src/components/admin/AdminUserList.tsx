@@ -66,7 +66,8 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
       toast({ title: "Användare raderad", description: `${username} och all data har raderats` });
       onRefresh();
     } catch (error: any) {
-      toast({ title: "Kunde inte radera", description: error.message || "Något gick fel", variant: "destructive" });
+      console.error("Delete user error:", error);
+      toast({ title: "Kunde inte radera", description: "Något gick fel. Försök igen.", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
