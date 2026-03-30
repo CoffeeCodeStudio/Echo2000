@@ -74,7 +74,7 @@ export function HomeRecentOnline() {
       ) : (
         <TooltipProvider delayDuration={200}>
           <div className="flex gap-1">
-            {sortedMembers.map((m) => {
+            {sortedMembers.slice(0, 5).map((m) => {
               const initials = m.username.slice(0, 2).toUpperCase();
               const infoLine = [m.age ? `${m.age} år` : null, m.gender].filter(Boolean).join(", ");
               return (
