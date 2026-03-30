@@ -91,7 +91,8 @@ export function AdminUserList({ users, userRoles, onRefresh }: AdminUserListProp
       setEditDialog(null);
       setEditValue("");
     } catch (err: any) {
-      toast({ title: "Fel", description: err.message, variant: "destructive" });
+      console.error("Edit user error:", err);
+      toast({ title: "Fel", description: "Något gick fel. Försök igen.", variant: "destructive" });
     } finally {
       setActionLoading(null);
     }

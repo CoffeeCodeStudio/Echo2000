@@ -44,7 +44,8 @@ export function AdminDailyNews() {
       is_active: true,
     });
     if (error) {
-      toast({ title: "Fel", description: error.message, variant: "destructive" });
+      console.error("Daily news error:", error);
+      toast({ title: "Fel", description: "Kunde inte spara nyheten.", variant: "destructive" });
     } else {
       toast({ title: "Sparat!", description: "Bottarna kommer börja prata om detta inom kort." });
       setNewsText("");

@@ -18,7 +18,8 @@ export function SettingsEmailChange() {
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     setLoading(false);
     if (error) {
-      toast({ title: "Fel", description: error.message, variant: "destructive" });
+      console.error("Email change error:", error);
+      toast({ title: "Fel", description: "Kunde inte ändra e-post. Försök igen.", variant: "destructive" });
     } else {
       toast({ title: "Klart!", description: "En bekräftelselänk har skickats till din nya e-post." });
       setNewEmail("");
