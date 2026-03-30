@@ -163,6 +163,9 @@ export default function Index() {
         return <HomeContent />;
 
       case "chatt":
+        if (userRole === 'admin' || userRole === 'moderator') {
+          return <ChatWindow />;
+        }
         return (
           <div className="flex-1 relative overflow-hidden flex items-center justify-center">
             <div className="nostalgia-card p-8 max-w-md text-center border-primary/30">
