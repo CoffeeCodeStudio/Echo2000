@@ -65,7 +65,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
         .select('id, visitor_id, visited_at')
         .eq('profile_owner_id', effectiveOwnerId)
         .order('visited_at', { ascending: false })
-        .limit(5);
+        .limit(20);
 
       if (visitError) {
         console.error('Error fetching visits:', visitError);
