@@ -21,6 +21,18 @@ import { Play, Pause, Music, SkipForward, Volume1, Volume2, VolumeX } from "luci
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
   const [showVolume, setShowVolume] = useState(false);
+  const volRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showVolume) return;
+    const handler = (e: MouseEvent) => {
+      if (volRef.current && !volRef.current.contains(e.target as Node)) {
+        setShowVolume(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showVolume]);
   const djStations = stations.filter(s => s.isDj);
   const isDjPlaying = isPlaying && currentStation?.isDj;
 
