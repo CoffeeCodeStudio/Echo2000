@@ -26,7 +26,8 @@ export function SettingsPasswordChange() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setLoading(false);
     if (error) {
-      toast({ title: "Fel", description: error.message, variant: "destructive" });
+      console.error("Password change error:", error);
+      toast({ title: "Fel", description: "Kunde inte byta lösenord. Försök igen.", variant: "destructive" });
     } else {
       toast({ title: "Klart!", description: "Lösenordet har uppdaterats." });
       setNewPassword("");

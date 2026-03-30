@@ -127,7 +127,8 @@ export function useScribbleLobbies() {
       .single();
 
     if (error) {
-      toast({ title: 'Kunde inte skapa lobby', description: error.message, variant: 'destructive' });
+      console.error('Create lobby error:', error);
+      toast({ title: 'Kunde inte skapa lobby', description: 'Något gick fel. Försök igen.', variant: 'destructive' });
       return null;
     }
 
@@ -215,7 +216,8 @@ export function useScribbleGame(lobbyId: string | null) {
       avatar_url: profile.avatar_url,
     });
     if (error) {
-      toast({ title: 'Kunde inte gå med', description: error.message, variant: 'destructive' });
+      console.error('Join lobby error:', error);
+      toast({ title: 'Kunde inte gå med', description: 'Något gick fel. Försök igen.', variant: 'destructive' });
     }
   };
 

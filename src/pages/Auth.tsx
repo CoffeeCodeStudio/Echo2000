@@ -100,8 +100,9 @@ export default function Auth() {
       if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
-          if (!error.message.includes("Invalid login credentials")) {
-            toast({ title: "Fel", description: error.message, variant: "destructive" });
+          console.error("Login error:", error);
+          if (!error.message?.includes("Invalid login credentials")) {
+            toast({ title: "Fel", description: "Inloggningen misslyckades. Försök igen.", variant: "destructive" });
           } else {
             toast({ title: "Inloggning misslyckades", description: "Fel e-post eller lösenord", variant: "destructive" });
           }
@@ -147,7 +148,8 @@ export default function Auth() {
 
         const { data, error } = await signUp(email, password, username, joinReason.trim());
         if (error) {
-          toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
+          console.error("Signup error:", error);
+          toast({ title: "Registrering misslyckades", description: "Kunde inte skapa kontot. Försök igen.", variant: "destructive" });
         } else if (data.user) {
           // Assign user role, then sign out so admin approval gate works.
           // We stay in "register" mode so the useEffect redirect doesn't fire
@@ -433,7 +435,8 @@ export default function Auth() {
                   });
                   setForgotLoading(false);
                   if (error) {
-                    toast({ title: "Fel", description: error.message, variant: "destructive" });
+                    console.error("Reset password error:", error);
+                    toast({ title: "Fel", description: "Kunde inte skicka återställningslänk. Försök igen.", variant: "destructive" });
                   } else {
                     toast({ title: "Skickat!", description: "Kolla din e-post för en återställningslänk." });
                     setMode("login");

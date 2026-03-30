@@ -73,7 +73,7 @@ export function AdminBotManager() {
       cron_interval: bot.cron_interval,
     } as any).eq("id", bot.id);
     
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
+    if (error) { console.error("Update bot error:", error); toast({ title: "Fel", description: "Kunde inte spara botinställningar.", variant: "destructive" }); }
     else toast({ title: "Sparat", description: `${bot.name} uppdaterad.` });
     setSaving(null);
   };
@@ -88,7 +88,7 @@ export function AdminBotManager() {
       system_prompt: newBot.system_prompt,
       user_id: newBot.user_id,
     });
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
+    if (error) { console.error("Create bot error:", error); toast({ title: "Fel", description: "Kunde inte skapa boten.", variant: "destructive" }); }
     else {
       toast({ title: "Bot skapad!" });
       setShowCreate(false);

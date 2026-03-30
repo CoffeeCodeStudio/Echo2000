@@ -46,7 +46,7 @@ export function AdminNewsManager() {
       icon: newArticle.icon,
       image_url: newArticle.image_url || null,
     });
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
+    if (error) { console.error("Create news error:", error); toast({ title: "Fel", description: "Kunde inte skapa nyheten.", variant: "destructive" }); }
     else {
       toast({ title: "Nyhet skapad!" });
       setShowCreate(false);
@@ -64,7 +64,7 @@ export function AdminNewsManager() {
       image_url: article.image_url,
       is_published: article.is_published,
     }).eq("id", article.id);
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
+    if (error) { console.error("Update news error:", error); toast({ title: "Fel", description: "Kunde inte uppdatera nyheten.", variant: "destructive" }); }
     else toast({ title: "Uppdaterad!" });
     setSaving(null);
   };
