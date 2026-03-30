@@ -264,7 +264,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
       {/* Nav tabs — desktop only */}
       {user && (
-        <div className="hidden md:flex items-stretch bg-[#ddd] border-b border-[#999]">
+        <div className="hidden md:flex items-stretch bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] border-b border-[#aaa]">
           {/* Home */}
           <div
             onClick={() => onTabChange?.("hem")}
