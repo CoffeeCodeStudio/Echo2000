@@ -127,7 +127,8 @@ export function useScribbleLobbies() {
       .single();
 
     if (error) {
-      toast({ title: 'Kunde inte skapa lobby', description: error.message, variant: 'destructive' });
+      console.error('Create lobby error:', error);
+      toast({ title: 'Kunde inte skapa lobby', description: 'Något gick fel. Försök igen.', variant: 'destructive' });
       return null;
     }
 
