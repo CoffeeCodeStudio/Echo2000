@@ -18,7 +18,7 @@ export function HomeSocialBox() {
   return (
     <BentoCard title="Sociala Medier" icon={<Globe className="w-4 h-4" />}>
       <div className="flex flex-wrap gap-2">
-        <SocialLink label="Discord" href="https://discord.gg/Wp2uF3vF" />
+        <SocialLink label="Discord" href="https://discord.gg/UTfa8EXa6D" />
         <SocialLink label="Instagram" />
         <SocialLink label="TikTok" />
       </div>
