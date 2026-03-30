@@ -435,7 +435,8 @@ export default function Auth() {
                   });
                   setForgotLoading(false);
                   if (error) {
-                    toast({ title: "Fel", description: error.message, variant: "destructive" });
+                    console.error("Reset password error:", error);
+                    toast({ title: "Fel", description: "Kunde inte skicka återställningslänk. Försök igen.", variant: "destructive" });
                   } else {
                     toast({ title: "Skickat!", description: "Kolla din e-post för en återställningslänk." });
                     setMode("login");
