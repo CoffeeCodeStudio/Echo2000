@@ -13,6 +13,7 @@ import { replaceEmoteCodes } from './social/PixelEmotes';
 import { ReportButton } from './social/ReportButton';
 import { sanitizeAvatarUrl } from '@/lib/avatar-url';
 import { useToast } from '@/hooks/use-toast';
+import { useLiveAvatars } from '@/hooks/useLiveAvatars';
 import {
   AlertDialog,
   AlertDialogAction,
