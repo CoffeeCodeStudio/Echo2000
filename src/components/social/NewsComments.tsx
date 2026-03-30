@@ -10,6 +10,7 @@ import { Trash2, MessageSquare, Send } from "lucide-react";
 import { formatTimeAgo } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeAvatarUrl } from "@/lib/avatar-url";
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 interface Comment {
   id: string;
@@ -30,11 +31,12 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [liveAvatars, setLiveAvatars] = useState<Record<string, string | null>>({});
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const { getAvatar } = useLiveAvatars(comments.map(c => c.user_id));
 
   useEffect(() => {
     fetchComments();
@@ -64,24 +66,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
       .select("*")
       .eq("article_id", articleId)
       .order("created_at", { ascending: true });
-    if (data) {
-      setComments(data as Comment[]);
-      // Fetch live avatars for all unique user_ids
-      const userIds = [...new Set(data.map((c: Comment) => c.user_id))];
-      if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, avatar_url")
-          .in("user_id", userIds);
-        if (profiles) {
-          const map: Record<string, string | null> = {};
-          for (const p of profiles) {
-            map[p.user_id] = p.avatar_url;
-          }
-          setLiveAvatars(map);
-        }
-      }
-    }
+    if (data) setComments(data as Comment[]);
     setLoading(false);
   };
 
@@ -111,13 +96,6 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
     await supabase.from("news_comments").delete().eq("id", commentId);
   };
 
-  /** Get the freshest avatar: live from profiles, falling back to stored */
-  const getAvatar = (c: Comment): string | undefined => {
-    const live = liveAvatars[c.user_id];
-    const url = live !== undefined ? live : c.author_avatar;
-    return sanitizeAvatarUrl(url) || undefined;
-  };
-
   return (
     <div className="mt-6">
       <div className="flex items-center gap-2 mb-3">
@@ -134,7 +112,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
         ) : (
           comments.map((c) => (
             <div key={c.id} className="flex gap-2 group">
-              <Avatar name={c.author_name} src={getAvatar(c)} size="sm" className="mt-0.5 shrink-0" />
+              <Avatar name={c.author_name} src={getAvatar(c.user_id, c.author_avatar)} size="sm" className="mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0 bg-muted/30 px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
