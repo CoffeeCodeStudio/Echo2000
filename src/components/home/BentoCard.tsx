@@ -1,6 +1,6 @@
 /**
  * @module BentoCard
- * Lunar-themed box card with orange gradient header.
+ * Flat early-2000s section box with dark header bar.
  */
 import type { ReactNode } from "react";
 
@@ -22,13 +22,13 @@ const spanClasses = {
 export function BentoCard({ title, icon, children, className = "", contentClassName, span = "default" }: BentoCardProps) {
   return (
     <div className={`glass-card flex flex-col ${spanClasses[span]} ${className}`}>
-      {/* Lunar orange gradient header */}
-      <div className="lunar-box-header flex items-center gap-2 px-4 py-2">
-        {icon && <span className="text-white/90">{icon}</span>}
-        <h3 className="font-display font-bold text-sm tracking-wide">{title}</h3>
+      {/* Flat dark header */}
+      <div className="lunar-box-header flex items-center gap-1.5 px-2 py-1.5">
+        {icon && <span className="text-white/80 [&>svg]:w-3 [&>svg]:h-3">{icon}</span>}
+        <h3 className="font-bold text-[11px] tracking-wide uppercase">{title}</h3>
       </div>
       {/* Content */}
-      <div className={`${contentClassName ?? "px-4 py-3"} flex-1`}>{children}</div>
+      <div className={`${contentClassName ?? "px-2 py-2"} flex-1 text-[11px]`}>{children}</div>
     </div>
   );
 }

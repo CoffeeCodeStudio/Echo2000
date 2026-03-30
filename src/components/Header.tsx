@@ -1,8 +1,7 @@
-import { LogIn, LogOut, Shield, Settings, User, ChevronDown } from "lucide-react";
-import echo2000Logo from "@/assets/echo2000-logo.png";
+import { LogIn, LogOut, Shield, Settings, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -14,20 +13,7 @@ import { HeaderRadio } from "./HeaderRadio";
 import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 import { FriendRequestPanel } from "./friends/FriendRequestPanel";
 
-type Tab =
-"hem" |
-"chatt" |
-"gastbok" |
-"mejl" |
-"vanner" |
-"profil" |
-"klotterplanket" |
-"spel" |
-"traffar" |
-"lajv" |
-"faq" |
-"besokare" |
-"folk";
+type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
 interface HeaderProps {
   activeTab?: Tab;
@@ -40,6 +26,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const [isPrivileged, setIsPrivileged] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [friendRequestOpen, setFriendRequestOpen] = useState(false);
+  const [kulOpen, setKulOpen] = useState(false);
 
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -48,15 +35,14 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
   const { onlineUsers } = usePresence();
   const [onlineBotCount, setOnlineBotCount] = useState(0);
 
-  // Count bots with recent last_seen as "online"
   useEffect(() => {
     const fetchBotCount = async () => {
       const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
-      const { count } = await supabase.
-      from("profiles").
-      select("*", { count: "exact", head: true }).
-      eq("is_bot", true).
-      gte("last_seen", eightMinAgo);
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_bot", true)
+        .gte("last_seen", eightMinAgo);
       setOnlineBotCount(count ?? 0);
     };
     fetchBotCount();
@@ -66,32 +52,20 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
 
   const onlineCount = onlineUsers.size + onlineBotCount;
 
-  // Determine which nav items have notifications
   const getHasNotice = (id: Tab): boolean => {
     switch (id) {
-      case "mejl":
-        return counts.unreadMail > 0;
-      case "vanner":
-        return counts.pendingFriends > 0;
-      case "gastbok":
-        return counts.guestbookNew > 0;
-      case "lajv":
-        return counts.lajvActive > 0;
-      case "besokare":
-        return counts.newVisitors > 0;
-      default:
-        return false;
+      case "mejl": return counts.unreadMail > 0;
+      case "vanner": return counts.pendingFriends > 0;
+      case "gastbok": return counts.guestbookNew > 0;
+      case "lajv": return counts.lajvActive > 0;
+      case "besokare": return counts.newVisitors > 0;
+      default: return false;
     }
   };
 
   useEffect(() => {
     const checkRoles = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        setIsPrivileged(false);
-        return;
-      }
-
+      if (!user) { setIsAdmin(false); setIsPrivileged(false); return; }
       try {
         const [{ data: adminData }, { data: modData }] = await Promise.all([
           supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
@@ -104,41 +78,20 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         setIsPrivileged(false);
       }
     };
-
     checkRoles();
   }, [user]);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
     if (error) {
-      toast({
-        title: "Fel vid utloggning",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast({ title: "Fel vid utloggning", description: error.message, variant: "destructive" });
     } else {
       onTabChange?.("hem");
       navigate("/", { replace: true, state: { tab: "hem" } });
-      toast({
-        title: "Du är utloggad",
-        description: "Ses snart igen!"
-      });
+      toast({ title: "Du är utloggad", description: "Ses snart igen!" });
     }
   };
 
-  // Home button (separate zone)
-  const homeItem = { id: "hem" as Tab, label: "HEM", emoji: "🏠", animationClass: "scale-in" };
-
-  // Private zone items (middle group)
-  const privateZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
-  { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
-  ...(isPrivileged ? [{ id: "mejl" as Tab, label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" }] : []),
-  { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
-  { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
-  { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
-  { id: "besokare" as Tab, label: "SPANARE", emoji: "👀", animationClass: "scale-in" }];
-
-  // Fetch pending approval count for admin badge
   useEffect(() => {
     if (!isAdmin) { setPendingCount(0); return; }
     const fetchPending = async () => {
@@ -154,54 +107,33 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
     return () => clearInterval(interval);
   }, [isAdmin]);
 
+  const privateZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+    { id: "gastbok", label: "GÄST", emoji: "👣", animationClass: "footsteps" },
+    ...(isPrivileged ? [{ id: "mejl" as Tab, label: "MEJL", emoji: "✉️", animationClass: "msn-bounce" }] : []),
+    { id: "chatt", label: "EMN", emoji: "🖊️", animationClass: "writing-pen" },
+    { id: "vanner", label: "VÄNNER", emoji: "❤️", animationClass: "heart-pulse" },
+    { id: "profil", label: "PROFIL", emoji: "👤", animationClass: "scale-in" },
+    { id: "besokare", label: "SPANARE", emoji: "👀", animationClass: "scale-in" },
+  ];
 
-  // Community zone items (right group)
-  const communityZoneItems: {id: Tab;label: string;emoji: string;animationClass: string;}[] = [
-  { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
-  { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" }];
+  const communityZoneItems: { id: Tab; label: string; emoji: string; animationClass: string }[] = [
+    { id: "folk", label: "FOLK", emoji: "🌐", animationClass: "scale-in" },
+    { id: "faq", label: "FAQ", emoji: "❓", animationClass: "msn-bounce" },
+  ];
 
-  const kulItems: {id: Tab;label: string;emoji: string;}[] = [
+  const kulItems: { id: Tab; label: string; emoji: string }[] = [
     { id: "spel", label: "SPEL", emoji: "🎮" },
     { id: "klotterplanket", label: "KLOTTER", emoji: "🎨" },
     { id: "traffar", label: "TRÄFFAR", emoji: "📅" },
   ];
 
-  const [kulOpen, setKulOpen] = useState(false);
-
-
-  // Render nav item helper
-  const renderNavItem = (item: {id: Tab;label: string;emoji: string;animationClass: string;}, isHome = false) => {
-    const hasNotice = getHasNotice(item.id);
-    return (
-      <div
-        key={item.id}
-        onClick={() => onTabChange?.(item.id)}
-        className={cn(
-          isHome ? "nav-item-home" : "nav-item-grouped",
-          "shrink-0",
-          activeTab === item.id && "active",
-          !isHome && (hasNotice ? "has-notice" : "inactive")
-        )}
-        role="button"
-        tabIndex={0}
-        aria-label={item.label}>
-
-        <span className={cn(isHome ? "icon-home" : "icon-grouped", hasNotice && item.animationClass)}>
-          {item.emoji}
-        </span>
-        <span className={isHome ? "label-home" : "label-grouped"}>{item.label}</span>
-      </div>);
-
-  };
-
-  // Render compact header nav item
-  const renderHeaderNavItem = (item: {id: Tab;label: string;emoji: string;animationClass: string;}) => {
+  const renderHeaderNavItem = (item: { id: Tab; label: string; emoji: string; animationClass: string }) => {
     const hasNotice = getHasNotice(item.id);
     const isHeart = item.id === "vanner";
-    const pendingCount = counts.pendingFriends;
+    const pendingFr = counts.pendingFriends;
 
     const handleClick = () => {
-      if (isHeart && pendingCount > 0) {
+      if (isHeart && pendingFr > 0) {
         setFriendRequestOpen(true);
       } else {
         onTabChange?.(item.id);
@@ -213,187 +145,180 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         key={item.id}
         onClick={handleClick}
         className={cn(
-          "header-nav-item relative",
+          "header-nav-item",
           activeTab === item.id && "active",
           hasNotice && "has-notice"
         )}
         role="button"
         tabIndex={0}
-        aria-label={item.label}>
-
+        aria-label={item.label}
+      >
         <span className={cn("header-nav-icon", hasNotice && item.animationClass)}>
           {item.emoji}
         </span>
         <span className="header-nav-label">{item.label}</span>
-        {isHeart && pendingCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
-            {pendingCount > 9 ? "9+" : pendingCount}
+        {isHeart && pendingFr > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold bg-[#cc0000] text-white rounded-full px-0.5 leading-none">
+            {pendingFr > 9 ? "9+" : pendingFr}
           </span>
         )}
         {item.id === "besokare" && counts.newVisitors > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold bg-[#cc0000] text-white rounded-full px-0.5 leading-none">
             {counts.newVisitors > 9 ? "9+" : counts.newVisitors}
           </span>
         )}
         {item.id === "gastbok" && counts.guestbookNew > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold bg-destructive text-white rounded-full px-1 leading-none">
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold bg-[#cc0000] text-white rounded-full px-0.5 leading-none">
             {counts.guestbookNew > 9 ? "9+" : counts.guestbookNew}
           </span>
         )}
         {hasNotice && !isHeart && item.id !== "besokare" && item.id !== "gastbok" && <span className="header-nav-dot" />}
-      </div>);
-
+      </div>
+    );
   };
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Marquee ticker - hidden on very small screens to save space */}
-      <div className="hidden sm:block bg-[#1a4456] border-b border-border overflow-hidden">
-        <div className="marquee-container">
-          <span className="marquee-text text-xs text-[#E6EEF2] font-medium">
-            ⭐ Välkommen till Echo2000 — Nordens nostalgiska community! 🎮 Chatta, träffa nya vänner och reliv 2000-talet! 🦋 Beta-version — nya funktioner släpps löpande! ✨ Tack för att du är en tidig medlem! 💖
-          </span>
-        </div>
-      </div>
-      {/* Single compact header bar */}
-      <div className="navbar-dark">
-        {/* ECHO2000 Logo */}
-        <div className="flex items-center gap-2 shrink-0 min-w-0">
+      {/* Top bar: logo + status */}
+      <div className="bg-[#ddd] border-b border-[#999] flex items-center justify-between px-2 py-1">
+        <div className="flex items-center gap-2">
           <div
-            className="cursor-pointer relative group flex items-center shrink-0"
+            className="cursor-pointer flex items-center"
             onClick={() => onTabChange?.("hem")}
             role="button"
-            tabIndex={0}>
+            tabIndex={0}
+          >
             <img
               alt="Echo2000"
-              className="h-6 sm:h-7 w-auto object-contain max-w-[100px] sm:max-w-[120px]"
-              style={{ flexShrink: 0 }}
+              className="h-5 w-auto object-contain"
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
           </div>
           <span className="beta-badge">BETA</span>
+          {user && (
+            <span className="text-[10px] text-[#666]">
+              {onlineCount} online
+            </span>
+          )}
         </div>
 
-
-        {/* Desktop nav items – visible from md breakpoint */}
-        {user &&
-        <nav className="hidden md:flex items-center gap-0 lg:gap-0.5 mx-0.5 lg:mx-2 shrink min-w-0 flex-wrap">
-            {privateZoneItems.map((item) => renderHeaderNavItem(item))}
-          </nav>
-        }
-        <nav className="hidden md:flex items-center gap-0 lg:gap-0.5 shrink min-w-0">
-          {user ?
-          [homeItem, ...communityZoneItems].map((item) => renderHeaderNavItem(item)) :
-          renderHeaderNavItem(homeItem)
-          }
-          {user && (
-            <Popover open={kulOpen} onOpenChange={setKulOpen}>
-              <PopoverTrigger asChild>
-                <div
-                  className={cn(
-                    "header-nav-item cursor-pointer",
-                    kulOpen && "active"
-                  )}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="KUL"
-                >
-                  <span className="header-nav-icon">🎉</span>
-                  <span className="header-nav-label">KUL</span>
-                </div>
-              </PopoverTrigger>
-              <PopoverContent
-                align="center"
-                sideOffset={8}
-                className="w-auto p-0 border-2 border-primary/60 bg-card shadow-[0_0_16px_hsl(var(--primary)/0.3)] rounded-lg overflow-hidden"
-              >
-                <div className="flex flex-col gap-0.5 p-2 min-w-[160px]">
-                  {kulItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onTabChange?.(item.id);
-                        setKulOpen(false);
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-md text-left font-display font-bold text-sm tracking-wide text-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      <span className="text-lg">{item.emoji}</span>
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-        </nav>
-
-        {/* Right side - Auth & Status */}
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0">
-          {!loading &&
-          <>
-              {user ?
+        <div className="flex items-center gap-1">
+          {!loading && (
             <>
-                  {isAdmin &&
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/admin")}
-                className="relative text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                aria-label="Admin">
-                      <Shield className="w-4 h-4" />
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <button
+                      onClick={() => navigate("/admin")}
+                      className="relative px-2 py-1 text-[10px] font-bold text-[#333] bg-[#ddd] border border-[#999] hover:bg-[#ccc] flex items-center gap-1"
+                      aria-label="Admin"
+                    >
+                      <Shield className="w-3 h-3" />
                       <span className="hidden sm:inline">Admin</span>
                       {pendingCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse">
+                        <span className="absolute -top-1 -right-1 bg-[#cc0000] text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5">
                           {pendingCount}
                         </span>
                       )}
-                    </Button>
-              }
+                    </button>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-                    aria-label="Användarmeny">
-                        <User className="w-4 h-4" />
-                        <ChevronDown className="w-3 h-3 hidden sm:inline" />
-                      </Button>
+                      <button
+                        className="px-2 py-1 text-[10px] font-bold text-[#333] bg-[#ddd] border border-[#999] hover:bg-[#ccc] flex items-center gap-1"
+                        aria-label="Användarmeny"
+                      >
+                        <User className="w-3 h-3" />
+                        <span className="hidden sm:inline">Meny</span>
+                      </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-card border border-border">
-                      <DropdownMenuItem onClick={() => onTabChange?.("profil")} className="cursor-pointer gap-2">
-                        <User className="w-4 h-4" /> Profil
+                    <DropdownMenuContent align="end" className="w-44 bg-white border border-[#999] rounded-none text-[11px]">
+                      <DropdownMenuItem onClick={() => onTabChange?.("profil")} className="cursor-pointer gap-2 text-[11px]">
+                        <User className="w-3 h-3" /> Profil
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer gap-2">
-                        <Settings className="w-4 h-4" /> Inställningar
+                      <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer gap-2 text-[11px]">
+                        <Settings className="w-3 h-3" /> Inställningar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer gap-2 text-destructive">
-                        <LogOut className="w-4 h-4" /> Logga ut
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer gap-2 text-[11px] text-[#cc0000]">
+                        <LogOut className="w-3 h-3" /> Logga ut
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </> :
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/auth")}
-              className="text-foreground hover:bg-muted text-xs gap-1 px-2 sm:px-3 min-h-[44px] min-w-[44px]"
-              aria-label="Logga in">
-                  <LogIn className="w-4 h-4" />
-                  <span className="hidden sm:inline">Logga in</span>
-                </Button>
-            }
+                </>
+              ) : (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="px-2 py-1 text-[10px] font-bold text-white bg-[#ff6600] border border-[#cc5500] hover:bg-[#e55c00] flex items-center gap-1"
+                  aria-label="Logga in"
+                >
+                  <LogIn className="w-3 h-3" />
+                  Logga in
+                </button>
+              )}
             </>
-          }
-
-          {/* Radio control */}
+          )}
           <HeaderRadio />
-
         </div>
       </div>
-      {/* Friend Request Panel */}
-      <FriendRequestPanel open={friendRequestOpen} onOpenChange={setFriendRequestOpen} />
-    </header>);
 
+      {/* Nav tabs — desktop only */}
+      {user && (
+        <div className="hidden md:flex items-stretch bg-[#ddd] border-b border-[#999]">
+          {/* Home */}
+          <div
+            onClick={() => onTabChange?.("hem")}
+            className={cn("header-nav-item", activeTab === "hem" && "active")}
+            role="button"
+            tabIndex={0}
+          >
+            <span className="header-nav-icon">🏠</span>
+            <span className="header-nav-label">HEM</span>
+          </div>
+
+          {/* Private zone */}
+          {privateZoneItems.map((item) => renderHeaderNavItem(item))}
+
+          {/* Separator */}
+          <div className="w-px bg-[#999]" />
+
+          {/* Community zone */}
+          {communityZoneItems.map((item) => renderHeaderNavItem(item))}
+
+          {/* KUL dropdown */}
+          <Popover open={kulOpen} onOpenChange={setKulOpen}>
+            <PopoverTrigger asChild>
+              <div
+                className={cn("header-nav-item cursor-pointer", kulOpen && "active")}
+                role="button"
+                tabIndex={0}
+              >
+                <span className="header-nav-icon">🎉</span>
+                <span className="header-nav-label">KUL</span>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              sideOffset={0}
+              className="w-auto p-0 border border-[#999] bg-white rounded-none"
+            >
+              <div className="flex flex-col">
+                {kulItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => { onTabChange?.(item.id); setKulOpen(false); }}
+                    className="flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-left text-[#333] hover:bg-[#eee] border-b border-[#ddd] last:border-b-0"
+                  >
+                    <span>{item.emoji}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
+      <FriendRequestPanel open={friendRequestOpen} onOpenChange={setFriendRequestOpen} />
+    </header>
+  );
 }
