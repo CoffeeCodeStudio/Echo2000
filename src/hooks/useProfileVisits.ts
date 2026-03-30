@@ -30,7 +30,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
     if (!user || !effectiveOwnerId || user.id === effectiveOwnerId) return;
 
     try {
-      // Upsert: insert or update if already visited
+      // Upsert: one visit per visitor per day (unique index on owner+visitor+date)
       const { error } = await supabase
         .from('profile_visits')
         .upsert(
@@ -39,7 +39,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
             visitor_id: user.id,
             visited_at: new Date().toISOString(),
           },
-          { onConflict: 'profile_owner_id,visitor_id' }
+          { onConflict: 'profile_owner_id,visitor_id,utc_date(visited_at)', ignoreDuplicates: false }
         );
 
       if (error) {
