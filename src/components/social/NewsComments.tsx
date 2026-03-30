@@ -9,6 +9,8 @@ import { Textarea } from "../ui/textarea";
 import { Trash2, MessageSquare, Send } from "lucide-react";
 import { formatTimeAgo } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeAvatarUrl } from "@/lib/avatar-url";
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 interface Comment {
   id: string;
@@ -33,6 +35,8 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const { getAvatar } = useLiveAvatars(comments.map(c => c.user_id));
 
   useEffect(() => {
     fetchComments();
@@ -108,8 +112,8 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
         ) : (
           comments.map((c) => (
             <div key={c.id} className="flex gap-2 group">
-              <Avatar name={c.author_name} src={c.author_avatar || undefined} size="sm" className="mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0 bg-muted/30 rounded-lg px-3 py-2">
+              <Avatar name={c.author_name} src={getAvatar(c.user_id, c.author_avatar)} size="sm" className="mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0 bg-muted/30 px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <ClickableUsername username={c.author_name} className="text-xs font-bold text-foreground" />
@@ -136,7 +140,7 @@ export function NewsComments({ articleId }: NewsCommentsProps) {
       {/* New comment form */}
       {user ? (
         <div className="flex gap-2">
-          <Avatar name={profile?.username || ""} src={profile?.avatar_url || undefined} size="sm" className="mt-1 shrink-0" />
+          <Avatar name={profile?.username || ""} src={sanitizeAvatarUrl(profile?.avatar_url) || undefined} size="sm" className="mt-1 shrink-0" />
           <div className="flex-1">
             <Textarea
               value={newComment}

@@ -13,6 +13,7 @@ import { replaceEmoteCodes } from './social/PixelEmotes';
 import { ReportButton } from './social/ReportButton';
 import { sanitizeAvatarUrl } from '@/lib/avatar-url';
 import { useToast } from '@/hooks/use-toast';
+import { useLiveAvatars } from '@/hooks/useLiveAvatars';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ export function ProfileGuestbook({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { getAvatar } = useLiveAvatars(entries.map(e => e.author_id));
 
   const handleSubmit = async () => {
     if (!newMessage.trim()) return;
@@ -197,7 +199,7 @@ export function ProfileGuestbook({
                 <div className="shrink-0">
                   <ClickableUsername
                     username={entry.author_name}
-                    avatarUrl={sanitizeAvatarUrl(entry.author_avatar)}
+                    avatarUrl={getAvatar(entry.author_id, entry.author_avatar)}
                     showAvatar
                     avatarSize="sm"
                   />

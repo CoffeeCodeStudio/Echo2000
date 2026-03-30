@@ -13,6 +13,7 @@ import { sanitizeAvatarUrl } from "@/lib/avatar-url";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 interface GuestbookEntry {
   id: string;
@@ -36,6 +37,7 @@ export function Guestbook() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { getAvatar } = useLiveAvatars(entries.map(e => e.user_id));
 
   const handleReply = useCallback((authorName: string) => {
     // Clean reply - no @ or # prefixes
@@ -330,7 +332,7 @@ export function Guestbook() {
                 <div className="flex gap-3">
                   {/* Avatar only */}
                   <Avatar 
-                    src={sanitizeAvatarUrl(entry.author_avatar) || undefined}
+                    src={getAvatar(entry.user_id, entry.author_avatar)}
                     name={entry.author_name}
                     size="md"
                     showStatus={false}
