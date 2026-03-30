@@ -148,7 +148,8 @@ export default function Auth() {
 
         const { data, error } = await signUp(email, password, username, joinReason.trim());
         if (error) {
-          toast({ title: "Registrering misslyckades", description: error.message, variant: "destructive" });
+          console.error("Signup error:", error);
+          toast({ title: "Registrering misslyckades", description: "Kunde inte skapa kontot. Försök igen.", variant: "destructive" });
         } else if (data.user) {
           // Assign user role, then sign out so admin approval gate works.
           // We stay in "register" mode so the useEffect redirect doesn't fire
