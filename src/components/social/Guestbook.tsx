@@ -37,6 +37,7 @@ export function Guestbook() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { getAvatar } = useLiveAvatars(entries.map(e => e.user_id));
 
   const handleReply = useCallback((authorName: string) => {
     // Clean reply - no @ or # prefixes
