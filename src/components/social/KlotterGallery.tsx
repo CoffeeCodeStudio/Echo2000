@@ -1,5 +1,5 @@
 /** KlotterGallery - Gallery view for published klotter drawings with lightbox */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, ChevronLeft, ChevronRight, X, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ClickableUsername } from "../ClickableUsername";
 import { GoodVibe } from "./GoodVibe";
 import { ReportButton } from "./ReportButton";
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 interface KlotterItem {
   id: string;
@@ -35,6 +36,9 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const userIds = useMemo(() => klotter.map(k => k.user_id).filter(Boolean) as string[], [klotter]);
+  const { getAvatar } = useLiveAvatars(userIds);
 
   if (klotter.length === 0) {
     return (
@@ -87,7 +91,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               )}
               {/* Profile overlay */}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 flex items-center gap-1.5">
-                <Avatar name={item.author_name} src={item.author_avatar || undefined} size="sm" />
+                <Avatar name={item.author_name} src={item.user_id ? getAvatar(item.user_id, item.author_avatar) : (item.author_avatar || undefined)} size="sm" />
                 <span className="text-white text-xs font-medium truncate drop-shadow-sm">{item.author_name}</span>
               </div>
             </div>
@@ -103,7 +107,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               {/* Top bar */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => { setLightboxIndex(null); navigate(`/profile/${currentItem.author_name}`); }}>
-                  <Avatar name={currentItem.author_name} src={currentItem.author_avatar || undefined} size="sm" />
+                  <Avatar name={currentItem.author_name} src={currentItem.user_id ? getAvatar(currentItem.user_id, currentItem.author_avatar) : (currentItem.author_avatar || undefined)} size="sm" />
                   <div className="min-w-0">
                     <ClickableUsername username={currentItem.author_name} className="text-white text-sm font-medium truncate" />
                     <p className="text-white/50 text-xs">{formatTimeAgo(currentItem.created_at)}</p>
