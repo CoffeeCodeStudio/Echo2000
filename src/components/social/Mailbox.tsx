@@ -321,50 +321,48 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      <section className="container px-4 py-6 max-w-2xl mx-auto">
+      <section className="container px-4 py-4 max-w-2xl mx-auto">
         {/* Login prompt for logged out users */}
         {isLoggedOut && (
-          <div className="nostalgia-card p-3 mb-4 border-primary/30 bg-primary/5">
-            <div className="flex items-center gap-2 text-sm">
-              <Info className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">
-                <button onClick={() => navigate("/auth")} className="text-primary hover:underline font-medium">Logga in</button> för att se din inkorg!
+          <div className="glass-card p-2.5 mb-3 border-[#ff6600]/30 bg-[#fff3e6]">
+            <div className="flex items-center gap-2 text-[11px]">
+              <Info className="w-3.5 h-3.5 text-[#ff6600]" />
+              <span className="text-foreground">
+                <button onClick={() => navigate("/auth")} className="text-[#ff6600] hover:underline font-bold">Logga in</button> för att se din inkorg!
               </span>
             </div>
           </div>
         )}
 
         {/* Header */}
-        <div className="nostalgia-card p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-display font-bold text-xl mb-1 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-primary" />
-                Mejl
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {loading ? "Laddar..." : unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
-              </p>
-            </div>
+        <div className="glass-card mb-3">
+          <div className="lunar-box-header flex items-center gap-1.5 px-2.5 py-1.5">
+            <Mail className="w-3.5 h-3.5 text-white/90" />
+            <h1 className="font-bold text-[11px] tracking-wide uppercase flex-1">Mejl</h1>
             {view === "inbox" && !isLoggedOut && (
-              <Button variant="msn" onClick={() => setView("compose")}>
-                <Send className="w-4 h-4 mr-2" />
+              <button
+                onClick={() => setView("compose")}
+                className="btn-nostalgic flex items-center gap-1 text-[10px] py-0.5 px-2"
+              >
+                <Send className="w-3 h-3" />
                 Skriv nytt
-              </Button>
+              </button>
             )}
             {view === "inbox" && isLoggedOut && (
-              <Button variant="msn" onClick={() => navigate("/auth")}>
+              <button onClick={() => navigate("/auth")} className="btn-nostalgic text-[10px] py-0.5 px-2">
                 Logga in
-              </Button>
+              </button>
             )}
+          </div>
+          <div className="px-2.5 py-1.5 text-[11px] text-muted-foreground bg-[hsl(var(--muted))] border-b border-border">
+            {loading ? "Laddar..." : unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga nya meddelanden"}
           </div>
         </div>
 
         {/* Back button for non-inbox views */}
         {view !== "inbox" && (
-          <Button
-            variant="ghost"
-            className="mb-4"
+          <button
+            className="flex items-center gap-1 text-[11px] font-bold text-[#ff6600] hover:underline mb-2"
             onClick={() => {
               setView("inbox");
               setSelectedMail(null);
@@ -372,45 +370,47 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
               setRecipientSearch([]);
             }}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             Tillbaka till inkorg
-          </Button>
+          </button>
         )}
 
         {/* Loading state */}
         {loading && !isLoggedOut && (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <Loader2 className="w-5 h-5 animate-spin text-[#ff6600]" />
           </div>
         )}
 
         {/* Inbox View */}
         {view === "inbox" && !loading && (
-          <div className="nostalgia-card overflow-hidden max-w-full">
-            <div className="flex items-center gap-2 p-3 border-b border-border bg-muted/30">
-              <Inbox className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">Inkorg</span>
+          <div className="glass-card overflow-hidden max-w-full">
+            <div className="lunar-box-header flex items-center gap-1.5 px-2.5 py-1.5">
+              <Inbox className="w-3.5 h-3.5 text-white/90" />
+              <span className="font-bold text-[11px] tracking-wide uppercase">Inkorg</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                <span className="ml-1 px-1.5 text-[9px] font-bold bg-white/20 text-white rounded-sm">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <div className="divide-y divide-border">
+            <div>
               {mails.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Mail className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-                  <p className="text-lg font-semibold text-muted-foreground mb-1">🌟 Här var det tomt!</p>
-                  <p className="text-sm text-muted-foreground">Nya meddelanden dyker upp här</p>
+                <div className="p-6 text-center bg-[hsl(var(--card))]">
+                  <Mail className="w-10 h-10 mx-auto mb-2 text-muted-foreground opacity-30" />
+                  <p className="text-[12px] font-bold text-muted-foreground mb-0.5">🌟 Här var det tomt!</p>
+                  <p className="text-[11px] text-muted-foreground">Nya meddelanden dyker upp här</p>
                 </div>
               ) : (
-                mails.map((mail) => (
+                mails.map((mail, i) => (
                   <button
                     key={mail.id}
                     onClick={() => openMail(mail)}
                     className={cn(
-                      "w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-start gap-3",
-                      !mail.isRead && "bg-primary/5",
+                      "w-full text-left px-2.5 py-2 flex items-start gap-2.5 transition-colors border-b border-border text-[11px]",
+                      i % 2 === 0 ? "bg-[hsl(var(--card))]" : "bg-[hsl(var(--muted))]",
+                      !mail.isRead && "bg-[#fff3e6] font-bold",
+                      "hover:bg-[#fff3e6]",
                       isLoggedOut && "cursor-default opacity-80"
                     )}
                     disabled={isLoggedOut}
@@ -418,26 +418,26 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                     <Avatar name={mail.from} src={mail.fromAvatar} size="sm" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className={cn("text-sm", !mail.isRead && "font-semibold")}>
+                        <span className={cn("text-[11px]", !mail.isRead && "font-bold text-foreground")}>
                           {mail.from}
                         </span>
-                        <span className="text-xs text-muted-foreground">{mail.timestamp}</span>
+                        <span className="text-[10px] text-muted-foreground flex-shrink-0">{mail.timestamp}</span>
                       </div>
-                      <p className={cn("text-sm truncate", !mail.isRead ? "text-foreground" : "text-muted-foreground")}>
+                      <p className={cn("text-[11px] truncate", !mail.isRead ? "text-foreground" : "text-muted-foreground")}>
                         {mail.subject}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">{mail.preview}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{mail.preview}</p>
                     </div>
                     <button
                       onClick={(e) => toggleStar(mail.id, e)}
                       className={cn(
-                        "p-1 transition-colors",
-                        mail.isStarred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500",
+                        "p-0.5 transition-colors flex-shrink-0",
+                        mail.isStarred ? "text-[#ff6600]" : "text-muted-foreground hover:text-[#ff6600]",
                         isLoggedOut && "pointer-events-none"
                       )}
                       disabled={isLoggedOut}
                     >
-                      <Star className={cn("w-4 h-4", mail.isStarred && "fill-current")} />
+                      <Star className={cn("w-3.5 h-3.5", mail.isStarred && "fill-current")} />
                     </button>
                   </button>
                 ))
@@ -448,58 +448,59 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
 
         {/* Read Mail View */}
         {view === "read" && selectedMail && (
-          <div className="nostalgia-card p-4 overflow-hidden">
-            <div className="flex items-start gap-3 mb-4">
-              <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
-              <div className="flex-1">
-                <h2 className="font-semibold">{selectedMail.subject}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Från: <span className="text-foreground">{selectedMail.from}</span>
-                </p>
-                <p className="text-xs text-muted-foreground">{selectedMail.timestamp}</p>
+          <div className="glass-card overflow-hidden">
+            <div className="lunar-box-header flex items-center gap-1.5 px-2.5 py-1.5">
+              <Mail className="w-3.5 h-3.5 text-white/90" />
+              <span className="font-bold text-[11px] tracking-wide uppercase truncate">{selectedMail.subject}</span>
+            </div>
+            <div className="px-2.5 py-2.5">
+              <div className="flex items-start gap-2.5 mb-3 pb-2.5 border-b border-border">
+                <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
+                <div className="flex-1 text-[11px]">
+                  <p className="font-bold text-foreground">{selectedMail.from}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedMail.timestamp}</p>
+                </div>
               </div>
-            </div>
-            <div className="border-t border-border pt-4 overflow-hidden">
-              <p className="text-sm whitespace-pre-line text-foreground break-words overflow-wrap-anywhere [overflow-wrap:anywhere] [word-break:break-word]">{selectedMail.content}</p>
-            </div>
-            <div className="flex gap-2 mt-6">
-              <Button variant="msn" onClick={handleReply}>
-                <Reply className="w-4 h-4 mr-2" />
-                Svara
-              </Button>
-              <Button variant="outline" onClick={handleDelete}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Radera
-              </Button>
+              <div className="text-[11px] text-foreground whitespace-pre-line break-words [overflow-wrap:anywhere] [word-break:break-word] min-h-[60px]">
+                {selectedMail.content}
+              </div>
+              <div className="flex gap-1.5 mt-4 pt-2.5 border-t border-border">
+                <button onClick={handleReply} className="btn-nostalgic flex items-center gap-1 text-[10px]">
+                  <Reply className="w-3 h-3" />
+                  Svara
+                </button>
+                <button onClick={handleDelete} className="btn-nostalgic flex items-center gap-1 text-[10px] bg-[#999] border-[#777]">
+                  <Trash2 className="w-3 h-3" />
+                  Radera
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* Compose View */}
         {view === "compose" && (
-          <div className="nostalgia-card p-4">
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Send className="w-4 h-4 text-primary" />
-              Skriv nytt mejl
-            </h2>
-            <div className="space-y-4">
+          <div className="glass-card overflow-hidden">
+            <div className="lunar-box-header flex items-center gap-1.5 px-2.5 py-1.5">
+              <Send className="w-3.5 h-3.5 text-white/90" />
+              <span className="font-bold text-[11px] tracking-wide uppercase">Skriv nytt mejl</span>
+            </div>
+            <div className="px-2.5 py-2.5 space-y-3 text-[11px]">
               <div className="relative">
-                <label className="text-xs font-medium text-muted-foreground uppercase">Till</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Till</label>
                 {selectedRecipient ? (
-                  <div className="flex items-center gap-2 mt-1 p-2 bg-muted rounded-md">
+                  <div className="flex items-center gap-2 mt-1 p-1.5 bg-[hsl(var(--muted))] border border-border">
                     <Avatar name={selectedRecipient.username} src={selectedRecipient.avatar_url} size="sm" />
-                    <span className="text-sm font-medium">{selectedRecipient.username}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-auto h-6 w-6 p-0"
+                    <span className="text-[11px] font-bold">{selectedRecipient.username}</span>
+                    <button
+                      className="ml-auto text-muted-foreground hover:text-[#ff6600] text-[14px] font-bold px-1"
                       onClick={() => {
                         setSelectedRecipient(null);
                         setComposeData({ ...composeData, to: "" });
                       }}
                     >
                       ×
-                    </Button>
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -507,11 +508,11 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                       value={composeData.to}
                       onChange={(e) => handleRecipientSearch(e.target.value)}
                       placeholder="Sök användarnamn..."
-                      className="mt-1"
+                      className="mt-1 text-[11px] h-7"
                     />
                     {recipientSearch.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg">
-                        {recipientSearch.map((recipient) => (
+                      <div className="absolute z-10 w-full mt-0 bg-[hsl(var(--card))] border border-border shadow-md">
+                        {recipientSearch.map((recipient, i) => (
                           <button
                             key={recipient.user_id}
                             onClick={() => {
@@ -519,10 +520,13 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                               setComposeData({ ...composeData, to: recipient.username });
                               setRecipientSearch([]);
                             }}
-                            className="w-full flex items-center gap-2 p-2 hover:bg-muted transition-colors text-left"
+                            className={cn(
+                              "w-full flex items-center gap-2 px-2 py-1.5 hover:bg-[#fff3e6] transition-colors text-left text-[11px]",
+                              i % 2 === 0 ? "bg-[hsl(var(--card))]" : "bg-[hsl(var(--muted))]"
+                            )}
                           >
                             <Avatar name={recipient.username} src={recipient.avatar_url} size="sm" />
-                            <span className="text-sm">{recipient.username}</span>
+                            <span>{recipient.username}</span>
                           </button>
                         ))}
                       </div>
@@ -531,30 +535,30 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                 )}
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase">Ämne</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Ämne</label>
                 <Input
                   value={composeData.subject}
                   onChange={(e) => setComposeData({ ...composeData, subject: e.target.value })}
                   placeholder="Skriv ämne..."
-                  className="mt-1"
+                  className="mt-1 text-[11px] h-7"
                   maxLength={200}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase">Meddelande</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Meddelande</label>
                 <Textarea
                   value={composeData.message}
                   onChange={(e) => setComposeData({ ...composeData, message: e.target.value })}
                   placeholder="Skriv ditt meddelande..."
                   rows={6}
-                  className="mt-1"
+                  className="mt-1 text-[11px]"
                   maxLength={5000}
                 />
-                <span className="text-xs text-muted-foreground">{composeData.message.length}/5000</span>
+                <span className="text-[10px] text-muted-foreground">{composeData.message.length}/5000</span>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
+              <div className="flex justify-end gap-1.5 pt-1">
+                <button
+                  className="btn-nostalgic bg-[#999] border-[#777] text-[10px]"
                   onClick={() => {
                     setView("inbox");
                     setSelectedRecipient(null);
@@ -563,24 +567,24 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
                   }}
                 >
                   Avbryt
-                </Button>
-                <Button
-                  variant="msn"
+                </button>
+                <button
+                  className="btn-nostalgic flex items-center gap-1 text-[10px]"
                   onClick={handleSend}
                   disabled={sending || !selectedRecipient || !composeData.subject.trim() || !composeData.message.trim()}
                 >
                   {sending ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin" />
                       Skickar...
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4 mr-2" />
+                      <Send className="w-3 h-3" />
                       Skicka
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
