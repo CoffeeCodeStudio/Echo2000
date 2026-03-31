@@ -153,13 +153,13 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
             {/* Table — desktop/tablet */}
             <table className="w-full border-collapse hidden sm:table">
               <thead>
-                <tr className="border-b border-[hsl(var(--lunar-box-border))]">
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Avatar</th>
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 bg-muted/60">Användarnamn</th>
-                  <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-16 bg-muted/60">Online</th>
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-28 hidden md:table-cell bg-muted/60">Senast inloggad</th>
+                <tr className="lunar-box-header">
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-14">Avatar</th>
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5">Användarnamn</th>
+                  <th className="text-center text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-16">Online</th>
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-28 hidden md:table-cell">Senast inloggad</th>
                   {isOwnProfile && (
-                    <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Bästis</th>
+                    <th className="text-center text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-14">Bästis</th>
                   )}
                 </tr>
               </thead>
