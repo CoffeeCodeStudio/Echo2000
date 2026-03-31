@@ -91,7 +91,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               )}
               {/* Profile overlay */}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 flex items-center gap-1.5">
-                <Avatar name={item.author_name} src={item.author_avatar || undefined} size="sm" />
+                <Avatar name={item.author_name} src={item.user_id ? getAvatar(item.user_id, item.author_avatar) : (item.author_avatar || undefined)} size="sm" />
                 <span className="text-white text-xs font-medium truncate drop-shadow-sm">{item.author_name}</span>
               </div>
             </div>
