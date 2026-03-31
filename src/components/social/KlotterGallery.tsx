@@ -37,6 +37,9 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
+  const userIds = useMemo(() => klotter.map(k => k.user_id).filter(Boolean) as string[], [klotter]);
+  const { getAvatar } = useLiveAvatars(userIds);
+
   if (klotter.length === 0) {
     return (
       <div className={`text-center ${isMobile ? "py-8" : "py-12"} text-muted-foreground`}>
