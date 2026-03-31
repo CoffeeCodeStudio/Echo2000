@@ -79,20 +79,23 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
             )}
             {message.content.includes("skickade en nudge!") ? (
               <div className="mb-2 animate-fade-in text-center">
-                <span className="text-[11px] italic text-gray-500 dark:text-gray-400">
+                <span className="text-[10px] italic text-[#ff6600]">
                   🔔 {message.senderName} skickade en nudge! ({message.timestamp})
                 </span>
               </div>
             ) : (
-              <div className="mb-1 animate-fade-in">
-                <div className="flex items-start gap-2">
+              <div className={cn(
+                "mb-0.5 animate-fade-in border-b border-border/50",
+                index % 2 === 0 ? "bg-card" : "bg-muted/30"
+              )}>
+                <div className="flex items-start gap-2 px-1 py-0.5">
                   {/* Sender avatar - only show at start of new block */}
                   {isNewBlock ? (
-                    <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                    <div className="w-8 h-8 overflow-hidden flex-shrink-0 border border-border bg-muted">
                       {message.senderAvatar ? (
                         <img src={message.senderAvatar} alt={message.senderName} loading="lazy" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                           {message.senderName.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -104,20 +107,20 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
                     {isNewBlock && (
                       <div className="flex items-baseline gap-2">
                         <span className={cn(
-                          "font-bold text-xs whitespace-nowrap",
-                          message.isSelf ? "text-blue-600 dark:text-blue-400" : "text-[#d4388c] dark:text-pink-400"
+                          "font-bold text-[11px] whitespace-nowrap",
+                          message.isSelf ? "text-[#ff6600]" : "text-[#d4388c]"
                         )}>
                           {message.senderName} säger:
                         </span>
-                        <span className="text-[10px] text-gray-400">({message.timestamp})</span>
+                        <span className="text-[9px] text-muted-foreground">({message.timestamp})</span>
                       </div>
                     )}
                     <div className="flex items-baseline gap-2">
-                      <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-[13px]">
+                      <p className="text-foreground whitespace-pre-wrap leading-relaxed text-[11px]">
                         {convertMsnEmoticons(message.content)}
                       </p>
                       {!isNewBlock && (
-                        <span className="text-[9px] text-gray-400 flex-shrink-0">({message.timestamp})</span>
+                        <span className="text-[8px] text-muted-foreground flex-shrink-0">({message.timestamp})</span>
                       )}
                     </div>
                   </div>
