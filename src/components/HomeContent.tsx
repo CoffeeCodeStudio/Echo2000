@@ -58,8 +58,8 @@ function DjQuickPlay() {
         </button>
         {showVolume && (
           <div className="absolute top-full right-0 mt-1 bg-card border border-border p-2 z-50 w-24">
-            <input type="range" min="0" max="100" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className="w-full accent-primary" />
-            <div className="text-[9px] text-center text-muted-foreground">{volume}%</div>
+            <input type="range" min="0" max="100" value={Math.round(volume * 100)} onChange={(e) => setVolume(Number(e.target.value) / 100)} className="w-full accent-primary" />
+            <div className="text-[9px] text-center text-muted-foreground">{Math.round(volume * 100)}%</div>
           </div>
         )}
       </div>
