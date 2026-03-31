@@ -44,9 +44,9 @@ export function PersonalityMeter({
             onClick={() => onToggleVote(category)}
             disabled={disabled || loading}
             className={cn(
-              "w-full flex items-center gap-2 group transition-all rounded-md px-2 py-1.5 text-left",
-              "hover:bg-muted/50",
-              hasVoted && "bg-primary/10",
+              "w-full flex items-center gap-2 group transition-all px-2 py-1.5 text-left",
+              "hover:bg-[#fff3e6]",
+              hasVoted && "bg-[#fff3e6]",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
