@@ -103,7 +103,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               {/* Top bar */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => { setLightboxIndex(null); navigate(`/profile/${currentItem.author_name}`); }}>
-                  <Avatar name={currentItem.author_name} size="sm" />
+                  <Avatar name={currentItem.author_name} src={currentItem.author_avatar || undefined} size="sm" />
                   <div className="min-w-0">
                     <ClickableUsername username={currentItem.author_name} className="text-white text-sm font-medium truncate" />
                     <p className="text-white/50 text-xs">{formatTimeAgo(currentItem.created_at)}</p>
