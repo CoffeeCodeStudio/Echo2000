@@ -52,8 +52,8 @@ export function PersonalityMeter({
           >
             <span className="text-sm w-5 text-center">{CATEGORY_EMOJIS[category]}</span>
             <span className={cn(
-              "text-xs font-medium w-24 truncate",
-              hasVoted ? "text-primary" : "text-foreground"
+              "text-[11px] font-bold w-24 truncate",
+              hasVoted ? "text-[#ff6600]" : "text-foreground"
             )}>
               {category}
             </span>
