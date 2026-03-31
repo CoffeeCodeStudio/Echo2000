@@ -9,7 +9,11 @@ import { NewsFeed } from "./social/NewsFeed";
 import { HomeSocialBox } from "./home/HomeSocialBox";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { useRadio } from "@/contexts/RadioContext";
-import { Play, Pause, SkipForward, Volume2 } from "lucide-react";
+import { useLajv } from "@/contexts/LajvContext";
+import { Avatar } from "./Avatar";
+import { replaceEmoteCodes } from "./social/PixelEmotes";
+import { useNavigate } from "react-router-dom";
+import { Play, Pause, SkipForward, Volume2, Radio } from "lucide-react";
 
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
@@ -65,20 +69,59 @@ function DjQuickPlay() {
 
 export function HomeContent() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const { messages } = useLajv();
+  const [lajvIndex, setLajvIndex] = useState(0);
+
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    const interval = setInterval(() => setLajvIndex((p) => (p + 1) % messages.length), 5000);
+    return () => clearInterval(interval);
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (lajvIndex >= messages.length && messages.length > 0) setLajvIndex(0);
+  }, [messages.length, lajvIndex]);
+
+  const currentLajv = messages[lajvIndex];
 
   if (loading) return null;
   if (!user) return <HeroLanding />;
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
-      {/* Welcome header — polished with gradient */}
-      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-2.5 flex items-center justify-center gap-3">
-        <div className="text-center">
-          <span className="text-[13px] font-bold text-foreground">
-            Välkommen till <span className="text-primary">Echo2000</span>
-          </span>
-          <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
+      {/* Combined welcome + lajv header */}
+      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-1.5 flex items-center gap-2">
+        {/* Lajv on the left */}
+        <div
+          className="flex items-center gap-1.5 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/', { state: { tab: 'lajv' } })}
+        >
+          <div className="relative">
+            <Radio className="w-3.5 h-3.5 text-primary" />
+            {messages.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            )}
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-primary">LAJV</span>
         </div>
+
+        {/* Lajv message */}
+        <div className="flex-1 min-w-0">
+          {messages.length === 0 ? (
+            <span className="text-[10px] italic text-muted-foreground truncate">Inga aktiva lajv</span>
+          ) : currentLajv ? (
+            <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
+              <div className="shrink-0 w-4 h-4 rounded-full overflow-hidden">
+                <Avatar name={currentLajv.username} src={currentLajv.avatar_url || undefined} size="sm" />
+              </div>
+              <span className="font-bold text-foreground shrink-0 max-w-[80px] truncate">{currentLajv.username}:</span>
+              <span className="truncate text-muted-foreground">{replaceEmoteCodes(currentLajv.message)}</span>
+            </div>
+          ) : null}
+        </div>
+
+        {/* DJ controls on the right */}
         <DjQuickPlay />
       </div>
 
