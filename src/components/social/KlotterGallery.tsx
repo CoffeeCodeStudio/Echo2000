@@ -1,5 +1,5 @@
 /** KlotterGallery - Gallery view for published klotter drawings with lightbox */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, ChevronLeft, ChevronRight, X, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ClickableUsername } from "../ClickableUsername";
 import { GoodVibe } from "./GoodVibe";
 import { ReportButton } from "./ReportButton";
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 interface KlotterItem {
   id: string;
