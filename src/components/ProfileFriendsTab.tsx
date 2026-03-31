@@ -370,7 +370,7 @@ function BestFriendsRow({
                 <button
                   key={f.id}
                   onClick={() => onNavigate(f.username)}
-                  className="shrink-0 flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+                  className="shrink-0 flex flex-col items-center gap-1 hover:bg-[#fff3e6] p-1 transition-colors"
                 >
                   <FriendAvatar
                     src={f.avatar_url}
