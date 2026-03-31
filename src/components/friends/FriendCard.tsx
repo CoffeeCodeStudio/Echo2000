@@ -79,7 +79,7 @@ export function FriendCard({
 
   return (
     <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors">
+      <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors">
         <div
           className="cursor-pointer"
           onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
@@ -90,7 +90,7 @@ export function FriendCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span
-              className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors"
+              className="font-bold text-[11px] cursor-pointer hover:text-[#ff6600] transition-colors"
               onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
             >
               {friend.name}
@@ -99,7 +99,7 @@ export function FriendCard({
             {friend.isBestFriend && (
               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
             )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+            <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground border border-border/30">
               {friend.category}
             </span>
           </div>

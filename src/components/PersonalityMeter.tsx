@@ -44,25 +44,25 @@ export function PersonalityMeter({
             onClick={() => onToggleVote(category)}
             disabled={disabled || loading}
             className={cn(
-              "w-full flex items-center gap-2 group transition-all rounded-md px-2 py-1.5 text-left",
-              "hover:bg-muted/50",
-              hasVoted && "bg-primary/10",
+              "w-full flex items-center gap-2 group transition-all px-2 py-1.5 text-left",
+              "hover:bg-[#fff3e6]",
+              hasVoted && "bg-[#fff3e6]",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
             <span className="text-sm w-5 text-center">{CATEGORY_EMOJIS[category]}</span>
             <span className={cn(
-              "text-xs font-medium w-24 truncate",
-              hasVoted ? "text-primary" : "text-foreground"
+              "text-[11px] font-bold w-24 truncate",
+              hasVoted ? "text-[#ff6600]" : "text-foreground"
             )}>
               {category}
             </span>
-            <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+            <div className="flex-1 h-3 bg-muted border border-border/30 overflow-hidden">
               <div
                 className={cn(
-                  "h-full rounded-full transition-all duration-500",
+                  "h-full transition-all duration-500",
                   hasVoted
-                    ? "bg-gradient-to-r from-[#ff6600] to-[#ff6600]/70"
+                    ? "bg-gradient-to-r from-[#ff6600] to-[#ff8533]"
                     : "bg-gradient-to-r from-[#ff6600]/30 to-[#ff6600]/15"
                 )}
                 style={{ width: `${percentage}%` }}

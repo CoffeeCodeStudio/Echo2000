@@ -153,13 +153,13 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
             {/* Table — desktop/tablet */}
             <table className="w-full border-collapse hidden sm:table">
               <thead>
-                <tr className="border-b border-[hsl(var(--lunar-box-border))]">
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Avatar</th>
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 bg-muted/60">Användarnamn</th>
-                  <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-16 bg-muted/60">Online</th>
-                  <th className="text-left text-xs font-bold text-foreground px-3 py-2 w-28 hidden md:table-cell bg-muted/60">Senast inloggad</th>
+                <tr className="lunar-box-header">
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-14">Avatar</th>
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5">Användarnamn</th>
+                  <th className="text-center text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-16">Online</th>
+                  <th className="text-left text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-28 hidden md:table-cell">Senast inloggad</th>
                   {isOwnProfile && (
-                    <th className="text-center text-xs font-bold text-foreground px-3 py-2 w-14 bg-muted/60">Bästis</th>
+                    <th className="text-center text-[10px] font-bold text-white uppercase tracking-wide px-3 py-1.5 w-14">Bästis</th>
                   )}
                 </tr>
               </thead>
@@ -370,7 +370,7 @@ function BestFriendsRow({
                 <button
                   key={f.id}
                   onClick={() => onNavigate(f.username)}
-                  className="shrink-0 flex flex-col items-center gap-1 hover:opacity-80 transition-opacity"
+                  className="shrink-0 flex flex-col items-center gap-1 hover:bg-[#fff3e6] p-1 transition-colors"
                 >
                   <FriendAvatar
                     src={f.avatar_url}
@@ -434,7 +434,8 @@ function CategoryGroup({
           <tr
             key={friend.id}
             className={cn(
-              "border-b border-border/20 hover:bg-muted/40 transition-colors",
+              "border-b border-border/20 transition-colors cursor-pointer",
+              "hover:bg-[#fff3e6]",
               i % 2 === 0 ? "bg-card" : "bg-muted/15"
             )}
           >
@@ -448,7 +449,7 @@ function CategoryGroup({
             </td>
             <td className="px-3 py-1.5">
               <span
-                className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+                className="text-[11px] font-bold text-foreground cursor-pointer hover:text-[#ff6600] transition-colors"
                 onClick={() => onNavigate(friend.username)}
               >
                 {friend.username}
@@ -519,7 +520,7 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
                   className="h-full transition-all duration-300"
                   style={{
                     width: `${Math.max(pct, 2)}%`,
-                    background: "linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%)",
+                    background: "linear-gradient(to right, #ff6600, #ff8533)",
                   }}
                 />
               </div>
