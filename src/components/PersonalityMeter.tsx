@@ -57,7 +57,7 @@ export function PersonalityMeter({
             )}>
               {category}
             </span>
-            <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+            <div className="flex-1 h-3 bg-muted border border-border/30 overflow-hidden">
               <div
                 className={cn(
                   "h-full rounded-full transition-all duration-500",
