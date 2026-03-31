@@ -107,9 +107,9 @@ export function HomeContent() {
         </div>
 
         {/* Lajv message */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 max-w-[200px] hidden sm:block">
           {messages.length === 0 ? (
-            <span className="text-[10px] italic text-muted-foreground truncate">Inga aktiva lajv</span>
+            <span className="text-[10px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
           ) : currentLajv ? (
             <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
               <div className="shrink-0 w-4 h-4 rounded-full overflow-hidden">
@@ -119,6 +119,14 @@ export function HomeContent() {
               <span className="truncate text-muted-foreground">{replaceEmoteCodes(currentLajv.message)}</span>
             </div>
           ) : null}
+        </div>
+
+        {/* Center welcome text */}
+        <div className="flex-1 text-center">
+          <span className="text-[13px] font-bold text-foreground">
+            Välkommen till <span className="text-primary">Echo2000</span>
+          </span>
+          <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
         </div>
 
         {/* DJ controls on the right */}
