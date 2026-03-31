@@ -7,7 +7,7 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useAuth } from "@/hooks/useAuth";
 
 import { UnreadMailBar } from "@/components/UnreadMailBar";
-import { GlobalLajvTicker } from "@/components/GlobalLajvTicker";
+
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
