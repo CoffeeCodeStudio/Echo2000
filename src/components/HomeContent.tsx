@@ -72,15 +72,12 @@ export function HomeContent() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
       {/* Welcome header — polished with gradient */}
-      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Radio className="w-4 h-4 text-primary" />
-          <div>
-            <span className="text-[13px] font-bold text-foreground">
-              Välkommen till <span className="text-primary">Echo2000</span>
-            </span>
-            <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
-          </div>
+      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-2.5 flex items-center justify-center gap-3">
+        <div className="text-center">
+          <span className="text-[13px] font-bold text-foreground">
+            Välkommen till <span className="text-primary">Echo2000</span>
+          </span>
+          <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
         </div>
         <DjQuickPlay />
       </div>
