@@ -520,7 +520,7 @@ function PersonalityBox({ userId, isOwnProfile }: { userId: string; isOwnProfile
                   className="h-full transition-all duration-300"
                   style={{
                     width: `${Math.max(pct, 2)}%`,
-                    background: "linear-gradient(to bottom, #d8613e 0%, #d15234 24%, #b9180e 82%, #b40c06 100%)",
+                    background: "linear-gradient(to right, #ff6600, #ff8533)",
                   }}
                 />
               </div>
