@@ -190,7 +190,7 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
           >
             <img
               alt="Echo2000"
-              className="h-5 w-auto object-contain brightness-[1.8] contrast-[1.1]"
+              className="h-5 w-auto object-contain"
               src="/lovable-uploads/8fa3ad97-e123-4eb1-87e7-aca699e44627.png"
             />
           </div>
