@@ -15,6 +15,7 @@ interface KlotterItem {
   id: string;
   user_id?: string;
   author_name: string;
+  author_avatar?: string | null;
   comment: string | null;
   created_at: string;
   image_url: string;
@@ -86,7 +87,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               )}
               {/* Profile overlay */}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 flex items-center gap-1.5">
-                <Avatar name={item.author_name} size="sm" />
+                <Avatar name={item.author_name} src={item.author_avatar || undefined} size="sm" />
                 <span className="text-white text-xs font-medium truncate drop-shadow-sm">{item.author_name}</span>
               </div>
             </div>
@@ -102,7 +103,7 @@ export function KlotterGallery({ klotter, loading, isMobile, onSwitchToDraw, cur
               {/* Top bar */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => { setLightboxIndex(null); navigate(`/profile/${currentItem.author_name}`); }}>
-                  <Avatar name={currentItem.author_name} size="sm" />
+                  <Avatar name={currentItem.author_name} src={currentItem.author_avatar || undefined} size="sm" />
                   <div className="min-w-0">
                     <ClickableUsername username={currentItem.author_name} className="text-white text-sm font-medium truncate" />
                     <p className="text-white/50 text-xs">{formatTimeAgo(currentItem.created_at)}</p>
