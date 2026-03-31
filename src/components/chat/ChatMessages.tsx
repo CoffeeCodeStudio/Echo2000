@@ -70,11 +70,11 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
           <div key={message.id}>
             {showDateSeparator && (
               <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-white dark:bg-slate-900 px-2">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-card px-2">
                   {formatDateLabel(message.date)}
                 </span>
-                <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+                <div className="flex-1 h-px bg-border" />
               </div>
             )}
             {message.content.includes("skickade en nudge!") ? (
