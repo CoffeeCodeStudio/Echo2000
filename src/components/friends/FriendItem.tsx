@@ -38,9 +38,9 @@ export function FriendItem({
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
-        "hover:bg-muted/50 active:scale-[0.98]",
-        isActive && "bg-muted/70 glow-primary"
+        "w-full flex items-center gap-3 p-2 transition-all duration-200 border-b border-border/30",
+        "hover:bg-[#fff3e6] active:scale-[0.98]",
+        isActive && "bg-[#fff3e6] border-l-2 border-l-[#ff6600]"
       )}
     >
       <div onClick={handleProfileClick} className="cursor-pointer">
