@@ -434,7 +434,8 @@ function CategoryGroup({
           <tr
             key={friend.id}
             className={cn(
-              "border-b border-border/20 hover:bg-muted/40 transition-colors",
+              "border-b border-border/20 transition-colors cursor-pointer",
+              "hover:bg-[#fff3e6]",
               i % 2 === 0 ? "bg-card" : "bg-muted/15"
             )}
           >
