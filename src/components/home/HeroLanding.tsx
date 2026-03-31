@@ -41,7 +41,7 @@ export function HeroLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#e5e5e5]">
+    <div className="min-h-screen w-full flex-1 bg-[#e5e5e5]">
       {/* Top banner */}
       <div className="bg-[#555] text-white text-center py-1 text-[10px] tracking-widest uppercase">
         ★ Echo2000 — Community för oss som minns 56K-modem ★
