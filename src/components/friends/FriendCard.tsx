@@ -99,7 +99,7 @@ export function FriendCard({
             {friend.isBestFriend && (
               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
             )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+            <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground border border-border/30">
               {friend.category}
             </span>
           </div>
