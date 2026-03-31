@@ -105,58 +105,53 @@ export function ProfileGuestbook({
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Post form (logged in users can write in any guestbook including their own for replies) */}
+    <div className={cn('', className)}>
+      {/* Post form */}
       {user && (
-        <div ref={formRef} className="bg-muted/30 rounded-lg p-4 border border-border">
-          <Textarea
-            ref={textareaRef}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={replyTarget ? `Svara ${replyTarget.name}...` : isOwnProfile ? "Skriv ett svar i din gästbok..." : "Skriv något trevligt i gästboken..."}
-            className="mb-2 resize-none"
-            rows={3}
-            maxLength={500}
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {newMessage.length}/500
-            </span>
-            <Button
-              variant="msn"
-              size="sm"
-              onClick={handleSubmit}
-              disabled={posting || !newMessage.trim()}
-            >
-              {posting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-1" />
-              ) : (
-                <Send className="w-4 h-4 mr-1" />
-              )}
-              Skicka
-            </Button>
+        <div ref={formRef} className="bg-card border border-border mb-0">
+          <div className="lunar-box-header px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5">
+            <Send className="w-3 h-3" />
+            {replyTarget ? `Svara ${replyTarget.name}` : 'Skriv i gästboken'}
+            {replyTarget && (
+              <button onClick={() => { setReplyTarget(null); setNewMessage(''); }} className="ml-auto text-white/70 hover:text-white">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          <div className="p-2.5">
+            <Textarea
+              ref={textareaRef}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder={replyTarget ? `Svara ${replyTarget.name}...` : isOwnProfile ? "Skriv ett svar i din gästbok..." : "Skriv något trevligt i gästboken..."}
+              className="mb-2 resize-none text-[11px] border-border"
+              rows={3}
+              maxLength={500}
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground">{newMessage.length}/500</span>
+              <button
+                onClick={handleSubmit}
+                disabled={posting || !newMessage.trim()}
+                className="px-3 py-1 text-[11px] font-bold text-white bg-[#ff6600] border border-[#cc5500] hover:bg-[#e55c00] disabled:opacity-50 flex items-center gap-1"
+              >
+                {posting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                Skicka
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Clear all button for profile owner */}
-      {isOwnProfile && user && (
-        <div className="flex justify-end">
+      {isOwnProfile && user && entries.length > 0 && (
+        <div className="flex justify-end py-1 px-1">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-muted-foreground hover:text-destructive"
-                disabled={clearing}
-              >
-                {clearing ? (
-                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                ) : (
-                  <Trash2 className="w-3 h-3 mr-1" />
-                )}
-                Rensa min gästbok
-              </Button>
+              <button className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1" disabled={clearing}>
+                {clearing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                Rensa gästbok
+              </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -167,9 +162,7 @@ export function ProfileGuestbook({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAll}>
-                  Ja, rensa allt
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleClearAll}>Ja, rensa allt</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -178,81 +171,62 @@ export function ProfileGuestbook({
 
       {/* Entries */}
       {entries.length === 0 ? (
-        <div className="p-8 text-center">
-          <p className="text-lg font-semibold text-muted-foreground mb-1">
-            📝 Här var det tomt!
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {isOwnProfile
-              ? 'Skriv något vetja.'
-              : 'Var först att skriva något vetja!'}
+        <div className="bg-card border border-border p-6 text-center">
+          <p className="text-[12px] font-bold text-muted-foreground mb-1">📝 Här var det tomt!</p>
+          <p className="text-[11px] text-muted-foreground">
+            {isOwnProfile ? 'Skriv något vetja.' : 'Var först att skriva något vetja!'}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {entries.map((entry) => (
+        <div className="bg-card border border-border">
+          {entries.map((entry, i) => (
             <div
               key={entry.id}
-              className="bg-card rounded-lg border border-border p-3 overflow-hidden"
+              className={cn(
+                "flex items-start gap-2.5 p-2.5 border-b border-border last:border-b-0",
+                i % 2 === 0 ? "bg-card" : "bg-muted/40"
+              )}
             >
-              <div className="flex items-start gap-3 overflow-hidden">
-                <div className="shrink-0">
-                  <ClickableUsername
-                    username={entry.author_name}
-                    avatarUrl={getAvatar(entry.author_id, entry.author_avatar)}
-                    showAvatar
-                    avatarSize="sm"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-xs text-muted-foreground truncate">
-                      {formatDistanceToNow(new Date(entry.created_at), {
-                        addSuffix: true,
-                        locale: sv,
-                      })}
-                    </span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {/* Reply button */}
-                      {user && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-primary"
-                          onClick={() => handleReply(entry.author_name, entry.author_id)}
-                          title="Svara"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                        </Button>
-                      )}
-                      {/* Report button */}
-                      {user && entry.author_id !== user.id && (
-                        <ReportButton
-                          contentType="gästboksinlägg"
-                          contentId={entry.id}
-                          contentAuthor={entry.author_name}
-                          contentPreview={entry.message}
-                          variant="icon"
-                        />
-                      )}
-                      {/* Delete button - for profile owner OR entry author */}
-                      {user && ((isOwnProfile && profileOwnerId === user.id) || entry.author_id === user.id) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          onClick={() => deleteEntry(entry.id)}
-                          title="Radera inlägg"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
+              <div className="shrink-0">
+                <ClickableUsername
+                  username={entry.author_name}
+                  avatarUrl={getAvatar(entry.author_id, entry.author_avatar)}
+                  showAvatar
+                  avatarSize="sm"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1 mb-0.5">
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true, locale: sv })}
+                  </span>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    {user && (
+                      <button
+                        className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => handleReply(entry.author_name, entry.author_id)}
+                        title="Svara"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                      </button>
+                    )}
+                    {user && entry.author_id !== user.id && (
+                      <ReportButton contentType="gästboksinlägg" contentId={entry.id} contentAuthor={entry.author_name} contentPreview={entry.message} variant="icon" />
+                    )}
+                    {user && ((isOwnProfile && profileOwnerId === user.id) || entry.author_id === user.id) && (
+                      <button
+                        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                        onClick={() => deleteEntry(entry.id)}
+                        title="Radera"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
                   </div>
-                  <p className="text-sm text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
-                    {replaceEmoteCodes(entry.message)}
-                  </p>
                 </div>
+                <p className="text-[11px] text-foreground leading-relaxed">
+                  {replaceEmoteCodes(entry.message)}
+                </p>
               </div>
             </div>
           ))}
