@@ -51,7 +51,7 @@ export function SharedLayout() {
             onTabChange={handleTabChange} 
             onMenuClick={() => setSidebarOpen(!sidebarOpen)} 
           />
-          <GlobalLajvTicker />
+          
           <UnreadMailBar 
             unreadCount={unreadMailCount} 
             onTabChange={(tab) => handleTabChange(tab as Tab)} 
