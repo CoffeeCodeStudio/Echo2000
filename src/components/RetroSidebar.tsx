@@ -155,6 +155,7 @@ export function RetroSidebar({ activeTab, onTabChange }: RetroSidebarProps) {
 
       {/* Quick links */}
       <div className="retro-sidebar-box">
+        <div className="retro-sidebar-group-label">⚡ Snabblänkar</div>
         <nav className="retro-sidebar-nav">
           <button
             onClick={() => onTabChange("hem")}
