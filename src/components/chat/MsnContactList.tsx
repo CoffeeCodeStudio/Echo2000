@@ -161,27 +161,27 @@ export function MsnContactList({
     if (groupContacts_.length === 0 && searchQuery) return null;
     
     return (
-      <div key={status} className="mb-0.5">
+      <div key={status}>
         <button
           onClick={() => toggleGroup(status)}
           className={cn(
-            "w-full flex items-center gap-2 px-3 py-1 text-[11px] font-bold transition-colors",
-            "hover:bg-[#316ac5]/10 text-gray-700 dark:text-gray-300"
+            "w-full flex items-center gap-2 px-3 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors",
+            "lunar-box-header"
           )}
         >
           {expandedGroups[status] ? (
-            <ChevronDown className="w-3 h-3 text-gray-500" />
+            <ChevronDown className="w-3 h-3 text-white/70" />
           ) : (
-            <ChevronRight className="w-3 h-3 text-gray-500" />
+            <ChevronRight className="w-3 h-3 text-white/70" />
           )}
           <div className={cn("w-2 h-2 rounded-full", statusColorMap[status])} />
-          <span>{label}</span>
-          <span className="ml-auto text-[10px] text-gray-500 font-normal">({count})</span>
+          <span className="text-white">{label}</span>
+          <span className="ml-auto text-[10px] text-white/60 font-normal">({count})</span>
         </button>
         
         {expandedGroups[status] && (
-          <div className="space-y-0">
-            {groupContacts_.map((contact) => (
+          <div>
+            {groupContacts_.map((contact, i) => (
               <button
                 key={contact.id}
                 onClick={() => {
@@ -189,17 +189,18 @@ export function MsnContactList({
                   onSelectContact(contact);
                 }}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-1.5 transition-all",
-                  "hover:bg-[#316ac5]/20",
-                  selectedContactId === contact.id && "bg-[#316ac5]/30"
+                  "w-full flex items-center gap-2 px-3 py-1.5 transition-all border-b border-border",
+                  "hover:bg-[#fff3e6]",
+                  selectedContactId === contact.id && "bg-[#fff3e6] border-l-2 border-l-[#ff6600]",
+                  i % 2 === 0 ? "bg-card" : "bg-muted/40"
                 )}
               >
                 {/* 32x32 avatar */}
-                <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600">
+                <div className="w-8 h-8 overflow-hidden flex-shrink-0 border border-border">
                   {contact.avatar ? (
                     <img src={contact.avatar} alt={contact.name} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                       {contact.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -208,19 +209,19 @@ export function MsnContactList({
                   <div className="flex items-center gap-1">
                     <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", statusColorMap[contact.status])} />
                     <span className={cn(
-                      "text-[12px] font-semibold truncate",
-                      contact.status === "offline" ? "text-gray-400" : "text-gray-800 dark:text-gray-200"
+                      "text-[11px] font-bold truncate",
+                      contact.status === "offline" ? "text-muted-foreground" : "text-foreground"
                     )}>
                       {contact.name}
                     </span>
                     {contact.unreadCount && contact.unreadCount > 0 && (
-                      <span className="bg-orange-500 text-white text-[9px] font-bold px-1 py-0 rounded-full min-w-[14px] text-center animate-pulse">
+                      <span className="bg-[#ff6600] text-white text-[9px] font-bold px-1 py-0 min-w-[14px] text-center animate-pulse">
                         {contact.unreadCount}
                       </span>
                     )}
                   </div>
                   {contact.statusMessage && (
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate italic ml-3">
+                    <p className="text-[10px] text-muted-foreground truncate italic ml-3">
                       {contact.statusMessage}
                     </p>
                   )}
