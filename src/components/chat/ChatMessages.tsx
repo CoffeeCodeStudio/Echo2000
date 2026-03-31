@@ -133,20 +133,20 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
 
       {/* Typing indicator */}
       {contactTyping && (
-        <div className="mb-2 animate-fade-in flex items-center gap-2 px-2">
-          <div className="w-8 h-8 rounded-sm overflow-hidden flex-shrink-0 border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
-            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+        <div className="mb-2 animate-fade-in flex items-center gap-2 px-2 bg-muted/30 py-1">
+          <div className="w-8 h-8 overflow-hidden flex-shrink-0 border border-border bg-muted">
+            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground">
               {contactName.charAt(0).toUpperCase()}
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[11px] italic text-gray-500 dark:text-gray-400">
+            <span className="text-[10px] italic text-muted-foreground">
               {contactName} skriver
             </span>
             <span className="flex gap-0.5">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1.5 h-1.5 bg-[#ff6600] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-[#ff6600] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-[#ff6600] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </span>
           </div>
         </div>
