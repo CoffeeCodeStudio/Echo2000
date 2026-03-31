@@ -43,15 +43,15 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
   }, [messages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-3 font-mono text-sm scrollbar-nostalgic">
+    <div className="flex-1 overflow-y-auto bg-card p-3 font-mono text-[11px] scrollbar-nostalgic">
       {/* Conversation header */}
-      <div className="text-center text-[11px] text-gray-500 dark:text-gray-400 mb-4 pb-2 border-b border-gray-300 dark:border-gray-700">
+      <div className="text-center text-[10px] text-muted-foreground mb-4 pb-2 border-b border-border">
         Du har startat en konversation med {contactName}
       </div>
 
       {loading && (
         <div className="flex justify-center py-4">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          <Loader2 className="w-5 h-5 animate-spin text-[#ff6600]" />
         </div>
       )}
 
