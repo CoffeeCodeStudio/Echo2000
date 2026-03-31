@@ -60,9 +60,9 @@ export function PersonalityMeter({
             <div className="flex-1 h-3 bg-muted border border-border/30 overflow-hidden">
               <div
                 className={cn(
-                  "h-full rounded-full transition-all duration-500",
+                  "h-full transition-all duration-500",
                   hasVoted
-                    ? "bg-gradient-to-r from-[#ff6600] to-[#ff6600]/70"
+                    ? "bg-gradient-to-r from-[#ff6600] to-[#ff8533]"
                     : "bg-gradient-to-r from-[#ff6600]/30 to-[#ff6600]/15"
                 )}
                 style={{ width: `${percentage}%` }}
