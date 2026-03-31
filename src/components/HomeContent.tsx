@@ -9,7 +9,11 @@ import { NewsFeed } from "./social/NewsFeed";
 import { HomeSocialBox } from "./home/HomeSocialBox";
 import { HomeRecentKlotter } from "./home/HomeRecentKlotter";
 import { useRadio } from "@/contexts/RadioContext";
-import { Play, Pause, SkipForward, Volume2 } from "lucide-react";
+import { useLajv } from "@/contexts/LajvContext";
+import { Avatar } from "./Avatar";
+import { replaceEmoteCodes } from "./social/PixelEmotes";
+import { useNavigate } from "react-router-dom";
+import { Play, Pause, SkipForward, Volume2, Radio } from "lucide-react";
 
 function DjQuickPlay() {
   const { isPlaying, currentStation, stations, selectStation, pause, volume, setVolume } = useRadio();
