@@ -131,31 +131,31 @@ export function FriendActionButtons({ targetUserId, targetUsername }: FriendActi
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+    <div className="flex flex-wrap items-center justify-center gap-1 text-[10px]">
       {renderFriendButton()}
       
-      <span className="text-muted-foreground">|</span>
+      <span className="text-border">|</span>
       
       <Button 
         variant="link" 
         size="sm" 
-        className="text-primary h-auto py-1 px-2 uppercase font-bold"
+        className="text-[#ff6600] h-auto py-1 px-2 uppercase font-bold text-[10px]"
         onClick={handleSendMessage}
       >
         <MessageCircle className="w-3 h-3 mr-1" />
         Skicka Mess
       </Button>
       
-      <span className="text-muted-foreground">|</span>
+      <span className="text-border">|</span>
       
-      <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
+      <Button variant="link" size="sm" className="text-[#ff6600] h-auto py-1 px-2 uppercase font-bold text-[10px]">
         <Ban className="w-3 h-3 mr-1" />
         Blockera
       </Button>
       
-      <span className="text-muted-foreground">|</span>
+      <span className="text-border">|</span>
       
-      <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold">
+      <Button variant="link" size="sm" className="text-[#ff6600] h-auto py-1 px-2 uppercase font-bold text-[10px]">
         <FileText className="w-3 h-3 mr-1" />
         Anteckningar
       </Button>
