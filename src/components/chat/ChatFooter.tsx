@@ -13,15 +13,15 @@ interface ChatFooterProps {
 
 export function ChatFooter({ soundEnabled, showClearButton, onClearAll }: ChatFooterProps) {
   return (
-    <div className="bg-gradient-to-r from-[#1e4c8a] to-[#2d5aa0] px-3 py-1 text-[10px] text-white/60 flex items-center justify-between">
+    <div className="bg-gradient-to-b from-[hsl(var(--muted))] to-[hsl(var(--border))] px-3 py-1 text-[10px] text-muted-foreground flex items-center justify-between border-t border-border">
       <span>Echo Messenger © 2025 - Nostalgi på riktigt!</span>
       <div className="flex items-center gap-3">
         {showClearButton && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button className="flex items-center gap-1 text-red-300 hover:text-red-200 transition-colors">
+              <button className="flex items-center gap-1 text-[#ff6600] hover:text-[#cc5200] transition-colors font-bold">
                 <Trash2 className="w-3 h-3" />
-                Töm alla meddelanden
+                Töm alla
               </button>
             </AlertDialogTrigger>
             <AlertDialogContent>

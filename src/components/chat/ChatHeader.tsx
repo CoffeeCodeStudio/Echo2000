@@ -1,4 +1,4 @@
-/** Main MSN-style header bar showing user status, sound toggle, and settings */
+/** Main retro-style header bar showing user status, sound toggle, and settings */
 import { useState } from "react";
 import { Volume2, VolumeX, Settings } from "lucide-react";
 import { Button } from "../ui/button";
@@ -18,18 +18,18 @@ export function ChatHeader({ userDisplayName, userStatus, soundEnabled, onToggle
 
   return (
     <>
-      <div className="bg-gradient-to-r from-[#1e4c8a] via-[#2d5aa0] to-[#3d6ab8] text-white">
+      <div className="lunar-box-header">
         <div className="flex items-center justify-between px-3 py-1.5">
           <MsnLogoWithText />
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-white/10 rounded px-2 py-1">
+            <div className="flex items-center gap-1.5 bg-white/10 px-2 py-1">
               <StatusIndicator status={userStatus} size="sm" />
-              <span className="text-xs">{userDisplayName}</span>
+              <span className="text-[11px] text-white font-bold">{userDisplayName}</span>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10"
+              className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
               onClick={() => setShowSettings(true)}
               title="Alternativ"
             >
@@ -38,7 +38,7 @@ export function ChatHeader({ userDisplayName, userStatus, soundEnabled, onToggle
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10"
+              className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
               onClick={onToggleSound}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
