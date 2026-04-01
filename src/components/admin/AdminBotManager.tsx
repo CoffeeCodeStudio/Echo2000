@@ -22,7 +22,21 @@ interface BotSetting {
   created_at: string;
   allowed_contexts: string[];
   cron_interval: string;
+  tone_of_voice: string;
 }
+
+const PERSONALITY_OPTIONS = [
+  { value: "nostalgikern", label: "Nostalgikern" },
+  { value: "kortansen", label: "Den lugna" },
+  { value: "gladansen", label: "Den entusiastiska" },
+  { value: "dramansen", label: "Berättaren" },
+  { value: "filosofansen", label: "Tänkaren" },
+  { value: "gamern", label: "Gamern" },
+  { value: "influencern", label: "Influencern" },
+  { value: "foraldern", label: "Föräldern" },
+  { value: "musiknerden", label: "Musiknerden" },
+  { value: "tekniknorden", label: "Tekniknörden" },
+];
 
 interface BotMemory {
   id: string;
@@ -70,6 +84,7 @@ export function AdminBotManager() {
       ...b,
       allowed_contexts: b.allowed_contexts || ["chat", "guestbook"],
       cron_interval: b.cron_interval || "*/5 * * * *",
+      tone_of_voice: b.tone_of_voice || "nostalgikern",
     })));
     setLoading(false);
   };
@@ -133,6 +148,7 @@ export function AdminBotManager() {
       is_active: bot.is_active,
       allowed_contexts: bot.allowed_contexts,
       cron_interval: bot.cron_interval,
+      tone_of_voice: bot.tone_of_voice,
     } as any).eq("id", bot.id);
     
     if (error) { console.error("Update bot error:", error); toast({ title: "Fel", description: "Kunde inte spara botinställningar.", variant: "destructive" }); }
@@ -329,7 +345,20 @@ export function AdminBotManager() {
                 <Input value={bot.avatar_url || ""} onChange={e => updateBotField(bot.id, "avatar_url", e.target.value)} placeholder="https://..." />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">System Prompt (Personlighet)</label>
+                <label className="text-xs text-muted-foreground">Personlighetstyp</label>
+                <Select value={bot.tone_of_voice} onValueChange={v => updateBotField(bot.id, "tone_of_voice", v)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERSONALITY_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">System Prompt (extra instruktioner)</label>
                 <Textarea value={bot.system_prompt} onChange={e => updateBotField(bot.id, "system_prompt", e.target.value)} rows={4} />
               </div>
             </div>
