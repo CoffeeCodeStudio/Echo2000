@@ -233,6 +233,7 @@ export function useChatWindow() {
     // Auth / login
     isLoggedIn,
     handleLogin,
+    handleLogout,
     userDisplayName,
     userStatus,
 
