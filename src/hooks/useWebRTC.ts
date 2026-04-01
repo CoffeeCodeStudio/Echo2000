@@ -294,7 +294,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   // Answer incoming call
   const answerCall = useCallback(async (incomingChannelName: string, type: CallType) => {
     try {
-      const stream = await getUserMedia(type);
+      const [stream, iceConfig] = await Promise.all([getUserMedia(type), fetchIceConfig()]);
       localStreamRef.current = stream;
       setLocalStream(stream);
       setCallType(type);
@@ -304,7 +304,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       const channel = supabase.channel(incomingChannelName);
       channelRef.current = channel;
 
-      setupSignalingChannel(channel).subscribe(() => {
+      setupSignalingChannel(channel, iceConfig).subscribe(() => {
         channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
       });
     } catch (err) {
