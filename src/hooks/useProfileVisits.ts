@@ -92,7 +92,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
       const visitorIds = visitData.map((v) => v.visitor_id);
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url')
+        .select('user_id, username, avatar_url, is_bot')
         .in('user_id', visitorIds);
 
       if (profileError) {
