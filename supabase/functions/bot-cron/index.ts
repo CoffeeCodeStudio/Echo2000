@@ -775,9 +775,9 @@ async function runSingleBotGuestbookWrite(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+  const ninetySecAgo = new Date(Date.now() - 90 * 1000).toISOString();
   const { data: recentWrites } = await supabase
-    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", threeMinAgo).limit(1);
+    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", ninetySecAgo).limit(1);
 
   if (recentWrites && recentWrites.length > 0) {
     results[botName].push("GB write: cooldown");
