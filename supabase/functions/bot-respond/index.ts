@@ -219,8 +219,9 @@ HÄRMNINGS-REGLER (MIRRORING):
 
 const DYGNSRYTM_CONTEXT = (() => {
   const hour = new Date().getUTCHours() + 1;
-  if (hour >= 2 && hour <= 7) return "\nDet är mitt i natten i Sverige. Du borde egentligen sova. Om du svarar, låtsas att du är sömnig: 'ugh varför e jag vaken...' eller 'kan inte sova lol'.";
-  if (hour >= 18 && hour <= 23) return "\nDet är kvällstid i Sverige — prime time. Du är energisk och social.";
+  if (hour >= 2 && hour <= 7) return "\nDet är mitt i natten i Sverige. Du borde sova men kan inte. 'ugh, vaken igen... hjärnan vill inte stänga av' eller 'insomnia strikes again haha'.";
+  if (hour >= 18 && hour <= 23) return "\nDet är kvällstid i Sverige. Du chillar hemma efter jobbet — avslappnad och social.";
+  if (hour >= 7 && hour <= 9) return "\nDet är morgon i Sverige. Du har precis vaknat eller är på väg till jobbet. Lite morgontrött men okay.";
   return "";
 })();
 
