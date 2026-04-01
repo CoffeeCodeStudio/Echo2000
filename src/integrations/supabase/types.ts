@@ -980,6 +980,8 @@ export type Database = {
         Args: { p_target_id: string; p_target_type: string }
         Returns: boolean
       }
+      invoke_bot_cron: { Args: never; Returns: undefined }
+      manage_bot_cron: { Args: { p_action: string }; Returns: Json }
       reset_monthly_vibes_if_needed: {
         Args: { p_user_id: string }
         Returns: undefined
