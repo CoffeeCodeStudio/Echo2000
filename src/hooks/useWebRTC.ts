@@ -253,6 +253,8 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
 
   // Start a call
   const startCall = useCallback(async (type: CallType, source: MediaSource = "camera") => {
+    if (startingCallRef.current) return;
+    startingCallRef.current = true;
     try {
       const [stream, iceConfig] = await Promise.all([getUserMedia(type, source), fetchIceConfig()]);
       localStreamRef.current = stream;
@@ -289,6 +291,8 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     } catch (err) {
       console.error("Failed to start call:", err);
       throw err;
+    } finally {
+      startingCallRef.current = false;
     }
   }, [userId, channelName, getUserMedia, createPeerConnection, removePeer, setupSignalingChannel]);
 
