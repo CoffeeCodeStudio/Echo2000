@@ -1748,7 +1748,15 @@ async function handleEmailReplies(
       ? humanSenders[Math.floor(Math.random() * humanSenders.length)]
       : senderIds[Math.floor(Math.random() * senderIds.length)];
 
-    // Reply to any human user (removed admin/mod restriction)
+    // Only reply to admin/moderator users
+    if (!await isAdminOrMod(supabase, chosenSenderId)) {
+      // Mark emails as read but do not reply
+      for (const email of unreadEmails.filter(e => e.sender_id === chosenSenderId)) {
+        await supabase.from("messages").update({ is_read: true }).eq("id", email.id);
+      }
+      results[botName].push(`Email reply skipped: ${chosenSenderId} not admin/mod`);
+      return false;
+    }
 
     // Get sender profile
     const { data: senderProfile } = await supabase
