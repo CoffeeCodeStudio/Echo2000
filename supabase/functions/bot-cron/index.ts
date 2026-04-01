@@ -558,7 +558,7 @@ async function handleBotProfileGuestbookReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
+    const tenSecAgo = new Date(Date.now() - 10 * 1000).toISOString(); // instant reply
     const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
     const { data: recentEntries } = await supabase
@@ -567,7 +567,7 @@ async function handleBotProfileGuestbookReplies(
       .eq("profile_owner_id", bot.user_id)
       .neq("author_id", bot.user_id)
       .gte("created_at", fifteenMinAgo)
-      .lte("created_at", oneMinAgo)
+      .lte("created_at", tenSecAgo)
       .order("created_at", { ascending: false })
       .limit(10);
 
@@ -627,14 +627,14 @@ async function handleChatReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const replyAfter = new Date(Date.now() - 10 * 1000).toISOString(); // 10s delay for instant feel
 
     const { data: recentMsgs } = await supabase
       .from("chat_messages")
       .select("*")
       .eq("recipient_id", bot.user_id)
       .eq("is_read", false)
-      .lte("created_at", twoMinAgo)
+      .lte("created_at", replyAfter)
       .order("created_at", { ascending: false })
       .limit(10);
 
@@ -1654,7 +1654,7 @@ async function handleEmailReplies(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const replyAfter = new Date(Date.now() - 10 * 1000).toISOString(); // 10s for instant reply
 
     // Find unread emails sent TO this bot (at least 2 min old for natural delay)
     const { data: unreadEmails } = await supabase
@@ -1663,19 +1663,13 @@ async function handleEmailReplies(
       .eq("recipient_id", bot.user_id)
       .eq("is_read", false)
       .eq("deleted_by_recipient", false)
-      .lte("created_at", twoMinAgo)
+      .lte("created_at", replyAfter)
       .order("created_at", { ascending: false })
       .limit(5);
 
     if (!unreadEmails || unreadEmails.length === 0) return false;
 
-    // Random delay: 40% chance to skip if < 5 min old (human-like)
-    const oldestEmail = unreadEmails[unreadEmails.length - 1];
-    const emailAgeMin = (Date.now() - new Date(oldestEmail.created_at).getTime()) / 60000;
-    if (emailAgeMin < 5 && Math.random() < 0.4) {
-      results[botName].push(`Email reply delayed: ${emailAgeMin.toFixed(0)}min old`);
-      return false;
-    }
+    // Instant reply — no random delay
 
     // Pick one sender to reply to
     const botUserIds = new Set(bots.map(b => b.user_id as string));
