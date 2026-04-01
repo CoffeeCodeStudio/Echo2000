@@ -343,6 +343,24 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   }, []);
 
   // Listen for incoming calls
+  // Auto-dismiss incoming call after 30 seconds
+  useEffect(() => {
+    if (incomingCall) {
+      incomingTimeoutRef.current = setTimeout(() => setIncomingCall(null), 30_000);
+    } else {
+      if (incomingTimeoutRef.current) {
+        clearTimeout(incomingTimeoutRef.current);
+        incomingTimeoutRef.current = null;
+      }
+    }
+    return () => {
+      if (incomingTimeoutRef.current) {
+        clearTimeout(incomingTimeoutRef.current);
+        incomingTimeoutRef.current = null;
+      }
+    };
+  }, [incomingCall]);
+
   useEffect(() => {
     const incomingChannel = supabase.channel(`incoming-${userId}`);
     incomingChannel
