@@ -1,4 +1,5 @@
 import { Avatar } from './Avatar';
+import { AiBadge } from './AiBadge';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -10,6 +11,7 @@ interface Visitor {
   username: string;
   avatar_url: string | null;
   visited_at: string;
+  is_bot?: boolean;
 }
 
 interface VisitorLogProps {
@@ -66,8 +68,9 @@ export function VisitorLog({ visitors, className }: VisitorLogProps) {
                   size="sm"
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-[11px] font-bold text-foreground truncate block group-hover:text-[#ff6600] transition-colors">
+                  <span className="text-[11px] font-bold text-foreground truncate flex items-center gap-1 group-hover:text-[#ff6600] transition-colors">
                     {visitor.username}
+                    {visitor.is_bot && <AiBadge />}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground whitespace-nowrap">

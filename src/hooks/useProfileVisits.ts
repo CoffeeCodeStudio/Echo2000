@@ -7,6 +7,7 @@ interface Visitor {
   username: string;
   avatar_url: string | null;
   visited_at: string;
+  is_bot: boolean;
 }
 
 /**
@@ -91,7 +92,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
       const visitorIds = visitData.map((v) => v.visitor_id);
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url')
+        .select('user_id, username, avatar_url, is_bot')
         .in('user_id', visitorIds);
 
       if (profileError) {
@@ -109,6 +110,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
           username: profile?.username || 'Okänd',
           avatar_url: profile?.avatar_url || null,
           visited_at: visit.visited_at,
+          is_bot: profile?.is_bot || false,
         };
       });
 
