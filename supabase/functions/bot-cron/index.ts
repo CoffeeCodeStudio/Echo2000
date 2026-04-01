@@ -965,7 +965,7 @@ async function handleKlotterDrawing(
 
     const fortyFiveMinAgo = new Date(Date.now() - 45 * 60 * 1000).toISOString();
     const { data: recent } = await supabase.from("klotter")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", twoHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", fortyFiveMinAgo).limit(1);
     if (recent && recent.length > 0) { results[botName].push("Klotter: cooldown"); return; }
 
     const template = KLOTTER_TEMPLATES[Math.floor(Math.random() * KLOTTER_TEMPLATES.length)];
