@@ -222,7 +222,7 @@ serve(async (req) => {
     );
 
     // Calculate how many bots need to be online (minimum 50%)
-    const minOnlineCount = Math.ceil(bots.length * 0.5);
+    const minOnlineCount = Math.ceil(bots.length * 0.8);
     const activeCount2 = activeBotNames.size;
     const idleBots = bots.filter(b => !activeBotNames.has(b.name as string));
     const additionalOnlineNeeded = Math.max(0, minOnlineCount - activeCount2);
@@ -246,18 +246,15 @@ serve(async (req) => {
         const offset = Math.floor(Math.random() * 2 * 60 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
       } else {
-        // Remaining idle bots — natural distribution (some online, some away)
+        // Remaining idle bots — always online or away, never offline
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.40) {
+        if (statusRoll < 0.65) {
           // Online: 0-2 min ago
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
-        } else if (statusRoll < 0.75) {
+        } else {
           // Away: 3-7 min ago
           offset = 3 * 60 * 1000 + Math.floor(Math.random() * 4 * 60 * 1000);
-        } else {
-          // Offline-ish: 8-20 min ago
-          offset = 8 * 60 * 1000 + Math.floor(Math.random() * 12 * 60 * 1000);
         }
         lastSeen = new Date(now.getTime() - offset).toISOString();
       }
