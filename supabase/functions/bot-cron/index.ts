@@ -583,6 +583,18 @@ async function handleBotProfileGuestbookReplies(
     const filteredEntries = recentEntries?.filter(e => e.author_id !== e.profile_owner_id) || [];
     if (filteredEntries.length === 0) return false;
 
+    // Dedup: skip entries already handled by db triggers
+    const { data: recentTriggers } = await supabase
+      .from("bot_trigger_log")
+      .select("target_user_id")
+      .eq("bot_user_id", bot.user_id)
+      .eq("trigger_source", "guestbook")
+      .gte("created_at", new Date(Date.now() - 60 * 1000).toISOString());
+
+    const triggeredUserIds = new Set((recentTriggers || []).map(t => t.target_user_id));
+    const unhandledEntries = filteredEntries.filter(e => !triggeredUserIds.has(e.author_id));
+    if (unhandledEntries.length === 0) return false;
+
     const targetEntry = filteredEntries[0];
 
     const { data: botRepliesAfter } = await supabase
