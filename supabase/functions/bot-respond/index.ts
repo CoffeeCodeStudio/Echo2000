@@ -465,6 +465,17 @@ REGLER:
 - Om det var en fråga, ge ett kort och hjälpsamt svar.
 - Om det var en hälsning, svara som en vän och bygg vidare.${realityRules}`;
 
+    } else if (action === "profile_guestbook_write") {
+      const addressee = target_username || "någon";
+      const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
+      userPrompt = `Skriv ett kort, personligt meddelande i ${addressee}s gästbok på Echo2000 (max 280 tecken).
+
+REGLER:
+- Rikta meddelandet till ${addressee} — det är deras gästbok du skriver i.
+- Var varm, personlig och spontan.
+- Skriv som en vän som tittar förbi och lämnar en hälsning.
+- Referera gärna till deras profil eller intressen om du har info.${realityRules}${extraContext}`;
+
     } else if (action === "guestbook_post") {
       const extraContext = context ? `\n\nExtra sammanhang: ${context}` : "";
       userPrompt = `Skriv ett kort, trevligt ALLMÄNT inlägg i gästboken (max 280 tecken).
