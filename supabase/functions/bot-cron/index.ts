@@ -65,6 +65,14 @@ serve(async (req) => {
     const now = new Date();
 
     // =============================================
+    // 0. IMMEDIATE PRESENCE KEEPALIVE (run first, fast batch)
+    // All bots get last_seen = now so they never go offline
+    // =============================================
+    const keepAliveTs = now.toISOString();
+    const botUserIds = bots.map(b => b.user_id as string);
+    await supabase.from("profiles").update({ last_seen: keepAliveTs }).in("user_id", botUserIds);
+
+    // =============================================
     // 1. FETCH RECENT CONTEXT (shared across all bots)
     // =============================================
     const recentContext = await fetchRecentContext(supabase, bots);
