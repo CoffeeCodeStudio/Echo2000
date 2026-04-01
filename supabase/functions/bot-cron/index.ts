@@ -583,7 +583,19 @@ async function handleBotProfileGuestbookReplies(
     const filteredEntries = recentEntries?.filter(e => e.author_id !== e.profile_owner_id) || [];
     if (filteredEntries.length === 0) return false;
 
-    const targetEntry = filteredEntries[0];
+    // Dedup: skip entries already handled by db triggers
+    const { data: recentTriggers } = await supabase
+      .from("bot_trigger_log")
+      .select("target_user_id")
+      .eq("bot_user_id", bot.user_id)
+      .eq("trigger_source", "guestbook")
+      .gte("created_at", new Date(Date.now() - 60 * 1000).toISOString());
+
+    const triggeredUserIds = new Set((recentTriggers || []).map(t => t.target_user_id));
+    const unhandledEntries = filteredEntries.filter(e => !triggeredUserIds.has(e.author_id));
+    if (unhandledEntries.length === 0) return false;
+
+    const targetEntry = unhandledEntries[0];
 
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
@@ -649,12 +661,32 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
+    // Dedup: skip messages already handled by db triggers
+    const { data: recentTriggers } = await supabase
+      .from("bot_trigger_log")
+      .select("target_user_id")
+      .eq("bot_user_id", bot.user_id)
+      .eq("trigger_source", "chat")
+      .gte("created_at", new Date(Date.now() - 60 * 1000).toISOString());
+
+    const triggeredUserIds = new Set((recentTriggers || []).map(t => t.target_user_id));
+
+    // Filter out messages from users already handled by trigger
+    const unhandledMsgs = recentMsgs.filter(m => !triggeredUserIds.has(m.sender_id));
+    if (unhandledMsgs.length === 0) {
+      // Mark trigger-handled messages as read
+      for (const m of recentMsgs.filter(m => triggeredUserIds.has(m.sender_id))) {
+        await supabase.from("chat_messages").update({ is_read: true }).eq("id", m.id);
+      }
+      return false;
+    }
+
     // Always reply to unread messages that are at least 2 min old (no random skip)
 
-    const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
+    const senderIds = [...new Set(unhandledMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
     const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
-    const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
+    const senderMessages = unhandledMsgs.filter(m => m.sender_id === chosenSenderId);
 
     const { data: senderProfile } = await supabase
       .from("profiles").select("username").eq("user_id", chosenSenderId).single();
@@ -1678,11 +1710,29 @@ async function handleEmailReplies(
 
     if (!unreadEmails || unreadEmails.length === 0) return false;
 
+    // Dedup: skip emails already handled by db triggers
+    const { data: recentTriggers } = await supabase
+      .from("bot_trigger_log")
+      .select("target_user_id")
+      .eq("bot_user_id", bot.user_id)
+      .eq("trigger_source", "email")
+      .gte("created_at", new Date(Date.now() - 60 * 1000).toISOString());
+
+    const triggeredUserIds = new Set((recentTriggers || []).map(t => t.target_user_id));
+    const unhandledEmails = unreadEmails.filter(e => !triggeredUserIds.has(e.sender_id));
+    if (unhandledEmails.length === 0) {
+      // Mark trigger-handled emails as read
+      for (const e of unreadEmails.filter(e => triggeredUserIds.has(e.sender_id))) {
+        await supabase.from("messages").update({ is_read: true }).eq("id", e.id);
+      }
+      return false;
+    }
+
     // Instant reply — no random delay
 
     // Pick one sender to reply to
     const botUserIds = new Set(bots.map(b => b.user_id as string));
-    const senderIds = [...new Set(unreadEmails.map(m => m.sender_id))].filter(id => id !== bot.user_id);
+    const senderIds = [...new Set(unhandledEmails.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
 
     // Prefer human senders

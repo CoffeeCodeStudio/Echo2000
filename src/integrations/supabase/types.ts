@@ -128,6 +128,63 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_trigger_log: {
+        Row: {
+          bot_user_id: string
+          created_at: string
+          id: string
+          source_message_id: string | null
+          target_user_id: string
+          trigger_source: string
+        }
+        Insert: {
+          bot_user_id: string
+          created_at?: string
+          id?: string
+          source_message_id?: string | null
+          target_user_id: string
+          trigger_source: string
+        }
+        Update: {
+          bot_user_id?: string
+          created_at?: string
+          id?: string
+          source_message_id?: string | null
+          target_user_id?: string
+          trigger_source?: string
+        }
+        Relationships: []
+      }
+      bot_trigger_settings: {
+        Row: {
+          created_at: string
+          delay_max_seconds: number
+          delay_min_seconds: number
+          id: string
+          is_enabled: boolean
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_max_seconds?: number
+          delay_min_seconds?: number
+          id?: string
+          is_enabled?: boolean
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_max_seconds?: number
+          delay_min_seconds?: number
+          id?: string
+          is_enabled?: boolean
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_participants: {
         Row: {
           call_id: string
@@ -958,6 +1015,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bot_should_respond: {
+        Args: {
+          p_bot_user_id: string
+          p_target_user_id: string
+          p_trigger_type: string
+        }
+        Returns: boolean
+      }
       count_good_vibes: {
         Args: { p_target_id: string; p_target_type: string }
         Returns: number
@@ -981,6 +1046,17 @@ export type Database = {
         Returns: boolean
       }
       invoke_bot_cron: { Args: never; Returns: undefined }
+      invoke_bot_respond: {
+        Args: {
+          p_action: string
+          p_bot_user_id: string
+          p_context: string
+          p_profile_owner_id?: string
+          p_target_user_id: string
+          p_target_username: string
+        }
+        Returns: undefined
+      }
       manage_bot_cron: { Args: { p_action: string }; Returns: Json }
       reset_monthly_vibes_if_needed: {
         Args: { p_user_id: string }
