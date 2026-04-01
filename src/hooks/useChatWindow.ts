@@ -136,7 +136,7 @@ export function useChatWindow() {
     setIsLoggedIn(false);
     setUserDisplayName("");
     setSelectedContact(null);
-    if (soundEnabled) playSound("logout");
+    if (soundEnabled) playSound("offline");
   };
 
   const handleSelectContact = (contact: MsnContact) => {
