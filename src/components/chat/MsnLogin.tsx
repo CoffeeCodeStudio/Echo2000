@@ -116,14 +116,31 @@ export function MsnLogin({ onLogin }: MsnLoginProps) {
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Visningsnamn:
               </label>
-              <Input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="~*Ditt namn*~"
-                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
+              <div className="flex gap-1.5">
+                <Input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => { setDisplayName(e.target.value); setSaved(false); }}
+                  placeholder="~*Ditt namn*~"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 flex-1"
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="px-2 h-9 border-gray-300 text-gray-700 hover:bg-gray-200"
+                  disabled={!displayName.trim()}
+                  onClick={() => {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ displayName, status, autoLogin: rememberMe }));
+                    setSaved(true);
+                    setTimeout(() => setSaved(false), 2000);
+                  }}
+                >
+                  <Save className="w-3.5 h-3.5 mr-1" />
+                  {saved ? "✓" : "Spara"}
+                </Button>
+              </div>
               <p className="text-[10px] text-gray-500 mt-1">
                 Tips: Använd ~*symboler*~ för att sticka ut!
               </p>
