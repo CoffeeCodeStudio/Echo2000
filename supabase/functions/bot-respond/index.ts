@@ -367,7 +367,7 @@ ${personalityPrompt}
 ${HUMAN_WRITING_RULES}
 ${ANTI_DETECTION_RULES}
 ${MIRRORING_RULES}
-${antiRepetitivePrompt}`;
+${antiRepetitivePrompt}${memoryContext}`;
 
     let userPrompt = "";
 
