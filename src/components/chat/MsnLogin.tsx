@@ -24,6 +24,7 @@ export function MsnLogin({ onLogin }: MsnLoginProps) {
   const [status, setStatus] = useState("online");
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [saved, setSaved] = useState(false);
   const { playSound } = useMsnSounds();
   const autoLoginAttempted = useRef(false);
 
