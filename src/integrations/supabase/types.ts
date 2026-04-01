@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_memories: {
+        Row: {
+          bot_user_id: string
+          created_at: string
+          id: string
+          interaction_count: number
+          last_interaction: string
+          summary: string
+          target_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          bot_user_id: string
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          last_interaction?: string
+          summary?: string
+          target_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          bot_user_id?: string
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          last_interaction?: string
+          summary?: string
+          target_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_settings: {
         Row: {
           activity_level: number

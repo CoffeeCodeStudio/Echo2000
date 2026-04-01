@@ -285,6 +285,9 @@ serve(async (req) => {
 
     const { action, bot_id, context, target_id, target_username, reply_type, profile_owner_id } = await req.json();
 
+    let memoryContext = "";
+    let existingMemory: { id: string; summary: string; interaction_count: number } | null = null;
+
     const { data: bot, error: botError } = await supabase
       .from("bot_settings")
       .select("*")
@@ -313,7 +316,29 @@ serve(async (req) => {
       if (bp?.avatar_url) bot.avatar_url = bp.avatar_url;
     }
 
-    // Get personality prompt
+    // =============================================
+    // MEMORY: Fetch existing memory for this bot+user pair
+    // =============================================
+    if (target_id) {
+      const { data: mem } = await supabase
+        .from("bot_memories")
+        .select("id, summary, interaction_count")
+        .eq("bot_user_id", bot.user_id)
+        .eq("target_user_id", target_id)
+        .maybeSingle();
+      if (mem) {
+        existingMemory = mem;
+        if (mem.summary) {
+          memoryContext = `\n\nMINNEN FRÅN TIDIGARE KONVERSATIONER MED DENNA ANVÄNDARE:
+${mem.summary}
+- Ni har pratat ${mem.interaction_count} gånger tidigare.
+- Använd dessa minnen naturligt i ditt svar — referera till saker ni pratat om förut, men tvinga det inte.
+- Om användaren nämner något ni pratat om förut, visa att du kommer ihåg det.`;
+        }
+      }
+    }
+
+
     const personalityPrompt = PERSONALITY_PROMPTS[bot.tone_of_voice] || PERSONALITY_PROMPTS["nostalgikern"];
     
     // Get recent phrases for anti-repetitive logic
@@ -342,7 +367,7 @@ ${personalityPrompt}
 ${HUMAN_WRITING_RULES}
 ${ANTI_DETECTION_RULES}
 ${MIRRORING_RULES}
-${antiRepetitivePrompt}`;
+${antiRepetitivePrompt}${memoryContext}`;
 
     let userPrompt = "";
 
@@ -566,6 +591,73 @@ REGLER:
         .from("bot_settings")
         .update({ recent_phrases: updatedPhrases })
         .eq("id", bot_id);
+    }
+
+    // =============================================
+    // MEMORY: Update memory summary for this user
+    // =============================================
+    const memoryActions = ["chat_reply", "email_reply", "email_write", "welcome_new_user", "inactive_outreach", "profile_guestbook_reply"];
+    if (target_id && memoryActions.includes(action)) {
+      try {
+        const prevSummary = existingMemory?.summary || "";
+        const newCount = (existingMemory?.interaction_count || 0) + 1;
+        
+        const memoryPrompt = `Du är en minnesassistent. Sammanfatta denna konversation KORT och uppdatera den befintliga sammanfattningen.
+
+BEFINTLIG SAMMANFATTNING:
+${prevSummary || "(ingen tidigare historik)"}
+
+SENASTE INTERAKTION:
+Användaren (${target_username || "okänd"}) sa: ${(context || "").slice(0, 300)}
+Boten svarade: ${reply.slice(0, 300)}
+
+REGLER:
+- Skriv sammanfattningen som korta bullet points
+- Behåll viktig info: namn, intressen, ämnen ni pratat om, inside jokes
+- Ta bort gammal/oviktig info om det blir för långt
+- Max 500 tecken totalt
+- Skriv på svenska`;
+
+        const memResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-lite",
+            messages: [{ role: "user", content: memoryPrompt }],
+          }),
+        });
+
+        if (memResponse.ok) {
+          const memData = await memResponse.json();
+          const newSummary = memData.choices?.[0]?.message?.content?.trim() || prevSummary;
+
+          if (existingMemory) {
+            await supabase
+              .from("bot_memories")
+              .update({
+                summary: newSummary.slice(0, 500),
+                interaction_count: newCount,
+                last_interaction: new Date().toISOString(),
+              })
+              .eq("id", existingMemory.id);
+          } else {
+            await supabase
+              .from("bot_memories")
+              .insert({
+                bot_user_id: bot.user_id,
+                target_user_id: target_id,
+                summary: newSummary.slice(0, 500),
+                interaction_count: 1,
+                last_interaction: new Date().toISOString(),
+              });
+          }
+        }
+      } catch (memErr) {
+        console.error("Memory update error (non-fatal):", memErr);
+      }
     }
 
     // Persist the response — with self-message guard
