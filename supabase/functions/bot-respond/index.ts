@@ -316,7 +316,29 @@ serve(async (req) => {
       if (bp?.avatar_url) bot.avatar_url = bp.avatar_url;
     }
 
-    // Get personality prompt
+    // =============================================
+    // MEMORY: Fetch existing memory for this bot+user pair
+    // =============================================
+    if (target_id) {
+      const { data: mem } = await supabase
+        .from("bot_memories")
+        .select("id, summary, interaction_count")
+        .eq("bot_user_id", bot.user_id)
+        .eq("target_user_id", target_id)
+        .maybeSingle();
+      if (mem) {
+        existingMemory = mem;
+        if (mem.summary) {
+          memoryContext = `\n\nMINNEN FRÅN TIDIGARE KONVERSATIONER MED DENNA ANVÄNDARE:
+${mem.summary}
+- Ni har pratat ${mem.interaction_count} gånger tidigare.
+- Använd dessa minnen naturligt i ditt svar — referera till saker ni pratat om förut, men tvinga det inte.
+- Om användaren nämner något ni pratat om förut, visa att du kommer ihåg det.`;
+        }
+      }
+    }
+
+
     const personalityPrompt = PERSONALITY_PROMPTS[bot.tone_of_voice] || PERSONALITY_PROMPTS["nostalgikern"];
     
     // Get recent phrases for anti-repetitive logic
