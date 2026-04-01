@@ -375,7 +375,7 @@ async function handleAutonomousProfileSurfing(
           if (Math.random() < 0.30) {
             try {
               // Check guestbook cooldown (3 min)
-              const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+              const threeMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
               const { data: recentGB } = await supabase
                 .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
                 .gte("created_at", threeMinAgo).limit(1);
