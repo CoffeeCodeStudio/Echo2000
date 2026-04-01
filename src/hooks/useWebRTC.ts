@@ -113,6 +113,20 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     });
   }, []);
 
+  const removePeer = useCallback((remoteUserId: string) => {
+    const peer = peersRef.current.get(remoteUserId);
+    if (peer) {
+      peer.pc.close();
+      peersRef.current.delete(remoteUserId);
+      setRemoteStreams((prev) => {
+        const next = new Map(prev);
+        next.delete(remoteUserId);
+        return next;
+      });
+      setParticipants((prev) => prev.filter((p) => p !== remoteUserId));
+    }
+  }, []);
+
   // Create peer connection for a specific user
   const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>): PeerConnection => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -175,21 +189,6 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     peersRef.current.set(remoteUserId, peer);
     return peer;
   }, [userId, removePeer]);
-
-  const removePeer = useCallback((remoteUserId: string) => {
-    const peer = peersRef.current.get(remoteUserId);
-    if (peer) {
-      peer.pc.close();
-      peersRef.current.delete(remoteUserId);
-      setRemoteStreams((prev) => {
-        const next = new Map(prev);
-        next.delete(remoteUserId);
-        return next;
-      });
-      setParticipants((prev) => prev.filter((p) => p !== remoteUserId));
-    }
-  }, []);
-
   // Attach all signaling broadcast handlers to a channel
   const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>) => {
     return channel
