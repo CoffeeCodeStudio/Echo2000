@@ -72,6 +72,7 @@ export function useChatMessages(contactId: string | null) {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
+          filter: `sender_id=eq.${contactId}`,
         },
         (payload) => {
           const msg = payload.new as ChatMessage;
