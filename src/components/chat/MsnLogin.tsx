@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Volume2, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { cn } from "@/lib/utils";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
+
+const STORAGE_KEY = "echo-messenger-login";
 
 interface MsnLoginProps {
   onLogin: (displayName: string, status: string) => void;
@@ -23,21 +25,47 @@ export function MsnLogin({ onLogin }: MsnLoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const { playSound } = useMsnSounds();
+  const autoLoginAttempted = useRef(false);
 
-  const handleLogin = async () => {
-    if (!displayName.trim()) return;
-    
+  // Load saved credentials & auto-login
+  useEffect(() => {
+    if (autoLoginAttempted.current) return;
+    autoLoginAttempted.current = true;
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { displayName: savedName, status: savedStatus, autoLogin } = JSON.parse(saved);
+        if (savedName) {
+          setDisplayName(savedName);
+          setStatus(savedStatus || "online");
+          setRememberMe(true);
+          if (autoLogin) {
+            // Auto-login after a brief delay for UX
+            setTimeout(() => doLogin(savedName, savedStatus || "online"), 300);
+          }
+        }
+      }
+    } catch {}
+  }, []);
+
+  const doLogin = async (name: string, loginStatus: string) => {
+    if (!name.trim()) return;
     setIsLoading(true);
-    
-    // Simulate connection delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Play online sound
     playSound("online");
-    
     setIsLoading(false);
-    onLogin(displayName, status);
+
+    if (rememberMe) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ displayName: name, status: loginStatus, autoLogin: true }));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    onLogin(name, loginStatus);
   };
+
+  const handleLogin = () => doLogin(displayName, status);
 
   return (
     <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-[hsl(220,70%,50%)] via-[hsl(210,70%,55%)] to-[hsl(200,70%,60%)] p-4">
