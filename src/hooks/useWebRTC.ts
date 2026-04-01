@@ -113,8 +113,22 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     });
   }, []);
 
+  const removePeer = useCallback((remoteUserId: string) => {
+    const peer = peersRef.current.get(remoteUserId);
+    if (peer) {
+      peer.pc.close();
+      peersRef.current.delete(remoteUserId);
+      setRemoteStreams((prev) => {
+        const next = new Map(prev);
+        next.delete(remoteUserId);
+        return next;
+      });
+      setParticipants((prev) => prev.filter((p) => p !== remoteUserId));
+    }
+  }, []);
+
   // Create peer connection for a specific user
-  const createPeerConnection = useCallback((remoteUserId: string): PeerConnection => {
+  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>): PeerConnection => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     const remoteStream = new MediaStream();
 
@@ -132,7 +146,6 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
               if ('latencyMode' in params.encodings[0]) {
                 (params.encodings[0] as any).latencyMode = 'realtime';
               }
-              // Prefer hardware-accelerated VP9 or H264
               params.encodings[0].scaleResolutionDownBy = 1.0;
               await sender.setParameters(params);
             } catch (e) {
@@ -151,10 +164,10 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       setRemoteStreams((prev) => new Map(prev).set(remoteUserId, remoteStream));
     };
 
-    // Send ICE candidates
+    // Send ICE candidates via the explicitly passed channel
     pc.onicecandidate = (event) => {
-      if (event.candidate && channelRef.current) {
-        channelRef.current.send({
+      if (event.candidate) {
+        channel.send({
           type: "broadcast",
           event: "ice-candidate",
           payload: {
@@ -175,28 +188,13 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     const peer: PeerConnection = { userId: remoteUserId, pc, remoteStream };
     peersRef.current.set(remoteUserId, peer);
     return peer;
-  }, [userId]);
-
-  const removePeer = useCallback((remoteUserId: string) => {
-    const peer = peersRef.current.get(remoteUserId);
-    if (peer) {
-      peer.pc.close();
-      peersRef.current.delete(remoteUserId);
-      setRemoteStreams((prev) => {
-        const next = new Map(prev);
-        next.delete(remoteUserId);
-        return next;
-      });
-      setParticipants((prev) => prev.filter((p) => p !== remoteUserId));
-    }
-  }, []);
-
+  }, [userId, removePeer]);
   // Attach all signaling broadcast handlers to a channel
   const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>) => {
     return channel
       .on("broadcast", { event: "offer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
-        const peer = createPeerConnection(payload.from);
+        const peer = createPeerConnection(payload.from, channel);
         await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         const answer = await peer.pc.createAnswer();
         await peer.pc.setLocalDescription(answer);
@@ -223,7 +221,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       })
       .on("broadcast", { event: "join" }, async ({ payload }) => {
         if (payload.userId === userId) return;
-        const peer = createPeerConnection(payload.userId);
+        const peer = createPeerConnection(payload.userId, channel);
         const offer = await peer.pc.createOffer();
         await peer.pc.setLocalDescription(offer);
         channel.send({
