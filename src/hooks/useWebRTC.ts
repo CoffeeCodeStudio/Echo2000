@@ -1,11 +1,34 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// TODO: Move TURN credentials to environment variables for production.
+// Free TURN servers from OpenRelay (https://www.metered.ca/tools/openrelay/)
+// are used as a fallback relay for users behind strict NAT/firewalls.
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
+    {
+      urls: "turn:a.relay.metered.ca:80",
+      username: "e8dd65b92f6deb2b4a750985",
+      credential: "3JMnR3v1HGbMskge",
+    },
+    {
+      urls: "turn:a.relay.metered.ca:80?transport=tcp",
+      username: "e8dd65b92f6deb2b4a750985",
+      credential: "3JMnR3v1HGbMskge",
+    },
+    {
+      urls: "turn:a.relay.metered.ca:443",
+      username: "e8dd65b92f6deb2b4a750985",
+      credential: "3JMnR3v1HGbMskge",
+    },
+    {
+      urls: "turns:a.relay.metered.ca:443?transport=tcp",
+      username: "e8dd65b92f6deb2b4a750985",
+      credential: "3JMnR3v1HGbMskge",
+    },
   ],
 };
 
