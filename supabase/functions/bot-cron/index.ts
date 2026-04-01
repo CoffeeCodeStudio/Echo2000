@@ -743,7 +743,7 @@ async function runSingleBotLajvPost(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+  const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
   const { data: recentLajv } = await supabase
     .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", twoMinAgo).limit(1);
 
