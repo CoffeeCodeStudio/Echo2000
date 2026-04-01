@@ -1663,7 +1663,7 @@ async function handleEmailReplies(
       .eq("recipient_id", bot.user_id)
       .eq("is_read", false)
       .eq("deleted_by_recipient", false)
-      .lte("created_at", twoMinAgo)
+      .lte("created_at", replyAfter)
       .order("created_at", { ascending: false })
       .limit(5);
 
