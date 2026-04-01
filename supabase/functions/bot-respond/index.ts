@@ -530,6 +530,33 @@ REGLER:
 - Kom ihåg vad ni pratat om tidigare i konversationshistoriken!
 - Var personlig, varm och mänsklig.${realityRules}`;
 
+    } else if (action === "profile_update") {
+      // Bot autonomously updates its own profile
+      const currentProfile = context ? JSON.parse(context) : {};
+      userPrompt = `Du ska uppdatera din profil på Echo2000. Här är dina nuvarande profilfält:
+${JSON.stringify(currentProfile, null, 2)}
+
+Välj 1-3 fält att uppdatera. Svara BARA med valid JSON (inget annat) i formatet:
+{"status_message": "ny status", "bio": "ny bio"}
+
+FÄLT DU KAN ÄNDRA:
+- status_message (max 200 tecken) — din aktuella status, t.ex. "☕ kaffe och Kent i lurarna", "🎮 nostalgikvall med CS 1.6"
+- bio (max 500 tecken) — kort om dig
+- interests (max 200 tecken) — intressen
+- likes (max 200 tecken) — gillar
+- listens_to (max 200 tecken) — lyssnar på
+- eats (max 200 tecken) — äter
+- prefers (max 200 tecken) — föredrar
+- clothing (max 200 tecken) — kläder/stil
+- spanar_in (max 200 tecken) — spanar in
+
+REGLER:
+- Ändra INTE alla fält — välj 1-3 som passar just nu.
+- status_message ändras oftast — det är din "vad gör du just nu".
+- Skriv i samma ton som din personlighet.
+- Var konkret och personlig, inte generisk.
+- BARA JSON i svaret, inget annat.${realityRules}`;
+
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
