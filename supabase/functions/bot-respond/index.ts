@@ -606,6 +606,29 @@ REGLER:
       reply = reply.slice(1, -1);
     }
 
+    // Special handling for profile_update — parse JSON and return early
+    if (action === "profile_update") {
+      try {
+        // Extract JSON from the reply (handle markdown code blocks)
+        let jsonStr = reply;
+        const jsonMatch = reply.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonStr = jsonMatch[1].trim();
+        // Also try to find raw JSON object
+        const objMatch = jsonStr.match(/\{[\s\S]*\}/);
+        if (objMatch) jsonStr = objMatch[0];
+        
+        const profileUpdates = JSON.parse(jsonStr);
+        return new Response(JSON.stringify({ success: true, reply: "profile updated", profile_updates: profileUpdates }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (parseErr) {
+        console.error("Failed to parse profile_update JSON:", reply);
+        return new Response(JSON.stringify({ success: false, error: "Invalid JSON from AI", reply }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // =============================================
     // ANTI-REPETITIVE: Track opening phrase
     // =============================================
