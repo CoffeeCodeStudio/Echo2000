@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Bot, Skull, Sparkles, Play } from "lucide-react";
+import { Loader2, Bot, Skull, Sparkles, Play, Activity } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export function AdminBotSpawner() {
@@ -11,7 +11,53 @@ export function AdminBotSpawner() {
   const [cronRunning, setCronRunning] = useState(false);
   const [result, setResult] = useState("");
   const [cronResult, setCronResult] = useState("");
+  const [cronStatus, setCronStatus] = useState<{ active: boolean; lastRun: string | null; activeBots: number }>({ active: false, lastRun: null, activeBots: 0 });
   const { toast } = useToast();
+
+  // Poll cron status every 15s
+  useEffect(() => {
+    const checkCronStatus = async () => {
+      try {
+        // Check latest bot lajv activity as a proxy for cron running
+        const { data: recentLajv } = await supabase
+          .from("lajv_messages")
+          .select("created_at, username")
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        const { data: recentGB } = await supabase
+          .from("profile_guestbook")
+          .select("created_at")
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        // Check active bot count
+        const { count } = await supabase
+          .from("bot_settings")
+          .select("id", { count: "exact", head: true })
+          .eq("is_active", true);
+
+        const latestActivity = [
+          recentLajv?.[0]?.created_at,
+          recentGB?.[0]?.created_at,
+        ].filter(Boolean).sort().reverse()[0];
+
+        const isActive = latestActivity
+          ? (Date.now() - new Date(latestActivity).getTime()) < 5 * 60 * 1000 // activity within 5 min
+          : false;
+
+        setCronStatus({
+          active: isActive,
+          lastRun: latestActivity || null,
+          activeBots: count || 0,
+        });
+      } catch {}
+    };
+
+    checkCronStatus();
+    const interval = setInterval(checkCronStatus, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const callBotManager = async (action: string) => {
     const isSpawn = action === "spawn_bots";
