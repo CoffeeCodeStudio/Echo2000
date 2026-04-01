@@ -44,6 +44,8 @@ export function AdminBotActivity() {
   const [botProfiles, setBotProfiles] = useState<BotProfile[]>([]);
   const [guestbookActivity, setGuestbookActivity] = useState<Array<{ id: string; author_name: string; message: string; created_at: string; profile_owner_id: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = async () => {
     setLoading(true);
