@@ -745,7 +745,7 @@ async function runSingleBotLajvPost(
 
   const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
   const { data: recentLajv } = await supabase
-    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", twoMinAgo).limit(1);
+    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", oneMinAgo).limit(1);
 
   if (recentLajv && recentLajv.length > 0) {
     results[botName].push("Lajv: cooldown");
