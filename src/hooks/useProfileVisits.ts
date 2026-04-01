@@ -7,6 +7,7 @@ interface Visitor {
   username: string;
   avatar_url: string | null;
   visited_at: string;
+  is_bot: boolean;
 }
 
 /**
