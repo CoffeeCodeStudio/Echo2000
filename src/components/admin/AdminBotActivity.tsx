@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap } from "lucide-react";
+import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface LajvMessage {
   id: string;
@@ -41,6 +44,8 @@ export function AdminBotActivity() {
   const [botProfiles, setBotProfiles] = useState<BotProfile[]>([]);
   const [guestbookActivity, setGuestbookActivity] = useState<Array<{ id: string; author_name: string; message: string; created_at: string; profile_owner_id: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = async () => {
     setLoading(true);
@@ -95,6 +100,26 @@ export function AdminBotActivity() {
 
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  const handleClearAll = async () => {
+    setClearing(true);
+    try {
+      const { data, error } = await supabase.rpc('clear_all_bot_activity');
+      if (error) throw error;
+      const result = data as { success: boolean; deleted?: Record<string, number>; error?: string };
+      if (result.success && result.deleted) {
+        const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
+        toast({ title: `Raderade ${total} bot-poster`, description: `GB: ${result.deleted.profile_guestbook}, Mejl: ${result.deleted.emails}, Chatt: ${result.deleted.chat}, Lajv: ${result.deleted.lajv}` });
+        fetchData();
+      } else {
+        toast({ title: 'Misslyckades', description: result.error || 'Okänt fel', variant: 'destructive' });
+      }
+    } catch (err: any) {
+      toast({ title: 'Fel', description: err.message, variant: 'destructive' });
+    } finally {
+      setClearing(false);
+    }
+  };
 
   // Compute personality stats
   const botUserIds = new Set(botSettings.map((b) => b.user_id));
@@ -152,6 +177,28 @@ export function AdminBotActivity() {
         <StatCard icon={Zap} label="Cross-bot" value={String(crossBotMessages.length)} />
         <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
       </div>
+
+      {/* Clear all bot activity */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" size="sm" disabled={clearing}>
+            {clearing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Rensa ALL bot-aktivitet
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Radera all bot-aktivitet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Detta raderar ALLT som bottar har skapat: gästboksinlägg, mejl, chattmeddelanden, lajv-meddelanden, triggerloggar och minnen. Kan ej ångras.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearAll}>Radera allt</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Personality breakdown */}
       <div className="nostalgia-card p-4">
