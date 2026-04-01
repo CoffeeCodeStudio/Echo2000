@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play } from "lucide-react";
+import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface CronInfo {
@@ -16,6 +16,7 @@ interface CronInfo {
 export function AdminBotSpawner() {
   const [spawning, setSpawning] = useState(false);
   const [exorcising, setExorcising] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [togglingCron, setTogglingCron] = useState(false);
   const [result, setResult] = useState("");
   const [cronInfo, setCronInfo] = useState<CronInfo>({ active: false, schedule: "", lastRun: null, lastStatus: null, activeBots: 0 });
@@ -190,6 +191,51 @@ export function AdminBotSpawner() {
               <AlertDialogCancel>Avbryt</AlertDialogCancel>
               <AlertDialogAction onClick={() => callBotManager("exorcism")} className="bg-destructive text-destructive-foreground">
                 Ja, radera alla bottar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size="sm" variant="destructive" disabled={spawning || exorcising || clearing}>
+              {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+              🧹 Rensa aktivitet
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>⚠️ Radera ALL bot-aktivitet?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Detta raderar alla bot-meddelanden i chatt, lajv, gästböcker, mejl, trigger-loggar och minnen. Bottarna själva behålls. Kan inte ångras.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground"
+                onClick={async () => {
+                  setClearing(true);
+                  try {
+                    const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: "all" });
+                    if (error) throw new Error(error.message);
+                    const res = data as any;
+                    if (res?.success) {
+                      const d = res.deleted;
+                      const msg = `Chatt: ${d.chat}, Lajv: ${d.lajv}, Gästbok: ${d.profile_guestbook + d.guestbook}, Mejl: ${d.emails}, Minnen: ${d.memories}`;
+                      setResult(`🧹 Aktivitet rensad — ${msg}`);
+                      toast({ title: "Bot-aktivitet rensad", description: msg });
+                    } else {
+                      throw new Error(res?.error || "Okänt fel");
+                    }
+                  } catch (e) {
+                    toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
+                  } finally {
+                    setClearing(false);
+                  }
+                }}
+              >
+                Ja, rensa allt
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
