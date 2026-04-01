@@ -84,6 +84,7 @@ export function AdminBotManager() {
       ...b,
       allowed_contexts: b.allowed_contexts || ["chat", "guestbook"],
       cron_interval: b.cron_interval || "*/5 * * * *",
+      tone_of_voice: b.tone_of_voice || "nostalgikern",
     })));
     setLoading(false);
   };
