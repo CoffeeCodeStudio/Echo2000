@@ -1625,9 +1625,9 @@ async function handleCrossBotInteraction(
     const botName = respondBot.name as string;
     results[botName] = results[botName] || [];
 
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const fiveMinAgo3 = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: recentReply } = await supabase.from("lajv_messages")
-      .select("id").eq("user_id", respondBot.user_id).gte("created_at", fifteenMinAgo).limit(1);
+      .select("id").eq("user_id", respondBot.user_id).gte("created_at", fiveMinAgo3).limit(1);
     if (recentReply && recentReply.length > 0) return;
 
     const res = await callBotRespond(supabaseUrl, {
