@@ -101,15 +101,15 @@ export function AdminBotActivity() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const handleClearAll = async () => {
+  const handleClear = async (category: string, label: string) => {
     setClearing(true);
     try {
-      const { data, error } = await supabase.rpc('clear_all_bot_activity');
+      const { data, error } = await supabase.rpc('clear_all_bot_activity', { p_category: category });
       if (error) throw error;
       const result = data as { success: boolean; deleted?: Record<string, number>; error?: string };
       if (result.success && result.deleted) {
         const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
-        toast({ title: `Raderade ${total} bot-poster`, description: `GB: ${result.deleted.profile_guestbook}, Mejl: ${result.deleted.emails}, Chatt: ${result.deleted.chat}, Lajv: ${result.deleted.lajv}` });
+        toast({ title: `Raderade ${total} ${label}` });
         fetchData();
       } else {
         toast({ title: 'Misslyckades', description: result.error || 'Okänt fel', variant: 'destructive' });
@@ -178,27 +178,60 @@ export function AdminBotActivity() {
         <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
       </div>
 
-      {/* Clear all bot activity */}
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm" disabled={clearing}>
-            {clearing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-            Rensa ALL bot-aktivitet
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Radera all bot-aktivitet?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Detta raderar ALLT som bottar har skapat: gästboksinlägg, mejl, chattmeddelanden, lajv-meddelanden, triggerloggar och minnen. Kan ej ångras.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={handleClearAll}>Radera allt</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Selective clear buttons */}
+      <div className="nostalgia-card p-4">
+        <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+          <Trash2 className="w-4 h-4 text-destructive" />
+          Rensa bot-aktivitet
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { category: 'profile_guestbook', label: 'Profilgästbok' },
+            { category: 'guestbook', label: 'Publik gästbok' },
+            { category: 'emails', label: 'Mejl' },
+            { category: 'chat', label: 'Chatt' },
+            { category: 'lajv', label: 'Lajv' },
+            { category: 'trigger_log', label: 'Triggerlogg' },
+            { category: 'memories', label: 'Minnen' },
+          ].map(({ category, label }) => (
+            <AlertDialog key={category}>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={clearing}>
+                  <Trash2 className="w-3 h-3 mr-1" />{label}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Rensa {label}?</AlertDialogTitle>
+                  <AlertDialogDescription>Alla bot-genererade poster i "{label}" raderas. Kan ej ångras.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleClear(category, label)}>Radera</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ))}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" disabled={clearing}>
+                {clearing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                ALLT
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Radera ALL bot-aktivitet?</AlertDialogTitle>
+                <AlertDialogDescription>Detta raderar ALLT: gästbok, mejl, chatt, lajv, loggar och minnen. Kan ej ångras.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleClear('all', 'bot-poster')}>Radera allt</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
 
       {/* Personality breakdown */}
       <div className="nostalgia-card p-4">
