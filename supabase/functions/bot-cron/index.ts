@@ -1650,7 +1650,7 @@ async function handleLajvAutoFill(
   results: Record<string, string[]>
 ) {
   try {
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const fourMinAgo = new Date(Date.now() - 4 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase
       .from("lajv_messages").select("id").gte("created_at", tenMinAgo).limit(1);
 
