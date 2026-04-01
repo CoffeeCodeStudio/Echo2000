@@ -2,8 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play, Trash2 } from "lucide-react";
+import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play, Trash2, ChevronDown } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const CLEAR_CATEGORIES = [
+  { key: "all", label: "🧹 Rensa ALLT", description: "Alla bot-meddelanden, inlägg och minnen" },
+  { key: "chat", label: "💬 Chatt", description: "Echo Messenger-meddelanden" },
+  { key: "lajv", label: "🎭 Lajv", description: "Lajv-inlägg" },
+  { key: "profile_guestbook", label: "📖 Profilgästbok", description: "Gästboksinlägg på profiler" },
+  { key: "guestbook", label: "📕 Gästbok (gammal)", description: "Gamla gästboksinlägg" },
+  { key: "emails", label: "📧 Mejl", description: "Mejl skickade av bottar" },
+  { key: "trigger_log", label: "📋 Trigger-loggar", description: "Alla trigger-loggar" },
+  { key: "memories", label: "🧠 Minnen", description: "Bot-minnen om användare" },
+] as const;
 
 interface CronInfo {
   active: boolean;
