@@ -1,36 +1,29 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// TODO: Move TURN credentials to environment variables for production.
-// Free TURN servers from OpenRelay (https://www.metered.ca/tools/openrelay/)
-// are used as a fallback relay for users behind strict NAT/firewalls.
-const ICE_SERVERS: RTCConfiguration = {
+// STUN-only fallback used while fetching full ICE config from edge function
+const FALLBACK_ICE: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    {
-      urls: "turn:a.relay.metered.ca:80",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turn:a.relay.metered.ca:80?transport=tcp",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turn:a.relay.metered.ca:443",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turns:a.relay.metered.ca:443?transport=tcp",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
   ],
 };
+
+// Cached ICE configuration fetched from edge function
+let cachedIceConfig: RTCConfiguration | null = null;
+
+async function fetchIceConfig(): Promise<RTCConfiguration> {
+  if (cachedIceConfig) return cachedIceConfig;
+  try {
+    const { data, error } = await supabase.functions.invoke("ice-servers");
+    if (error || !data?.iceServers) throw error || new Error("No ICE servers returned");
+    cachedIceConfig = { iceServers: data.iceServers };
+    return cachedIceConfig;
+  } catch (e) {
+    console.warn("[WebRTC] Failed to fetch ICE config, using STUN fallback:", e);
+    return FALLBACK_ICE;
+  }
+}
 
 export type CallType = "voice" | "video" | "screenshare";
 export type MediaSource = "camera" | "screen";
@@ -129,8 +122,8 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   }, []);
 
   // Create peer connection for a specific user
-  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>): PeerConnection => {
-    const pc = new RTCPeerConnection(ICE_SERVERS);
+  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>, iceConfig: RTCConfiguration): PeerConnection => {
+    const pc = new RTCPeerConnection(iceConfig);
     const remoteStream = new MediaStream();
 
     // Add local tracks with bitrate optimization
@@ -191,12 +184,12 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     return peer;
   }, [userId, removePeer]);
   // Attach all signaling broadcast handlers to a channel
-  const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>) => {
+  const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>, iceConfig: RTCConfiguration) => {
     return channel
       .on("broadcast", { event: "offer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
         try {
-          const peer = createPeerConnection(payload.from, channel);
+          const peer = createPeerConnection(payload.from, channel, iceConfig);
           await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
           const answer = await peer.pc.createAnswer();
           await peer.pc.setLocalDescription(answer);
@@ -238,7 +231,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       .on("broadcast", { event: "join" }, async ({ payload }) => {
         if (payload.userId === userId) return;
         try {
-          const peer = createPeerConnection(payload.userId, channel);
+          const peer = createPeerConnection(payload.userId, channel, iceConfig);
           const offer = await peer.pc.createOffer();
           await peer.pc.setLocalDescription(offer);
           channel.send({
@@ -260,7 +253,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   // Start a call
   const startCall = useCallback(async (type: CallType, source: MediaSource = "camera") => {
     try {
-      const stream = await getUserMedia(type, source);
+      const [stream, iceConfig] = await Promise.all([getUserMedia(type, source), fetchIceConfig()]);
       localStreamRef.current = stream;
       setLocalStream(stream);
       setCallType(type);
@@ -282,7 +275,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       const channel = supabase.channel(channelName);
       channelRef.current = channel;
 
-      setupSignalingChannel(channel).subscribe(() => {
+      setupSignalingChannel(channel, iceConfig).subscribe(() => {
         channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
       });
 
@@ -301,7 +294,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   // Answer incoming call
   const answerCall = useCallback(async (incomingChannelName: string, type: CallType) => {
     try {
-      const stream = await getUserMedia(type);
+      const [stream, iceConfig] = await Promise.all([getUserMedia(type), fetchIceConfig()]);
       localStreamRef.current = stream;
       setLocalStream(stream);
       setCallType(type);
@@ -311,7 +304,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       const channel = supabase.channel(incomingChannelName);
       channelRef.current = channel;
 
-      setupSignalingChannel(channel).subscribe(() => {
+      setupSignalingChannel(channel, iceConfig).subscribe(() => {
         channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
       });
     } catch (err) {
