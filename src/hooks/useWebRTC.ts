@@ -191,6 +191,53 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     }
   }, []);
 
+  // Attach all signaling broadcast handlers to a channel
+  const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>) => {
+    return channel
+      .on("broadcast", { event: "offer" }, async ({ payload }) => {
+        if (payload.to !== userId) return;
+        const peer = createPeerConnection(payload.from);
+        await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        const answer = await peer.pc.createAnswer();
+        await peer.pc.setLocalDescription(answer);
+        channel.send({
+          type: "broadcast",
+          event: "answer",
+          payload: { from: userId, to: payload.from, sdp: answer },
+        });
+        setParticipants((prev) => [...new Set([...prev, payload.from])]);
+      })
+      .on("broadcast", { event: "answer" }, async ({ payload }) => {
+        if (payload.to !== userId) return;
+        const peer = peersRef.current.get(payload.from);
+        if (peer) {
+          await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        }
+      })
+      .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
+        if (payload.to !== userId) return;
+        const peer = peersRef.current.get(payload.from);
+        if (peer) {
+          await peer.pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        }
+      })
+      .on("broadcast", { event: "join" }, async ({ payload }) => {
+        if (payload.userId === userId) return;
+        const peer = createPeerConnection(payload.userId);
+        const offer = await peer.pc.createOffer();
+        await peer.pc.setLocalDescription(offer);
+        channel.send({
+          type: "broadcast",
+          event: "offer",
+          payload: { from: userId, to: payload.userId, sdp: offer },
+        });
+        setParticipants((prev) => [...new Set([...prev, payload.userId])]);
+      })
+      .on("broadcast", { event: "leave" }, ({ payload }) => {
+        removePeer(payload.userId);
+      });
+  }, [userId, createPeerConnection, removePeer]);
+
   // Start a call
   const startCall = useCallback(async (type: CallType, source: MediaSource = "camera") => {
     try {
@@ -216,54 +263,9 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       const channel = supabase.channel(channelName);
       channelRef.current = channel;
 
-      channel
-        .on("broadcast", { event: "offer" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = createPeerConnection(payload.from);
-          await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          const answer = await peer.pc.createAnswer();
-          await peer.pc.setLocalDescription(answer);
-          channel.send({
-            type: "broadcast",
-            event: "answer",
-            payload: { from: userId, to: payload.from, sdp: answer },
-          });
-          setParticipants((prev) => [...new Set([...prev, payload.from])]);
-        })
-        .on("broadcast", { event: "answer" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = peersRef.current.get(payload.from);
-          if (peer) {
-            await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          }
-        })
-        .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = peersRef.current.get(payload.from);
-          if (peer) {
-            await peer.pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-          }
-        })
-        .on("broadcast", { event: "join" }, async ({ payload }) => {
-          if (payload.userId === userId) return;
-          // New user joined, create offer
-          const peer = createPeerConnection(payload.userId);
-          const offer = await peer.pc.createOffer();
-          await peer.pc.setLocalDescription(offer);
-          channel.send({
-            type: "broadcast",
-            event: "offer",
-            payload: { from: userId, to: payload.userId, sdp: offer },
-          });
-          setParticipants((prev) => [...new Set([...prev, payload.userId])]);
-        })
-        .on("broadcast", { event: "leave" }, ({ payload }) => {
-          removePeer(payload.userId);
-        })
-        .subscribe(() => {
-          // Announce join
-          channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
-        });
+      setupSignalingChannel(channel).subscribe(() => {
+        channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
+      });
 
       // Handle screen share track ending (user clicks "Stop sharing")
       if (source === "screen") {
@@ -275,7 +277,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       console.error("Failed to start call:", err);
       throw err;
     }
-  }, [userId, channelName, getUserMedia, createPeerConnection, removePeer]);
+  }, [userId, channelName, getUserMedia, createPeerConnection, removePeer, setupSignalingChannel]);
 
   // Answer incoming call
   const answerCall = useCallback(async (incomingChannelName: string, type: CallType) => {
@@ -290,56 +292,13 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       const channel = supabase.channel(incomingChannelName);
       channelRef.current = channel;
 
-      channel
-        .on("broadcast", { event: "offer" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = createPeerConnection(payload.from);
-          await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          const answer = await peer.pc.createAnswer();
-          await peer.pc.setLocalDescription(answer);
-          channel.send({
-            type: "broadcast",
-            event: "answer",
-            payload: { from: userId, to: payload.from, sdp: answer },
-          });
-          setParticipants((prev) => [...new Set([...prev, payload.from])]);
-        })
-        .on("broadcast", { event: "answer" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = peersRef.current.get(payload.from);
-          if (peer) {
-            await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          }
-        })
-        .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
-          if (payload.to !== userId) return;
-          const peer = peersRef.current.get(payload.from);
-          if (peer) {
-            await peer.pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-          }
-        })
-        .on("broadcast", { event: "join" }, async ({ payload }) => {
-          if (payload.userId === userId) return;
-          const peer = createPeerConnection(payload.userId);
-          const offer = await peer.pc.createOffer();
-          await peer.pc.setLocalDescription(offer);
-          channel.send({
-            type: "broadcast",
-            event: "offer",
-            payload: { from: userId, to: payload.userId, sdp: offer },
-          });
-          setParticipants((prev) => [...new Set([...prev, payload.userId])]);
-        })
-        .on("broadcast", { event: "leave" }, ({ payload }) => {
-          removePeer(payload.userId);
-        })
-        .subscribe(() => {
-          channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
-        });
+      setupSignalingChannel(channel).subscribe(() => {
+        channel.send({ type: "broadcast", event: "join", payload: { userId, callType: type } });
+      });
     } catch (err) {
       console.error("Failed to answer call:", err);
     }
-  }, [userId, getUserMedia, createPeerConnection, removePeer]);
+  }, [userId, getUserMedia, createPeerConnection, removePeer, setupSignalingChannel]);
 
   // End the call
   const endCall = useCallback(() => {
