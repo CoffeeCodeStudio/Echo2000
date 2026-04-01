@@ -1,36 +1,29 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// TODO: Move TURN credentials to environment variables for production.
-// Free TURN servers from OpenRelay (https://www.metered.ca/tools/openrelay/)
-// are used as a fallback relay for users behind strict NAT/firewalls.
-const ICE_SERVERS: RTCConfiguration = {
+// STUN-only fallback used while fetching full ICE config from edge function
+const FALLBACK_ICE: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    {
-      urls: "turn:a.relay.metered.ca:80",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turn:a.relay.metered.ca:80?transport=tcp",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turn:a.relay.metered.ca:443",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
-    {
-      urls: "turns:a.relay.metered.ca:443?transport=tcp",
-      username: "e8dd65b92f6deb2b4a750985",
-      credential: "3JMnR3v1HGbMskge",
-    },
   ],
 };
+
+// Cached ICE configuration fetched from edge function
+let cachedIceConfig: RTCConfiguration | null = null;
+
+async function fetchIceConfig(): Promise<RTCConfiguration> {
+  if (cachedIceConfig) return cachedIceConfig;
+  try {
+    const { data, error } = await supabase.functions.invoke("ice-servers");
+    if (error || !data?.iceServers) throw error || new Error("No ICE servers returned");
+    cachedIceConfig = { iceServers: data.iceServers };
+    return cachedIceConfig;
+  } catch (e) {
+    console.warn("[WebRTC] Failed to fetch ICE config, using STUN fallback:", e);
+    return FALLBACK_ICE;
+  }
+}
 
 export type CallType = "voice" | "video" | "screenshare";
 export type MediaSource = "camera" | "screen";
