@@ -382,12 +382,11 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     if (!callActive || participants.length >= 3) return; // max 4 including self
     const ringChannel = supabase.channel(`incoming-${targetId}`);
     ringChannel.subscribe(() => {
-      ringChannel.send({
-        type: "broadcast",
-        event: "incoming-call",
-        payload: { callerId: userId, callType: callType, channelName },
-      });
-      setTimeout(() => supabase.removeChannel(ringChannel), 2000);
+      const payload = { callerId: userId, callType: callType, channelName };
+      const send = () => ringChannel.send({ type: "broadcast", event: "incoming-call", payload });
+      send();
+      setTimeout(send, 2000);
+      setTimeout(() => { send(); setTimeout(() => supabase.removeChannel(ringChannel), 1000); }, 4000);
     });
   }, [userId, channelName, callActive, callType, participants]);
 
