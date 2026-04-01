@@ -122,8 +122,8 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   }, []);
 
   // Create peer connection for a specific user
-  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>): PeerConnection => {
-    const pc = new RTCPeerConnection(ICE_SERVERS);
+  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>, iceConfig: RTCConfiguration): PeerConnection => {
+    const pc = new RTCPeerConnection(iceConfig);
     const remoteStream = new MediaStream();
 
     // Add local tracks with bitrate optimization
