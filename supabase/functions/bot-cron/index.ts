@@ -1790,3 +1790,58 @@ async function callBotRespond(
   });
   return await res.json();
 }
+
+// =============================================
+// AUTONOMOUS PROFILE UPDATE
+// Bot updates its own profile fields (status, bio, interests etc)
+// =============================================
+async function handleProfileUpdate(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  bot: Record<string, unknown>,
+  results: Record<string, string[]>
+) {
+  const botName = bot.name as string;
+  results[botName] = results[botName] || [];
+
+  try {
+    // Get current profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("status_message, bio, interests, likes, listens_to, eats, prefers, clothing, spanar_in")
+      .eq("user_id", bot.user_id as string)
+      .single();
+
+    if (!profile) return;
+
+    const res = await callBotRespond(supabaseUrl, {
+      action: "profile_update",
+      bot_id: bot.id,
+      context: JSON.stringify(profile),
+    });
+
+    if (res.profile_updates && typeof res.profile_updates === "object") {
+      const updates = res.profile_updates as Record<string, string>;
+      // Only allow safe fields
+      const allowedFields = ["status_message", "bio", "interests", "likes", "listens_to", "eats", "prefers", "clothing", "spanar_in"];
+      const safeUpdates: Record<string, string> = {};
+      for (const [k, v] of Object.entries(updates)) {
+        if (allowedFields.includes(k) && typeof v === "string" && v.trim()) {
+          safeUpdates[k] = v.trim();
+        }
+      }
+
+      if (Object.keys(safeUpdates).length > 0) {
+        await supabase
+          .from("profiles")
+          .update(safeUpdates)
+          .eq("user_id", bot.user_id as string);
+
+        const fields = Object.keys(safeUpdates).join(", ");
+        results[botName].push(`📝 Profil uppdaterad: ${fields}`);
+      }
+    }
+  } catch (e) {
+    results[botName].push(`profile_update error: ${(e as Error).message}`);
+  }
+}
