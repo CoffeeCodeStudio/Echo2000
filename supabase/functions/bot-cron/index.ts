@@ -98,6 +98,7 @@ serve(async (req) => {
       { id: "topic_post", weight: 12 },
       { id: "email_write", weight: 12 },
       { id: "klotter_drawing", weight: 8 },
+      { id: "profile_update", weight: 7 },
       { id: "snake_highscore", weight: 6 },
       { id: "memory_highscore", weight: 6 },
       { id: "good_vibes", weight: 5 },
