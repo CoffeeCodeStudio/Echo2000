@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap } from "lucide-react";
+import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface LajvMessage {
   id: string;
@@ -41,6 +44,8 @@ export function AdminBotActivity() {
   const [botProfiles, setBotProfiles] = useState<BotProfile[]>([]);
   const [guestbookActivity, setGuestbookActivity] = useState<Array<{ id: string; author_name: string; message: string; created_at: string; profile_owner_id: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = async () => {
     setLoading(true);
@@ -145,12 +150,64 @@ export function AdminBotActivity() {
 
   return (
     <div className="space-y-6">
-      {/* Stats overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard icon={Bot} label="Bottar online" value={`${onlineBots.length}/${botProfiles.length}`} />
-        <StatCard icon={MessageCircle} label="Bot-lajv (senaste)" value={String(botLajv.length)} />
-        <StatCard icon={Zap} label="Cross-bot" value={String(crossBotMessages.length)} />
-        <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
+      {/* Header with clear button */}
+      <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+          <StatCard icon={Bot} label="Bottar online" value={`${onlineBots.length}/${botProfiles.length}`} />
+          <StatCard icon={MessageCircle} label="Bot-lajv (senaste)" value={String(botLajv.length)} />
+          <StatCard icon={Zap} label="Cross-bot" value={String(crossBotMessages.length)} />
+          <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
+        </div>
+      </div>
+
+      {/* Clear all bot activity */}
+      <div className="flex justify-end">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size="sm" variant="destructive" disabled={clearing}>
+              {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+              Radera all bot-aktivitet
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>⚠️ Radera ALL bot-aktivitet?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Detta raderar alla bot-meddelanden i chatt, lajv, gästböcker, mejl, trigger-loggar och minnen. Kan inte ångras.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground"
+                onClick={async () => {
+                  setClearing(true);
+                  try {
+                    const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: "all" });
+                    if (error) throw new Error(error.message);
+                    const result = data as any;
+                    if (result?.success) {
+                      const d = result.deleted;
+                      toast({
+                        title: "Bot-aktivitet raderad",
+                        description: `Chatt: ${d.chat}, Lajv: ${d.lajv}, Gästbok: ${d.profile_guestbook + d.guestbook}, Mejl: ${d.emails}, Minnen: ${d.memories}`,
+                      });
+                      await fetchData();
+                    } else {
+                      throw new Error(result?.error || "Okänt fel");
+                    }
+                  } catch (e) {
+                    toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
+                  } finally {
+                    setClearing(false);
+                  }
+                }}
+              >
+                Ja, radera allt
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Personality breakdown */}
