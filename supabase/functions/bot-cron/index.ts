@@ -1669,13 +1669,7 @@ async function handleEmailReplies(
 
     if (!unreadEmails || unreadEmails.length === 0) return false;
 
-    // Random delay: 40% chance to skip if < 5 min old (human-like)
-    const oldestEmail = unreadEmails[unreadEmails.length - 1];
-    const emailAgeMin = (Date.now() - new Date(oldestEmail.created_at).getTime()) / 60000;
-    if (emailAgeMin < 5 && Math.random() < 0.4) {
-      results[botName].push(`Email reply delayed: ${emailAgeMin.toFixed(0)}min old`);
-      return false;
-    }
+    // Instant reply — no random delay
 
     // Pick one sender to reply to
     const botUserIds = new Set(bots.map(b => b.user_id as string));
