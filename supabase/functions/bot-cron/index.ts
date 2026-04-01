@@ -255,7 +255,7 @@ serve(async (req) => {
       } else {
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.70) {
+        if (statusRoll < 0.85) {
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
         } else {
           offset = 3 * 60 * 1000 + Math.floor(Math.random() * 2 * 60 * 1000);
