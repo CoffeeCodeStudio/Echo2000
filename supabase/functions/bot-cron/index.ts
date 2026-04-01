@@ -634,7 +634,7 @@ async function handleChatReplies(
       .select("*")
       .eq("recipient_id", bot.user_id)
       .eq("is_read", false)
-      .lte("created_at", twoMinAgo)
+      .lte("created_at", replyAfter)
       .order("created_at", { ascending: false })
       .limit(10);
 
