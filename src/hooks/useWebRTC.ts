@@ -364,15 +364,16 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   }, [userId, callActive]);
 
   // Notify contact of incoming call
+  // Send incoming-call event 3 times (0s, 2s, 4s) to work around
+  // Supabase broadcast having no message queue.
   const ringContact = useCallback((targetId: string, type: CallType) => {
     const ringChannel = supabase.channel(`incoming-${targetId}`);
     ringChannel.subscribe(() => {
-      ringChannel.send({
-        type: "broadcast",
-        event: "incoming-call",
-        payload: { callerId: userId, callType: type, channelName },
-      });
-      setTimeout(() => supabase.removeChannel(ringChannel), 2000);
+      const payload = { callerId: userId, callType: type, channelName };
+      const send = () => ringChannel.send({ type: "broadcast", event: "incoming-call", payload });
+      send();
+      setTimeout(send, 2000);
+      setTimeout(() => { send(); setTimeout(() => supabase.removeChannel(ringChannel), 1000); }, 4000);
     });
   }, [userId, channelName]);
 
@@ -381,12 +382,11 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     if (!callActive || participants.length >= 3) return; // max 4 including self
     const ringChannel = supabase.channel(`incoming-${targetId}`);
     ringChannel.subscribe(() => {
-      ringChannel.send({
-        type: "broadcast",
-        event: "incoming-call",
-        payload: { callerId: userId, callType: callType, channelName },
-      });
-      setTimeout(() => supabase.removeChannel(ringChannel), 2000);
+      const payload = { callerId: userId, callType: callType, channelName };
+      const send = () => ringChannel.send({ type: "broadcast", event: "incoming-call", payload });
+      send();
+      setTimeout(send, 2000);
+      setTimeout(() => { send(); setTimeout(() => supabase.removeChannel(ringChannel), 1000); }, 4000);
     });
   }, [userId, channelName, callActive, callType, participants]);
 
