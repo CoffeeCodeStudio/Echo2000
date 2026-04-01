@@ -230,7 +230,7 @@ serve(async (req) => {
     );
 
     // Calculate how many bots need to be online (minimum 50%)
-    const minOnlineCount = Math.ceil(bots.length * 0.8);
+    const minOnlineCount = Math.ceil(bots.length * 0.9);
     const activeCount2 = activeBotNames.size;
     const idleBots = bots.filter(b => !activeBotNames.has(b.name as string));
     const additionalOnlineNeeded = Math.max(0, minOnlineCount - activeCount2);
