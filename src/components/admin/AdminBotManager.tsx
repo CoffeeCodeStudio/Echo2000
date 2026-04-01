@@ -148,6 +148,7 @@ export function AdminBotManager() {
       is_active: bot.is_active,
       allowed_contexts: bot.allowed_contexts,
       cron_interval: bot.cron_interval,
+      tone_of_voice: bot.tone_of_voice,
     } as any).eq("id", bot.id);
     
     if (error) { console.error("Update bot error:", error); toast({ title: "Fel", description: "Kunde inte spara botinställningar.", variant: "destructive" }); }
