@@ -13,13 +13,17 @@ interface ProfileLookingForProps {
 }
 
 export function ProfileLookingFor({ displayData, editData, setEditData, isEditing }: ProfileLookingForProps) {
+  const MAX_SELECTIONS = 3;
+
   const toggle = (option: string) => {
-    setEditData((prev) => ({
-      ...prev,
-      looking_for: prev.looking_for.includes(option)
-        ? prev.looking_for.filter((o) => o !== option)
-        : [...prev.looking_for, option],
-    }));
+    setEditData((prev) => {
+      const isSelected = prev.looking_for.includes(option);
+      if (isSelected) {
+        return { ...prev, looking_for: prev.looking_for.filter((o) => o !== option) };
+      }
+      if (prev.looking_for.length >= MAX_SELECTIONS) return prev;
+      return { ...prev, looking_for: [...prev.looking_for, option] };
+    });
   };
 
   return (
