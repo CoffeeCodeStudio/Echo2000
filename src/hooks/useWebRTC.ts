@@ -114,7 +114,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   }, []);
 
   // Create peer connection for a specific user
-  const createPeerConnection = useCallback((remoteUserId: string): PeerConnection => {
+  const createPeerConnection = useCallback((remoteUserId: string, channel: ReturnType<typeof supabase.channel>): PeerConnection => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     const remoteStream = new MediaStream();
 
@@ -132,7 +132,6 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
               if ('latencyMode' in params.encodings[0]) {
                 (params.encodings[0] as any).latencyMode = 'realtime';
               }
-              // Prefer hardware-accelerated VP9 or H264
               params.encodings[0].scaleResolutionDownBy = 1.0;
               await sender.setParameters(params);
             } catch (e) {
@@ -151,10 +150,10 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       setRemoteStreams((prev) => new Map(prev).set(remoteUserId, remoteStream));
     };
 
-    // Send ICE candidates
+    // Send ICE candidates via the explicitly passed channel
     pc.onicecandidate = (event) => {
-      if (event.candidate && channelRef.current) {
-        channelRef.current.send({
+      if (event.candidate) {
+        channel.send({
           type: "broadcast",
           event: "ice-candidate",
           payload: {
@@ -175,7 +174,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     const peer: PeerConnection = { userId: remoteUserId, pc, remoteStream };
     peersRef.current.set(remoteUserId, peer);
     return peer;
-  }, [userId]);
+  }, [userId, removePeer]);
 
   const removePeer = useCallback((remoteUserId: string) => {
     const peer = peersRef.current.get(remoteUserId);
