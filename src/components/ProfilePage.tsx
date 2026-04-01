@@ -14,6 +14,7 @@ import { useProfileVisits } from "@/hooks/useProfileVisits";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
+import { NewVisitorBadge } from "./profile/NewVisitorBadge";
 import { ProfileGuestbook } from "./ProfileGuestbook";
 import { VisitorLog } from "./VisitorLog";
 import {
