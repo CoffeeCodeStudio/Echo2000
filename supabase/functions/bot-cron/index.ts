@@ -1240,9 +1240,9 @@ async function handleSnakeHighscores(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const oneHourAgo2 = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
     const { data: recentScores } = await supabase.from("snake_highscores")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", threeHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", oneHourAgo2).limit(1);
 
     if (recentScores && recentScores.length > 0) {
       results[botName].push("Snake: cooldown");
