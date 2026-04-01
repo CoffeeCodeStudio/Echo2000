@@ -195,42 +195,62 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     return channel
       .on("broadcast", { event: "offer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
-        const peer = createPeerConnection(payload.from, channel);
-        await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        const answer = await peer.pc.createAnswer();
-        await peer.pc.setLocalDescription(answer);
-        channel.send({
-          type: "broadcast",
-          event: "answer",
-          payload: { from: userId, to: payload.from, sdp: answer },
-        });
-        setParticipants((prev) => [...new Set([...prev, payload.from])]);
+        try {
+          const peer = createPeerConnection(payload.from, channel);
+          await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          const answer = await peer.pc.createAnswer();
+          await peer.pc.setLocalDescription(answer);
+          channel.send({
+            type: "broadcast",
+            event: "answer",
+            payload: { from: userId, to: payload.from, sdp: answer },
+          });
+          setParticipants((prev) => [...new Set([...prev, payload.from])]);
+        } catch (e) {
+          console.error(`[WebRTC] Failed to handle offer from ${payload.from}:`, e);
+          removePeer(payload.from);
+        }
       })
       .on("broadcast", { event: "answer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
         const peer = peersRef.current.get(payload.from);
         if (peer) {
-          await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          try {
+            await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          } catch (e) {
+            console.error(`[WebRTC] Failed to set remote description (answer) from ${payload.from}:`, e);
+            removePeer(payload.from);
+          }
         }
       })
       .on("broadcast", { event: "ice-candidate" }, async ({ payload }) => {
         if (payload.to !== userId) return;
         const peer = peersRef.current.get(payload.from);
         if (peer) {
-          await peer.pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+          try {
+            await peer.pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+          } catch (e) {
+            // Some ICE candidate failures are normal (e.g. out-of-order), just log
+            console.warn(`[WebRTC] Failed to add ICE candidate from ${payload.from}:`, e);
+          }
         }
       })
       .on("broadcast", { event: "join" }, async ({ payload }) => {
         if (payload.userId === userId) return;
-        const peer = createPeerConnection(payload.userId, channel);
-        const offer = await peer.pc.createOffer();
-        await peer.pc.setLocalDescription(offer);
-        channel.send({
-          type: "broadcast",
-          event: "offer",
-          payload: { from: userId, to: payload.userId, sdp: offer },
-        });
-        setParticipants((prev) => [...new Set([...prev, payload.userId])]);
+        try {
+          const peer = createPeerConnection(payload.userId, channel);
+          const offer = await peer.pc.createOffer();
+          await peer.pc.setLocalDescription(offer);
+          channel.send({
+            type: "broadcast",
+            event: "offer",
+            payload: { from: userId, to: payload.userId, sdp: offer },
+          });
+          setParticipants((prev) => [...new Set([...prev, payload.userId])]);
+        } catch (e) {
+          console.error(`[WebRTC] Failed to handle join from ${payload.userId}:`, e);
+          removePeer(payload.userId);
+        }
       })
       .on("broadcast", { event: "leave" }, ({ payload }) => {
         removePeer(payload.userId);
