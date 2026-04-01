@@ -231,7 +231,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
       .on("broadcast", { event: "join" }, async ({ payload }) => {
         if (payload.userId === userId) return;
         try {
-          const peer = createPeerConnection(payload.userId, channel);
+          const peer = createPeerConnection(payload.userId, channel, iceConfig);
           const offer = await peer.pc.createOffer();
           await peer.pc.setLocalDescription(offer);
           channel.send({
