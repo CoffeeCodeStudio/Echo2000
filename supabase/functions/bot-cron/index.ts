@@ -1209,9 +1209,9 @@ async function handleTopicPosts(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const fiveMinAgo2 = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase.from("lajv_messages")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", fifteenMinAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", fiveMinAgo2).limit(1);
     if (recentLajv && recentLajv.length > 0) {
       results[botName].push("Topic: cooldown");
       return;
