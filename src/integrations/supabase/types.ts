@@ -1023,6 +1023,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      clear_all_bot_activity:
+        | { Args: never; Returns: Json }
+        | { Args: { p_category?: string }; Returns: Json }
       count_good_vibes: {
         Args: { p_target_id: string; p_target_type: string }
         Returns: number
