@@ -231,6 +231,7 @@ serve(async (req) => {
     const shuffledIdle = [...idleBots].sort(() => Math.random() - 0.5);
     const guaranteedOnline = new Set(shuffledIdle.slice(0, additionalOnlineNeeded).map(b => b.name as string));
 
+    const presenceUpdates: Promise<any>[] = [];
     for (const bot of bots) {
       const botName = bot.name as string;
       const justActed = activeBotNames.has(botName);
@@ -238,29 +239,27 @@ serve(async (req) => {
       let lastSeen: string;
 
       if (justActed) {
-        // Just acted → definitely online (0-30s ago)
         const offset = Math.floor(Math.random() * 30 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
       } else if (guaranteedOnline.has(botName)) {
-        // Guaranteed online slot — keep within 2 min (well under 3 min threshold)
         const offset = Math.floor(Math.random() * 2 * 60 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
       } else {
-        // Remaining idle bots — always online or away, never offline
         const statusRoll = Math.random();
         let offset: number;
         if (statusRoll < 0.70) {
-          // Online: 0-2 min ago
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
         } else {
-          // Away: 3-5 min ago (never close to 8-min offline threshold)
           offset = 3 * 60 * 1000 + Math.floor(Math.random() * 2 * 60 * 1000);
         }
         lastSeen = new Date(now.getTime() - offset).toISOString();
       }
 
-      await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
+      presenceUpdates.push(
+        supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string)
+      );
     }
+    await Promise.all(presenceUpdates);
 
     // =============================================
     // 7. NEW USER WELCOME (check every tick, lightweight)
