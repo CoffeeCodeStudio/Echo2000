@@ -131,6 +131,14 @@ export function useChatWindow() {
     if (soundEnabled) playSound("online");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("echo-messenger-login");
+    setIsLoggedIn(false);
+    setUserDisplayName("");
+    setSelectedContact(null);
+    if (soundEnabled) playSound("offline");
+  };
+
   const handleSelectContact = (contact: MsnContact) => {
     setSelectedContact(contact);
     if (isMobile) setMobileShowChat(true);
@@ -225,6 +233,7 @@ export function useChatWindow() {
     // Auth / login
     isLoggedIn,
     handleLogin,
+    handleLogout,
     userDisplayName,
     userStatus,
 

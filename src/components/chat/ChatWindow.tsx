@@ -36,6 +36,7 @@ export function ChatWindow({ className }: ChatWindowProps) {
         userStatus={chat.userStatus}
         soundEnabled={chat.soundEnabled}
         onToggleSound={() => chat.setSoundEnabled(!chat.soundEnabled)}
+        onLogout={chat.handleLogout}
       />
 
       <div className="flex-1 flex overflow-hidden">
