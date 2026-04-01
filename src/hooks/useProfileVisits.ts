@@ -110,6 +110,7 @@ export function useProfileVisits(profileOwnerId: string | undefined) {
           username: profile?.username || 'Okänd',
           avatar_url: profile?.avatar_url || null,
           visited_at: visit.visited_at,
+          is_bot: profile?.is_bot || false,
         };
       });
 
