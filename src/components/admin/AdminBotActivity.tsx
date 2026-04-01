@@ -101,6 +101,26 @@ export function AdminBotActivity() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  const handleClearAll = async () => {
+    setClearing(true);
+    try {
+      const { data, error } = await supabase.rpc('clear_all_bot_activity');
+      if (error) throw error;
+      const result = data as { success: boolean; deleted?: Record<string, number>; error?: string };
+      if (result.success && result.deleted) {
+        const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
+        toast({ title: `Raderade ${total} bot-poster`, description: `GB: ${result.deleted.profile_guestbook}, Mejl: ${result.deleted.emails}, Chatt: ${result.deleted.chat}, Lajv: ${result.deleted.lajv}` });
+        fetchData();
+      } else {
+        toast({ title: 'Misslyckades', description: result.error || 'Okänt fel', variant: 'destructive' });
+      }
+    } catch (err: any) {
+      toast({ title: 'Fel', description: err.message, variant: 'destructive' });
+    } finally {
+      setClearing(false);
+    }
+  };
+
   // Compute personality stats
   const botUserIds = new Set(botSettings.map((b) => b.user_id));
   const personalityStats = botSettings.reduce<Record<string, { total: number; active: number; lajvCount: number }>>((acc, bot) => {
