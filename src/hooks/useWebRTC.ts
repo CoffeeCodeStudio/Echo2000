@@ -417,7 +417,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     return () => {
       endCall();
     };
-  }, []);
+  }, [endCall]);
 
   return {
     callActive,
