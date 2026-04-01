@@ -80,9 +80,11 @@ export function MemberGrid() {
       return bTime - aTime;
     });
 
-  const onlineCount = sortedMembers.filter(
-    (m) => m._status === "online" || m._status === "away"
+  // Count online using same logic as header: presence users + online bots from DB
+  const onlineBotCount = members.filter(
+    (m) => m.is_bot && m.last_seen && (Date.now() - new Date(m.last_seen).getTime()) < BOT_ONLINE_THRESHOLD_MS
   ).length;
+  const onlineCount = onlineUsers.size + onlineBotCount;
 
   const filterButtons: { id: GenderFilter; label: string; emoji: string }[] = [
     { id: "alla", label: "Alla", emoji: "👥" },
