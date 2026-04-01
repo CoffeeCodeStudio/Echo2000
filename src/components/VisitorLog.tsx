@@ -1,4 +1,5 @@
 import { Avatar } from './Avatar';
+import { AiBadge } from './AiBadge';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -10,6 +11,7 @@ interface Visitor {
   username: string;
   avatar_url: string | null;
   visited_at: string;
+  is_bot?: boolean;
 }
 
 interface VisitorLogProps {
