@@ -16,6 +16,7 @@ interface CronInfo {
 export function AdminBotSpawner() {
   const [spawning, setSpawning] = useState(false);
   const [exorcising, setExorcising] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [togglingCron, setTogglingCron] = useState(false);
   const [result, setResult] = useState("");
   const [cronInfo, setCronInfo] = useState<CronInfo>({ active: false, schedule: "", lastRun: null, lastStatus: null, activeBots: 0 });
