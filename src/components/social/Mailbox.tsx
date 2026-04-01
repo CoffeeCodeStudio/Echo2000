@@ -455,7 +455,9 @@ export function Mailbox({ onUnreadCountChange, initialRecipient }: MailboxProps)
             </div>
             <div className="px-2.5 py-2.5">
               <div className="flex items-start gap-2.5 mb-3 pb-2.5 border-b border-border">
-                <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
+                <div className="cursor-pointer" onClick={() => navigate(`/profile/${encodeURIComponent(selectedMail.from)}`)}>
+                  <Avatar name={selectedMail.from} src={selectedMail.fromAvatar} size="md" />
+                </div>
                 <div className="flex-1 text-[11px]">
                   <p className="font-bold text-foreground hover:text-[#ff6600] cursor-pointer transition-colors" onClick={() => navigate(`/profile/${encodeURIComponent(selectedMail.from)}`)}>{selectedMail.from}</p>
                   <p className="text-[10px] text-muted-foreground">{selectedMail.timestamp}</p>
