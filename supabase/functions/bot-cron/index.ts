@@ -558,7 +558,7 @@ async function handleBotProfileGuestbookReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
+    const tenSecAgo = new Date(Date.now() - 10 * 1000).toISOString(); // instant reply
     const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
     const { data: recentEntries } = await supabase
