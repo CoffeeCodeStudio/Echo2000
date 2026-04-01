@@ -1654,7 +1654,7 @@ async function handleEmailReplies(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const replyAfter = new Date(Date.now() - 10 * 1000).toISOString(); // 10s for instant reply
 
     // Find unread emails sent TO this bot (at least 2 min old for natural delay)
     const { data: unreadEmails } = await supabase
