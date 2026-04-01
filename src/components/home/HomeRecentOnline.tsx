@@ -27,7 +27,7 @@ export function HomeRecentOnline() {
           .from("profiles")
           .select("user_id, username, avatar_url, is_bot, last_seen, age, gender")
           .order("last_seen", { ascending: false })
-          .limit(5);
+          .limit(10);
         if (data) setMembers(data);
       } else {
         try {
@@ -73,8 +73,8 @@ export function HomeRecentOnline() {
         <p className="text-[11px] text-muted-foreground text-center py-2">Inga medlemmar ännu</p>
       ) : (
         <TooltipProvider delayDuration={200}>
-          <div className="flex gap-1.5">
-            {sortedMembers.slice(0, 5).map((m) => {
+          <div className="grid grid-cols-5 gap-1.5">
+            {sortedMembers.slice(0, 10).map((m) => {
               const initials = m.username.slice(0, 2).toUpperCase();
               const infoLine = [m.age ? `${m.age} år` : null, m.gender].filter(Boolean).join(", ");
               return (
