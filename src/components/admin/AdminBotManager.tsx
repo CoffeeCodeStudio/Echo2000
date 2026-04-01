@@ -22,7 +22,21 @@ interface BotSetting {
   created_at: string;
   allowed_contexts: string[];
   cron_interval: string;
+  tone_of_voice: string;
 }
+
+const PERSONALITY_OPTIONS = [
+  { value: "nostalgikern", label: "Nostalgikern" },
+  { value: "kortansen", label: "Den lugna" },
+  { value: "gladansen", label: "Den entusiastiska" },
+  { value: "dramansen", label: "Berättaren" },
+  { value: "filosofansen", label: "Tänkaren" },
+  { value: "gamern", label: "Gamern" },
+  { value: "influencern", label: "Influencern" },
+  { value: "foraldern", label: "Föräldern" },
+  { value: "musiknerden", label: "Musiknerden" },
+  { value: "tekniknorden", label: "Tekniknörden" },
+];
 
 interface BotMemory {
   id: string;
