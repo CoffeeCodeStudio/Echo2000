@@ -65,6 +65,14 @@ serve(async (req) => {
     const now = new Date();
 
     // =============================================
+    // 0. IMMEDIATE PRESENCE KEEPALIVE (run first, fast batch)
+    // All bots get last_seen = now so they never go offline
+    // =============================================
+    const keepAliveTs = now.toISOString();
+    const botUserIds = bots.map(b => b.user_id as string);
+    await supabase.from("profiles").update({ last_seen: keepAliveTs }).in("user_id", botUserIds);
+
+    // =============================================
     // 1. FETCH RECENT CONTEXT (shared across all bots)
     // =============================================
     const recentContext = await fetchRecentContext(supabase, bots);
@@ -231,6 +239,7 @@ serve(async (req) => {
     const shuffledIdle = [...idleBots].sort(() => Math.random() - 0.5);
     const guaranteedOnline = new Set(shuffledIdle.slice(0, additionalOnlineNeeded).map(b => b.name as string));
 
+    const presenceUpdates: Promise<any>[] = [];
     for (const bot of bots) {
       const botName = bot.name as string;
       const justActed = activeBotNames.has(botName);
@@ -238,29 +247,27 @@ serve(async (req) => {
       let lastSeen: string;
 
       if (justActed) {
-        // Just acted → definitely online (0-30s ago)
         const offset = Math.floor(Math.random() * 30 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
       } else if (guaranteedOnline.has(botName)) {
-        // Guaranteed online slot — keep within 2 min (well under 3 min threshold)
         const offset = Math.floor(Math.random() * 2 * 60 * 1000);
         lastSeen = new Date(now.getTime() - offset).toISOString();
       } else {
-        // Remaining idle bots — always online or away, never offline
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.65) {
-          // Online: 0-2 min ago
+        if (statusRoll < 0.70) {
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
         } else {
-          // Away: 3-7 min ago
-          offset = 3 * 60 * 1000 + Math.floor(Math.random() * 4 * 60 * 1000);
+          offset = 3 * 60 * 1000 + Math.floor(Math.random() * 2 * 60 * 1000);
         }
         lastSeen = new Date(now.getTime() - offset).toISOString();
       }
 
-      await supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string);
+      presenceUpdates.push(
+        supabase.from("profiles").update({ last_seen: lastSeen }).eq("user_id", bot.user_id as string)
+      );
     }
+    await Promise.all(presenceUpdates);
 
     // =============================================
     // 7. NEW USER WELCOME (check every tick, lightweight)
