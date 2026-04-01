@@ -195,7 +195,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     return channel
       .on("broadcast", { event: "offer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
-        const peer = createPeerConnection(payload.from);
+        const peer = createPeerConnection(payload.from, channel);
         await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         const answer = await peer.pc.createAnswer();
         await peer.pc.setLocalDescription(answer);
