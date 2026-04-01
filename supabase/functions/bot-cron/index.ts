@@ -649,6 +649,26 @@ async function handleChatReplies(
 
     if (!recentMsgs || recentMsgs.length === 0) return false;
 
+    // Dedup: skip messages already handled by db triggers
+    const { data: recentTriggers } = await supabase
+      .from("bot_trigger_log")
+      .select("target_user_id")
+      .eq("bot_user_id", bot.user_id)
+      .eq("trigger_source", "chat")
+      .gte("created_at", new Date(Date.now() - 60 * 1000).toISOString());
+
+    const triggeredUserIds = new Set((recentTriggers || []).map(t => t.target_user_id));
+
+    // Filter out messages from users already handled by trigger
+    const unhandledMsgs = recentMsgs.filter(m => !triggeredUserIds.has(m.sender_id));
+    if (unhandledMsgs.length === 0) {
+      // Mark trigger-handled messages as read
+      for (const m of recentMsgs.filter(m => triggeredUserIds.has(m.sender_id))) {
+        await supabase.from("chat_messages").update({ is_read: true }).eq("id", m.id);
+      }
+      return false;
+    }
+
     // Always reply to unread messages that are at least 2 min old (no random skip)
 
     const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
