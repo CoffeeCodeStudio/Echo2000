@@ -131,11 +131,43 @@ export function AdminBotSpawner() {
     }
   };
 
+  const formatTimeAgo = (dateStr: string) => {
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60) return `${diff}s sedan`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m sedan`;
+    return `${Math.floor(diff / 3600)}h sedan`;
+  };
+
   return (
     <div className="nostalgia-card p-4 space-y-4">
-      <h3 className="font-display font-bold text-sm flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-primary" /> Bot Population Manager
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-display font-bold text-sm flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" /> Bot Population Manager
+        </h3>
+        <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+            cronStatus.active
+              ? "bg-green-500/20 text-green-400 border border-green-500/30"
+              : "bg-red-500/20 text-red-400 border border-red-500/30"
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${cronStatus.active ? "bg-green-400 animate-pulse" : "bg-red-400"}`} />
+            {cronStatus.active ? "Cron aktiv" : "Cron inaktiv"}
+          </div>
+          {cronStatus.activeBots > 0 && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Activity className="w-3 h-3" />
+              {cronStatus.activeBots} bottar
+            </span>
+          )}
+        </div>
+      </div>
+
+      {cronStatus.lastRun && (
+        <p className="text-xs text-muted-foreground">
+          ⏱ Senaste aktivitet: {formatTimeAgo(cronStatus.lastRun)} • Kör var 10:e sekund
+        </p>
+      )}
+
       <p className="text-xs text-muted-foreground">
         Spawna 35 unika bot-profiler med 2000-talsnamn. De dyker upp i medlemslistor, statistik och "senaste inloggade". Exorcism raderar ALLA bottar permanent.
       </p>
