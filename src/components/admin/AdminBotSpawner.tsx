@@ -2,8 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play, Trash2 } from "lucide-react";
+import { Loader2, Bot, Skull, Sparkles, Activity, Pause, Play, Trash2, ChevronDown } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const CLEAR_CATEGORIES = [
+  { key: "all", label: "🧹 Rensa ALLT", description: "Alla bot-meddelanden, inlägg och minnen" },
+  { key: "chat", label: "💬 Chatt", description: "Echo Messenger-meddelanden" },
+  { key: "lajv", label: "🎭 Lajv", description: "Lajv-inlägg" },
+  { key: "profile_guestbook", label: "📖 Profilgästbok", description: "Gästboksinlägg på profiler" },
+  { key: "guestbook", label: "📕 Gästbok (gammal)", description: "Gamla gästboksinlägg" },
+  { key: "emails", label: "📧 Mejl", description: "Mejl skickade av bottar" },
+  { key: "trigger_log", label: "📋 Trigger-loggar", description: "Alla trigger-loggar" },
+  { key: "memories", label: "🧠 Minnen", description: "Bot-minnen om användare" },
+] as const;
 
 interface CronInfo {
   active: boolean;
@@ -196,50 +208,33 @@ export function AdminBotSpawner() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size="sm" variant="destructive" disabled={spawning || exorcising || clearing}>
-              {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
-              🧹 Rensa aktivitet
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>⚠️ Radera ALL bot-aktivitet?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Detta raderar alla bot-meddelanden i chatt, lajv, gästböcker, mejl, trigger-loggar och minnen. Bottarna själva behålls. Kan inte ångras.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-destructive-foreground"
-                onClick={async () => {
-                  setClearing(true);
-                  try {
-                    const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: "all" });
-                    if (error) throw new Error(error.message);
-                    const res = data as any;
-                    if (res?.success) {
-                      const d = res.deleted;
-                      const msg = `Chatt: ${d.chat}, Lajv: ${d.lajv}, Gästbok: ${d.profile_guestbook + d.guestbook}, Mejl: ${d.emails}, Minnen: ${d.memories}`;
-                      setResult(`🧹 Aktivitet rensad — ${msg}`);
-                      toast({ title: "Bot-aktivitet rensad", description: msg });
-                    } else {
-                      throw new Error(res?.error || "Okänt fel");
-                    }
-                  } catch (e) {
-                    toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
-                  } finally {
-                    setClearing(false);
-                  }
-                }}
-              >
-                Ja, rensa allt
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ClearCategoryMenu
+          clearing={clearing}
+          disabled={spawning || exorcising}
+          onClear={async (category) => {
+            setClearing(true);
+            try {
+              const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: category });
+              if (error) throw new Error(error.message);
+              const res = data as any;
+              if (res?.success) {
+                const d = res.deleted;
+                const parts = Object.entries(d)
+                  .filter(([, v]) => (v as number) > 0)
+                  .map(([k, v]) => `${k}: ${v}`);
+                const msg = parts.length > 0 ? parts.join(", ") : "Inget att rensa";
+                setResult(`🧹 ${category === "all" ? "All aktivitet" : CLEAR_CATEGORIES.find(c => c.key === category)?.label || category} rensad — ${msg}`);
+                toast({ title: "Bot-aktivitet rensad", description: msg });
+              } else {
+                throw new Error(res?.error || "Okänt fel");
+              }
+            } catch (e) {
+              toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
+            } finally {
+              setClearing(false);
+            }
+          }}
+        />
       </div>
 
       {result && (
@@ -248,5 +243,56 @@ export function AdminBotSpawner() {
         </div>
       )}
     </div>
+  );
+}
+
+function ClearCategoryMenu({ clearing, disabled, onClear }: { clearing: boolean; disabled: boolean; onClear: (category: string) => void }) {
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="destructive" disabled={disabled || clearing}>
+            {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+            🧹 Rensa aktivitet
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {CLEAR_CATEGORIES.map((cat) => (
+            <DropdownMenuItem key={cat.key} onClick={() => setPendingCategory(cat.key)} className="flex flex-col items-start gap-0.5">
+              <span className="font-medium text-sm">{cat.label}</span>
+              <span className="text-xs text-muted-foreground">{cat.description}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={!!pendingCategory} onOpenChange={(open) => { if (!open) setPendingCategory(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>⚠️ Radera bot-aktivitet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingCategory === "all"
+                ? "Detta raderar ALLA bot-meddelanden, inlägg, loggar och minnen. Kan inte ångras."
+                : `Detta raderar ${CLEAR_CATEGORIES.find(c => c.key === pendingCategory)?.description?.toLowerCase() || "vald kategori"}. Kan inte ångras.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground"
+              onClick={() => {
+                if (pendingCategory) onClear(pendingCategory);
+                setPendingCategory(null);
+              }}
+            >
+              Ja, rensa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
