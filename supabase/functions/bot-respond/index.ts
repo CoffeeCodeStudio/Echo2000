@@ -285,20 +285,8 @@ serve(async (req) => {
 
     const { action, bot_id, context, target_id, target_username, reply_type, profile_owner_id } = await req.json();
 
-    // =============================================
-    // MEMORY: Fetch existing memory for this bot+user pair
-    // =============================================
     let memoryContext = "";
     let existingMemory: { id: string; summary: string; interaction_count: number } | null = null;
-    if (target_id) {
-      const { data: mem } = await supabase
-        .from("bot_memories")
-        .select("id, summary, interaction_count")
-        .eq("bot_user_id", "PLACEHOLDER_BOT_USER_ID") // will be set after bot fetch
-        .eq("target_user_id", target_id)
-        .maybeSingle();
-      if (mem) existingMemory = mem;
-    }
 
     const { data: bot, error: botError } = await supabase
       .from("bot_settings")
