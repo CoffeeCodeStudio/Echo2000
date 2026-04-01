@@ -671,10 +671,10 @@ async function handleChatReplies(
 
     // Always reply to unread messages that are at least 2 min old (no random skip)
 
-    const senderIds = [...new Set(recentMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
+    const senderIds = [...new Set(unhandledMsgs.map(m => m.sender_id))].filter(id => id !== bot.user_id);
     if (senderIds.length === 0) return false;
     const chosenSenderId = senderIds[Math.floor(Math.random() * senderIds.length)];
-    const senderMessages = recentMsgs.filter(m => m.sender_id === chosenSenderId);
+    const senderMessages = unhandledMsgs.filter(m => m.sender_id === chosenSenderId);
 
     const { data: senderProfile } = await supabase
       .from("profiles").select("username").eq("user_id", chosenSenderId).single();
