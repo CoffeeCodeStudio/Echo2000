@@ -249,12 +249,12 @@ serve(async (req) => {
         // Remaining idle bots — always online or away, never offline
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.65) {
+        if (statusRoll < 0.70) {
           // Online: 0-2 min ago
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
         } else {
-          // Away: 3-7 min ago
-          offset = 3 * 60 * 1000 + Math.floor(Math.random() * 4 * 60 * 1000);
+          // Away: 3-5 min ago (never close to 8-min offline threshold)
+          offset = 3 * 60 * 1000 + Math.floor(Math.random() * 2 * 60 * 1000);
         }
         lastSeen = new Date(now.getTime() - offset).toISOString();
       }
