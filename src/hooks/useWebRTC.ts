@@ -65,6 +65,7 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const incomingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startingCallRef = useRef(false);
 
   const channelName = `call-${[userId, contactId].sort().join("-")}`;
 
