@@ -607,7 +607,7 @@ async function handleBotProfileGuestbookReplies(
 
     if (botRepliesAfter && botRepliesAfter.length > 0) return false;
 
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const threeMinAgo2 = new Date(Date.now() - 3 * 60 * 1000).toISOString();
     const { data: recentBotPosts } = await supabase
       .from("profile_guestbook")
       .select("id")
