@@ -27,7 +27,7 @@ export function ProfileFieldsGrid({ displayData, editData, setEditData, isEditin
       <ProfileField label="Civilstånd" value={displayData.relationship} editValue={editData.relationship} isEditing={isEditing} options={relationshipOptions} onChange={set("relationship")} />
       <ProfileField label="Sysselsättning" value={displayData.occupation} editValue={editData.occupation} isEditing={isEditing} options={occupationOptions} onChange={set("occupation")} />
       <ProfileField label="Föredrar" value={displayData.prefers} editValue={editData.prefers} isEditing={isEditing} options={prefersOptions} multiSelect onChange={set("prefers")} />
-      <ProfileField label="Gillar" value={displayData.likes} editValue={editData.likes} isEditing={isEditing} options={likesOptions} multiSelect onChange={set("likes")} />
+      <ProfileField label="Gillar" value={displayData.likes} editValue={editData.likes} isEditing={isEditing} isText onChange={set("likes")} />
       <ProfileField label="Lyssnar på" value={displayData.listens_to} editValue={editData.listens_to} isEditing={isEditing} options={listensToOptions} multiSelect onChange={set("listens_to")} />
       <ProfileField label="Äter helst" value={displayData.eats} editValue={editData.eats} isEditing={isEditing} options={eatsOptions} multiSelect onChange={set("eats")} />
       <ProfileField label="Hårfärg" value={displayData.hair_color} editValue={editData.hair_color} isEditing={isEditing} options={hairColorOptions} onChange={set("hair_color")} />
