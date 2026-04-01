@@ -3,12 +3,14 @@
  * Always-visible retro sidebar for desktop – LunarStorm/Playahead inspired.
  * Shows all navigation items, online users count, and community status.
  */
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar } from "./Avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab =
   | "hem"
@@ -35,7 +37,24 @@ export function RetroSidebar({ activeTab, onTabChange }: RetroSidebarProps) {
   const { onlineUsers } = usePresence();
   const { profile } = useProfile();
 
-  const onlineCount = onlineUsers.size;
+  const [onlineBotCount, setOnlineBotCount] = useState(0);
+
+  useEffect(() => {
+    const fetchBotCount = async () => {
+      const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_bot", true)
+        .gte("last_seen", eightMinAgo);
+      setOnlineBotCount(count ?? 0);
+    };
+    fetchBotCount();
+    const interval = setInterval(fetchBotCount, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const onlineCount = onlineUsers.size + onlineBotCount;
 
   const getBadge = (id: Tab): number | undefined => {
     switch (id) {
