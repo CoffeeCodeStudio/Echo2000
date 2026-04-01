@@ -116,6 +116,12 @@ export function HomeRecentOnline() {
           </div>
         </TooltipProvider>
       )}
+      <button
+        onClick={() => navigate('/', { state: { tab: 'folk' } })}
+        className="w-full text-[10px] font-bold text-primary hover:underline mt-1 py-0.5"
+      >
+        Visa alla →
+      </button>
     </BentoCard>
   );
 }
