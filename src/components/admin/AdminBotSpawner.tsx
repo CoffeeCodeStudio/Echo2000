@@ -245,3 +245,54 @@ export function AdminBotSpawner() {
     </div>
   );
 }
+
+function ClearCategoryMenu({ clearing, disabled, onClear }: { clearing: boolean; disabled: boolean; onClear: (category: string) => void }) {
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="destructive" disabled={disabled || clearing}>
+            {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+            🧹 Rensa aktivitet
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {CLEAR_CATEGORIES.map((cat) => (
+            <DropdownMenuItem key={cat.key} onClick={() => setPendingCategory(cat.key)} className="flex flex-col items-start gap-0.5">
+              <span className="font-medium text-sm">{cat.label}</span>
+              <span className="text-xs text-muted-foreground">{cat.description}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={!!pendingCategory} onOpenChange={(open) => { if (!open) setPendingCategory(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>⚠️ Radera bot-aktivitet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingCategory === "all"
+                ? "Detta raderar ALLA bot-meddelanden, inlägg, loggar och minnen. Kan inte ångras."
+                : `Detta raderar ${CLEAR_CATEGORIES.find(c => c.key === pendingCategory)?.description?.toLowerCase() || "vald kategori"}. Kan inte ångras.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground"
+              onClick={() => {
+                if (pendingCategory) onClear(pendingCategory);
+                setPendingCategory(null);
+              }}
+            >
+              Ja, rensa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
