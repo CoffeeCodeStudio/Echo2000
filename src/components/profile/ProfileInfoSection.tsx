@@ -92,7 +92,7 @@ export function ProfileInfoSection({
 
       {/* Profile content */}
       <div className="p-4 sm:p-5">
-        <div className="flex gap-4 sm:gap-5">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
           <div className="shrink-0">
             <ProfileAvatar
               displayData={displayData}
