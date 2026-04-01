@@ -13,13 +13,17 @@ interface ProfileLookingForProps {
 }
 
 export function ProfileLookingFor({ displayData, editData, setEditData, isEditing }: ProfileLookingForProps) {
+  const MAX_SELECTIONS = 3;
+
   const toggle = (option: string) => {
-    setEditData((prev) => ({
-      ...prev,
-      looking_for: prev.looking_for.includes(option)
-        ? prev.looking_for.filter((o) => o !== option)
-        : [...prev.looking_for, option],
-    }));
+    setEditData((prev) => {
+      const isSelected = prev.looking_for.includes(option);
+      if (isSelected) {
+        return { ...prev, looking_for: prev.looking_for.filter((o) => o !== option) };
+      }
+      if (prev.looking_for.length >= MAX_SELECTIONS) return prev;
+      return { ...prev, looking_for: [...prev.looking_for, option] };
+    });
   };
 
   return (
@@ -27,20 +31,30 @@ export function ProfileLookingFor({ displayData, editData, setEditData, isEditin
       <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Letar efter</span>
       <div className="flex flex-wrap gap-1.5 mt-1.5">
         {isEditing ? (
-          lookingForOptions.map((option) => (
-            <button
-              key={option}
-              onClick={() => toggle(option)}
-              className={cn(
-                "px-2.5 py-1 text-xs border transition-all",
-                editData.looking_for.includes(option)
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
-              )}
-            >
-              {option}
-            </button>
-          ))
+          <>
+            {lookingForOptions.map((option) => {
+              const selected = editData.looking_for.includes(option);
+              const atMax = editData.looking_for.length >= MAX_SELECTIONS && !selected;
+              return (
+                <button
+                  key={option}
+                  onClick={() => toggle(option)}
+                  disabled={atMax}
+                  className={cn(
+                    "px-2.5 py-1 text-xs border transition-all",
+                    selected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : atMax
+                        ? "bg-muted/30 text-muted-foreground/40 border-border/50 cursor-not-allowed"
+                        : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
+                  )}
+                >
+                  {option}
+                </button>
+              );
+            })}
+            <span className="w-full text-[10px] text-muted-foreground mt-1">Max {MAX_SELECTIONS} val</span>
+          </>
         ) : displayData.looking_for.length > 0 ? (
           displayData.looking_for.map((item) => (
             <span key={item} className="px-2.5 py-1 text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
