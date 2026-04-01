@@ -208,50 +208,33 @@ export function AdminBotSpawner() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size="sm" variant="destructive" disabled={spawning || exorcising || clearing}>
-              {clearing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
-              🧹 Rensa aktivitet
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>⚠️ Radera ALL bot-aktivitet?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Detta raderar alla bot-meddelanden i chatt, lajv, gästböcker, mejl, trigger-loggar och minnen. Bottarna själva behålls. Kan inte ångras.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-destructive-foreground"
-                onClick={async () => {
-                  setClearing(true);
-                  try {
-                    const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: "all" });
-                    if (error) throw new Error(error.message);
-                    const res = data as any;
-                    if (res?.success) {
-                      const d = res.deleted;
-                      const msg = `Chatt: ${d.chat}, Lajv: ${d.lajv}, Gästbok: ${d.profile_guestbook + d.guestbook}, Mejl: ${d.emails}, Minnen: ${d.memories}`;
-                      setResult(`🧹 Aktivitet rensad — ${msg}`);
-                      toast({ title: "Bot-aktivitet rensad", description: msg });
-                    } else {
-                      throw new Error(res?.error || "Okänt fel");
-                    }
-                  } catch (e) {
-                    toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
-                  } finally {
-                    setClearing(false);
-                  }
-                }}
-              >
-                Ja, rensa allt
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ClearCategoryMenu
+          clearing={clearing}
+          disabled={spawning || exorcising}
+          onClear={async (category) => {
+            setClearing(true);
+            try {
+              const { data, error } = await supabase.rpc("clear_all_bot_activity" as any, { p_category: category });
+              if (error) throw new Error(error.message);
+              const res = data as any;
+              if (res?.success) {
+                const d = res.deleted;
+                const parts = Object.entries(d)
+                  .filter(([, v]) => (v as number) > 0)
+                  .map(([k, v]) => `${k}: ${v}`);
+                const msg = parts.length > 0 ? parts.join(", ") : "Inget att rensa";
+                setResult(`🧹 ${category === "all" ? "All aktivitet" : CLEAR_CATEGORIES.find(c => c.key === category)?.label || category} rensad — ${msg}`);
+                toast({ title: "Bot-aktivitet rensad", description: msg });
+              } else {
+                throw new Error(res?.error || "Okänt fel");
+              }
+            } catch (e) {
+              toast({ title: "Fel", description: (e as Error).message, variant: "destructive" });
+            } finally {
+              setClearing(false);
+            }
+          }}
+        />
       </div>
 
       {result && (
