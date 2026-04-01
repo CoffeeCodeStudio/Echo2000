@@ -27,7 +27,7 @@ export function HomeRecentOnline() {
           .from("profiles")
           .select("user_id, username, avatar_url, is_bot, last_seen, age, gender")
           .order("last_seen", { ascending: false })
-          .limit(5);
+          .limit(10);
         if (data) setMembers(data);
       } else {
         try {
