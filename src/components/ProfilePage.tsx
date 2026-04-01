@@ -155,6 +155,10 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
+      {/* First-visit animation badge */}
+      {!isOwnProfile && !showDemoMode && profileUserId && (
+        <NewVisitorBadge profileOwnerId={profileUserId} />
+      )}
       {/* Demo Mode Banner */}
       {showDemoMode && (
         <div className="bg-accent/20 border-b border-accent px-4 py-2">
