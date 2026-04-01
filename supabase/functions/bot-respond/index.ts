@@ -72,43 +72,33 @@ interface Topic {
 }
 
 const TOPIC_LIBRARY: Topic[] = [
-  // NOSTALGI (music)
-  { text: "Minns ni när man brände CD-skivor åt varandra? Bästa mixtapen wins", categories: ["musik", "nostalgi"], isNostalgi: true },
-  { text: "Kent la ner... fortfarande inte över det tbh", categories: ["musik", "nostalgi"], isNostalgi: true },
-  { text: "Basshunter - Boten Anna. Det var PEAK internet", categories: ["musik", "nostalgi"], isNostalgi: true },
-  { text: "Evanescence var typ hela min personlighet 2004", categories: ["musik", "nostalgi"], isNostalgi: true },
-  { text: "Vem hade bäst MSN-nick med songlyrics? Alla hade nåt från Linkin Park", categories: ["musik", "nostalgi"], isNostalgi: true },
+  // NOSTALGI (music) — ur ett vuxenperspektiv
+  { text: "Minns ni när man brände CD-skivor åt varandra? Typ mest romantiska gesten 2003", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Kent la ner och jag tror inte jag är över det ännu tbh", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Basshunter - Boten Anna. Peak internet och vi visste inte om det", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "Hela min tonårspersonlighet va baserad på Evanescence och jag skäms inte", categories: ["musik", "nostalgi"], isNostalgi: true },
+  { text: "MSN-nicks med Linkin Park-lyrics... vi va alla så djupa haha", categories: ["musik", "nostalgi"], isNostalgi: true },
   // NOSTALGI (teknik)
-  { text: "Nokia 3310 var typ oförstörbar. Moderna telefoner pallar ingenting", categories: ["teknik", "nostalgi"], isNostalgi: true },
-  { text: "Minns ni LimeWire? 'jag ska ba ladda ner EN låt' *laddar ner virus*", categories: ["teknik", "nostalgi"], isNostalgi: true },
-  { text: "MSN Messenger > alla moderna chattar. Nudge-knappen var *chefs kiss*", categories: ["teknik", "nostalgi"], isNostalgi: true },
-  { text: "Lunarstorm var typ svenska internet-hemmet. RIP", categories: ["teknik", "nostalgi"], isNostalgi: true },
-  { text: "Blogg.se var content creation innan det hette content creation lol", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "Nokia 3310 överlevde allt. Min iPhone överlever knappt en vecka", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "LimeWire: 'jag ska ba ladda ner EN låt' *hela datorn får virus*", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "MSN Messenger va typ hela ens sociala liv. Nudge-knappen <3", categories: ["teknik", "nostalgi"], isNostalgi: true },
+  { text: "Lunarstorm va typ svenska internet-hemmet. Fortfarande saknad", categories: ["teknik", "nostalgi"], isNostalgi: true },
   // NOSTALGI (spel)
-  { text: "CS 1.6 på datasal efter skolan. De_dust2 forever", categories: ["spel", "nostalgi"], isNostalgi: true },
-  { text: "Habbo Hotel... 'bobba' och pool-stängt pga aids lmao", categories: ["spel", "nostalgi"], isNostalgi: true },
-  { text: "RuneScape tog ju typ hela ens barndom. Woodcutting lvl?", categories: ["spel", "nostalgi"], isNostalgi: true },
-  // MODERNA (music)
-  { text: "Vilken musik streamar ni just nu? Behöver ny playlist", categories: ["musik"], isNostalgi: false },
-  { text: "Spotify Wrapped var typ det viktigaste eventet förra året", categories: ["musik"], isNostalgi: false },
-  { text: "Robyn är fortfarande bäst. Dancing On My Own = tidlös", categories: ["musik"], isNostalgi: false },
-  // MODERNA (spel)
-  { text: "Nya GTA-trailern ser fett ut tbh. Äntligen!", categories: ["spel"], isNostalgi: false },
-  { text: "Nån som fortfarande spelar CS2? Rankad?", categories: ["spel"], isNostalgi: false },
-  { text: "Retro-gaming är ba det bästa. SNES > allt", categories: ["spel", "nostalgi"], isNostalgi: false },
-  { text: "Vilka indie-spel har ni kört på sistone?", categories: ["spel"], isNostalgi: false },
-  // MODERNA (teknik)
-  { text: "AI tar över allt snart... typ skynet-vibbar", categories: ["teknik"], isNostalgi: false },
-  { text: "Saknar ni flip-phones ibland? Enklare tider", categories: ["teknik", "nostalgi"], isNostalgi: false },
-  { text: "TikTok vs YouTube shorts — vem vinner?", categories: ["teknik"], isNostalgi: false },
-  // MODERNA (kultur/livsstil)
-  { text: "Expedition Robinson borde göra comeback. 10/10 reality", categories: ["star"], isNostalgi: false },
-  { text: "Vilken serie binge-watchar ni? Behöver tips!", categories: ["star"], isNostalgi: false },
-  { text: "Jolt Cola > alla energidrycker. Change my mind", categories: ["nostalgi"], isNostalgi: true },
-  { text: "Fredagsmys med tacos — det mest svenska som finns", categories: ["star"], isNostalgi: false },
-  { text: "Nån mer som saknar Pistvakt och Vita Lögner?", categories: ["star", "nostalgi"], isNostalgi: true },
-  { text: "ZTV var ba en helt annan värld. Rakt in i hjärtat", categories: ["star", "nostalgi"], isNostalgi: true },
-  { text: "Ahlgrens bilar eller polly? Viktigaste frågan 2024", categories: ["nostalgi"], isNostalgi: false },
+  { text: "CS 1.6 på datasalen efter skolan. De_dust2 forever", categories: ["spel", "nostalgi"], isNostalgi: true },
+  { text: "Habbo Hotel... minns fortfarande mitt första rum haha", categories: ["spel", "nostalgi"], isNostalgi: true },
+  // MODERNA (vuxenliv)
+  { text: "Vilken serie tittar ni på just nu? Behöver nåt nytt att binga", categories: ["star"], isNostalgi: false },
+  { text: "Fredagsmys med tacos och en film. Det e peak vuxenliv tbh", categories: ["star"], isNostalgi: false },
+  { text: "Nån mer som har svårt att somna? Hjärnan vill ba tänka på pinsamheter från 2005", categories: ["star"], isNostalgi: false },
+  { text: "Bytte jobb nyligen och det va typ det bästa jag gjort", categories: ["star"], isNostalgi: false },
+  { text: "Spotify Wrapped avslöjar en varje år... mitt e 80% nostalgi haha", categories: ["musik"], isNostalgi: false },
+  { text: "Robyn - Dancing On My Own. Tidlös. Punkt.", categories: ["musik"], isNostalgi: false },
+  { text: "Retro-gaming e ba det bästa. SNES > allt modernt", categories: ["spel", "nostalgi"], isNostalgi: false },
+  { text: "Nån mer som märkt att tiden går snabbare efter 30?? asså seriöst", categories: ["star"], isNostalgi: false },
+  { text: "Bästa podden ni lyssnat på? Behöver tips till pendlingen", categories: ["star"], isNostalgi: false },
+  { text: "Ahlgrens bilar eller polly? Den eviga frågan", categories: ["nostalgi"], isNostalgi: false },
+  { text: "Saknar ni nån era barndomsvänner som ni tappat kontakten med?", categories: ["star"], isNostalgi: false },
+  { text: "Vad e det bästa med att vara 30+? Jag säger: inte bry sig om vad folk tycker", categories: ["star"], isNostalgi: false },
 ];
 
 // =============================================
