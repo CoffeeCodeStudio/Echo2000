@@ -188,6 +188,10 @@ serve(async (req) => {
             results[botName].push(`Guestbook: ${res.reply || res.error || "unknown"}`);
             break;
           }
+          case "profile_update": {
+            await handleProfileUpdate(supabase, supabaseUrl, bot, results);
+            break;
+          }
         }
         results[botName].push(`[action: ${activity}]`);
       } catch (e) {
