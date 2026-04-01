@@ -182,10 +182,6 @@ export function AdminBotSpawner() {
           <Sparkles className="w-3 h-3 mr-1" />Uppdatera Närvaro
         </Button>
 
-        <Button size="sm" variant="outline" onClick={runBotCron} disabled={spawning || exorcising || cronRunning}>
-          {cronRunning ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Play className="w-3 h-3 mr-1" />}
-          ▶ Kör Bot-Cron Nu
-        </Button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
