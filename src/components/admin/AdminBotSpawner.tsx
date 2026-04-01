@@ -13,6 +13,7 @@ const CLEAR_CATEGORIES = [
   { key: "profile_guestbook", label: "📖 Profilgästbok", description: "Gästboksinlägg på profiler" },
   { key: "guestbook", label: "📕 Gästbok (gammal)", description: "Gamla gästboksinlägg" },
   { key: "emails", label: "📧 Mejl", description: "Mejl skickade av bottar" },
+  { key: "news_comments", label: "📰 Nyhetskommentarer", description: "Kommentarer på nyheter" },
   { key: "trigger_log", label: "📋 Trigger-loggar", description: "Alla trigger-loggar" },
   { key: "memories", label: "🧠 Minnen", description: "Bot-minnen om användare" },
 ] as const;
