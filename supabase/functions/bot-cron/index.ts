@@ -567,7 +567,7 @@ async function handleBotProfileGuestbookReplies(
       .eq("profile_owner_id", bot.user_id)
       .neq("author_id", bot.user_id)
       .gte("created_at", fifteenMinAgo)
-      .lte("created_at", oneMinAgo)
+      .lte("created_at", tenSecAgo)
       .order("created_at", { ascending: false })
       .limit(10);
 
