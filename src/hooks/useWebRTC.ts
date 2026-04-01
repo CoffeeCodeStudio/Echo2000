@@ -184,12 +184,12 @@ export function useWebRTC({ userId, contactId }: UseWebRTCOptions) {
     return peer;
   }, [userId, removePeer]);
   // Attach all signaling broadcast handlers to a channel
-  const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>) => {
+  const setupSignalingChannel = useCallback((channel: ReturnType<typeof supabase.channel>, iceConfig: RTCConfiguration) => {
     return channel
       .on("broadcast", { event: "offer" }, async ({ payload }) => {
         if (payload.to !== userId) return;
         try {
-          const peer = createPeerConnection(payload.from, channel);
+          const peer = createPeerConnection(payload.from, channel, iceConfig);
           await peer.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
           const answer = await peer.pc.createAnswer();
           await peer.pc.setLocalDescription(answer);
