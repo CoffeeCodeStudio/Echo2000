@@ -612,7 +612,7 @@ async function handleBotProfileGuestbookReplies(
       .from("profile_guestbook")
       .select("id")
       .eq("author_id", bot.user_id)
-      .gte("created_at", tenMinAgo)
+      .gte("created_at", threeMinAgo2)
       .limit(1);
 
     if (recentBotPosts && recentBotPosts.length > 0) return false;
