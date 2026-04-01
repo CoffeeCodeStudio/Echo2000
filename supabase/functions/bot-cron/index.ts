@@ -848,9 +848,9 @@ async function handleEmailWriting(
   results[botName] = results[botName] || [];
 
   try {
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const tenMinAgo2 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentEmails } = await supabase
-      .from("messages").select("id").eq("sender_id", bot.user_id).gte("created_at", thirtyMinAgo).limit(1);
+      .from("messages").select("id").eq("sender_id", bot.user_id).gte("created_at", tenMinAgo2).limit(1);
 
     if (recentEmails && recentEmails.length > 0) {
       results[botName].push("Email: cooldown");
