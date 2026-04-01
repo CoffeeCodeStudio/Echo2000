@@ -345,7 +345,20 @@ export function AdminBotManager() {
                 <Input value={bot.avatar_url || ""} onChange={e => updateBotField(bot.id, "avatar_url", e.target.value)} placeholder="https://..." />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">System Prompt (Personlighet)</label>
+                <label className="text-xs text-muted-foreground">Personlighetstyp</label>
+                <Select value={bot.tone_of_voice} onValueChange={v => updateBotField(bot.id, "tone_of_voice", v)}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERSONALITY_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">System Prompt (extra instruktioner)</label>
                 <Textarea value={bot.system_prompt} onChange={e => updateBotField(bot.id, "system_prompt", e.target.value)} rows={4} />
               </div>
             </div>
