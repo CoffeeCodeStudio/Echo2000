@@ -101,15 +101,15 @@ export function AdminBotActivity() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const handleClearAll = async () => {
+  const handleClear = async (category: string, label: string) => {
     setClearing(true);
     try {
-      const { data, error } = await supabase.rpc('clear_all_bot_activity');
+      const { data, error } = await supabase.rpc('clear_all_bot_activity', { p_category: category });
       if (error) throw error;
       const result = data as { success: boolean; deleted?: Record<string, number>; error?: string };
       if (result.success && result.deleted) {
         const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
-        toast({ title: `Raderade ${total} bot-poster`, description: `GB: ${result.deleted.profile_guestbook}, Mejl: ${result.deleted.emails}, Chatt: ${result.deleted.chat}, Lajv: ${result.deleted.lajv}` });
+        toast({ title: `Raderade ${total} ${label}` });
         fetchData();
       } else {
         toast({ title: 'Misslyckades', description: result.error || 'Okänt fel', variant: 'destructive' });
