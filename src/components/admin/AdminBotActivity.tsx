@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap, Trash2 } from "lucide-react";
+import { Loader2, MessageCircle, Newspaper, Users, TrendingUp, Bot, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
 
 interface LajvMessage {
   id: string;
@@ -44,8 +41,6 @@ export function AdminBotActivity() {
   const [botProfiles, setBotProfiles] = useState<BotProfile[]>([]);
   const [guestbookActivity, setGuestbookActivity] = useState<Array<{ id: string; author_name: string; message: string; created_at: string; profile_owner_id: string }>>([]);
   const [loading, setLoading] = useState(true);
-  const [clearing, setClearing] = useState(false);
-  const { toast } = useToast();
 
   const fetchData = async () => {
     setLoading(true);
@@ -100,26 +95,6 @@ export function AdminBotActivity() {
 
     return () => { supabase.removeChannel(channel); };
   }, []);
-
-  const handleClear = async (category: string, label: string) => {
-    setClearing(true);
-    try {
-      const { data, error } = await supabase.rpc('clear_all_bot_activity', { p_category: category });
-      if (error) throw error;
-      const result = data as { success: boolean; deleted?: Record<string, number>; error?: string };
-      if (result.success && result.deleted) {
-        const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
-        toast({ title: `Raderade ${total} ${label}` });
-        fetchData();
-      } else {
-        toast({ title: 'Misslyckades', description: result.error || 'Okänt fel', variant: 'destructive' });
-      }
-    } catch (err: any) {
-      toast({ title: 'Fel', description: err.message, variant: 'destructive' });
-    } finally {
-      setClearing(false);
-    }
-  };
 
   // Compute personality stats
   const botUserIds = new Set(botSettings.map((b) => b.user_id));
@@ -176,61 +151,6 @@ export function AdminBotActivity() {
         <StatCard icon={MessageCircle} label="Bot-lajv (senaste)" value={String(botLajv.length)} />
         <StatCard icon={Zap} label="Cross-bot" value={String(crossBotMessages.length)} />
         <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
-      </div>
-
-      {/* Selective clear buttons */}
-      <div className="nostalgia-card p-4">
-        <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-          <Trash2 className="w-4 h-4 text-destructive" />
-          Rensa bot-aktivitet
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { category: 'profile_guestbook', label: 'Profilgästbok' },
-            { category: 'guestbook', label: 'Publik gästbok' },
-            { category: 'emails', label: 'Mejl' },
-            { category: 'chat', label: 'Chatt' },
-            { category: 'lajv', label: 'Lajv' },
-            { category: 'trigger_log', label: 'Triggerlogg' },
-            { category: 'memories', label: 'Minnen' },
-          ].map(({ category, label }) => (
-            <AlertDialog key={category}>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={clearing}>
-                  <Trash2 className="w-3 h-3 mr-1" />{label}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Rensa {label}?</AlertDialogTitle>
-                  <AlertDialogDescription>Alla bot-genererade poster i "{label}" raderas. Kan ej ångras.</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleClear(category, label)}>Radera</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ))}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" disabled={clearing}>
-                {clearing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Trash2 className="w-3 h-3 mr-1" />}
-                ALLT
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Radera ALL bot-aktivitet?</AlertDialogTitle>
-                <AlertDialogDescription>Detta raderar ALLT: gästbok, mejl, chatt, lajv, loggar och minnen. Kan ej ångras.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleClear('all', 'bot-poster')}>Radera allt</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
       </div>
 
       {/* Personality breakdown */}

@@ -28,15 +28,8 @@ serve(async (req) => {
   const isScheduler = req.headers.get("x-supabase-scheduler") !== null;
   const isCronWithAnonKey = authHeader === `Bearer ${anonKey}`;
 
-  // Accept any request that carries a known project anon key (even if env var differs from hardcoded)
-  // This covers pg_cron/pg_net calls where the key was stored at migration time
-  const KNOWN_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bWVweHJpdWhtemNyYWV1cGpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5MDQwNTMsImV4cCI6MjA4MzQ4MDA1M30.kqCFAdmdkqOKDlxIC6fiVEBRjzmfHP8J2ASVAwkWo04";
-  const isCronWithKnownKey = authHeader === `Bearer ${KNOWN_ANON_KEY}`;
-
-  const isCronAuthorized = isServiceRole || isScheduler || isCronWithAnonKey || isCronWithKnownKey;
-
   let isAdmin = false;
-  if (!isCronAuthorized && authHeader.startsWith("Bearer ")) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && authHeader.startsWith("Bearer ")) {
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -47,7 +40,7 @@ serve(async (req) => {
     }
   }
 
-  if (!isCronAuthorized && !isAdmin) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && !isAdmin) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
