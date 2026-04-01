@@ -178,6 +178,28 @@ export function AdminBotActivity() {
         <StatCard icon={Newspaper} label="Gästboksinlägg" value={String(guestbookActivity.length)} />
       </div>
 
+      {/* Clear all bot activity */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" size="sm" disabled={clearing}>
+            {clearing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Rensa ALL bot-aktivitet
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Radera all bot-aktivitet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Detta raderar ALLT som bottar har skapat: gästboksinlägg, mejl, chattmeddelanden, lajv-meddelanden, triggerloggar och minnen. Kan ej ångras.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearAll}>Radera allt</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Personality breakdown */}
       <div className="nostalgia-card p-4">
         <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
