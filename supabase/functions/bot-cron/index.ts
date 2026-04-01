@@ -627,7 +627,7 @@ async function handleChatReplies(
   results: Record<string, string[]>
 ): Promise<boolean> {
   try {
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const replyAfter = new Date(Date.now() - 10 * 1000).toISOString(); // 10s delay for instant feel
 
     const { data: recentMsgs } = await supabase
       .from("chat_messages")
