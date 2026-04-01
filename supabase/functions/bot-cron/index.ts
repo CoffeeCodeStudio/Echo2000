@@ -1161,9 +1161,9 @@ async function handleLajvReplies(
       const botName = respondBot.name as string;
       results[botName] = results[botName] || [];
 
-      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const threeMinAgo3 = new Date(Date.now() - 3 * 60 * 1000).toISOString();
       const { data: recentBotLajv } = await supabase.from("lajv_messages")
-        .select("id").eq("user_id", respondBot.user_id).gte("created_at", tenMinAgo).limit(1);
+        .select("id").eq("user_id", respondBot.user_id).gte("created_at", threeMinAgo3).limit(1);
       if (recentBotLajv && recentBotLajv.length > 0) continue;
 
       const res = await callBotRespond(supabaseUrl, {
