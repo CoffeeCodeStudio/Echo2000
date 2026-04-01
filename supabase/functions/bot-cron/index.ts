@@ -1288,9 +1288,9 @@ async function handleMemoryHighscores(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const oneHourAgo3 = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
     const { data: recentScores } = await supabase.from("memory_highscores")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", threeHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", oneHourAgo3).limit(1);
 
     if (recentScores && recentScores.length > 0) {
       results[botName].push("Memory: cooldown");
