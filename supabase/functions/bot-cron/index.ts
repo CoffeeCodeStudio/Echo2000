@@ -14,8 +14,8 @@ const corsHeaders = {
 // Status stars rotate based on recent activity.
 // =============================================
 
-const BOT_ACTION_CHANCE = 0.15; // 15% chance per bot per tick
-const PROFILE_SURF_COUNT = 3; // Number of bots that surf profiles each tick
+const BOT_ACTION_CHANCE = 0.40; // 40% chance per bot per tick
+const PROFILE_SURF_COUNT = 5; // Number of bots that surf profiles each tick
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -230,7 +230,7 @@ serve(async (req) => {
     );
 
     // Calculate how many bots need to be online (minimum 50%)
-    const minOnlineCount = Math.ceil(bots.length * 0.8);
+    const minOnlineCount = Math.ceil(bots.length * 0.9);
     const activeCount2 = activeBotNames.size;
     const idleBots = bots.filter(b => !activeBotNames.has(b.name as string));
     const additionalOnlineNeeded = Math.max(0, minOnlineCount - activeCount2);
@@ -255,7 +255,7 @@ serve(async (req) => {
       } else {
         const statusRoll = Math.random();
         let offset: number;
-        if (statusRoll < 0.70) {
+        if (statusRoll < 0.85) {
           offset = Math.floor(Math.random() * 2 * 60 * 1000);
         } else {
           offset = 3 * 60 * 1000 + Math.floor(Math.random() * 2 * 60 * 1000);
@@ -375,7 +375,7 @@ async function handleAutonomousProfileSurfing(
           if (Math.random() < 0.30) {
             try {
               // Check guestbook cooldown (3 min)
-              const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+              const threeMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
               const { data: recentGB } = await supabase
                 .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
                 .gte("created_at", threeMinAgo).limit(1);
@@ -607,12 +607,12 @@ async function handleBotProfileGuestbookReplies(
 
     if (botRepliesAfter && botRepliesAfter.length > 0) return false;
 
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const threeMinAgo2 = new Date(Date.now() - 3 * 60 * 1000).toISOString();
     const { data: recentBotPosts } = await supabase
       .from("profile_guestbook")
       .select("id")
       .eq("author_id", bot.user_id)
-      .gte("created_at", tenMinAgo)
+      .gte("created_at", threeMinAgo2)
       .limit(1);
 
     if (recentBotPosts && recentBotPosts.length > 0) return false;
@@ -743,9 +743,9 @@ async function runSingleBotLajvPost(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+  const oneMinAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
   const { data: recentLajv } = await supabase
-    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", twoMinAgo).limit(1);
+    .from("lajv_messages").select("id").eq("user_id", bot.user_id).gte("created_at", oneMinAgo).limit(1);
 
   if (recentLajv && recentLajv.length > 0) {
     results[botName].push("Lajv: cooldown");
@@ -775,9 +775,9 @@ async function runSingleBotGuestbookWrite(
   const botName = bot.name as string;
   results[botName] = results[botName] || [];
 
-  const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+  const ninetySecAgo = new Date(Date.now() - 90 * 1000).toISOString();
   const { data: recentWrites } = await supabase
-    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", threeMinAgo).limit(1);
+    .from("profile_guestbook").select("id").eq("author_id", bot.user_id).gte("created_at", ninetySecAgo).limit(1);
 
   if (recentWrites && recentWrites.length > 0) {
     results[botName].push("GB write: cooldown");
@@ -848,9 +848,9 @@ async function handleEmailWriting(
   results[botName] = results[botName] || [];
 
   try {
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const tenMinAgo2 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentEmails } = await supabase
-      .from("messages").select("id").eq("sender_id", bot.user_id).gte("created_at", thirtyMinAgo).limit(1);
+      .from("messages").select("id").eq("sender_id", bot.user_id).gte("created_at", tenMinAgo2).limit(1);
 
     if (recentEmails && recentEmails.length > 0) {
       results[botName].push("Email: cooldown");
@@ -963,9 +963,9 @@ async function handleKlotterDrawing(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const fortyFiveMinAgo = new Date(Date.now() - 45 * 60 * 1000).toISOString();
     const { data: recent } = await supabase.from("klotter")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", twoHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", fortyFiveMinAgo).limit(1);
     if (recent && recent.length > 0) { results[botName].push("Klotter: cooldown"); return; }
 
     const template = KLOTTER_TEMPLATES[Math.floor(Math.random() * KLOTTER_TEMPLATES.length)];
@@ -1161,9 +1161,9 @@ async function handleLajvReplies(
       const botName = respondBot.name as string;
       results[botName] = results[botName] || [];
 
-      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const threeMinAgo3 = new Date(Date.now() - 3 * 60 * 1000).toISOString();
       const { data: recentBotLajv } = await supabase.from("lajv_messages")
-        .select("id").eq("user_id", respondBot.user_id).gte("created_at", tenMinAgo).limit(1);
+        .select("id").eq("user_id", respondBot.user_id).gte("created_at", threeMinAgo3).limit(1);
       if (recentBotLajv && recentBotLajv.length > 0) continue;
 
       const res = await callBotRespond(supabaseUrl, {
@@ -1209,9 +1209,9 @@ async function handleTopicPosts(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const fiveMinAgo2 = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase.from("lajv_messages")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", fifteenMinAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", fiveMinAgo2).limit(1);
     if (recentLajv && recentLajv.length > 0) {
       results[botName].push("Topic: cooldown");
       return;
@@ -1240,9 +1240,9 @@ async function handleSnakeHighscores(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const oneHourAgo2 = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
     const { data: recentScores } = await supabase.from("snake_highscores")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", threeHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", oneHourAgo2).limit(1);
 
     if (recentScores && recentScores.length > 0) {
       results[botName].push("Snake: cooldown");
@@ -1288,9 +1288,9 @@ async function handleMemoryHighscores(
     const botName = bot.name as string;
     results[botName] = results[botName] || [];
 
-    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const oneHourAgo3 = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
     const { data: recentScores } = await supabase.from("memory_highscores")
-      .select("id").eq("user_id", bot.user_id).gte("created_at", threeHoursAgo).limit(1);
+      .select("id").eq("user_id", bot.user_id).gte("created_at", oneHourAgo3).limit(1);
 
     if (recentScores && recentScores.length > 0) {
       results[botName].push("Memory: cooldown");
@@ -1417,7 +1417,7 @@ async function handleProfileVisitReactions(
       if (Math.random() < 0.70) {
         try {
           // Check guestbook cooldown (3 min)
-          const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+          const threeMinAgo = new Date(Date.now() - 90 * 1000).toISOString();
           const { data: recentGB } = await supabase
             .from("profile_guestbook").select("id").eq("author_id", bot.user_id as string)
             .gte("created_at", threeMinAgo).limit(1);
@@ -1625,9 +1625,9 @@ async function handleCrossBotInteraction(
     const botName = respondBot.name as string;
     results[botName] = results[botName] || [];
 
-    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const fiveMinAgo3 = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: recentReply } = await supabase.from("lajv_messages")
-      .select("id").eq("user_id", respondBot.user_id).gte("created_at", fifteenMinAgo).limit(1);
+      .select("id").eq("user_id", respondBot.user_id).gte("created_at", fiveMinAgo3).limit(1);
     if (recentReply && recentReply.length > 0) return;
 
     const res = await callBotRespond(supabaseUrl, {
@@ -1650,9 +1650,9 @@ async function handleLajvAutoFill(
   results: Record<string, string[]>
 ) {
   try {
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const fourMinAgo = new Date(Date.now() - 4 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase
-      .from("lajv_messages").select("id").gte("created_at", tenMinAgo).limit(1);
+      .from("lajv_messages").select("id").gte("created_at", fourMinAgo).limit(1);
 
     if (recentLajv && recentLajv.length > 0) return;
 
