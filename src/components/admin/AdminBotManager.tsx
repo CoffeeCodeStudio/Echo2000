@@ -24,6 +24,17 @@ interface BotSetting {
   cron_interval: string;
 }
 
+interface BotMemory {
+  id: string;
+  bot_user_id: string;
+  target_user_id: string;
+  summary: string;
+  interaction_count: number;
+  last_interaction: string;
+  created_at: string;
+  target_username?: string;
+}
+
 const CONTEXT_OPTIONS = [
   { value: "chat", label: "Svara i Chatten" },
   { value: "guestbook", label: "Skriva i Gästboken" },
@@ -47,6 +58,10 @@ export function AdminBotManager() {
   const [testResult, setTestResult] = useState<string>("");
   const [showCreate, setShowCreate] = useState(false);
   const [newBot, setNewBot] = useState({ name: "", system_prompt: "", user_id: "" });
+  const [memoryBot, setMemoryBot] = useState<BotSetting | null>(null);
+  const [memories, setMemories] = useState<BotMemory[]>([]);
+  const [memoriesLoading, setMemoriesLoading] = useState(false);
+  const [deletingMemory, setDeletingMemory] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchBots = async () => {
@@ -60,6 +75,53 @@ export function AdminBotManager() {
   };
 
   useEffect(() => { fetchBots(); }, []);
+
+  const fetchMemories = async (bot: BotSetting) => {
+    setMemoryBot(bot);
+    setMemoriesLoading(true);
+    const { data } = await supabase
+      .from("bot_memories")
+      .select("*")
+      .eq("bot_user_id", bot.user_id)
+      .order("last_interaction", { ascending: false });
+
+    if (data && data.length > 0) {
+      // Fetch usernames for target users
+      const userIds = [...new Set(data.map(m => m.target_user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", userIds);
+
+      const usernameMap = new Map(profiles?.map(p => [p.user_id, p.username]) || []);
+      setMemories(data.map(m => ({ ...m, target_username: usernameMap.get(m.target_user_id) || m.target_user_id.slice(0, 8) })));
+    } else {
+      setMemories([]);
+    }
+    setMemoriesLoading(false);
+  };
+
+  const deleteMemory = async (memoryId: string) => {
+    setDeletingMemory(memoryId);
+    const { error } = await supabase.from("bot_memories").delete().eq("id", memoryId);
+    if (!error) {
+      setMemories(prev => prev.filter(m => m.id !== memoryId));
+      toast({ title: "Minne raderat" });
+    } else {
+      toast({ title: "Fel", description: "Kunde inte radera minnet.", variant: "destructive" });
+    }
+    setDeletingMemory(null);
+  };
+
+  const clearAllMemories = async (botUserId: string) => {
+    const { error } = await supabase.from("bot_memories").delete().eq("bot_user_id", botUserId);
+    if (!error) {
+      setMemories([]);
+      toast({ title: "Alla minnen rensade" });
+    } else {
+      toast({ title: "Fel", description: "Kunde inte rensa minnen.", variant: "destructive" });
+    }
+  };
 
   const updateBot = async (bot: BotSetting) => {
     setSaving(bot.id);
@@ -170,6 +232,72 @@ export function AdminBotManager() {
         </Dialog>
       </div>
 
+      {/* Memory viewer dialog */}
+      <Dialog open={!!memoryBot} onOpenChange={(open) => !open && setMemoryBot(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Minnen — {memoryBot?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {memoriesLoading ? (
+            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : memories.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              <Brain className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              Inga sparade minnen ännu.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{memories.length} minne(n)</span>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => memoryBot && clearAllMemories(memoryBot.user_id)}
+                >
+                  <Trash2 className="w-3 h-3 mr-1" /> Rensa alla
+                </Button>
+              </div>
+
+              {memories.map(memory => (
+                <div key={memory.id} className="border border-border rounded-lg p-3 bg-muted/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-primary">{memory.target_username}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {memory.interaction_count} interaktioner
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Senast: {new Date(memory.last_interaction).toLocaleDateString("sv-SE")}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        onClick={() => deleteMemory(memory.id)}
+                        disabled={deletingMemory === memory.id}
+                      >
+                        {deletingMemory === memory.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <X className="w-3 h-3" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/80 whitespace-pre-wrap">{memory.summary || "(tomt minne)"}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {bots.length === 0 ? (
         <div className="nostalgia-card p-6 text-center">
           <Bot className="w-12 h-12 mx-auto mb-2 text-muted-foreground/30" />
@@ -260,6 +388,9 @@ export function AdminBotManager() {
               <Button size="sm" onClick={() => updateBot(bot)} disabled={saving === bot.id}>
                 {saving === bot.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Save className="w-3 h-3 mr-1" />}
                 Spara
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => fetchMemories(bot)}>
+                <Brain className="w-3 h-3 mr-1" />Minnen
               </Button>
               <Button size="sm" variant="outline" onClick={() => testBot(bot, "chat_reply")} disabled={testing === bot.id}>
                 <MessageCircle className="w-3 h-3 mr-1" />Testa chatt
