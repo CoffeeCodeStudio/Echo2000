@@ -595,7 +595,7 @@ async function handleBotProfileGuestbookReplies(
     const unhandledEntries = filteredEntries.filter(e => !triggeredUserIds.has(e.author_id));
     if (unhandledEntries.length === 0) return false;
 
-    const targetEntry = filteredEntries[0];
+    const targetEntry = unhandledEntries[0];
 
     const { data: botRepliesAfter } = await supabase
       .from("profile_guestbook")
