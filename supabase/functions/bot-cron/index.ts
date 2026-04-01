@@ -1652,7 +1652,7 @@ async function handleLajvAutoFill(
   try {
     const fourMinAgo = new Date(Date.now() - 4 * 60 * 1000).toISOString();
     const { data: recentLajv } = await supabase
-      .from("lajv_messages").select("id").gte("created_at", tenMinAgo).limit(1);
+      .from("lajv_messages").select("id").gte("created_at", fourMinAgo).limit(1);
 
     if (recentLajv && recentLajv.length > 0) return;
 
