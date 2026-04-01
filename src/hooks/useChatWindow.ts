@@ -208,24 +208,30 @@ export function useChatWindow() {
   // Call helpers
   // ---------------------------------------------------------------------------
 
-  const startVoiceCall = () => {
+  const startVoiceCall = async () => {
     if (user && selectedContact && !webrtc.callActive) {
-      webrtc.startCall("voice");
-      webrtc.ringContact(selectedContact.id, "voice");
+      try {
+        await webrtc.startCall("voice");
+        webrtc.ringContact(selectedContact.id, "voice");
+      } catch { /* getUserMedia denied or failed */ }
     }
   };
 
-  const startVideoCall = () => {
+  const startVideoCall = async () => {
     if (user && selectedContact && !webrtc.callActive) {
-      webrtc.startCall("video", "camera");
-      webrtc.ringContact(selectedContact.id, "video");
+      try {
+        await webrtc.startCall("video", "camera");
+        webrtc.ringContact(selectedContact.id, "video");
+      } catch { /* getUserMedia denied or failed */ }
     }
   };
 
-  const startScreenShare = () => {
+  const startScreenShare = async () => {
     if (user && selectedContact && !webrtc.callActive) {
-      webrtc.startCall("screenshare", "screen");
-      webrtc.ringContact(selectedContact.id, "screenshare");
+      try {
+        await webrtc.startCall("screenshare", "screen");
+        webrtc.ringContact(selectedContact.id, "screenshare");
+      } catch { /* getDisplayMedia denied or failed */ }
     }
   };
 
