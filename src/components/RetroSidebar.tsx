@@ -3,12 +3,14 @@
  * Always-visible retro sidebar for desktop – LunarStorm/Playahead inspired.
  * Shows all navigation items, online users count, and community status.
  */
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar } from "./Avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab =
   | "hem"
