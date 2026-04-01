@@ -1,6 +1,6 @@
 /** Main retro-style header bar showing user status, sound toggle, and settings */
 import { useState } from "react";
-import { Volume2, VolumeX, Settings } from "lucide-react";
+import { Volume2, VolumeX, Settings, LogOut } from "lucide-react";
 import { Button } from "../ui/button";
 import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { MsnLogoWithText } from "./MsnLogo";
@@ -11,9 +11,10 @@ interface ChatHeaderProps {
   userStatus: UserStatus;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  onLogout?: () => void;
 }
 
-export function ChatHeader({ userDisplayName, userStatus, soundEnabled, onToggleSound }: ChatHeaderProps) {
+export function ChatHeader({ userDisplayName, userStatus, soundEnabled, onToggleSound, onLogout }: ChatHeaderProps) {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
@@ -43,6 +44,17 @@ export function ChatHeader({ userDisplayName, userStatus, soundEnabled, onToggle
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
+            {onLogout && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-white/80 hover:text-white hover:bg-red-500/30"
+                onClick={onLogout}
+                title="Logga ut"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
