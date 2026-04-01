@@ -37,7 +37,24 @@ export function RetroSidebar({ activeTab, onTabChange }: RetroSidebarProps) {
   const { onlineUsers } = usePresence();
   const { profile } = useProfile();
 
-  const onlineCount = onlineUsers.size;
+  const [onlineBotCount, setOnlineBotCount] = useState(0);
+
+  useEffect(() => {
+    const fetchBotCount = async () => {
+      const eightMinAgo = new Date(Date.now() - 8 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_bot", true)
+        .gte("last_seen", eightMinAgo);
+      setOnlineBotCount(count ?? 0);
+    };
+    fetchBotCount();
+    const interval = setInterval(fetchBotCount, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const onlineCount = onlineUsers.size + onlineBotCount;
 
   const getBadge = (id: Tab): number | undefined => {
     switch (id) {
