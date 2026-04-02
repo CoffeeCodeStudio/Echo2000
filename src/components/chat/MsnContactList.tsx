@@ -111,6 +111,7 @@ export function MsnContactList({
             statusMessage: profile?.status_message || "",
             avatar: profile?.avatar_url || undefined,
             unreadCount: unreadCounts[friendUserId] || 0,
+            isBot: profile?.is_bot || false,
           };
         });
 
