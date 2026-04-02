@@ -15,6 +15,9 @@ interface MemberAvatar {
 interface PublicStatsResponse {
   stats?: {
     members?: number;
+    messages?: number;
+    guestbook?: number;
+    klotter?: number;
   };
   recentMembers?: Array<{
     user_id: string;
@@ -27,6 +30,9 @@ export function HeroLanding() {
   const navigate = useNavigate();
   const [members, setMembers] = useState<MemberAvatar[]>([]);
   const [memberCount, setMemberCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [guestbookCount, setGuestbookCount] = useState(0);
+  const [klotterCount, setKlotterCount] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -57,6 +63,9 @@ export function HeroLanding() {
           }))
         );
         setMemberCount(data.stats?.members ?? 0);
+        setMessageCount(data.stats?.messages ?? 0);
+        setGuestbookCount(data.stats?.guestbook ?? 0);
+        setKlotterCount(data.stats?.klotter ?? 0);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -161,6 +170,18 @@ export function HeroLanding() {
                 <div className="flex justify-between border-b border-[#ddd] py-1">
                   <span>Medlemmar:</span>
                   <span className="font-bold text-[#ff6600]">{memberCount}</span>
+                </div>
+                <div className="flex justify-between border-b border-[#ddd] py-1">
+                  <span>Meddelanden:</span>
+                  <span className="font-bold text-[#ff6600]">{messageCount.toLocaleString("sv-SE")}</span>
+                </div>
+                <div className="flex justify-between border-b border-[#ddd] py-1">
+                  <span>Gästbok:</span>
+                  <span className="font-bold text-[#ff6600]">{guestbookCount}</span>
+                </div>
+                <div className="flex justify-between border-b border-[#ddd] py-1">
+                  <span>Klotter:</span>
+                  <span className="font-bold text-[#ff6600]">{klotterCount}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Status:</span>
