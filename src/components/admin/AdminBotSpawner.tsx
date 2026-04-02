@@ -17,6 +17,8 @@ const CLEAR_CATEGORIES = [
   { key: "trigger_log", label: "📋 Trigger-loggar", description: "Alla trigger-loggar" },
   { key: "memories", label: "🧠 Minnen", description: "Bot-minnen om användare" },
   { key: "klotter", label: "🎨 Klotter", description: "Klotterplanket-teckningar av bottar" },
+  { key: "friends", label: "🤝 Vänner", description: "Vänskapsrelationer med bottar" },
+  { key: "profile_visits", label: "👁️ Profilbesök", description: "Profilbesök gjorda av bottar" },
 ] as const;
 
 interface CronInfo {
