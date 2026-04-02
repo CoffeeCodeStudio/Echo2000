@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         stats: {
           members: memberCount ?? 0,
-          messages: msgCount ?? 0,
+          messages: (chatMsgCount ?? 0) + (mailMsgCount ?? 0),
           guestbook: guestbookCount ?? 0,
           klotter: klotterCount ?? 0,
         },
