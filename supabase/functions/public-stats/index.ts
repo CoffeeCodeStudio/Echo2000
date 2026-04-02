@@ -41,12 +41,12 @@ Deno.serve(async (req) => {
         },
         recentMembers: recentMembers ?? [],
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, s-maxage=60, max-age=30, stale-while-revalidate=120" } }
     );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" } }
     );
   }
 });
