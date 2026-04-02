@@ -16,9 +16,10 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Fetch stats counts
-    const [{ count: memberCount }, { count: msgCount }, { count: guestbookCount }, { count: klotterCount }] = await Promise.all([
+    const [{ count: memberCount }, { count: chatMsgCount }, { count: mailMsgCount }, { count: guestbookCount }, { count: klotterCount }] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("chat_messages").select("*", { count: "exact", head: true }),
+      supabase.from("messages").select("*", { count: "exact", head: true }),
       supabase.from("profile_guestbook").select("*", { count: "exact", head: true }),
       supabase.from("klotter").select("*", { count: "exact", head: true }),
     ]);
