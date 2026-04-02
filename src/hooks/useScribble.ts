@@ -159,6 +159,7 @@ export function useScribbleGame(lobbyId: string | null) {
   const [players, setPlayers] = useState<ScribblePlayer[]>([]);
   const [guesses, setGuesses] = useState<ScribbleGuess[]>([]);
   const [lobby, setLobby] = useState<ScribbleLobby | null>(null);
+  const [secureWord, setSecureWord] = useState<string | null>(null);
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
@@ -172,9 +173,19 @@ export function useScribbleGame(lobbyId: string | null) {
       supabase.from('scribble_guesses').select('*').eq('lobby_id', lobbyId).order('created_at', { ascending: true }).limit(100),
     ]);
 
-    if (lobbyRes.data) setLobby(lobbyRes.data);
+    if (lobbyRes.data) {
+      // Strip current_word from lobby data — never trust client-side
+      const { current_word: _stripped, ...safeLobby } = lobbyRes.data;
+      setLobby({ ...safeLobby, current_word: null });
+    }
     if (playersRes.data) setPlayers(playersRes.data);
     if (guessesRes.data) setGuesses(guessesRes.data);
+
+    // Fetch secure word via RPC (only returns word if user is drawer)
+    const { data: word } = await supabase.rpc('get_scribble_word', {
+      p_lobby_id: lobbyId,
+    });
+    setSecureWord(word || null);
   }, [lobbyId, user]);
 
   useEffect(() => {
@@ -222,28 +233,21 @@ export function useScribbleGame(lobbyId: string | null) {
   };
 
   const submitGuess = async (guess: string) => {
-    if (!lobbyId || !user || !profile) return;
-    const isCorrect = lobby?.current_word
-      ? guess.trim().toLowerCase() === lobby.current_word.trim().toLowerCase()
-      : false;
+    if (!lobbyId || !user || !profile) return false;
 
-    await supabase.from('scribble_guesses').insert({
-      lobby_id: lobbyId,
-      user_id: user.id,
-      username: profile.username,
-      guess,
-      is_correct: isCorrect,
+    // Use server-side validation — never compare on client
+    const { data, error } = await supabase.rpc('submit_scribble_guess', {
+      p_lobby_id: lobbyId,
+      p_guess: guess,
     });
 
-    if (isCorrect) {
-      // Award points
-      await supabase.from('scribble_players')
-        .update({ score: (players.find(p => p.user_id === user.id)?.score || 0) + 10 })
-        .eq('lobby_id', lobbyId)
-        .eq('user_id', user.id);
+    if (error) {
+      console.error('Submit guess error:', error);
+      return false;
     }
 
-    return isCorrect;
+    const result = data as { success: boolean; is_correct?: boolean; error?: string };
+    return result.success ? (result.is_correct ?? false) : false;
   };
 
   const leaveLobby = async () => {
@@ -251,5 +255,5 @@ export function useScribbleGame(lobbyId: string | null) {
     await supabase.from('scribble_players').delete().eq('lobby_id', lobbyId).eq('user_id', user.id);
   };
 
-  return { lobby, players, guesses, joinLobby, submitGuess, leaveLobby };
+  return { lobby, players, guesses, secureWord, joinLobby, submitGuess, leaveLobby };
 }

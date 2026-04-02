@@ -1031,6 +1031,7 @@ export type Database = {
       delete_expired_lajv_messages: { Args: never; Returns: undefined }
       delete_user_cascade: { Args: { p_user_id: string }; Returns: undefined }
       get_community_stats: { Args: never; Returns: Json }
+      get_scribble_word: { Args: { p_lobby_id: string }; Returns: string }
       give_good_vibe: {
         Args: { p_target_id: string; p_target_type: string }
         Returns: Json
@@ -1062,6 +1063,10 @@ export type Database = {
       reset_monthly_vibes_if_needed: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      submit_scribble_guess: {
+        Args: { p_guess: string; p_lobby_id: string }
+        Returns: Json
       }
       sync_approved_avatars: { Args: never; Returns: number }
       utc_date: { Args: { ts: string }; Returns: string }
