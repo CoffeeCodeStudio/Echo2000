@@ -19,6 +19,7 @@ import { ChatFooter } from "./ChatFooter";
 import { ChatAvatarPanel } from "./ChatAvatarPanel";
 import { ChatCallOverlays } from "./ChatCallOverlays";
 import { ChatWelcomeScreen } from "./ChatWelcomeScreen";
+import { BotCallWindow } from "../calls/BotCallWindow";
 
 interface ChatWindowProps {
   className?: string;
