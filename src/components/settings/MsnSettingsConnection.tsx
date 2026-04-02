@@ -22,7 +22,7 @@ export function MsnSettingsConnection() {
       <div className="msn-settings-group">
         <h3 className="msn-settings-group-title">Proxy-inställningar</h3>
         <p className="text-[11px] text-gray-600 dark:text-gray-400">
-          Echo Messenger ansluter direkt till servern. Proxy-inställningar stöds inte för närvarande.
+          Echo Messenger ansluter direkt till servern. Ingen proxy behövs.
         </p>
       </div>
 
