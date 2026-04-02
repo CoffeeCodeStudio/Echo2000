@@ -59,6 +59,10 @@ export function useChatWindow() {
     contactId: selectedContact?.id || "",
   });
 
+  const { botCall, startBotCall, endBotCall } = useBotCall({
+    userId: user?.id || "",
+  });
+
   // Typing indicator from bots/other users
   const contactTyping = useChatTyping(user?.id, selectedContact?.id || null);
 
