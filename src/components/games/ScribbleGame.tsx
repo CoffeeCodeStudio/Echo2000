@@ -38,7 +38,7 @@ const WORD_LIST = [
 ];
 
 export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
-  const { lobby, players, guesses, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId);
+  const { lobby, players, guesses, secureWord, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId);
   const { user } = useAuth();
   const { toast } = useToast();
 
