@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "../Avatar";
+import { parseBBCode } from "@/lib/bbcode";
 import type { UserStatus } from "../StatusIndicator";
 
 interface ChatBubbleProps {
@@ -21,6 +23,8 @@ export function ChatBubble({
   senderStatus = "online",
   showAvatar = true,
 }: ChatBubbleProps) {
+  const renderedHtml = useMemo(() => parseBBCode(message), [message]);
+
   return (
     <div
       className={cn(
@@ -54,7 +58,10 @@ export function ChatBubble({
             isSelf ? "chat-bubble-self" : "chat-bubble-other"
           )}
         >
-          <p className="text-sm leading-relaxed">{message}</p>
+          <p
+            className="text-sm leading-relaxed break-words"
+            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+          />
         </div>
         <span className="text-[10px] text-muted-foreground px-1">
           {timestamp}
