@@ -1,0 +1,1 @@
+SELECT cron.schedule('bot-cron-tick', '* * * * *', 'SELECT invoke_bot_cron()');

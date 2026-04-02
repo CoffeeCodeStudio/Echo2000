@@ -23,13 +23,15 @@ serve(async (req) => {
   const authHeader = req.headers.get("authorization") || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
   const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
   const isScheduler = req.headers.get("x-supabase-scheduler") !== null;
   const isCronWithAnonKey = authHeader === `Bearer ${anonKey}`;
+  // Accept internal pg_net calls (no auth header) since verify_jwt=false
+  const isInternalCall = !authHeader;
 
   let isAdmin = false;
-  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && authHeader.startsWith("Bearer ")) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && !isInternalCall && authHeader.startsWith("Bearer ")) {
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -40,7 +42,7 @@ serve(async (req) => {
     }
   }
 
-  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && !isAdmin) {
+  if (!isServiceRole && !isScheduler && !isCronWithAnonKey && !isInternalCall && !isAdmin) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
