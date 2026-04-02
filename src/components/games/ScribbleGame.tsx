@@ -482,15 +482,15 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
               </div>
             )}
 
-            {isDrawer && lobby?.current_word && (
+            {isDrawer && secureWord && (
               <div className="text-center py-1 bg-primary/10 text-primary text-xs sm:text-sm font-display font-bold shrink-0">
-                Rita: {lobby.current_word}
+                Rita: {secureWord}
               </div>
             )}
 
-            {!isDrawer && lobby?.status === "playing" && lobby?.current_word && (
+            {!isDrawer && lobby?.status === "playing" && lobby?.current_drawer_id && (
               <div className="text-center py-1 bg-muted text-muted-foreground text-xs sm:text-sm font-display shrink-0">
-                {lobby.current_word.replace(/./g, "_ ")}
+                Gissa ordet!
               </div>
             )}
 
