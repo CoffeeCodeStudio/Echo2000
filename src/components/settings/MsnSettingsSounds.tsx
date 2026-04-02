@@ -1,9 +1,12 @@
 /**
- * Sounds settings tab — toggle individual MSN sounds on/off with preview.
+ * Sounds settings tab — toggle individual sounds on/off with preview.
+ * Persists to localStorage.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Volume2 } from "lucide-react";
 import { useMsnSounds } from "@/hooks/useMsnSounds";
+
+const STORAGE_KEY = "echo-settings-sounds";
 
 interface SoundToggle {
   id: string;
@@ -21,11 +24,21 @@ const sounds: SoundToggle[] = [
   { id: "error", label: "Felljud", description: "Spelas vid fel (t.ex. meddelande kunde inte skickas)", soundType: "error" },
 ];
 
+function loadSounds(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return Object.fromEntries(sounds.map((s) => [s.id, true]));
+}
+
 export function MsnSettingsSounds() {
   const { playSound } = useMsnSounds();
-  const [enabledSounds, setEnabledSounds] = useState<Record<string, boolean>>(
-    Object.fromEntries(sounds.map((s) => [s.id, true]))
-  );
+  const [enabledSounds, setEnabledSounds] = useState<Record<string, boolean>>(loadSounds);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(enabledSounds));
+  }, [enabledSounds]);
 
   const toggle = (id: string) => {
     setEnabledSounds((prev) => ({ ...prev, [id]: !prev[id] }));

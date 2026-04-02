@@ -1,12 +1,28 @@
 /**
  * Privacy settings tab — who can see/contact you.
+ * Persists to localStorage.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "echo-settings-privacy";
+
+function loadPrivacy() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { allowAll: true, showOnline: true, showActivity: true };
+}
 
 export function MsnSettingsPrivacy() {
-  const [allowAll, setAllowAll] = useState(true);
-  const [showOnline, setShowOnline] = useState(true);
-  const [showActivity, setShowActivity] = useState(true);
+  const [settings, setSettings] = useState(loadPrivacy);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  }, [settings]);
+
+  const toggle = (key: string) =>
+    setSettings((prev: any) => ({ ...prev, [key]: !prev[key] }));
 
   return (
     <>
@@ -15,16 +31,16 @@ export function MsnSettingsPrivacy() {
         <label className="msn-settings-label">
           <div
             className="msn-settings-toggle"
-            data-checked={showOnline}
-            onClick={() => setShowOnline(!showOnline)}
+            data-checked={settings.showOnline}
+            onClick={() => toggle("showOnline")}
           />
           Visa min onlinestatus för andra
         </label>
         <label className="msn-settings-label">
           <div
             className="msn-settings-toggle"
-            data-checked={showActivity}
-            onClick={() => setShowActivity(!showActivity)}
+            data-checked={settings.showActivity}
+            onClick={() => toggle("showActivity")}
           />
           Visa vilken sida jag befinner mig på
         </label>
@@ -35,8 +51,8 @@ export function MsnSettingsPrivacy() {
         <label className="msn-settings-label">
           <div
             className="msn-settings-toggle"
-            data-checked={allowAll}
-            onClick={() => setAllowAll(!allowAll)}
+            data-checked={settings.allowAll}
+            onClick={() => toggle("allowAll")}
           />
           Tillåt alla att skicka meddelanden till mig
         </label>
