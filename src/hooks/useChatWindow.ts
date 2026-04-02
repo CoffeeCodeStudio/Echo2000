@@ -289,6 +289,8 @@ export function useChatWindow() {
 
     // Calls
     webrtc,
+    botCall,
+    endBotCall,
     showInviteDialog,
     setShowInviteDialog,
     startVoiceCall,
