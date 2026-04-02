@@ -42,7 +42,7 @@ export function SharedLayout() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+    <div className={cn("flex flex-col bg-background overflow-x-hidden", user ? "h-screen" : "min-h-screen")}>
       {/* Header, Lajv ticker, and Unread mail — only for logged-in users */}
       {user && (
         <>
