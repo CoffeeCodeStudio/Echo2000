@@ -42,7 +42,7 @@ export function SharedLayout() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+    <div className={cn("flex flex-col bg-background overflow-x-hidden", user ? "h-screen" : "min-h-screen")}>
       {/* Header, Lajv ticker, and Unread mail — only for logged-in users */}
       {user && (
         <>
@@ -60,7 +60,7 @@ export function SharedLayout() {
       )}
 
       {/* Main content area */}
-      <div className={cn("flex-1 flex flex-col min-h-0 overflow-hidden", user && !hideNavbar ? "pb-[70px] md:pb-0" : "")}>
+      <div className={cn("flex-1 flex flex-col min-h-0", user ? "overflow-hidden" : "overflow-y-auto", user && !hideNavbar ? "pb-[70px] md:pb-0" : "")}>
         <main className="flex-1 flex min-h-0">
           <Outlet context={{ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, handleUnreadCountChange, hideNavbar, setHideNavbar }} />
         </main>
