@@ -1064,6 +1064,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      submit_scribble_guess: {
+        Args: { p_guess: string; p_lobby_id: string }
+        Returns: Json
+      }
       sync_approved_avatars: { Args: never; Returns: number }
       utc_date: { Args: { ts: string }; Returns: string }
     }
