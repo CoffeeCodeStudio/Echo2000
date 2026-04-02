@@ -5,12 +5,22 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface MemberAvatar {
   id: string;
   username: string;
   avatar_url: string | null;
+}
+
+interface PublicStatsResponse {
+  stats?: {
+    members?: number;
+  };
+  recentMembers?: Array<{
+    user_id: string;
+    username: string;
+    avatar_url: string | null;
+  }>;
 }
 
 export function HeroLanding() {
@@ -19,25 +29,44 @@ export function HeroLanding() {
   const [memberCount, setMemberCount] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchMembers = async () => {
       try {
-        const [{ data }, { count }] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("id, username, avatar_url")
-            .eq("is_approved", true)
-            .order("created_at", { ascending: false })
-            .limit(8),
-          supabase
-            .from("profiles")
-            .select("*", { count: "exact", head: true })
-            .eq("is_approved", true),
-        ]);
-        if (data) setMembers(data);
-        if (count) setMemberCount(count);
-      } catch { /* ignore */ }
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-stats`,
+          {
+            headers: {
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            signal: controller.signal,
+          }
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as PublicStatsResponse;
+
+        setMembers(
+          (data.recentMembers ?? []).slice(0, 8).map((member) => ({
+            id: member.user_id,
+            username: member.username,
+            avatar_url: member.avatar_url,
+          }))
+        );
+        setMemberCount(data.stats?.members ?? 0);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
     };
+
     fetchMembers();
+
+    return () => controller.abort();
   }, []);
 
   return (
