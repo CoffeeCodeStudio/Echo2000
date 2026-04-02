@@ -155,7 +155,11 @@ export function Header({ activeTab = "hem", onTabChange, onMenuClick }: HeaderPr
         aria-label={item.label}
       >
         <span className={cn("header-nav-icon", hasNotice && item.animationClass)}>
-          {item.emoji}
+          {item.id === "chatt" ? (
+            <img src={echoButterfly} alt="Echo Messenger" className="w-5 h-5 object-contain" />
+          ) : (
+            item.emoji
+          )}
         </span>
         <span className="header-nav-label">{item.label}</span>
         {isHeart && pendingFr > 0 && (
