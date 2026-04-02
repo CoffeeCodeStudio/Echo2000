@@ -18,6 +18,7 @@ export interface MsnContact {
   avatar?: string;
   lastSeen?: string;
   unreadCount?: number;
+  isBot?: boolean;
 }
 
 interface MsnContactListProps {
