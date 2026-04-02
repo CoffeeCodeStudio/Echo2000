@@ -93,7 +93,7 @@ export function HeroLanding() {
           <div className="bg-[#555] px-2 py-1">
             <h2 className="text-[11px] font-bold text-white uppercase">Se hur det funkar</h2>
           </div>
-          <div className="p-2 flex justify-center">
+          <div className="p-2">
             <video
               src="/videos/echo2000-promo.mp4"
               autoPlay
@@ -101,8 +101,8 @@ export function HeroLanding() {
               loop
               playsInline
               controls
-              className="border border-[#ccc]"
-              style={{ maxWidth: "480px", width: "100%", aspectRatio: "16/9", objectFit: "cover" }}
+              className="w-full border border-[#ccc]"
+              style={{ aspectRatio: "16/9", objectFit: "cover" }}
             />
           </div>
         </div>
