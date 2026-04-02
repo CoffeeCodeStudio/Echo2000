@@ -16,6 +16,7 @@ const CLEAR_CATEGORIES = [
   { key: "news_comments", label: "📰 Nyhetskommentarer", description: "Kommentarer på nyheter" },
   { key: "trigger_log", label: "📋 Trigger-loggar", description: "Alla trigger-loggar" },
   { key: "memories", label: "🧠 Minnen", description: "Bot-minnen om användare" },
+  { key: "klotter", label: "🎨 Klotter", description: "Klotterplanket-teckningar av bottar" },
 ] as const;
 
 interface CronInfo {
@@ -260,7 +261,7 @@ function ClearCategoryMenu({ clearing, disabled, onClear }: { clearing: boolean;
             <ChevronDown className="w-3 h-3 ml-1" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" side="top" className="w-56 max-h-[70vh] overflow-y-auto">
           {CLEAR_CATEGORIES.map((cat) => (
             <DropdownMenuItem key={cat.key} onClick={() => setPendingCategory(cat.key)} className="flex flex-col items-start gap-0.5">
               <span className="font-medium text-sm">{cat.label}</span>
