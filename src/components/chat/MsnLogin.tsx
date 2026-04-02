@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Volume2, Loader2, Save } from "lucide-react";
+import echoButterfly from "@/assets/echo-butterfly.png";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -75,20 +76,7 @@ export function MsnLogin({ onLogin }: MsnLoginProps) {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-3 mb-2">
             <div className="relative">
-              {/* MSN Butterfly-inspired logo */}
-              <div className="w-16 h-16 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-8 bg-orange-400 rounded-full transform -rotate-45 translate-x-1"></div>
-                  <div className="w-6 h-8 bg-green-400 rounded-full transform rotate-45 -translate-x-1"></div>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-8 bg-blue-400 rounded-full transform rotate-45 translate-x-1 translate-y-2"></div>
-                  <div className="w-6 h-8 bg-red-400 rounded-full transform -rotate-45 -translate-x-1 translate-y-2"></div>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-2 h-4 bg-white/80 rounded-full"></div>
-                </div>
-              </div>
+              <img src={echoButterfly} alt="Echo Messenger" className="w-16 h-16 object-contain" />
             </div>
           </div>
           <h1 className="font-display font-bold text-2xl text-white drop-shadow-lg">
