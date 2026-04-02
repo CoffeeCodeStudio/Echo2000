@@ -1,0 +1,1 @@
+UPDATE profiles SET is_bot = true WHERE user_id IN (SELECT user_id FROM bot_settings);
