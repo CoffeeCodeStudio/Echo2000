@@ -214,7 +214,12 @@ export function useChatWindow() {
   // ---------------------------------------------------------------------------
 
   const startVoiceCall = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "voice");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("voice");
         webrtc.ringContact(selectedContact.id, "voice");
@@ -223,7 +228,12 @@ export function useChatWindow() {
   };
 
   const startVideoCall = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "video");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("video", "camera");
         webrtc.ringContact(selectedContact.id, "video");
@@ -232,7 +242,12 @@ export function useChatWindow() {
   };
 
   const startScreenShare = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "screenshare");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("screenshare", "screen");
         webrtc.ringContact(selectedContact.id, "screenshare");
