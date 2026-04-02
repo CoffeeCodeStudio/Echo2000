@@ -29,9 +29,8 @@ export function BotCallWindow({ botName, botAvatar, duration, isSpeaking, onEndC
         <div className={`rounded-full p-1 ${isSpeaking ? "ring-4 ring-green-400/60" : "ring-2 ring-white/20"} transition-all duration-300`}>
           <Avatar
             src={botAvatar}
-            alt={botName}
-            fallback={botName.charAt(0)}
-            className="w-24 h-24"
+            name={botName}
+            size="xl"
           />
         </div>
         {isSpeaking && (
