@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useChatTyping } from "@/hooks/useChatTyping";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useBotCall } from "@/hooks/useBotCall";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { LayoutContext } from "@/components/SharedLayout";
