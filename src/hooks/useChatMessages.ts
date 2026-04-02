@@ -108,16 +108,26 @@ export function useChatMessages(contactId: string | null) {
     async (content: string): Promise<boolean> => {
       if (!user || !contactId || !content.trim()) return false;
 
-      const { error } = await supabase.from('chat_messages').insert({
+      const trimmed = content.trim();
+      const { data, error } = await supabase.from('chat_messages').insert({
         sender_id: user.id,
         recipient_id: contactId,
-        content: content.trim(),
-      });
+        content: trimmed,
+      }).select().single();
 
       if (error) {
         console.error('Error sending chat message:', error);
         return false;
       }
+
+      // Optimistically add own message to state
+      if (data) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === data.id)) return prev;
+          return [...prev, data as ChatMessage];
+        });
+      }
+
       return true;
     },
     [user, contactId]
