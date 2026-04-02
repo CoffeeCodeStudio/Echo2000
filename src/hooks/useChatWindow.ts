@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useChatTyping } from "@/hooks/useChatTyping";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useBotCall } from "@/hooks/useBotCall";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { LayoutContext } from "@/components/SharedLayout";
@@ -56,6 +57,10 @@ export function useChatWindow() {
   const webrtc = useWebRTC({
     userId: user?.id || "",
     contactId: selectedContact?.id || "",
+  });
+
+  const { botCall, startBotCall, endBotCall } = useBotCall({
+    userId: user?.id || "",
   });
 
   // Typing indicator from bots/other users
@@ -209,7 +214,12 @@ export function useChatWindow() {
   // ---------------------------------------------------------------------------
 
   const startVoiceCall = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "voice");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("voice");
         webrtc.ringContact(selectedContact.id, "voice");
@@ -218,7 +228,12 @@ export function useChatWindow() {
   };
 
   const startVideoCall = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "video");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("video", "camera");
         webrtc.ringContact(selectedContact.id, "video");
@@ -227,7 +242,12 @@ export function useChatWindow() {
   };
 
   const startScreenShare = async () => {
-    if (user && selectedContact && !webrtc.callActive) {
+    if (user && selectedContact && !webrtc.callActive && !botCall.active) {
+      if (selectedContact.isBot) {
+        startBotCall(selectedContact.name, "screenshare");
+        if (soundEnabled) playSound("online");
+        return;
+      }
       try {
         await webrtc.startCall("screenshare", "screen");
         webrtc.ringContact(selectedContact.id, "screenshare");
@@ -269,6 +289,8 @@ export function useChatWindow() {
 
     // Calls
     webrtc,
+    botCall,
+    endBotCall,
     showInviteDialog,
     setShowInviteDialog,
     startVoiceCall,

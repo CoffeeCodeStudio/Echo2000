@@ -18,6 +18,7 @@ export interface MsnContact {
   avatar?: string;
   lastSeen?: string;
   unreadCount?: number;
+  isBot?: boolean;
 }
 
 interface MsnContactListProps {
@@ -83,7 +84,7 @@ export function MsnContactList({
 
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("user_id, username, avatar_url, status_message")
+          .select("user_id, username, avatar_url, status_message, is_bot")
           .in("user_id", friendUserIds);
 
         const { data: unreadChatMessages } = await supabase
@@ -110,6 +111,7 @@ export function MsnContactList({
             statusMessage: profile?.status_message || "",
             avatar: profile?.avatar_url || undefined,
             unreadCount: unreadCounts[friendUserId] || 0,
+            isBot: profile?.is_bot || false,
           };
         });
 

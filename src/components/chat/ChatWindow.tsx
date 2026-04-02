@@ -19,6 +19,7 @@ import { ChatFooter } from "./ChatFooter";
 import { ChatAvatarPanel } from "./ChatAvatarPanel";
 import { ChatCallOverlays } from "./ChatCallOverlays";
 import { ChatWelcomeScreen } from "./ChatWelcomeScreen";
+import { BotCallWindow } from "../calls/BotCallWindow";
 
 interface ChatWindowProps {
   className?: string;
@@ -63,6 +64,16 @@ export function ChatWindow({ className }: ChatWindowProps) {
           <div className="flex-1 flex flex-col min-w-0">
             {chat.selectedContact ? (
               <>
+                {chat.botCall.active && (
+                  <BotCallWindow
+                    botName={chat.botCall.botName}
+                    botAvatar={chat.selectedContact.avatar}
+                    duration={chat.botCall.duration}
+                    isSpeaking={chat.botCall.isSpeaking}
+                    onEndCall={chat.endBotCall}
+                  />
+                )}
+
                 <ChatCallOverlays
                   webrtc={chat.webrtc}
                   contactName={chat.selectedContact.name}
