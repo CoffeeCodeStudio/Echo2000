@@ -245,22 +245,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
                     dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
                   />
                 </div>
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="w-full flex items-center justify-center gap-1 py-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                >
-                  {expanded ? (
-                    <>
-                      <ChevronUp className="w-3.5 h-3.5" />
-                      Visa mindre
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-3.5 h-3.5" />
-                      Visa mer
-                    </>
-                  )}
-                </button>
               </div>
             ) : (
               <p className="text-sm text-foreground/80">Ingen presentation ännu...</p>
