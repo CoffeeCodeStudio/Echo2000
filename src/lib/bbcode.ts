@@ -97,9 +97,9 @@ export function parseBBCode(input: string): string {
     '<div style="text-align:center">$1</div>'
   );
 
-  // 4. [color=#HEX]
+  // 4. [color=#HEX] or [color=name]
   s = s.replace(
-    /\[color=(#?[0-9a-fA-F]{3,6})\]([\s\S]*?)\[\/color\]/gi,
+    /\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/gi,
     (_m, rawColor: string, content: string) => {
       const color = sanitizeColor(rawColor);
       if (!color) return content;
