@@ -111,7 +111,7 @@ export function HomeContent() {
           {messages.length === 0 ? (
             <span className="text-[11px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
           ) : currentLajv ? (
-            <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
+            <div className="flex items-center gap-1.5 text-[11px] animate-fade-in">
               <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden">
                 <Avatar name={currentLajv.username} src={currentLajv.avatar_url || undefined} size="sm" />
               </div>
