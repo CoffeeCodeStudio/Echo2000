@@ -75,17 +75,6 @@ npm run dev
 
 ---
 
-## Bidra
-
-1. Forka repot
-2. Skapa feature branch (`git checkout -b feature/min-grej`)
-3. Commit och push
-4. Öppna Pull Request
-
-**Riktlinjer:** TypeScript, inga `any`, testa på mobil och desktop, svenska UI-texter.
-
----
-
 ## Deploy
 
 Publicera via Lovable eller koppla egen domän via Project → Settings → Domains.
