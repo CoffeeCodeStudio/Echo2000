@@ -33,8 +33,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const COLLAPSED_HEIGHT = 200;
 
   const wrapSelection = useCallback((openTag: string, closeTag: string) => {
     const ta = textareaRef.current;
