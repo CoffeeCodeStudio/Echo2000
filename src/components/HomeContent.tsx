@@ -103,7 +103,7 @@ export function HomeContent() {
               <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
             )}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wide text-primary">LAJV</span>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-primary">LAJV</span>
         </div>
 
         {/* Lajv message */}
