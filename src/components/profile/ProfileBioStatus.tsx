@@ -3,7 +3,7 @@
  * Presentation (BBCode-formatted) and member-since footer sections.
  */
 import { useRef, useState, useCallback } from "react";
-import { Calendar, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, Eye, EyeOff } from "lucide-react";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
