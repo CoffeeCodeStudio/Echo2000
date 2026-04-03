@@ -94,6 +94,7 @@ export function LajvSection() {
         <div className="flex gap-3">
           <Avatar
             name={user?.user_metadata?.username || user?.email?.split('@')[0] || 'Gäst'}
+            src={myAvatarUrl}
             status="online"
             size="sm"
           />
