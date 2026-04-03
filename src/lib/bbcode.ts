@@ -43,7 +43,7 @@ export function parseBBCode(input: string): string {
   const lines = input.split('\n');
   const isCorrupted = lines.some(line => (line.match(/\[color=/gi) || []).length > 500);
   if (isCorrupted) {
-    return '<div style="color:#ff6b6b;background:rgba(255,0,0,0.1);padding:12px;border-radius:4px"><strong>⚠️ För många färgtaggar</strong><br>Din pixel-art har över 500 färger per rad. Förenkla bilden eller använd en bild istället.</div>';
+    return '<div style="color:#ff6b6b;background:rgba(255,0,0,0.1);padding:12px;border-radius:4px;margin:8px 0"><strong>⚠️ För många färgtaggar</strong><br>Din pixel-art har över 500 färger per rad. Förenkla bilden eller använd en bild istället.</div>';
   }
 
   // 1. Escape raw HTML
