@@ -91,7 +91,7 @@ export function HomeContent() {
   return (
     <div className="flex-1 overflow-y-auto scrollbar-nostalgic bg-background">
       {/* Combined welcome + lajv header */}
-      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-3 py-1.5 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-card via-card to-muted border-b-2 border-primary px-4 py-3 flex items-center gap-3">
         {/* Lajv on the left */}
         <div
           className="flex items-center gap-1.5 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
@@ -103,16 +103,16 @@ export function HomeContent() {
               <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
             )}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wide text-primary">LAJV</span>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-primary">LAJV</span>
         </div>
 
         {/* Lajv message */}
-        <div className="min-w-0 max-w-[200px] hidden sm:block">
+        <div className="min-w-0 max-w-[220px] hidden sm:block">
           {messages.length === 0 ? (
-            <span className="text-[10px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
+            <span className="text-[11px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
           ) : currentLajv ? (
-            <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
-              <div className="shrink-0 w-4 h-4 rounded-full overflow-hidden">
+            <div className="flex items-center gap-1.5 text-[11px] animate-fade-in">
+              <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden">
                 <Avatar name={currentLajv.username} src={currentLajv.avatar_url || undefined} size="sm" />
               </div>
               <span className="font-bold text-foreground shrink-0 max-w-[80px] truncate">{currentLajv.username}:</span>
@@ -123,10 +123,10 @@ export function HomeContent() {
 
         {/* Center welcome text */}
         <div className="flex-1 text-center">
-          <span className="text-[13px] font-bold text-foreground">
+          <span className="text-sm font-bold text-foreground">
             Välkommen till <span className="text-primary">Echo2000</span>
           </span>
-          <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
+          <span className="text-[11px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
         </div>
 
         {/* DJ controls on the right */}
