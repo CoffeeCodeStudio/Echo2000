@@ -11,11 +11,29 @@ function stripHtml(input: string): string {
   return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/** Validate and clamp a hex colour value. */
+/** Safe CSS named colors (lowercase). */
+const NAMED_COLORS = new Set([
+  "black","white","red","green","blue","yellow","orange","purple","pink",
+  "brown","gray","grey","cyan","magenta","lime","navy","teal","maroon",
+  "olive","aqua","fuchsia","silver","gold","coral","salmon","tomato",
+  "crimson","indigo","violet","plum","orchid","khaki","beige","ivory",
+  "linen","wheat","tan","chocolate","sienna","peru","firebrick",
+  "darkred","darkgreen","darkblue","darkcyan","darkmagenta","darkorange",
+  "darkviolet","deeppink","deepskyblue","dodgerblue","forestgreen",
+  "hotpink","lawngreen","lightblue","lightcoral","lightgreen","lightpink",
+  "lightyellow","mediumblue","orangered","royalblue","seagreen",
+  "skyblue","slategray","springgreen","steelblue","turquoise",
+]);
+
+/** Validate a color value: hex or named CSS color. */
 function sanitizeColor(raw: string): string | null {
-  const match = raw.match(/^#?([0-9a-fA-F]{3,6})$/);
-  if (!match) return null;
-  return `#${match[1]}`;
+  const trimmed = raw.trim();
+  // Hex color
+  const hexMatch = trimmed.match(/^#?([0-9a-fA-F]{3,6})$/);
+  if (hexMatch) return `#${hexMatch[1]}`;
+  // Named color
+  if (NAMED_COLORS.has(trimmed.toLowerCase())) return trimmed.toLowerCase();
+  return null;
 }
 
 /** Clamp font-size between 10 and 32. */
@@ -79,9 +97,9 @@ export function parseBBCode(input: string): string {
     '<div style="text-align:center">$1</div>'
   );
 
-  // 4. [color=#HEX]
+  // 4. [color=#HEX] or [color=name]
   s = s.replace(
-    /\[color=(#?[0-9a-fA-F]{3,6})\]([\s\S]*?)\[\/color\]/gi,
+    /\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/gi,
     (_m, rawColor: string, content: string) => {
       const color = sanitizeColor(rawColor);
       if (!color) return content;
