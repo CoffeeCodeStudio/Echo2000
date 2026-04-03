@@ -226,10 +226,9 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
             {presentationText ? (
               <div className="relative">
                 <div
-                  className={cn("text-sm rounded relative overflow-hidden transition-all duration-300")}
+                  className={cn("text-sm rounded relative overflow-hidden")}
                   style={{
-                    maxHeight: expanded ? "none" : `${COLLAPSED_HEIGHT}px`,
-                    minHeight: expanded ? "200px" : undefined,
+                    minHeight: "200px",
                     ...(displayData.presentation_bg_url ? {
                       backgroundImage: `url(${displayData.presentation_bg_url})`,
                       backgroundSize: "cover",
@@ -245,15 +244,6 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
                     style={{ wordBreak: "break-word", maxWidth: "100%" }}
                     dangerouslySetInnerHTML={{ __html: parseBBCode(presentationText) }}
                   />
-                  {/* Fade overlay when collapsed */}
-                  {!expanded && (
-                    <div className={cn(
-                      "absolute bottom-0 left-0 right-0 h-16 z-20 pointer-events-none",
-                      displayData.presentation_bg_url
-                        ? "bg-gradient-to-t from-black/80 to-transparent"
-                        : "bg-gradient-to-t from-card to-transparent"
-                    )} />
-                  )}
                 </div>
                 <button
                   onClick={() => setExpanded(!expanded)}
