@@ -112,7 +112,7 @@ export function HomeContent() {
             <span className="text-[10px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
           ) : currentLajv ? (
             <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
-              <div className="shrink-0 w-4 h-4 rounded-full overflow-hidden">
+              <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden">
                 <Avatar name={currentLajv.username} src={currentLajv.avatar_url || undefined} size="sm" />
               </div>
               <span className="font-bold text-foreground shrink-0 max-w-[80px] truncate">{currentLajv.username}:</span>
