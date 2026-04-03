@@ -123,10 +123,10 @@ export function HomeContent() {
 
         {/* Center welcome text */}
         <div className="flex-1 text-center">
-          <span className="text-[13px] font-bold text-foreground">
+          <span className="text-sm font-bold text-foreground">
             Välkommen till <span className="text-primary">Echo2000</span>
           </span>
-          <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
+          <span className="text-[11px] text-muted-foreground ml-2 hidden sm:inline">Som förr. Fast nu.</span>
         </div>
 
         {/* DJ controls on the right */}
