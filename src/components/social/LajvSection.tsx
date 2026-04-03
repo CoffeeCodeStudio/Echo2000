@@ -20,6 +20,15 @@ export function LajvSection() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [botUserIds, setBotUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [myAvatarUrl, setMyAvatarUrl] = useState<string | undefined>();
+
+  // Fetch current user's avatar
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('avatar_url').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data?.avatar_url) setMyAvatarUrl(data.avatar_url);
+    });
+  }, [user?.id]);
 
   // Fetch bot user IDs once
   useEffect(() => {
