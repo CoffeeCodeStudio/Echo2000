@@ -107,9 +107,9 @@ export function HomeContent() {
         </div>
 
         {/* Lajv message */}
-        <div className="min-w-0 max-w-[200px] hidden sm:block">
+        <div className="min-w-0 max-w-[220px] hidden sm:block">
           {messages.length === 0 ? (
-            <span className="text-[10px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
+            <span className="text-[11px] italic text-muted-foreground truncate block">Inga aktiva lajv</span>
           ) : currentLajv ? (
             <div className="flex items-center gap-1.5 text-[10px] animate-fade-in">
               <div className="shrink-0 w-6 h-6 rounded-full overflow-hidden">
