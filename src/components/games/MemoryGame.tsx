@@ -73,6 +73,21 @@ interface Props {
   onBack: () => void;
 }
 
+async function callMemoryApi(body: Record<string, unknown>) {
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/memory-game`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  return res.json();
+}
+
 export function MemoryGame({ onBack }: Props) {
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -94,10 +109,12 @@ export function MemoryGame({ onBack }: Props) {
   });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
+  const sessionTokenRef = useRef<string | null>(null);
+  const scoreSavedRef = useRef(false);
 
   const totalPairs = difficulty ? DIFFICULTY_CONFIG[difficulty].pairs : 0;
 
-  const startGame = useCallback((diff: Difficulty) => {
+  const startGame = useCallback(async (diff: Difficulty) => {
     setDifficulty(diff);
     setCards(buildDeck(DIFFICULTY_CONFIG[diff].pairs));
     setFlippedIds([]);
@@ -106,8 +123,22 @@ export function MemoryGame({ onBack }: Props) {
     setSeconds(0);
     setGameOver(false);
     setScoreSaved(false);
+    scoreSavedRef.current = false;
+    sessionTokenRef.current = null;
     lockRef.current = false;
-  }, []);
+
+    // Start anti-cheat session if logged in
+    if (user && profile) {
+      try {
+        const res = await callMemoryApi({ action: "start", username: profile.username, difficulty: diff });
+        if (res.session_token) {
+          sessionTokenRef.current = res.session_token;
+        }
+      } catch {
+        // Fallback: no session token, will use direct insert
+      }
+    }
+  }, [user, profile]);
 
   const fetchLeaderboard = useCallback(async (diff: Difficulty) => {
     const { data } = await supabase
