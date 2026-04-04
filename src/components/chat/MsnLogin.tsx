@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, Volume2, Loader2, Save } from "lucide-react";
 import echoButterfly from "@/assets/echo-butterfly.png";
 import { Button } from "../ui/button";
@@ -27,28 +27,25 @@ export function MsnLogin({ onLogin }: MsnLoginProps) {
   const [rememberMe, setRememberMe] = useState(true);
   const [saved, setSaved] = useState(false);
   const { playSound } = useMsnSounds();
-  const autoLoginAttempted = useRef(false);
 
-  // Load saved credentials & auto-login
+  // Load saved credentials & auto-login (idempotent – safe under Strict Mode)
   useEffect(() => {
-    if (autoLoginAttempted.current) return;
-    autoLoginAttempted.current = true;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
 
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const { displayName: savedName, status: savedStatus, autoLogin } = JSON.parse(saved);
-        if (savedName) {
-          setDisplayName(savedName);
-          setStatus(savedStatus || "online");
-          setRememberMe(true);
-          if (autoLogin) {
-            // Auto-login after a brief delay for UX
-            setTimeout(() => doLogin(savedName, savedStatus || "online"), 300);
-          }
+      const { displayName: savedName, status: savedStatus, autoLogin } = JSON.parse(raw);
+      if (savedName) {
+        setDisplayName(savedName);
+        setStatus(savedStatus || "online");
+        setRememberMe(true);
+        if (autoLogin) {
+          setTimeout(() => doLogin(savedName, savedStatus || "online"), 300);
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error("Failed to parse saved login:", err);
+    }
   }, []);
 
   const doLogin = async (name: string, loginStatus: string) => {

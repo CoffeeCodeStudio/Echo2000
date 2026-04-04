@@ -4,6 +4,16 @@ import { useAuth } from './useAuth';
 import { useLocation } from 'react-router-dom';
 import type { UserStatus } from '@/components/StatusIndicator';
 
+const PRIVACY_STORAGE_KEY = "echo-settings-privacy";
+
+function getPrivacySettings() {
+  try {
+    const raw = localStorage.getItem(PRIVACY_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { showOnline: true, showActivity: true };
+}
+
 interface PresenceState {
   user_id: string;
   last_active: string;
@@ -67,10 +77,14 @@ export function usePresence() {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
+          const privacy = getPrivacySettings();
+          if (!privacy.showOnline) return; // Don't track if user disabled online visibility
           await channel.track({
             user_id: user.id,
             last_active: new Date().toISOString(),
-            current_activity: activityOverrideRef.current || getActivityFromPath(location.pathname),
+            current_activity: privacy.showActivity
+              ? (activityOverrideRef.current || getActivityFromPath(location.pathname))
+              : undefined,
           });
         }
       });
@@ -82,11 +96,16 @@ export function usePresence() {
       const now = Date.now();
       if (now - lastTrackRef.current < ACTIVITY_THROTTLE_MS) return;
       
+      const privacy = getPrivacySettings();
+      if (!privacy.showOnline) return;
+
       lastTrackRef.current = now;
       await channelRef.current.track({
         user_id: user.id,
         last_active: new Date(lastActivityRef.current).toISOString(),
-        current_activity: activityOverrideRef.current || getActivityFromPath(location.pathname),
+        current_activity: privacy.showActivity
+          ? (activityOverrideRef.current || getActivityFromPath(location.pathname))
+          : undefined,
       });
 
       // Update last_seen in profiles for "recently online" feature
