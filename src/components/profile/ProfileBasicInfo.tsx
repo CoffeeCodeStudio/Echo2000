@@ -5,6 +5,7 @@
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { StatusIndicator, type UserStatus } from "@/components/StatusIndicator";
 import { genderOptions, ageOptions, länOptions, getCitiesForLän, svenskaLän, type EditableProfileData } from "./profile-constants";
