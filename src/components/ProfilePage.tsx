@@ -212,9 +212,14 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
               userVotes={userVotes}
               totalVotes={totalVotes}
               onToggleVote={toggleVote}
-              disabled={isOwnProfile}
+              disabled={!canVote}
               loading={voteLoading}
             />
+            {!isOwnProfile && !isFriend && (
+              <p className="text-[10px] text-muted-foreground mt-2 italic">
+                Endast vänner kan rösta på personlighet.
+              </p>
+            )}
           </div>
         )}
 
