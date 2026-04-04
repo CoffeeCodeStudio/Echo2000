@@ -56,6 +56,12 @@ export function MsnContactList({
   const { getUserStatus, onlineUsers } = usePresence();
   const { isBlocked } = useBlockList();
 
+  // Sign-in notifications for friends
+  useSignInNotifications(
+    onlineUsers as unknown as Map<string, string>,
+    contacts.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }))
+  );
+
   // Fetch real friends from database
   useEffect(() => {
     if (!user) {
