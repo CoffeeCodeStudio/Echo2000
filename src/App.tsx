@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CookieBanner } from "@/components/CookieBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import AdminInactive from "./pages/AdminInactive";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
 
@@ -16,7 +17,7 @@ import { LajvProvider } from "@/contexts/LajvContext";
 const Room = lazy(() => import("./pages/Room"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
-const AdminInactive = lazy(() => import("./pages/AdminInactive"));
+// AdminInactive is eagerly imported above to avoid dynamic import failures
 const Profile = lazy(() => import("./pages/Profile"));
 const News = lazy(() => import("./pages/News"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
