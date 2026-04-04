@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Trophy, Clock, Medal, Apple, ArrowUp, ArrowDown, 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { fireConfetti, playPickupSound, playGameOverSound, playVictorySound } from "@/lib/game-effects";
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 18;
