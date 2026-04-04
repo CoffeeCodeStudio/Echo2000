@@ -28,6 +28,13 @@ export function MsnSettingsConnection() {
         </div>
       </div>
 
+      <button
+        onClick={() => setDebugMode(!debugMode)}
+        className="mt-2 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+      >
+        🔧 Debug: {debugMode ? 'Simulerar frånkoppling' : 'Normal läge'}
+      </button>
+
       <div className="msn-settings-group">
         <h3 className="msn-settings-group-title">Proxy-inställningar</h3>
         <p className="text-[11px] text-gray-600 dark:text-gray-400">
