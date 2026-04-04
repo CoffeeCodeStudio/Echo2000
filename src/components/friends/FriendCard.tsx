@@ -58,6 +58,8 @@ export function FriendCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(friend.id);
+  const votedCategory = VOTE_CATEGORIES.find((cat) => userVotes[cat]);
+  const votedEmoji = votedCategory ? CATEGORY_EMOJIS[votedCategory] : null;
 
   const handleCategoryChange = async (newCategory: string) => {
     try {
