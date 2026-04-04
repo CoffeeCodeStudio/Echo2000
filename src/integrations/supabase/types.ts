@@ -605,6 +605,7 @@ export type Database = {
       }
       memory_highscores: {
         Row: {
+          app: string
           avatar_url: string | null
           created_at: string
           difficulty: string
@@ -616,6 +617,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          app?: string
           avatar_url?: string | null
           created_at?: string
           difficulty?: string
@@ -627,6 +629,7 @@ export type Database = {
           username: string
         }
         Update: {
+          app?: string
           avatar_url?: string | null
           created_at?: string
           difficulty?: string
@@ -641,6 +644,7 @@ export type Database = {
       }
       memory_sessions: {
         Row: {
+          app: string
           created_at: string
           difficulty: string
           finished_at: string | null
@@ -653,6 +657,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          app?: string
           created_at?: string
           difficulty?: string
           finished_at?: string | null
@@ -665,6 +670,7 @@ export type Database = {
           username: string
         }
         Update: {
+          app?: string
           created_at?: string
           difficulty?: string
           finished_at?: string | null
@@ -976,6 +982,7 @@ export type Database = {
       }
       scribble_lobbies: {
         Row: {
+          app: string
           created_at: string
           creator_id: string
           creator_username: string
@@ -989,6 +996,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          app?: string
           created_at?: string
           creator_id: string
           creator_username: string
@@ -1002,6 +1010,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          app?: string
           created_at?: string
           creator_id?: string
           creator_username?: string
@@ -1059,6 +1068,7 @@ export type Database = {
       }
       snake_highscores: {
         Row: {
+          app: string
           apples_eaten: number
           avatar_url: string | null
           created_at: string
@@ -1069,6 +1079,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          app?: string
           apples_eaten?: number
           avatar_url?: string | null
           created_at?: string
@@ -1079,6 +1090,7 @@ export type Database = {
           username: string
         }
         Update: {
+          app?: string
           apples_eaten?: number
           avatar_url?: string | null
           created_at?: string
