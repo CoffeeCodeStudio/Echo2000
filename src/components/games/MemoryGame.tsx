@@ -162,6 +162,7 @@ export function MemoryGame({ onBack }: Props) {
       moves: movesCount,
       time_seconds: timeSec,
       difficulty: diff,
+      app: 'echo2000',
     });
   }, [user, profile, scoreSaved]);
 

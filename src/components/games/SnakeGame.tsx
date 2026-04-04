@@ -99,6 +99,7 @@ export function SnakeGame({ onBack }: Props) {
       score: finalScore,
       apples_eaten: apples,
       time_seconds: timeSec,
+      app: 'echo2000',
     });
   }, [user, profile, scoreSaved]);
 

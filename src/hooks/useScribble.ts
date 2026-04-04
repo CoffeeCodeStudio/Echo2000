@@ -139,6 +139,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
         creator_username: username,
         title,
         description,
+        app: 'echo2000',
       })
       .select()
       .single();

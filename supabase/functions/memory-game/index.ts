@@ -189,6 +189,7 @@ Deno.serve(async (req) => {
           moves: totalMoves,
           time_seconds: totalSeconds,
           difficulty: session.difficulty,
+          app: 'echo2000',
         });
 
       if (hsError) {
