@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import AdminInactive from "./pages/AdminInactive";
 import { RadioProvider } from "@/contexts/RadioContext";
 import { LajvProvider } from "@/contexts/LajvContext";
+import { PrivacyProvider } from "@/contexts/PrivacyContext";
 
 // Lazy-loaded routes for code splitting
 const Room = lazy(() => import("./pages/Room"));

@@ -1,28 +1,14 @@
 /**
  * Privacy settings tab — who can see/contact you.
- * Persists to localStorage.
+ * Uses PrivacyContext so settings are shared app-wide.
  */
-import { useState, useEffect } from "react";
-
-const STORAGE_KEY = "echo-settings-privacy";
-
-function loadPrivacy() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { allowAll: true, showOnline: true, showActivity: true };
-}
+import { usePrivacy } from "@/contexts/PrivacyContext";
 
 export function MsnSettingsPrivacy() {
-  const [settings, setSettings] = useState(loadPrivacy);
+  const { settings, updateSettings } = usePrivacy();
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }, [settings]);
-
-  const toggle = (key: string) =>
-    setSettings((prev: any) => ({ ...prev, [key]: !prev[key] }));
+  const toggle = (key: keyof typeof settings) =>
+    updateSettings({ [key]: !settings[key] });
 
   return (
     <>
