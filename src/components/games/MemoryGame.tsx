@@ -216,6 +216,8 @@ export function MemoryGame({ onBack }: Props) {
     if (!card || card.flipped || card.matched) return;
     if (flippedIds.includes(id)) return;
 
+    playFlipSound();
+
     const newFlipped = [...flippedIds, id];
     setCards(prev => prev.map(c => c.id === id ? { ...c, flipped: true } : c));
     setFlippedIds(newFlipped);
@@ -225,11 +227,15 @@ export function MemoryGame({ onBack }: Props) {
       lockRef.current = true;
       const [a, b] = newFlipped;
       const cardA = cards.find(c => c.id === a)!;
-      const cardB = cards.find(c => c.id === b)!; // b is `id` so use card
       const emojiB = card.emoji; // current card
 
       if (cardA.emoji === emojiB) {
         // Match!
+        playMatchSound();
+        // Send anti-cheat event
+        if (sessionTokenRef.current) {
+          callMemoryApi({ action: "event", session_token: sessionTokenRef.current, event_type: "pair_found", card_a_id: a, card_b_id: b }).catch(() => {});
+        }
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, matched: true, flipped: true } : c
@@ -239,7 +245,10 @@ export function MemoryGame({ onBack }: Props) {
           lockRef.current = false;
         }, 400);
       } else {
-        // No match
+        // No match - send anti-cheat event
+        if (sessionTokenRef.current) {
+          callMemoryApi({ action: "event", session_token: sessionTokenRef.current, event_type: "mismatch", card_a_id: a, card_b_id: b }).catch(() => {});
+        }
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, flipped: false } : c
