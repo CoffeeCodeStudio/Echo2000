@@ -11,12 +11,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfileVisits } from "@/hooks/useProfileVisits";
+import { useFriendVotes } from "@/hooks/useFriendVotes";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
 import { NewVisitorBadge } from "./profile/NewVisitorBadge";
 import { ProfileGuestbook } from "./ProfileGuestbook";
 import { VisitorLog } from "./VisitorLog";
+import { PersonalityMeter } from "./PersonalityMeter";
 import {
   type EditableProfileData,
   demoProfile,
@@ -37,6 +39,9 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
 
   const profileUserId = profile?.user_id || userId || user?.id;
   const { visitors, loading: visitorsLoading } = useProfileVisits(profileUserId);
+  const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(
+    !isOwnProfile && profileUserId ? profileUserId : undefined
+  );
 
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -193,6 +198,21 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
           saving={saving}
           isBot={profile?.is_bot}
         />
+
+        {/* Personality Meter — shown for visitors on other profiles */}
+        {!isOwnProfile && !showDemoMode && profileUserId && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            <h3 className="lunar-box-header text-sm mb-3">🎭 PERSONLIGHET</h3>
+            <PersonalityMeter
+              voteCounts={voteCounts}
+              userVotes={userVotes}
+              totalVotes={totalVotes}
+              onToggleVote={toggleVote}
+              disabled={false}
+              loading={voteLoading}
+            />
+          </div>
+        )}
 
         {/* Guestbook — shown for visitors on other profiles, and own profile via gastbok tab */}
         {showGuestbook && profileUserId && (
