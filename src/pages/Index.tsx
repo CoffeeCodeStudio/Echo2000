@@ -102,19 +102,19 @@ export default function Index() {
     }
 
     const tabActivityMap: Record<string, string> = {
-      hem: 'Surfar runt',
-      chatt: 'Chattar',
-      gastbok: 'Kollar gästboken',
-      mejl: 'Läser mejl',
-      vanner: 'Kollar vänlistan',
-      folk: 'Kollar medlemmar',
-      profil: 'Kollar sin profil',
-      klotterplanket: 'Klottrar',
-      spel: 'Spelar spel',
-      traffar: 'Kollar träffar',
-      lajv: 'Lajvar',
-      besokare: 'Kollar sina spanare',
-      faq: 'Läser FAQ',
+      hem: '🏠 Surfar runt',
+      chatt: '💬 Chattar',
+      gastbok: '📖 Kollar gästboken',
+      mejl: '✉️ Läser mejl',
+      vanner: '❤️ Kollar vänlistan',
+      folk: '👥 Kollar medlemmar',
+      profil: '👤 Kollar sin profil',
+      klotterplanket: '🎨 Klottrar',
+      spel: '🎮 Spelar spel',
+      traffar: '☕ Kollar träffar',
+      lajv: '🎭 Lajvar',
+      besokare: '👀 Kollar sina spanare',
+      faq: '❓ Läser FAQ',
     };
     setActivity(tabActivityMap[activeTab] || 'Surfar runt');
   }, [activeTab, setActivity, isPlaying, currentStation]);
