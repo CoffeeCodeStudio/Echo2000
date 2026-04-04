@@ -119,6 +119,15 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   onFocus={() => chat.setInputFocused(true)}
                   onBlur={() => chat.setInputFocused(false)}
                   onNudge={chat.nudge}
+                  onFileClick={chat.fileUpload.openFilePicker}
+                  fileInputRef={chat.fileUpload.fileInputRef}
+                  onFileSelect={chat.fileUpload.handleFileSelect}
+                  uploading={chat.fileUpload.uploading}
+                  uploadProgress={chat.fileUpload.uploadProgress}
+                  recording={chat.voice.recording}
+                  voiceUploading={chat.voice.uploading}
+                  voiceElapsed={chat.voice.formattedTime}
+                  onToggleVoice={chat.voice.toggleRecording}
                 />
               </>
             ) : (
