@@ -48,19 +48,19 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   }
 
   const mainTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
-    { id: "hem", emoji: "🏠", label: "HEM" },
     { id: "gastbok", emoji: "👣", label: "GÄSTBOK", badge: counts.guestbookNew > 0 ? counts.guestbookNew : undefined },
     { id: "profil", emoji: "👤", label: "PROFIL" },
     { id: "vanner", emoji: "❤️", label: "VÄNNER" },
+    { id: "besokare", emoji: "👀", label: "SPANARE", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
   ];
 
   const moreTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
+    { id: "hem", emoji: "🏠", label: "Hem" },
     { id: "chatt", emoji: "💬", label: "Chatt" },
     { id: "mejl", emoji: "📨", label: "Mejl" },
     { id: "spel", emoji: "🎮", label: "Spel" },
     { id: "traffar", emoji: "🤝", label: "Träffar" },
     { id: "folk", emoji: "🌐", label: "Folk" },
-    { id: "besokare", emoji: "👀", label: "Spanare", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
     { id: "klotterplanket", emoji: "🎨", label: "Klotter" },
     { id: "faq", emoji: "❓", label: "FAQ" },
   ];
