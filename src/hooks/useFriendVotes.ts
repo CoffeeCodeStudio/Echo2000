@@ -78,6 +78,24 @@ export function useFriendVotes(targetUserId: string | undefined) {
   const toggleVote = async (category: VoteCategory) => {
     if (!user || !targetUserId) return;
 
+    // Server-side friendship guard
+    const { data: friendship } = await supabase
+      .from('friends')
+      .select('id')
+      .or(
+        `and(user_id.eq.${user.id},friend_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},friend_id.eq.${user.id})`
+      )
+      .eq('status', 'accepted')
+      .maybeSingle();
+
+    if (!friendship) {
+      toast({
+        title: 'Kan inte rösta',
+        description: 'Endast vänner kan rösta på personlighet.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setLoading(true);
     try {
       if (userVotes[category]) {
