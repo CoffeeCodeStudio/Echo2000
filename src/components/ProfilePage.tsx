@@ -199,6 +199,21 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
           isBot={profile?.is_bot}
         />
 
+        {/* Personality Meter — shown for visitors on other profiles */}
+        {!isOwnProfile && !showDemoMode && profileUserId && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            <h3 className="lunar-box-header text-sm mb-3">🎭 PERSONLIGHET</h3>
+            <PersonalityMeter
+              voteCounts={voteCounts}
+              userVotes={userVotes}
+              totalVotes={totalVotes}
+              onToggleVote={toggleVote}
+              disabled={false}
+              loading={voteLoading}
+            />
+          </div>
+        )}
+
         {/* Guestbook — shown for visitors on other profiles, and own profile via gastbok tab */}
         {showGuestbook && profileUserId && (
           <ProfileGuestbook
