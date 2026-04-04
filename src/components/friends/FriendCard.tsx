@@ -82,6 +82,11 @@ export function FriendCard({
   return (
     <div className="border-b border-border last:border-b-0">
       <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors relative">
+        {votedEmoji && (
+          <span className="absolute top-1 right-1 text-lg leading-none" title={votedCategory}>
+            {votedEmoji}
+          </span>
+        )}
         <div
           className="cursor-pointer"
           onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
