@@ -944,6 +944,7 @@ export type Database = {
           avatar_url: string | null
           id: string
           joined_at: string
+          last_seen: string
           lobby_id: string
           score: number
           user_id: string
@@ -953,6 +954,7 @@ export type Database = {
           avatar_url?: string | null
           id?: string
           joined_at?: string
+          last_seen?: string
           lobby_id: string
           score?: number
           user_id: string
@@ -962,6 +964,7 @@ export type Database = {
           avatar_url?: string | null
           id?: string
           joined_at?: string
+          last_seen?: string
           lobby_id?: string
           score?: number
           user_id?: string
