@@ -16,6 +16,7 @@ import { LajvProvider } from "@/contexts/LajvContext";
 const Room = lazy(() => import("./pages/Room"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminInactive = lazy(() => import("./pages/AdminInactive"));
 const Profile = lazy(() => import("./pages/Profile"));
 const News = lazy(() => import("./pages/News"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -50,6 +51,7 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/inactive" element={<AdminInactive />} />
                   <Route path="/villkor" element={<Terms />} />
                   
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
