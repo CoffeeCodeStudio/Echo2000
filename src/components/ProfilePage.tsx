@@ -39,6 +39,9 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
 
   const profileUserId = profile?.user_id || userId || user?.id;
   const { visitors, loading: visitorsLoading } = useProfileVisits(profileUserId);
+  const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(
+    !isOwnProfile && profileUserId ? profileUserId : undefined
+  );
 
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
