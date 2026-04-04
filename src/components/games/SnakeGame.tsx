@@ -233,6 +233,7 @@ export function SnakeGame({ onBack }: Props) {
 
     if (head.x === apple.x && head.y === apple.y) {
       // Ate apple
+      playPickupSound();
       applesRef.current += 1;
       scoreRef.current += 10 + Math.floor(applesRef.current / 5) * 5;
       setScore(scoreRef.current);
