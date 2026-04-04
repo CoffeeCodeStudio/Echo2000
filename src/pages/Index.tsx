@@ -244,7 +244,9 @@ export default function Index() {
         <OnboardingModal userId={user.id} onComplete={handleOnboardingComplete} />
       )}
 
-      {renderContent()}
+      <div key={activeTab} className="flex-1 flex flex-col min-h-0 animate-fade-in">
+        {renderContent()}
+      </div>
     </>
   );
 }
