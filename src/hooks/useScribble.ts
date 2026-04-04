@@ -53,6 +53,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
       const { data: staleLobbies } = await supabase
         .from('scribble_lobbies')
         .select('id')
+        .eq('app', 'echo2000')
         .in('status', ['waiting', 'playing'])
         .lt('updated_at', thirtyMinAgo);
 
