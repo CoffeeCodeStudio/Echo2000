@@ -116,6 +116,25 @@ export function parseBBCode(input: string): string {
     }
   );
 
+  // 5b. [file type="image|file" url="..."]filename[/file]
+  s = s.replace(
+    /\[file\s+type=&quot;(image|file)&quot;\s+url=&quot;([^&]*)&quot;\]([\s\S]*?)\[\/file\]/gi,
+    (_m, fileType: string, url: string, filename: string) => {
+      if (fileType === "image") {
+        return `<img src="${url}" alt="${filename}" style="max-width:240px;border-radius:8px;margin:4px 0;display:block" loading="lazy" />`;
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(0,0,0,0.1);border-radius:4px;text-decoration:none;color:inherit;font-size:12px;margin:2px 0">📎 ${filename}</a>`;
+    }
+  );
+
+  // 5c. [voice url="..."][/voice]
+  s = s.replace(
+    /\[voice\s+url=&quot;([^&]*)&quot;\]\[\/voice\]/gi,
+    (_m, url: string) => {
+      return `<div style="display:inline-block;background:rgba(0,0,0,0.15);border-radius:16px;padding:6px 12px;margin:2px 0"><audio controls preload="metadata" style="height:28px;max-width:220px" src="${url}"></audio></div>`;
+    }
+  );
+
   // 6. Newlines → <br> only OUTSIDE <pre> blocks (placeholders are single-line tokens)
   // Split on placeholders, convert \n→<br> only in non-placeholder segments
   const parts = s.split(/(__CODE_BLOCK_\d+__)/);
