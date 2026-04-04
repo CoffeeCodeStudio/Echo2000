@@ -73,6 +73,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
       const { data, error } = await supabase
         .from('scribble_lobbies')
         .select('*')
+        .eq('app', 'echo2000')
         .in('status', ['waiting', 'playing'])
         .order('created_at', { ascending: false });
 
