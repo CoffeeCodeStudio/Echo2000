@@ -104,7 +104,10 @@ export function MsnSettingsPersonal() {
       <MsnAvatarPicker
         open={showAvatarPicker}
         onClose={() => setShowAvatarPicker(false)}
-        onSelect={() => {/* placeholder */}}
+        onSelect={(_avatarId: string, avatarSrc: string) => {
+          updateProfile({ avatar_url: avatarSrc });
+          setShowAvatarPicker(false);
+        }}
       />
     </>
   );
