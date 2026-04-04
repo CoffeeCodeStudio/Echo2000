@@ -177,6 +177,8 @@ export function MemoryGame({ onBack }: Props) {
     if (totalPairs > 0 && matchedPairs === totalPairs) {
       setGameOver(true);
       if (timerRef.current) clearInterval(timerRef.current);
+      fireConfetti();
+      playVictorySound();
       const score = calcScore(moves, seconds, totalPairs);
       if (difficulty) {
         const prev = bestScores[difficulty] || 0;
@@ -185,9 +187,25 @@ export function MemoryGame({ onBack }: Props) {
           setBestScores(next);
           localStorage.setItem("memory-best", JSON.stringify(next));
         }
-        // Save to database
-        saveScore(score, moves, seconds, difficulty);
-        fetchLeaderboard(difficulty);
+        // Try anti-cheat finish first
+        if (sessionTokenRef.current && !scoreSavedRef.current) {
+          scoreSavedRef.current = true;
+          setScoreSaved(true);
+          callMemoryApi({ action: "finish", session_token: sessionTokenRef.current }).then(res => {
+            if (!res.valid) {
+              // Fallback to direct insert
+              saveScore(score, moves, seconds, difficulty);
+            }
+            fetchLeaderboard(difficulty);
+          }).catch(() => {
+            saveScore(score, moves, seconds, difficulty);
+            fetchLeaderboard(difficulty);
+          });
+        } else {
+          // No session token, direct insert
+          saveScore(score, moves, seconds, difficulty);
+          fetchLeaderboard(difficulty);
+        }
       }
     }
   }, [matchedPairs, totalPairs]); // eslint-disable-line
