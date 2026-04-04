@@ -43,6 +43,9 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(
     profileUserId || undefined
   );
+  const { status: friendshipStatus } = useFriendship(profileUserId || undefined);
+  const isFriend = friendshipStatus === 'accepted';
+  const canVote = !isOwnProfile && isFriend;
 
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
