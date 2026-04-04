@@ -11,12 +11,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfileVisits } from "@/hooks/useProfileVisits";
+import { useFriendVotes } from "@/hooks/useFriendVotes";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
 import { NewVisitorBadge } from "./profile/NewVisitorBadge";
 import { ProfileGuestbook } from "./ProfileGuestbook";
 import { VisitorLog } from "./VisitorLog";
+import { PersonalityMeter } from "./PersonalityMeter";
 import {
   type EditableProfileData,
   demoProfile,
