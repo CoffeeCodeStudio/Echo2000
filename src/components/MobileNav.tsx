@@ -90,6 +90,18 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
           45% { transform: scale(1.15); }
           60% { transform: scale(1); }
         }
+        @keyframes nav-spy {
+          0%, 100% { transform: translateX(0); opacity: 1; }
+          10% { transform: translateX(-4px); }
+          20% { transform: translateX(4px); }
+          30% { transform: translateX(-4px); }
+          40% { transform: translateX(0); }
+          50% { opacity: 1; }
+          55% { opacity: 0; }
+          60% { opacity: 1; }
+          65% { opacity: 0; }
+          70% { opacity: 1; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .nav-anim-inner { animation: none !important; }
         }
@@ -99,6 +111,7 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
           const animStyle: React.CSSProperties | undefined =
             item.id === "gastbok" ? { display: "inline-block", animation: "nav-waddle 2s ease-in-out infinite" } :
             item.id === "vanner" ? { display: "inline-block", animation: "nav-heartbeat 1.5s infinite" } :
+            item.id === "besokare" ? { display: "inline-block", animation: "nav-spy 3s ease-in-out infinite" } :
             undefined;
           return (
             <button
