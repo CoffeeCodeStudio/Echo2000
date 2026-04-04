@@ -235,6 +235,11 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                           <span className="text-xs font-medium text-foreground flex-1 truncate">
                             {friend.username}
                           </span>
+                          {friendEmojis[friend.id] && (
+                            <span className="text-sm leading-none" title="Din röst">
+                              {friendEmojis[friend.id]}
+                            </span>
+                          )}
                           <OnlineDot status={status} />
                         </div>
                         {isOwnProfile && (
