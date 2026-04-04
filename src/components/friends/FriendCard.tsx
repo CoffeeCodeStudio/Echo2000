@@ -4,8 +4,8 @@ import { Avatar } from "../Avatar";
 import { StatusIndicator, type UserStatus } from "../StatusIndicator";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { PersonalityMeter } from "../PersonalityMeter";
-import { useFriendVotes } from "@/hooks/useFriendVotes";
+import { PersonalityMeter, CATEGORY_EMOJIS } from "../PersonalityMeter";
+import { useFriendVotes, VOTE_CATEGORIES } from "@/hooks/useFriendVotes";
 import { cn } from "@/lib/utils";
 import { AiBadge } from "../AiBadge";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +58,8 @@ export function FriendCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(friend.id);
+  const votedCategory = VOTE_CATEGORIES.find((cat) => userVotes[cat]);
+  const votedEmoji = votedCategory ? CATEGORY_EMOJIS[votedCategory] : null;
 
   const handleCategoryChange = async (newCategory: string) => {
     try {
@@ -79,7 +81,12 @@ export function FriendCard({
 
   return (
     <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors">
+      <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors relative">
+        {votedEmoji && (
+          <span className="absolute top-1 right-1 text-lg leading-none" title={votedCategory}>
+            {votedEmoji}
+          </span>
+        )}
         <div
           className="cursor-pointer"
           onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}

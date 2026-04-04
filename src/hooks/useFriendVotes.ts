@@ -81,7 +81,7 @@ export function useFriendVotes(targetUserId: string | undefined) {
     setLoading(true);
     try {
       if (userVotes[category]) {
-        // Remove vote
+        // Toggle OFF — remove the single vote
         const { error } = await supabase
           .from('friend_votes')
           .delete()
@@ -95,7 +95,20 @@ export function useFriendVotes(targetUserId: string | undefined) {
         setVoteCounts((prev) => ({ ...prev, [category]: Math.max(0, (prev[category] || 0) - 1) }));
         setTotalVotes((prev) => Math.max(0, prev - 1));
       } else {
-        // Add vote
+        // Switch vote: delete any existing votes first, then insert the new one
+        const previousCategory = VOTE_CATEGORIES.find((cat) => userVotes[cat]);
+
+        if (previousCategory) {
+          const { error: delError } = await supabase
+            .from('friend_votes')
+            .delete()
+            .eq('voter_id', user.id)
+            .eq('target_user_id', targetUserId)
+            .eq('vote_category', previousCategory);
+
+          if (delError) throw delError;
+        }
+
         const { error } = await supabase
           .from('friend_votes')
           .insert({
@@ -106,9 +119,22 @@ export function useFriendVotes(targetUserId: string | undefined) {
 
         if (error) throw error;
 
-        setUserVotes((prev) => ({ ...prev, [category]: true }));
-        setVoteCounts((prev) => ({ ...prev, [category]: (prev[category] || 0) + 1 }));
-        setTotalVotes((prev) => prev + 1);
+        // Clear all previous votes, set only the new one
+        const newUserVotes: UserVotes = {};
+        VOTE_CATEGORIES.forEach((cat) => { newUserVotes[cat] = cat === category; });
+        setUserVotes(newUserVotes);
+
+        setVoteCounts((prev) => {
+          const updated = { ...prev, [category]: (prev[category] || 0) + 1 };
+          if (previousCategory) {
+            updated[previousCategory] = Math.max(0, (updated[previousCategory] || 0) - 1);
+          }
+          return updated;
+        });
+        // Total stays the same if switching, increases by 1 if new
+        if (!previousCategory) {
+          setTotalVotes((prev) => prev + 1);
+        }
       }
     } catch (err) {
       console.error('Error toggling vote:', err);
