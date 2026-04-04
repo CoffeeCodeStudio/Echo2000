@@ -139,6 +139,10 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   onVideoCall={chat.startVideoCall}
                   onScreenShare={chat.startScreenShare}
                   onNudge={chat.nudge}
+                  onGames={() => {
+                    const ctx = (window as any).__layoutContext;
+                    if (ctx?.setActiveTab) ctx.setActiveTab("spel");
+                  }}
                   showInviteDialog={chat.showInviteDialog}
                   callActive={chat.webrtc.callActive}
                   callType={chat.webrtc.callType}
