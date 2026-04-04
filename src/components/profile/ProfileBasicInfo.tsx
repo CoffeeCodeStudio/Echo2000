@@ -5,6 +5,7 @@
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { StatusIndicator, type UserStatus } from "@/components/StatusIndicator";
 import { genderOptions, ageOptions, länOptions, getCitiesForLän, svenskaLän, type EditableProfileData } from "./profile-constants";
@@ -89,17 +90,26 @@ export function ProfileBasicInfo({
 
       {/* Status row */}
       <div className="flex items-center gap-2.5 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <StatusIndicator status={userStatus} size="sm" />
-          <span className={cn(
-            "text-xs uppercase font-bold tracking-wide",
-            userStatus === "online" && "text-[hsl(var(--online-green))]",
-            userStatus === "away" && "text-yellow-500",
-            userStatus === "offline" && "text-muted-foreground"
-          )}>
-            {userStatus === "online" ? "ONLINE" : userStatus === "away" ? "BORTA" : "OFFLINE"}
-          </span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1.5 cursor-default">
+              <StatusIndicator status={userStatus} size="sm" />
+              <span className={cn(
+                "text-xs uppercase font-bold tracking-wide",
+                userStatus === "online" && "text-[hsl(var(--online-green))]",
+                userStatus === "away" && "text-yellow-500",
+                userStatus === "offline" && "text-muted-foreground"
+              )}>
+                {userStatus === "online" ? "ONLINE" : userStatus === "away" ? "BORTA" : "OFFLINE"}
+              </span>
+            </div>
+          </TooltipTrigger>
+          {lastSeen && (
+            <TooltipContent side="bottom" className="text-xs">
+              🕐 Senast sedd: {lastSeen}
+            </TooltipContent>
+          )}
+        </Tooltip>
         {userStatus !== "offline" && userActivity && (
           <span className="text-xs text-muted-foreground">
             — <span className="text-primary font-medium">{userActivity}</span>
