@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfileVisits } from "@/hooks/useProfileVisits";
 import { useFriendVotes } from "@/hooks/useFriendVotes";
+import { useFriendship } from "@/hooks/useFriendship";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
