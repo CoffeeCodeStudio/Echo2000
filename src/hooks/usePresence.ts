@@ -77,10 +77,14 @@ export function usePresence() {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
+          const privacy = getPrivacySettings();
+          if (!privacy.showOnline) return; // Don't track if user disabled online visibility
           await channel.track({
             user_id: user.id,
             last_active: new Date().toISOString(),
-            current_activity: activityOverrideRef.current || getActivityFromPath(location.pathname),
+            current_activity: privacy.showActivity
+              ? (activityOverrideRef.current || getActivityFromPath(location.pathname))
+              : undefined,
           });
         }
       });
