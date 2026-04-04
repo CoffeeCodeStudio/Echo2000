@@ -6,6 +6,8 @@
  * Visual sub-sections are delegated to dedicated components.
  */
 import { useState, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
+import type { LayoutContext } from "@/components/SharedLayout";
 import { cn } from "@/lib/utils";
 import { useChatWindow } from "@/hooks/useChatWindow";
 
