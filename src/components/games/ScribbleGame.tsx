@@ -41,7 +41,8 @@ const WORD_LIST = [
 export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { lobby, players, guesses, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId, user?.id ?? "", profile?.username ?? "Gäst");
+  const guestId = user?.id ?? crypto.randomUUID();
+  const { lobby, players, guesses, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId, guestId, profile?.username ?? "Gäst");
   const { toast } = useToast();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
