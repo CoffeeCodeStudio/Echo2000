@@ -477,12 +477,19 @@ function CategoryGroup({
               />
             </td>
             <td className="px-3 py-1.5">
-              <span
-                className="text-[11px] font-bold text-foreground cursor-pointer hover:text-[#ff6600] transition-colors"
-                onClick={() => onNavigate(friend.username)}
-              >
-                {friend.username}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="text-[11px] font-bold text-foreground cursor-pointer hover:text-[#ff6600] transition-colors"
+                  onClick={() => onNavigate(friend.username)}
+                >
+                  {friend.username}
+                </span>
+                {friendEmojis[friend.id] && (
+                  <span className="text-sm leading-none" title="Din röst">
+                    {friendEmojis[friend.id]}
+                  </span>
+                )}
+              </div>
             </td>
             <td className="px-3 py-1.5 text-center">
               <div className="flex justify-center">
