@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,13 +20,20 @@ export function useFriendship(targetUserId: string | undefined) {
   const [status, setStatus] = useState<FriendshipStatus>('loading');
   const [friendshipId, setFriendshipId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const requestIdRef = useRef(0);
 
   // Fetch current friendship status
   const fetchStatus = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+
     if (!user || !targetUserId || user.id === targetUserId) {
       setStatus('none');
+      setFriendshipId(null);
       return;
     }
+
+    setStatus('loading');
+    setFriendshipId(null);
 
     try {
       const { data, error } = await supabase
@@ -34,6 +41,8 @@ export function useFriendship(targetUserId: string | undefined) {
         .select('id, user_id, friend_id, status')
         .or(`and(user_id.eq.${user.id},friend_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},friend_id.eq.${user.id})`)
         .maybeSingle();
+
+      if (requestId !== requestIdRef.current) return;
 
       if (error) {
         console.error('Error fetching friendship:', error);
@@ -49,7 +58,6 @@ export function useFriendship(targetUserId: string | undefined) {
         if (data.status === 'accepted') {
           setStatus('accepted');
         } else if (data.status === 'pending') {
-          // Check who sent the request
           if (data.user_id === user.id) {
             setStatus('pending_sent');
           } else {
@@ -60,8 +68,10 @@ export function useFriendship(targetUserId: string | undefined) {
         }
       }
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error('Error:', err);
       setStatus('none');
+      setFriendshipId(null);
     }
   }, [user, targetUserId]);
 
