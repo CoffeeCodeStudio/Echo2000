@@ -1,11 +1,13 @@
 /**
  * Connection settings tab — shows real connection status from auth session.
  */
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 export function MsnSettingsConnection() {
   const { session } = useAuth();
-  const isConnected = !!session;
+  const [debugMode, setDebugMode] = useState(false);
+  const isConnected = debugMode ? !session : !!session;
 
   return (
     <>
@@ -25,6 +27,13 @@ export function MsnSettingsConnection() {
           </div>
         </div>
       </div>
+
+      <button
+        onClick={() => setDebugMode(!debugMode)}
+        className="mt-2 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+      >
+        🔧 Debug: {debugMode ? 'Simulerar frånkoppling' : 'Normal läge'}
+      </button>
 
       <div className="msn-settings-group">
         <h3 className="msn-settings-group-title">Proxy-inställningar</h3>
