@@ -52,8 +52,8 @@ export function MsnContactList({
   });
   const [searchQuery, setSearchQuery] = useState("");
   const { playSound } = useMsnSounds();
-  const { user } = useAuth();
-  const { getUserStatus } = usePresence();
+  const { getUserStatus, onlineUsers } = usePresence();
+  const { isBlocked } = useBlockList();
 
   // Fetch real friends from database
   useEffect(() => {
