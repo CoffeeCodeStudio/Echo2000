@@ -108,10 +108,10 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
       `}</style>
       <div className="flex items-center justify-around h-[56px] px-1">
         {mainTabs.map((item) => {
-          const animStyle: React.CSSProperties | undefined =
-            item.id === "gastbok" ? { display: "inline-block", animation: "nav-waddle 2s ease-in-out infinite" } :
-            item.id === "vanner" ? { display: "inline-block", animation: "nav-heartbeat 1.5s infinite" } :
-            item.id === "besokare" ? { display: "inline-block", animation: "nav-spy 3s ease-in-out infinite" } :
+          const anim =
+            item.id === "gastbok" ? "nav-waddle 2s ease-in-out infinite" :
+            item.id === "vanner" ? "nav-heartbeat 1.5s infinite" :
+            item.id === "besokare" ? "nav-spy 3s ease-in-out infinite" :
             undefined;
           return (
             <button
@@ -121,9 +121,9 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
             >
               <div className="relative">
                 <span className="mobile-tab-icon-compact">
-                  {animStyle ? (
-                    <span className="nav-anim-inner" style={animStyle}>{item.emoji}</span>
-                  ) : item.emoji}
+                  <span className="nav-anim-inner" style={{ display: "inline-block", ...(anim && { animation: anim }) }}>
+                    {item.emoji}
+                  </span>
                 </span>
                 {item.badge && item.badge > 0 && (
                   <span className="mobile-tab-badge-compact">{item.badge > 9 ? "9+" : item.badge}</span>
