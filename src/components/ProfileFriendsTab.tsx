@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { useFriendVotes, VOTE_CATEGORIES, type VoteCategory } from "@/hooks/useFriendVotes";
 import { FRIEND_CATEGORIES } from "./friends/FriendCard";
+import { CATEGORY_EMOJIS } from "./PersonalityMeter";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
