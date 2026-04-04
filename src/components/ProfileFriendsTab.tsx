@@ -436,6 +436,7 @@ function CategoryGroup({
   onNavigate,
   onToggleBestFriend,
   colSpan,
+  friendEmojis,
 }: {
   category: string;
   friends: ProfileFriend[];
@@ -444,6 +445,7 @@ function CategoryGroup({
   onNavigate: (username: string) => void;
   onToggleBestFriend: (friendshipId: string, current: boolean) => void;
   colSpan: number;
+  friendEmojis: Record<string, string>;
 }) {
   return (
     <>
