@@ -178,6 +178,9 @@ export default function Admin() {
           <Button variant={activeTab === "dj" ? "default" : "outline"} onClick={() => setActiveTab("dj")}>
             <Music className="w-4 h-4 mr-2" />DJ Echo
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin/inactive"><UserX className="w-4 h-4 mr-2" />Inaktiva</Link>
+          </Button>
         </div>
 
         {activeTab === "pending" && <AdminPendingApprovals onRefresh={fetchData} />}
