@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { StatusIndicator, type UserStatus } from "./StatusIndicator";
 import { useFriendVotes, VOTE_CATEGORIES, type VoteCategory } from "@/hooks/useFriendVotes";
 import { FRIEND_CATEGORIES } from "./friends/FriendCard";
+import { CATEGORY_EMOJIS } from "./PersonalityMeter";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +42,8 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   const { user } = useAuth();
   const isOwnProfile = user?.id === userId;
   const [pendingRemove, setPendingRemove] = useState<{ friendshipId: string; username: string } | null>(null);
+  // Map of friendUserId → voted emoji (the current user's vote on each friend)
+  const [friendEmojis, setFriendEmojis] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -95,6 +98,29 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
 
     fetchFriends();
   }, [userId]);
+
+  // Fetch the current user's votes on each friend to show emoji badges
+  useEffect(() => {
+    if (!user || friends.length === 0) return;
+    const fetchEmojis = async () => {
+      const friendIds = friends.map((f) => f.id);
+      const { data } = await supabase
+        .from("friend_votes")
+        .select("target_user_id, vote_category")
+        .eq("voter_id", user.id)
+        .in("target_user_id", friendIds);
+
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((v) => {
+          const emoji = CATEGORY_EMOJIS[v.vote_category];
+          if (emoji) map[v.target_user_id] = emoji;
+        });
+        setFriendEmojis(map);
+      }
+    };
+    fetchEmojis();
+  }, [user, friends]);
 
   const bestFriends = friends.filter((f) => f.is_best_friend);
 
@@ -174,6 +200,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                     onNavigate={goToProfile}
                     onToggleBestFriend={handleToggleBestFriend}
                     colSpan={isOwnProfile ? 5 : 4}
+                    friendEmojis={friendEmojis}
                   />
                 ))}
               </tbody>
@@ -208,6 +235,11 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                           <span className="text-xs font-medium text-foreground flex-1 truncate">
                             {friend.username}
                           </span>
+                          {friendEmojis[friend.id] && (
+                            <span className="text-sm leading-none" title="Din röst">
+                              {friendEmojis[friend.id]}
+                            </span>
+                          )}
                           <OnlineDot status={status} />
                         </div>
                         {isOwnProfile && (
@@ -409,6 +441,7 @@ function CategoryGroup({
   onNavigate,
   onToggleBestFriend,
   colSpan,
+  friendEmojis,
 }: {
   category: string;
   friends: ProfileFriend[];
@@ -417,6 +450,7 @@ function CategoryGroup({
   onNavigate: (username: string) => void;
   onToggleBestFriend: (friendshipId: string, current: boolean) => void;
   colSpan: number;
+  friendEmojis: Record<string, string>;
 }) {
   return (
     <>
@@ -448,12 +482,19 @@ function CategoryGroup({
               />
             </td>
             <td className="px-3 py-1.5">
-              <span
-                className="text-[11px] font-bold text-foreground cursor-pointer hover:text-[#ff6600] transition-colors"
-                onClick={() => onNavigate(friend.username)}
-              >
-                {friend.username}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="text-[11px] font-bold text-foreground cursor-pointer hover:text-[#ff6600] transition-colors"
+                  onClick={() => onNavigate(friend.username)}
+                >
+                  {friend.username}
+                </span>
+                {friendEmojis[friend.id] && (
+                  <span className="text-sm leading-none" title="Din röst">
+                    {friendEmojis[friend.id]}
+                  </span>
+                )}
+              </div>
             </td>
             <td className="px-3 py-1.5 text-center">
               <div className="flex justify-center">
