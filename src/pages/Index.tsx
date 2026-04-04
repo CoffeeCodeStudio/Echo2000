@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useOutletContext, useLocation, useNavigate } from "react-router-dom";
 import { useRadio } from "@/contexts/RadioContext";
 
@@ -24,7 +24,11 @@ import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
-
+const TAB_ORDER: Record<Tab, number> = {
+  hem: 0, gastbok: 1, profil: 2, vanner: 3,
+  folk: 4, klotterplanket: 5, faq: 6, besokare: 7,
+  chatt: 8, mejl: 9, spel: 10, traffar: 11, lajv: 12,
+};
 export default function Index() {
   const location = useLocation();
   const context = useOutletContext<LayoutContext>();
@@ -41,6 +45,16 @@ export default function Index() {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const prevTabRef = useRef<Tab>(activeTab);
+  const slideDirection = useRef<"left" | "right">("right");
+
+  // Track slide direction on tab change
+  useEffect(() => {
+    const prev = TAB_ORDER[prevTabRef.current] ?? 0;
+    const curr = TAB_ORDER[activeTab] ?? 0;
+    slideDirection.current = curr >= prev ? "right" : "left";
+    prevTabRef.current = activeTab;
+  }, [activeTab]);
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -244,7 +258,7 @@ export default function Index() {
         <OnboardingModal userId={user.id} onComplete={handleOnboardingComplete} />
       )}
 
-      <div key={activeTab} className="flex-1 flex flex-col min-h-0 animate-fade-in">
+      <div key={activeTab} className={`flex-1 flex flex-col min-h-0 ${slideDirection.current === "right" ? "animate-slide-in-right" : "animate-slide-in-left"}`}>
         {renderContent()}
       </div>
     </>
