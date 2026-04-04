@@ -28,11 +28,49 @@ interface ChatWindowProps {
 
 export function ChatWindow({ className }: ChatWindowProps) {
   const chat = useChatWindow();
+  const [dragging, setDragging] = useState(false);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    try {
+      await chat.fileUpload.uploadFile(file);
+    } catch (err: any) {
+      console.error("Drop upload failed:", err);
+    }
+  }, [chat.fileUpload]);
 
   if (!chat.isLoggedIn) return <MsnLogin onLogin={chat.handleLogin} />;
 
   return (
-    <div className={cn("flex-1 flex flex-col h-full overflow-hidden", className)}>
+    <div
+      className={cn("flex-1 flex flex-col h-full overflow-hidden relative", className)}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {dragging && (
+        <div className="absolute inset-0 z-50 bg-primary/20 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+          <div className="bg-card border-2 border-dashed border-primary rounded-lg px-8 py-6 text-center shadow-lg">
+            <p className="text-sm font-bold text-primary">📎 Släpp filen här</p>
+          </div>
+        </div>
+      )}
       <ChatHeader
         userDisplayName={chat.userDisplayName}
         userStatus={chat.userStatus}
