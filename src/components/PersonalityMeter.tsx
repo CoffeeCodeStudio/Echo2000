@@ -10,7 +10,7 @@ interface PersonalityMeterProps {
   loading?: boolean;
 }
 
-const CATEGORY_EMOJIS: Record<string, string> = {
+export const CATEGORY_EMOJIS: Record<string, string> = {
   'Bäst': '🏆',
   'Nörd': '🤓',
   'Cooling': '😎',
