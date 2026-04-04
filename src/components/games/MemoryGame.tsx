@@ -145,6 +145,7 @@ export function MemoryGame({ onBack }: Props) {
       .from('memory_highscores')
       .select('*')
       .eq('difficulty', diff)
+      .eq('app', 'echo2000')
       .order('score', { ascending: false })
       .limit(20);
     setLeaderboard((data as HighscoreEntry[]) || []);
