@@ -200,6 +200,7 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
                     onNavigate={goToProfile}
                     onToggleBestFriend={handleToggleBestFriend}
                     colSpan={isOwnProfile ? 5 : 4}
+                    friendEmojis={friendEmojis}
                   />
                 ))}
               </tbody>
