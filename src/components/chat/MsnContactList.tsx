@@ -8,6 +8,8 @@ import { Input } from "../ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePresence } from "@/hooks/usePresence";
+import { useBlockList } from "@/hooks/useBlockList";
+import { useSignInNotifications } from "@/hooks/useSignInNotifications";
 
 export interface MsnContact {
   id: string;
