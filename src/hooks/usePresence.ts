@@ -96,11 +96,16 @@ export function usePresence() {
       const now = Date.now();
       if (now - lastTrackRef.current < ACTIVITY_THROTTLE_MS) return;
       
+      const privacy = getPrivacySettings();
+      if (!privacy.showOnline) return;
+
       lastTrackRef.current = now;
       await channelRef.current.track({
         user_id: user.id,
         last_active: new Date(lastActivityRef.current).toISOString(),
-        current_activity: activityOverrideRef.current || getActivityFromPath(location.pathname),
+        current_activity: privacy.showActivity
+          ? (activityOverrideRef.current || getActivityFromPath(location.pathname))
+          : undefined,
       });
 
       // Update last_seen in profiles for "recently online" feature
