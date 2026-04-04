@@ -100,23 +100,13 @@ export function ProfileBasicInfo({
             {userStatus === "online" ? "ONLINE" : userStatus === "away" ? "BORTA" : "OFFLINE"}
           </span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          - spanar in{" "}
-          {isEditing ? (
-            <Input value={editData.spanar_in} onChange={(e) => setEditData({ ...editData, spanar_in: e.target.value })} className="inline-block w-28 h-6 text-xs px-1.5" placeholder="..." />
-          ) : (
-            <span className="text-primary font-medium">{displayData.spanar_in || "..."}</span>
-          )}
-        </span>
+        {userStatus !== "offline" && userActivity && (
+          <span className="text-xs text-muted-foreground">
+            — <span className="text-primary font-medium">{userActivity}</span>
+          </span>
+        )}
       </div>
 
-      {/* Activity */}
-      {userStatus !== "offline" && userActivity && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">🎮 Just nu:</span>
-          <span className="text-xs text-primary font-medium">{userActivity}</span>
-        </div>
-      )}
       {userStatus === "offline" && lastSeen && (
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">🕐 Senast inloggad:</span>
