@@ -91,15 +91,11 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
           60% { transform: scale(1); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .nav-anim-waddle, .nav-anim-bounce, .nav-anim-heartbeat { animation: none !important; }
+          .nav-anim-inner { animation: none !important; }
         }
       `}</style>
       <div className="flex items-center justify-around h-[56px] px-1">
         {mainTabs.map((item) => {
-          const animClass =
-            item.id === "gastbok" ? "nav-anim-waddle" :
-            item.id === "vanner" ? "nav-anim-heartbeat" :
-            undefined;
           const animStyle: React.CSSProperties | undefined =
             item.id === "gastbok" ? { display: "inline-block", animation: "nav-waddle 2s ease-in-out infinite" } :
             item.id === "vanner" ? { display: "inline-block", animation: "nav-heartbeat 1.5s infinite" } :
@@ -111,7 +107,11 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
               className={cn("mobile-tab-item-compact", activeTab === item.id && "active")}
             >
               <div className="relative">
-                <span className={cn("mobile-tab-icon-compact", animClass)} style={animStyle}>{item.emoji}</span>
+                <span className="mobile-tab-icon-compact">
+                  {animStyle ? (
+                    <span className="nav-anim-inner" style={animStyle}>{item.emoji}</span>
+                  ) : item.emoji}
+                </span>
                 {item.badge && item.badge > 0 && (
                   <span className="mobile-tab-badge-compact">{item.badge > 9 ? "9+" : item.badge}</span>
                 )}
@@ -147,10 +147,11 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
                   onClick={() => { onTabChange(item.id); setMoreOpen(false); }}
                   className={cn("cursor-pointer gap-2 text-sm", activeTab === item.id && "bg-accent")}
                 >
-                  <span
-                    className={isMejl ? "nav-anim-bounce" : undefined}
-                    style={isMejl ? { display: "inline-block", animation: "nav-bounce 2s infinite" } : undefined}
-                  >{item.emoji}</span>
+                  <span>
+                    {isMejl ? (
+                      <span className="nav-anim-inner" style={{ display: "inline-block", animation: "nav-bounce 2s infinite" }}>{item.emoji}</span>
+                    ) : item.emoji}
+                  </span>
                   <span>{item.label}</span>
                   {item.badge && item.badge > 0 && (
                     <span className="ml-auto text-[10px] bg-destructive text-white rounded-full px-1.5">{item.badge}</span>
