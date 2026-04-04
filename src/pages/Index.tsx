@@ -258,7 +258,7 @@ export default function Index() {
         <OnboardingModal userId={user.id} onComplete={handleOnboardingComplete} />
       )}
 
-      <div key={activeTab} className="flex-1 flex flex-col min-h-0 animate-fade-in">
+      <div key={activeTab} className={`flex-1 flex flex-col min-h-0 ${slideDirection.current === "right" ? "animate-slide-in-right" : "animate-slide-in-left"}`}>
         {renderContent()}
       </div>
     </>
