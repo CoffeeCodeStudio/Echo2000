@@ -18,7 +18,7 @@ import { PrivacyProvider } from "@/contexts/PrivacyContext";
 // Lazy-loaded routes for code splitting
 const Room = lazy(() => import("./pages/Room"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Admin = lazy(() => import("./pages/Admin"));
+// Admin is eagerly imported above
 // AdminInactive is eagerly imported above to avoid dynamic import failures
 const Profile = lazy(() => import("./pages/Profile"));
 const News = lazy(() => import("./pages/News"));
