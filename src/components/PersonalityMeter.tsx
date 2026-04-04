@@ -31,7 +31,7 @@ export function PersonalityMeter({
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        Vad tycker vännerna?
+        Välj EN egenskap
       </p>
       {VOTE_CATEGORIES.map((category) => {
         const count = voteCounts[category] || 0;
