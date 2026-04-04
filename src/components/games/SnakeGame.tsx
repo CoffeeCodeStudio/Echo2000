@@ -199,6 +199,10 @@ export function SnakeGame({ onBack }: Props) {
     if (finalScore > highScore) {
       setHighScore(finalScore);
       localStorage.setItem("snake-best", String(finalScore));
+      fireConfetti();
+      playVictorySound();
+    } else {
+      playGameOverSound();
     }
 
     saveScore(finalScore, apples, seconds);
