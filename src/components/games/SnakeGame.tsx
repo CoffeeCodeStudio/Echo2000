@@ -75,6 +75,7 @@ export function SnakeGame({ onBack }: Props) {
     const { data } = await supabase
       .from('snake_highscores')
       .select('*')
+      .eq('app', 'echo2000')
       .order('score', { ascending: false })
       .limit(20);
     setLeaderboard((data as HighscoreEntry[]) || []);
