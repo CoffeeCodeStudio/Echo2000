@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, RotateCcw, Trophy, Clock, MousePointerClick, Medal, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { fireConfetti, playVictorySound, playFlipSound, playMatchSound } from "@/lib/game-effects";
 
-const PIXEL_EMOJIS = [
-  "🎮", "👾", "🕹️", "🤖", "💾", "📟", "🌟", "🎵",
-  "🐱", "🐶", "🦊", "🐸", "🍕", "🚀", "⚡", "🔥",
-];
+const DIFFICULTY_SYMBOLS: Record<Difficulty, string[]> = {
+  easy: ["💾", "📟", "📺", "🕹️", "💿", "☎️"],
+  medium: ["💾", "📟", "📺", "🕹️", "💿", "☎️", "📼", "🖥️"],
+  hard: ["💾", "📟", "📺", "🕹️", "💿", "☎️", "📼", "🖥️", "🎮", "📡", "🔋", "💡"],
+};
 
 interface Card {
   id: number;
@@ -35,11 +33,11 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-function buildDeck(pairs: number): Card[] {
-  const emojis = shuffleArray(PIXEL_EMOJIS).slice(0, pairs);
-  const cards = emojis.flatMap((emoji, i) => [
-    { id: i * 2, emoji, flipped: false, matched: false },
-    { id: i * 2 + 1, emoji, flipped: false, matched: false },
+function buildDeck(difficulty: Difficulty): Card[] {
+  const symbols = DIFFICULTY_SYMBOLS[difficulty];
+  const cards = symbols.flatMap((s, i) => [
+    { id: i * 2, emoji: s, flipped: false, matched: false },
+    { id: i * 2 + 1, emoji: s, flipped: false, matched: false },
   ]);
   return shuffleArray(cards);
 }
@@ -68,13 +66,30 @@ interface HighscoreEntry {
   created_at: string;
 }
 
-interface Props {
-  onBack: () => void;
+// ── Edge function helper ──
+async function callMemoryApi(body: Record<string, unknown>) {
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const res = await fetch(
+    `https://${projectId}.supabase.co/functions/v1/memory-game`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anonKey,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  return res.json();
 }
 
-export function MemoryGame({ onBack }: Props) {
-  const { user } = useAuth();
-  const { profile } = useProfile();
+interface Props {
+  onBack: () => void;
+  username: string | null;
+}
+
+export function MemoryGame({ onBack, username }: Props) {
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedIds, setFlippedIds] = useState<number[]>([]);
@@ -85,7 +100,7 @@ export function MemoryGame({ onBack }: Props) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboard, setLeaderboard] = useState<HighscoreEntry[]>([]);
   const [leaderboardDiff, setLeaderboardDiff] = useState<Difficulty>("medium");
-  const [scoreSaved, setScoreSaved] = useState(false);
+  const [serverResult, setServerResult] = useState<{ valid: boolean; score: number; moves: number; time_seconds: number } | null>(null);
   const [bestScores, setBestScores] = useState<Record<Difficulty, number>>(() => {
     try {
       return JSON.parse(localStorage.getItem("memory-best") || "{}");
@@ -93,20 +108,68 @@ export function MemoryGame({ onBack }: Props) {
   });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
+  const sessionTokenRef = useRef<string | null>(null);
 
   const totalPairs = difficulty ? DIFFICULTY_CONFIG[difficulty].pairs : 0;
 
-  const startGame = useCallback((diff: Difficulty) => {
+  const startGame = useCallback(async (diff: Difficulty) => {
     setDifficulty(diff);
-    setCards(buildDeck(DIFFICULTY_CONFIG[diff].pairs));
+    setCards(buildDeck(diff));
     setFlippedIds([]);
     setMoves(0);
     setMatchedPairs(0);
     setSeconds(0);
     setGameOver(false);
-    setScoreSaved(false);
+    setServerResult(null);
     lockRef.current = false;
+    sessionTokenRef.current = null;
+
+    // Create server session if username exists
+    if (username) {
+      try {
+        const res = await callMemoryApi({
+          action: "start",
+          username,
+          difficulty: diff,
+        });
+        if (res.session_token) {
+          sessionTokenRef.current = res.session_token;
+        }
+      } catch (e) {
+        console.warn("Failed to create game session:", e);
+      }
+    }
+  }, [username]);
+
+  const sendEvent = useCallback(async (eventType: string, cardAId?: number, cardBId?: number) => {
+    if (!sessionTokenRef.current) return;
+    try {
+      await callMemoryApi({
+        action: "event",
+        session_token: sessionTokenRef.current,
+        event_type: eventType,
+        card_a_id: cardAId,
+        card_b_id: cardBId,
+      });
+    } catch (e) {
+      console.warn("Failed to send event:", e);
+    }
   }, []);
+
+  const finishGame = useCallback(async () => {
+    if (!sessionTokenRef.current) return;
+    try {
+      const res = await callMemoryApi({
+        action: "finish",
+        session_token: sessionTokenRef.current,
+      });
+      setServerResult(res);
+    } catch (e) {
+      console.warn("Failed to finish game:", e);
+    }
+  }, []);
+
+  const INVALID_USERNAMES = new Set(["firefox", "chrome", "safari", "edge", "opera", "brave", "vivaldi", "chromium", "gäst", "anonym", "guest", "anonymous", "användarnamn", "anvndarnamn", "namn", "test", "user"]);
 
   const fetchLeaderboard = useCallback(async (diff: Difficulty) => {
     const { data } = await supabase
@@ -114,23 +177,16 @@ export function MemoryGame({ onBack }: Props) {
       .select('*')
       .eq('difficulty', diff)
       .order('score', { ascending: false })
-      .limit(20);
-    setLeaderboard((data as HighscoreEntry[]) || []);
+      .limit(100);
+    const seen = new Set<string>();
+    const unique = ((data as HighscoreEntry[]) || []).filter(e => {
+      if (INVALID_USERNAMES.has(e.username.toLowerCase())) return false;
+      if (seen.has(e.username)) return false;
+      seen.add(e.username);
+      return true;
+    }).slice(0, 10);
+    setLeaderboard(unique);
   }, []);
-
-  const saveScore = useCallback(async (score: number, movesCount: number, timeSec: number, diff: Difficulty) => {
-    if (!user || !profile || scoreSaved) return;
-    setScoreSaved(true);
-    await supabase.from('memory_highscores').insert({
-      user_id: user.id,
-      username: profile.username,
-      avatar_url: profile.avatar_url,
-      score,
-      moves: movesCount,
-      time_seconds: timeSec,
-      difficulty: diff,
-    });
-  }, [user, profile, scoreSaved]);
 
   // Timer
   useEffect(() => {
@@ -146,6 +202,9 @@ export function MemoryGame({ onBack }: Props) {
       setGameOver(true);
       if (timerRef.current) clearInterval(timerRef.current);
       const score = calcScore(moves, seconds, totalPairs);
+      // Celebrate!
+      fireConfetti();
+      playVictorySound();
       if (difficulty) {
         const prev = bestScores[difficulty] || 0;
         if (score > prev) {
@@ -153,8 +212,8 @@ export function MemoryGame({ onBack }: Props) {
           setBestScores(next);
           localStorage.setItem("memory-best", JSON.stringify(next));
         }
-        // Save to database
-        saveScore(score, moves, seconds, difficulty);
+        // Finish on server (validates & saves score)
+        finishGame();
         fetchLeaderboard(difficulty);
       }
     }
@@ -169,17 +228,19 @@ export function MemoryGame({ onBack }: Props) {
     const newFlipped = [...flippedIds, id];
     setCards(prev => prev.map(c => c.id === id ? { ...c, flipped: true } : c));
     setFlippedIds(newFlipped);
+    playFlipSound();
 
     if (newFlipped.length === 2) {
       setMoves(m => m + 1);
       lockRef.current = true;
       const [a, b] = newFlipped;
       const cardA = cards.find(c => c.id === a)!;
-      const cardB = cards.find(c => c.id === b)!; // b is `id` so use card
-      const emojiB = card.emoji; // current card
+      const emojiB = card.emoji;
 
       if (cardA.emoji === emojiB) {
-        // Match!
+        // Send pair_found event to server
+        sendEvent("pair_found", a, b);
+        playMatchSound();
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, matched: true, flipped: true } : c
@@ -189,7 +250,8 @@ export function MemoryGame({ onBack }: Props) {
           lockRef.current = false;
         }, 400);
       } else {
-        // No match
+        // Send mismatch event to server
+        sendEvent("mismatch", a, b);
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, flipped: false } : c
@@ -204,50 +266,41 @@ export function MemoryGame({ onBack }: Props) {
   // Leaderboard view
   if (showLeaderboard) {
     return (
-      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-        <div className="container px-4 py-8 max-w-lg mx-auto space-y-4">
-          <Button variant="ghost" size="sm" onClick={() => setShowLeaderboard(false)} className="text-muted-foreground">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka
-          </Button>
-          <div className="text-center space-y-2">
-            <Medal className="w-10 h-10 mx-auto text-primary" />
-            <h1 className="font-display font-bold text-2xl">Topplista</h1>
-          </div>
-          <div className="flex gap-1 justify-center">
-            {(["easy", "medium", "hard"] as Difficulty[]).map(d => (
-              <Button
-                key={d}
-                size="sm"
-                variant={leaderboardDiff === d ? "default" : "outline"}
-                onClick={() => { setLeaderboardDiff(d); fetchLeaderboard(d); }}
-                className="font-display text-xs"
-              >
-                {DIFFICULTY_CONFIG[d].label.split(" ")[0]}
-              </Button>
-            ))}
-          </div>
-          <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2">
-              <span className="font-display font-bold text-white text-sm">{DIFFICULTY_CONFIG[leaderboardDiff].label}</span>
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-3 py-4 space-y-3">
+          <button onClick={() => setShowLeaderboard(false)} className="retro-btn text-xs">← Tillbaka</button>
+          <div className="retro-panel">
+            <div className="retro-panel-header">🏆 TOPPLISTA — MEMORY</div>
+            <div className="flex gap-1 p-2 bg-[hsl(222_30%_16%)] border-b border-border">
+              {(["easy", "medium", "hard"] as Difficulty[]).map(d => (
+                <button
+                  key={d}
+                  onClick={() => { setLeaderboardDiff(d); fetchLeaderboard(d); }}
+                  className={`retro-btn text-[10px] ${leaderboardDiff === d ? 'retro-btn-primary' : ''}`}
+                >
+                  {DIFFICULTY_CONFIG[d].label.split(" ")[0]}
+                </button>
+              ))}
             </div>
-            <ScrollArea className="max-h-96">
-              <div className="divide-y divide-border">
-                {leaderboard.length === 0 ? (
-                  <p className="text-center text-muted-foreground text-sm py-8">Inga poäng ännu — bli den första!</p>
-                ) : leaderboard.map((entry, i) => (
-                  <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="w-6 text-center font-display font-bold text-sm">
-                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-display font-bold text-sm truncate block">{entry.username}</span>
-                      <span className="text-xs text-muted-foreground">{entry.moves} drag · {formatTime(entry.time_seconds)}</span>
-                    </div>
-                    <span className="font-display font-bold text-primary text-sm">{entry.score}p</span>
+            <div className="max-h-96 overflow-y-auto">
+              {leaderboard.length === 0 ? (
+                <p className="text-center text-muted-foreground text-xs py-8">Inga poäng ännu — bli den första!</p>
+              ) : leaderboard.map((entry, i) => {
+                const date = new Date(entry.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
+                return (
+                <div key={entry.id} className="retro-table-row">
+                  <span className="w-8 text-center font-bold text-xs">
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-xs truncate block">{entry.username}</span>
+                    <span className="text-[10px] text-muted-foreground">{entry.moves} drag · {formatTime(entry.time_seconds)} · {date}</span>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
+                  <span className="font-bold text-primary text-xs">{entry.score}p</span>
+                </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -257,35 +310,35 @@ export function MemoryGame({ onBack }: Props) {
   // Difficulty selection screen
   if (!difficulty) {
     return (
-      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-        <div className="container px-4 py-8 max-w-lg mx-auto space-y-6">
-          <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka till spel
-          </Button>
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-3 py-4 space-y-3">
+          <button onClick={onBack} className="retro-btn text-base">← Tillbaka till spel</button>
 
-          <div className="text-center space-y-3">
-            <div className="text-6xl mb-2" style={{ imageRendering: "pixelated" }}>🧠</div>
-            <h1 className="font-display font-bold text-3xl">Memory</h1>
-            <p className="text-muted-foreground text-sm">Hitta alla matchande par så snabbt du kan!</p>
+          <div className="retro-panel">
+            <div className="retro-panel-header">🧠 MEMORY</div>
+            <div className="retro-panel-body text-center space-y-3">
+              <p className="text-base text-muted-foreground">Hitta alla matchande par så snabbt du kan!</p>
+              <div className="retro-separator" />
+              <p className="font-pixel text-xs text-primary uppercase">Välj svårighetsgrad</p>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            <h2 className="font-display font-bold text-center text-sm text-muted-foreground uppercase tracking-wider">Välj svårighetsgrad</h2>
+          <div className="space-y-2">
             {(Object.entries(DIFFICULTY_CONFIG) as [Difficulty, typeof DIFFICULTY_CONFIG.easy][]).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => startGame(key)}
-                className="w-full rounded-xl border-2 border-border bg-card hover:border-primary/50 transition-colors p-4 text-left group"
+                className="w-full retro-panel hover:border-primary transition-colors text-left"
               >
-                <div className="flex items-center justify-between">
+                <div className="retro-panel-body flex items-center justify-between">
                   <div>
-                    <span className="font-display font-bold text-base group-hover:text-primary transition-colors">{cfg.label}</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">{cfg.pairs * 2} kort</p>
+                    <span className="font-bold text-base">{cfg.label}</span>
+                    <p className="text-sm text-muted-foreground">{cfg.pairs * 2} kort</p>
                   </div>
                   {bestScores[key] ? (
                     <div className="text-right">
-                      <div className="text-xs text-muted-foreground">Ditt bästa</div>
-                      <div className="font-display font-bold text-primary text-sm">{bestScores[key]}p</div>
+                      <div className="text-sm text-muted-foreground">Bästa</div>
+                      <div className="font-bold text-primary text-lg">{bestScores[key]}p</div>
                     </div>
                   ) : null}
                 </div>
@@ -293,25 +346,20 @@ export function MemoryGame({ onBack }: Props) {
             ))}
           </div>
 
-          {/* Leaderboard button */}
-          <Button
-            variant="outline"
-            className="w-full font-display gap-2"
+          <button
+            className="retro-btn w-full justify-center"
             onClick={() => { setShowLeaderboard(true); fetchLeaderboard(leaderboardDiff); }}
           >
-            <Medal className="w-4 h-4" /> Visa topplista
-          </Button>
+            🏆 Visa topplista
+          </button>
 
-          {/* Rules */}
-          <div className="rounded-xl border border-border bg-card/50 p-4 space-y-2">
-            <h3 className="font-display font-bold text-sm flex items-center gap-1"><Trophy className="w-3 h-3 text-primary" /> Poängsystem</h3>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Grundpoäng baserat på antal par</li>
-              <li>• Färre drag = högre poäng</li>
-              <li>• Snabbare tid = högre poäng</li>
-              <li>• Tävla mot andra på topplistan!</li>
-            </ul>
-          </div>
+          {!username && (
+            <div className="retro-panel">
+              <div className="retro-panel-body text-center text-xs text-muted-foreground">
+                Lägg till <code className="text-primary bg-background px-1">?usr=DittNamn</code> i URL:en för att spara poäng
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -322,52 +370,45 @@ export function MemoryGame({ onBack }: Props) {
 
   // Game over screen
   if (gameOver) {
+    const displayScore = serverResult?.valid ? serverResult.score : score;
     const best = bestScores[difficulty] || 0;
-    const isNewBest = score >= best;
+    const isNewBest = displayScore >= best;
     return (
-      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-        <div className="container px-4 py-8 max-w-lg mx-auto space-y-6 text-center">
-          <div className="text-6xl mb-2">🎉</div>
-          <h1 className="font-display font-bold text-3xl">Grattis!</h1>
-          <p className="text-muted-foreground">Du hittade alla {totalPairs} par!</p>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border bg-card p-3">
-              <Trophy className="w-5 h-5 text-primary mx-auto mb-1" />
-              <div className="font-display font-bold text-xl text-primary">{score}p</div>
-              <div className="text-xs text-muted-foreground">Poäng</div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-3">
-              <MousePointerClick className="w-5 h-5 text-primary mx-auto mb-1" />
-              <div className="font-display font-bold text-xl">{moves}</div>
-              <div className="text-xs text-muted-foreground">Drag</div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-3">
-              <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
-              <div className="font-display font-bold text-xl">{formatTime(seconds)}</div>
-              <div className="text-xs text-muted-foreground">Tid</div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-3 py-4 space-y-3 text-center">
+          <div className="retro-panel">
+            <div className="retro-panel-header">🎉 GRATTIS!</div>
+            <div className="retro-panel-body space-y-3">
+              <p className="text-sm text-muted-foreground">Du hittade alla {totalPairs} par!</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="retro-inset p-2">
+                  <div className="font-bold text-primary text-lg">{displayScore}p</div>
+                  <div className="text-[10px] text-muted-foreground">Poäng</div>
+                </div>
+                <div className="retro-inset p-2">
+                  <div className="font-bold text-lg">{serverResult?.moves ?? moves}</div>
+                  <div className="text-[10px] text-muted-foreground">Drag</div>
+                </div>
+                <div className="retro-inset p-2">
+                  <div className="font-bold text-lg">{formatTime(serverResult?.time_seconds ?? seconds)}</div>
+                  <div className="text-[10px] text-muted-foreground">Tid</div>
+                </div>
+              </div>
+              {isNewBest && <p className="font-pixel text-[9px] text-primary animate-pulse">⭐ NYTT REKORD! ⭐</p>}
+              {serverResult && !serverResult.valid && (
+                <p className="text-[10px] text-destructive">⚠ Sessionen kunde inte verifieras</p>
+              )}
+              {!username && <p className="text-[10px] text-muted-foreground">Poäng ej sparad — lägg till ?usr=Namn</p>}
+              {username && serverResult?.valid && (
+                <p className="text-[10px] text-green-400">✓ Poäng verifierad och sparad på servern</p>
+              )}
             </div>
           </div>
-
-          {isNewBest && (
-            <div className="text-sm font-display font-bold text-primary animate-pulse">
-              ⭐ Nytt rekord! ⭐
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button variant="outline" onClick={() => startGame(difficulty)} className="font-display gap-1">
-              <RotateCcw className="w-4 h-4" /> Spela igen
-            </Button>
-            <Button variant="outline" onClick={() => { setShowLeaderboard(true); setLeaderboardDiff(difficulty); fetchLeaderboard(difficulty); }} className="font-display gap-1">
-              <Medal className="w-4 h-4" /> Topplista
-            </Button>
-            <Button variant="outline" onClick={() => setDifficulty(null)} className="font-display">
-              Byt svårighet
-            </Button>
-            <Button variant="ghost" onClick={onBack} className="font-display">
-              Tillbaka
-            </Button>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button onClick={() => startGame(difficulty)} className="retro-btn">🔄 Igen</button>
+            <button onClick={() => { setShowLeaderboard(true); setLeaderboardDiff(difficulty); fetchLeaderboard(difficulty); }} className="retro-btn">🏆 Topplista</button>
+            <button onClick={() => setDifficulty(null)} className="retro-btn">Byt svårighet</button>
+            <button onClick={onBack} className="retro-btn">← Tillbaka</button>
           </div>
         </div>
       </div>
@@ -376,33 +417,31 @@ export function MemoryGame({ onBack }: Props) {
 
   // Game board
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
-      <div className="container px-4 py-4 max-w-2xl mx-auto space-y-4">
-        {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka
-          </Button>
-          <div className="flex items-center gap-4 text-sm font-display">
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="w-3.5 h-3.5" /> {formatTime(seconds)}
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <MousePointerClick className="w-3.5 h-3.5" /> {moves} drag
-            </span>
-            <span className="text-primary font-bold">{matchedPairs}/{totalPairs} par</span>
+    <div className="flex-1 flex flex-col">
+      <div className="px-3 py-2 space-y-2">
+        <div className="flex items-center justify-between gap-1">
+          <button onClick={onBack} className="retro-btn text-base">←</button>
+          <div className="flex items-center gap-1">
+            <div className="arcade-counter">
+              <span className="arcade-counter-label">TIME</span>
+              <span className="arcade-counter-value text-[hsl(var(--online-green))]">{formatTime(seconds)}</span>
+            </div>
+            <div className="arcade-counter">
+              <span className="arcade-counter-label">MOVES</span>
+              <span className="arcade-counter-value text-[hsl(var(--away-orange))]">{moves}</span>
+            </div>
+            <div className="arcade-counter">
+              <span className="arcade-counter-label">PAIRS</span>
+              <span className="arcade-counter-value text-primary">{matchedPairs}/{totalPairs}</span>
+            </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => startGame(difficulty)} className="text-muted-foreground">
-            <RotateCcw className="w-4 h-4" />
-          </Button>
+          <button onClick={() => startGame(difficulty)} className="retro-btn text-base">🔄</button>
         </div>
 
-        {/* Board */}
         <div
-          className="grid gap-2 mx-auto"
+          className="grid gap-[6px] mx-auto w-full max-w-md px-1"
           style={{
-            gridTemplateColumns: `repeat(${config.cols}, minmax(0, 1fr))`,
-            maxWidth: config.cols * 80,
+            gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
           }}
         >
           {cards.map(card => (
@@ -410,30 +449,27 @@ export function MemoryGame({ onBack }: Props) {
               key={card.id}
               onClick={() => handleCardClick(card.id)}
               className={`
-                aspect-square rounded-lg border-2 text-2xl sm:text-3xl font-bold
-                transition-all duration-300 transform
+                aspect-square border-2 text-3xl sm:text-4xl font-bold transition-all duration-200 w-full flex items-center justify-center
                 ${card.matched
-                  ? "border-primary/50 bg-primary/10 scale-95 opacity-60"
+                  ? "border-primary/40 bg-primary/10 opacity-50"
                   : card.flipped
-                    ? "border-primary bg-card rotate-0 scale-105"
-                    : "border-border bg-gradient-to-br from-orange-500/80 to-orange-600/80 hover:from-orange-400/80 hover:to-orange-500/80 cursor-pointer hover:scale-105"
+                    ? "border-primary bg-background"
+                    : "border-border bg-muted hover:border-primary/50 cursor-pointer hover:bg-muted/80"
                 }
               `}
               disabled={card.matched}
-              style={{ imageRendering: "auto" }}
             >
               {card.flipped || card.matched ? (
-                <span className="block" style={{ imageRendering: "auto" }}>{card.emoji}</span>
+                <span className="drop-shadow-lg" style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.4))" }}>{card.emoji}</span>
               ) : (
-                <span className="text-white/30 text-lg font-display">?</span>
+                <span className="text-muted-foreground text-base sm:text-lg font-pixel">?</span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Score preview */}
-        <div className="text-center text-xs text-muted-foreground font-display">
-          Aktuell poäng: <span className="text-primary font-bold">{score}p</span>
+        <div className="text-center text-base text-muted-foreground">
+          Poäng: <span className="text-primary font-bold">{score}p</span>
         </div>
       </div>
     </div>
