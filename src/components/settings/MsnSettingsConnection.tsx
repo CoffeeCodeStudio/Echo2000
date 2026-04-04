@@ -1,11 +1,13 @@
 /**
  * Connection settings tab — shows real connection status from auth session.
  */
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 export function MsnSettingsConnection() {
   const { session } = useAuth();
-  const isConnected = !!session;
+  const [debugMode, setDebugMode] = useState(false);
+  const isConnected = debugMode ? !session : !!session;
 
   return (
     <>
