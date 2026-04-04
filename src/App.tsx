@@ -51,6 +51,7 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/inactive" element={<AdminInactive />} />
                   <Route path="/villkor" element={<Terms />} />
                   
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
