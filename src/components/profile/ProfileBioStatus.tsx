@@ -224,7 +224,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
             {presentationText ? (
               <div className="relative">
                 <div
-                  className={cn("text-sm rounded relative overflow-hidden")}
+                  className={cn("text-sm rounded relative")}
                   style={{
                     minHeight: "200px",
                     ...(displayData.presentation_bg_url ? {
