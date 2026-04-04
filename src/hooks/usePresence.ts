@@ -4,6 +4,16 @@ import { useAuth } from './useAuth';
 import { useLocation } from 'react-router-dom';
 import type { UserStatus } from '@/components/StatusIndicator';
 
+const PRIVACY_STORAGE_KEY = "echo-settings-privacy";
+
+function getPrivacySettings() {
+  try {
+    const raw = localStorage.getItem(PRIVACY_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { showOnline: true, showActivity: true };
+}
+
 interface PresenceState {
   user_id: string;
   last_active: string;
