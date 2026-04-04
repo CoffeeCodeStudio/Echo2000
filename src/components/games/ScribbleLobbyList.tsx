@@ -15,7 +15,8 @@ interface ScribbleLobbyListProps {
 export function ScribbleLobbyList({ onJoinLobby }: ScribbleLobbyListProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { lobbies, loading, createLobby } = useScribbleLobbies(user?.id ?? "", profile?.username ?? null);
+  const guestId = user?.id ?? crypto.randomUUID();
+  const { lobbies, loading, createLobby } = useScribbleLobbies(guestId, profile?.username ?? null);
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
