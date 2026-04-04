@@ -82,6 +82,14 @@ export function SnakeGame({ onBack }: Props) {
 
   const saveScore = useCallback(async (finalScore: number, apples: number, timeSec: number) => {
     if (!user || !profile || scoreSaved) return;
+    // Check if user already has a higher score
+    const { data: existing } = await supabase
+      .from('snake_highscores')
+      .select('score')
+      .eq('user_id', user.id)
+      .order('score', { ascending: false })
+      .limit(1);
+    if (existing && existing.length > 0 && existing[0].score >= finalScore) return;
     setScoreSaved(true);
     await supabase.from('snake_highscores').insert({
       user_id: user.id,
