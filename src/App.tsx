@@ -34,6 +34,7 @@ function App() {
       <TooltipProvider>
         <RadioProvider>
           <LajvProvider>
+            <PrivacyProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
