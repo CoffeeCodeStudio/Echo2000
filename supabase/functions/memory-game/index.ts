@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
           username: sanitizedUsername,
           difficulty,
           pairs: config.pairs,
+          app: 'echo2000',
         })
         .select("id, session_token")
         .single();
