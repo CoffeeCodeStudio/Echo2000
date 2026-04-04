@@ -39,6 +39,7 @@ export function MsnSettingsPanel({ onClose }: MsnSettingsPanelProps) {
       case "notifications": return <MsnSettingsNotifications />;
       case "sounds": return <MsnSettingsSounds />;
       case "connection": return <MsnSettingsConnection />;
+      case "blocked": return <MsnSettingsBlocked />;
     }
   };
 
