@@ -30,6 +30,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ className }: ChatWindowProps) {
   const chat = useChatWindow();
+  const layoutContext = useOutletContext<LayoutContext>();
   const [dragging, setDragging] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
