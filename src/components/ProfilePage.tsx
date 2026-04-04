@@ -40,7 +40,7 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
   const profileUserId = profile?.user_id || userId || user?.id;
   const { visitors, loading: visitorsLoading } = useProfileVisits(profileUserId);
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(
-    !isOwnProfile && profileUserId ? profileUserId : undefined
+    profileUserId || undefined
   );
 
   const isLoggedIn = !!user;
@@ -199,8 +199,8 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
           isBot={profile?.is_bot}
         />
 
-        {/* Personality Meter — shown for visitors on other profiles */}
-        {!isOwnProfile && !showDemoMode && profileUserId && (
+        {/* Personality Meter — visitors can vote, own profile is read-only */}
+        {!showDemoMode && profileUserId && (
           <div className="bg-card rounded-lg border border-border p-4">
             <h3 className="lunar-box-header text-sm mb-3">🎭 PERSONLIGHET</h3>
             <PersonalityMeter
@@ -208,7 +208,7 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
               userVotes={userVotes}
               totalVotes={totalVotes}
               onToggleVote={toggleVote}
-              disabled={false}
+              disabled={isOwnProfile}
               loading={voteLoading}
             />
           </div>
