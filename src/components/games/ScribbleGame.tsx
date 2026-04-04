@@ -484,10 +484,11 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
               </div>
             )}
 
-            {isDrawer && secureWord && (
+            {isDrawer && lobby?.current_word && (
               <div className="text-center py-1 bg-primary/10 text-primary text-xs sm:text-sm font-display font-bold shrink-0">
-                Rita: {secureWord}
+                Rita: {lobby.current_word}
               </div>
+            )}
             )}
 
             {!isDrawer && lobby?.status === "playing" && lobby?.current_drawer_id && (
