@@ -1,8 +1,6 @@
 /**
  * @module useChatWindow
  * Manages all state and side-effects for the ChatWindow component.
- *
- * Extracted from ChatWindow.tsx to keep the component a thin render shell.
  */
 import { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
@@ -15,6 +13,9 @@ import { useChatTyping } from "@/hooks/useChatTyping";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useBotCall } from "@/hooks/useBotCall";
 import { useToast } from "@/hooks/use-toast";
+import { useChatFileUpload } from "@/hooks/useChatFileUpload";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { useBlockList } from "@/hooks/useBlockList";
 import { supabase } from "@/integrations/supabase/client";
 import type { LayoutContext } from "@/components/SharedLayout";
 import type { UserStatus } from "@/components/StatusIndicator";
@@ -28,6 +29,7 @@ export interface DisplayMessage {
   senderName: string;
   senderAvatar?: string;
   date: Date;
+  isBlocked?: boolean;
 }
 
 export function useChatWindow() {
@@ -47,6 +49,7 @@ export function useChatWindow() {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const { isBlocked } = useBlockList();
 
   const {
     messages: dbMessages,
@@ -63,6 +66,14 @@ export function useChatWindow() {
     userId: user?.id || "",
   });
 
+  // File upload
+  const sendMsgForUpload = useCallback(async (content: string) => {
+    await sendDbMessage(content);
+  }, [sendDbMessage]);
+
+  const fileUpload = useChatFileUpload(sendMsgForUpload);
+  const voice = useVoiceRecorder(sendMsgForUpload);
+
   // Typing indicator from bots/other users
   const contactTyping = useChatTyping(user?.id, selectedContact?.id || null);
 
@@ -73,7 +84,6 @@ export function useChatWindow() {
   // Side-effects
   // ---------------------------------------------------------------------------
 
-  // Hide navbar when input is focused on mobile
   useEffect(() => {
     if (isMobile && setHideNavbar) setHideNavbar(inputFocused);
     return () => {
@@ -81,7 +91,6 @@ export function useChatWindow() {
     };
   }, [inputFocused, isMobile, setHideNavbar]);
 
-  // Listen for incoming nudges via realtime broadcast
   useEffect(() => {
     if (!user) return;
     const nudgeChannel = supabase.channel(`nudge-${user.id}`);
@@ -102,7 +111,7 @@ export function useChatWindow() {
   }, [user, soundEnabled, playSound]);
 
   // ---------------------------------------------------------------------------
-  // Mapped messages
+  // Mapped messages (with block filtering)
   // ---------------------------------------------------------------------------
 
   const currentMessages: DisplayMessage[] = dbMessages.map((msg) => ({
@@ -122,6 +131,7 @@ export function useChatWindow() {
         ? profile?.avatar_url || undefined
         : selectedContact?.avatar || undefined,
     date: new Date(msg.created_at),
+    isBlocked: isBlocked(msg.sender_id),
   }));
 
   // ---------------------------------------------------------------------------
@@ -132,7 +142,6 @@ export function useChatWindow() {
     setUserDisplayName(displayName);
     setUserStatus(status as UserStatus);
     setIsLoggedIn(true);
-    // Play sign-in sound
     if (soundEnabled) playSound("online");
   };
 
@@ -297,6 +306,12 @@ export function useChatWindow() {
     startVideoCall,
     startScreenShare,
     nudge,
+
+    // File upload
+    fileUpload,
+
+    // Voice recording
+    voice,
 
     // Misc
     user,

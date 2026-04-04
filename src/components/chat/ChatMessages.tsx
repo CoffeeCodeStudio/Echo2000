@@ -1,8 +1,8 @@
-/** Message list with date separators, nudge styling, and sender avatars */
-import { useRef, useEffect } from "react";
+/** Message list with date separators, nudge styling, sender avatars, and BBCode rendering */
+import { useRef, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { convertMsnEmoticons } from "./MsnEmoticons";
+import { parseBBCode } from "@/lib/bbcode";
 
 interface DisplayMessage {
   id: string;
@@ -12,6 +12,7 @@ interface DisplayMessage {
   senderName: string;
   senderAvatar?: string;
   date: Date;
+  isBlocked?: boolean;
 }
 
 interface ChatMessagesProps {
@@ -33,6 +34,16 @@ function formatDateLabel(date: Date): string {
   if (isSameDay(date, today)) return "Idag";
   if (isSameDay(date, yesterday)) return "Igår";
   return date.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" });
+}
+
+function MessageContent({ content }: { content: string }) {
+  const html = useMemo(() => parseBBCode(content), [content]);
+  return (
+    <p
+      className="text-foreground whitespace-pre-wrap leading-relaxed text-[11px]"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 export function ChatMessages({ messages, loading, contactName, contactTyping }: ChatMessagesProps) {
@@ -60,7 +71,6 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
         const showDateSeparator = !prevMessage ||
           formatDateLabel(message.date) !== formatDateLabel(prevMessage.date);
 
-        // Determine if this is a new message block (different sender or date separator)
         const isNewBlock = !prevMessage ||
           showDateSeparator ||
           prevMessage.isSelf !== message.isSelf ||
@@ -77,7 +87,17 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
                 <div className="flex-1 h-px bg-border" />
               </div>
             )}
-            {message.content.includes("skickade en nudge!") ? (
+
+            {/* Blocked message placeholder */}
+            {message.isBlocked ? (
+              <div className="mb-0.5 animate-fade-in border-b border-border/50 bg-muted/20 opacity-40">
+                <div className="flex items-center gap-2 px-3 py-1.5">
+                  <span className="text-[10px] italic text-muted-foreground">
+                    🚫 Meddelande dolt (blockerad användare)
+                  </span>
+                </div>
+              </div>
+            ) : message.content.includes("skickade en nudge!") ? (
               <div className="mb-2 animate-fade-in text-center">
                 <span className="text-[10px] italic text-[#ff6600]">
                   🔔 {message.senderName} skickade en nudge! ({message.timestamp})
@@ -89,7 +109,6 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
                 index % 2 === 0 ? "bg-card" : "bg-muted/30"
               )}>
                 <div className="flex items-start gap-2 px-1 py-0.5">
-                  {/* Sender avatar - only show at start of new block */}
                   {isNewBlock ? (
                     <div className="w-8 h-8 overflow-hidden flex-shrink-0 border border-border bg-muted">
                       {message.senderAvatar ? (
@@ -101,7 +120,7 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
                       )}
                     </div>
                   ) : (
-                    <div className="w-8 flex-shrink-0" /> /* spacer for alignment */
+                    <div className="w-8 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     {isNewBlock && (
@@ -116,9 +135,7 @@ export function ChatMessages({ messages, loading, contactName, contactTyping }: 
                       </div>
                     )}
                     <div className="flex items-baseline gap-2">
-                      <p className="text-foreground whitespace-pre-wrap leading-relaxed text-[11px]">
-                        {convertMsnEmoticons(message.content)}
-                      </p>
+                      <MessageContent content={message.content} />
                       {!isNewBlock && (
                         <span className="text-[8px] text-muted-foreground flex-shrink-0">({message.timestamp})</span>
                       )}
