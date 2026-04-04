@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
           username: sanitizedUsername,
           difficulty,
           pairs: config.pairs,
+          app: 'echo2000',
         })
         .select("id, session_token")
         .single();
@@ -188,6 +189,7 @@ Deno.serve(async (req) => {
           moves: totalMoves,
           time_seconds: totalSeconds,
           difficulty: session.difficulty,
+          app: 'echo2000',
         });
 
       if (hsError) {

@@ -53,6 +53,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
       const { data: staleLobbies } = await supabase
         .from('scribble_lobbies')
         .select('id')
+        .eq('app', 'echo2000')
         .in('status', ['waiting', 'playing'])
         .lt('updated_at', thirtyMinAgo);
 
@@ -72,6 +73,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
       const { data, error } = await supabase
         .from('scribble_lobbies')
         .select('*')
+        .eq('app', 'echo2000')
         .in('status', ['waiting', 'playing'])
         .order('created_at', { ascending: false });
 
@@ -137,6 +139,7 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
         creator_username: username,
         title,
         description,
+        app: 'echo2000',
       })
       .select()
       .single();
