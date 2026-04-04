@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Shield, ArrowLeft, Mail, ExternalLink, UserX } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface InactiveUser {
   user_id: string;
@@ -164,12 +163,13 @@ export default function AdminInactive() {
                   <CardContent className="p-4">
                     <div className="flex gap-3">
                       {/* Avatar */}
-                      <Avatar className="w-16 h-20 rounded-lg shrink-0">
-                        <AvatarImage src={u.avatar_url ?? undefined} className="object-cover" />
-                        <AvatarFallback className="rounded-lg text-lg">
-                          {u.username.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="w-16 h-20 rounded-lg shrink-0 overflow-hidden bg-muted flex items-center justify-center">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-lg font-bold text-muted-foreground">{u.username.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0 space-y-1">
