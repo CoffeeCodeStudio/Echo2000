@@ -24,7 +24,11 @@ import type { LayoutContext } from "@/components/SharedLayout";
 
 type Tab = "hem" | "chatt" | "gastbok" | "mejl" | "vanner" | "profil" | "klotterplanket" | "spel" | "traffar" | "lajv" | "faq" | "besokare" | "folk";
 
-
+const TAB_ORDER: Record<Tab, number> = {
+  hem: 0, gastbok: 1, profil: 2, vanner: 3,
+  folk: 4, klotterplanket: 5, faq: 6, besokare: 7,
+  chatt: 8, mejl: 9, spel: 10, traffar: 11, lajv: 12,
+};
 export default function Index() {
   const location = useLocation();
   const context = useOutletContext<LayoutContext>();
