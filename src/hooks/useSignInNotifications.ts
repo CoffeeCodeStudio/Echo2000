@@ -76,7 +76,7 @@ export function useSignInNotifications(
         if (!contact) continue;
 
         lastNotifiedRef.current.set(userId, now);
-        playSound("online" as SoundType);
+        playSound("online");
         toast(`${contact.name} loggade in`, {
           description: "Din vän är nu online",
           duration: 4000,
