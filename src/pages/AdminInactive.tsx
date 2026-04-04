@@ -44,11 +44,14 @@ function buildMailtoLink(user: InactiveUser): string {
   return `mailto:${user.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+type InactiveFilter = "all" | "1v" | "2v" | "4v";
+
 export default function AdminInactive() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<InactiveUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<InactiveFilter>("all");
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -93,17 +96,34 @@ export default function AdminInactive() {
     );
   }
 
+  const filteredUsers = users.filter((u) => {
+    const weeks = Math.floor(u.days_inactive / 7);
+    switch (filter) {
+      case "1v": return weeks >= 1 && weeks < 2;
+      case "2v": return weeks >= 2 && weeks < 4;
+      case "4v": return weeks >= 4;
+      default: return true;
+    }
+  });
+
+  const filterButtons: { value: InactiveFilter; label: string; emoji: string }[] = [
+    { value: "all", label: "Alla", emoji: "👥" },
+    { value: "1v", label: "1–2v", emoji: "🟠" },
+    { value: "2v", label: "2–4v", emoji: "🔴" },
+    { value: "4v", label: "4v+", emoji: "⚫" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="font-display font-bold text-2xl flex items-center gap-2">
               <UserX className="w-6 h-6 text-primary" />Inaktiva användare
             </h1>
             <p className="text-muted-foreground text-sm">
-              {users.length} användare har inte loggat in på 7+ dagar
+              {filteredUsers.length} av {users.length} användare
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/admin")}>
@@ -111,19 +131,33 @@ export default function AdminInactive() {
           </Button>
         </div>
 
+        {/* Filter buttons */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {filterButtons.map((f) => (
+            <Button
+              key={f.value}
+              variant={filter === f.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter(f.value)}
+            >
+              {f.emoji} {f.label}
+            </Button>
+          ))}
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : users.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <p className="text-lg text-muted-foreground">🎉 Alla användare är aktiva!</p>
+              <p className="text-lg text-muted-foreground">🎉 Inga användare i denna kategori!</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
-            {users.map((u) => {
+            {filteredUsers.map((u) => {
               const inactivity = formatInactivity(u.days_inactive);
               return (
                 <Card key={u.user_id} className="overflow-hidden">
