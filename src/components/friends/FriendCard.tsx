@@ -81,7 +81,7 @@ export function FriendCard({
 
   return (
     <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors">
+      <div className="flex items-center gap-3 p-2.5 hover:bg-[#fff3e6] transition-colors relative">
         <div
           className="cursor-pointer"
           onClick={() => navigate(`/profile/${encodeURIComponent(friend.username)}`)}
