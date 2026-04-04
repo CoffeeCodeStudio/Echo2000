@@ -212,7 +212,7 @@ export function ProfileBioStatus({ displayData, editData, setEditData, isEditing
                   )}>Förhandsgranskning:</p>
                   <div
                     className={cn("text-sm", editData.presentation_bg_url ? "text-white" : "text-foreground/90")}
-                    style={{ wordBreak: "break-word", overflowX: "auto", maxWidth: "100%" }}
+                    style={{ overflowWrap: "break-word", overflowX: "auto", maxWidth: "100%" }}
                     dangerouslySetInnerHTML={{ __html: parseBBCode(editData.presentation) }}
                   />
                 </div>
