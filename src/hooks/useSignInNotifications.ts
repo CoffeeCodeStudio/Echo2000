@@ -1,13 +1,11 @@
 /**
  * @module useSignInNotifications
- * Shows toast notifications when friends come online, using presence sync events.
- * Debounces per-contact to avoid duplicate toasts on reconnects.
+ * Shows toast notifications when friends come online or go offline,
+ * using presence sync events. Debounces per-contact to avoid duplicate toasts.
  */
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useMsnSounds } from "./useMsnSounds";
-
-// Uses "online" sound from useMsnSounds
 
 const NOTIFICATION_STORAGE_KEY = "echo-settings-notifications";
 const DEBOUNCE_MS = 60_000; // 1 minute per contact
@@ -27,11 +25,11 @@ interface ContactInfo {
 }
 
 /**
- * Call this hook once (e.g. in SharedLayout or a top-level component).
+ * Call this hook once (e.g. in MsnContactList).
  * Pass the current online user map and a list of friend contacts.
  */
 export function useSignInNotifications(
-  onlineUsers: Map<string, string>, // userId → status
+  onlineUsers: Map<string, string>,
   contacts: ContactInfo[]
 ) {
   const { playSound } = useMsnSounds();
@@ -65,10 +63,9 @@ export function useSignInNotifications(
       }
     }
 
-    // Find newly online users
+    // Find newly online users (sign-in)
     for (const userId of currentOnline) {
       if (!previousOnlineRef.current.has(userId)) {
-        // This user just came online
         const lastNotified = lastNotifiedRef.current.get(userId) || 0;
         if (now - lastNotified < DEBOUNCE_MS) continue;
 
@@ -79,6 +76,24 @@ export function useSignInNotifications(
         playSound("online");
         toast(`${contact.name} loggade in`, {
           description: "Din vän är nu online",
+          duration: 4000,
+        });
+      }
+    }
+
+    // Find users who went offline (sign-out)
+    for (const userId of previousOnlineRef.current) {
+      if (!currentOnline.has(userId)) {
+        const lastNotified = lastNotifiedRef.current.get(userId) || 0;
+        if (now - lastNotified < DEBOUNCE_MS) continue;
+
+        const contact = contacts.find((c) => c.id === userId);
+        if (!contact) continue;
+
+        lastNotifiedRef.current.set(userId, now);
+        playSound("offline");
+        toast(`${contact.name} loggade ut`, {
+          description: "Din vän är nu offline",
           duration: 4000,
         });
       }
