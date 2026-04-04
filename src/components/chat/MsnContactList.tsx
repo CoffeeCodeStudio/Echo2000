@@ -52,6 +52,7 @@ export function MsnContactList({
   });
   const [searchQuery, setSearchQuery] = useState("");
   const { playSound } = useMsnSounds();
+  const { user } = useAuth();
   const { getUserStatus, onlineUsers } = usePresence();
   const { isBlocked } = useBlockList();
 
