@@ -13,8 +13,15 @@ export default function Profile() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    let isCurrent = true;
+
+    setUserId(null);
+    setNotFound(false);
+    setLoading(true);
+
     const fetchUserByUsername = async () => {
       if (!username) {
+        if (!isCurrent) return;
         setNotFound(true);
         setLoading(false);
         return;
@@ -27,6 +34,8 @@ export default function Profile() {
           .ilike('username', username)
           .maybeSingle();
 
+        if (!isCurrent) return;
+
         if (error) {
           console.error('Error fetching profile:', error);
           setNotFound(true);
@@ -36,14 +45,21 @@ export default function Profile() {
           setUserId(data.user_id);
         }
       } catch (err) {
+        if (!isCurrent) return;
         console.error('Error:', err);
         setNotFound(true);
       } finally {
-        setLoading(false);
+        if (isCurrent) {
+          setLoading(false);
+        }
       }
     };
 
     fetchUserByUsername();
+
+    return () => {
+      isCurrent = false;
+    };
   }, [username]);
 
   if (loading) {
@@ -75,5 +91,5 @@ export default function Profile() {
     );
   }
 
-  return <ProfilePage userId={userId || undefined} showSection="gastbok" />;
+  return <ProfilePage key={username || userId || 'profile'} userId={userId || undefined} showSection="gastbok" />;
 }
