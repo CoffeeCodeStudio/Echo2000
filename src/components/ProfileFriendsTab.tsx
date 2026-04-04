@@ -99,6 +99,29 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
     fetchFriends();
   }, [userId]);
 
+  // Fetch the current user's votes on each friend to show emoji badges
+  useEffect(() => {
+    if (!user || friends.length === 0) return;
+    const fetchEmojis = async () => {
+      const friendIds = friends.map((f) => f.id);
+      const { data } = await supabase
+        .from("friend_votes")
+        .select("target_user_id, vote_category")
+        .eq("voter_id", user.id)
+        .in("target_user_id", friendIds);
+
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((v) => {
+          const emoji = CATEGORY_EMOJIS[v.vote_category];
+          if (emoji) map[v.target_user_id] = emoji;
+        });
+        setFriendEmojis(map);
+      }
+    };
+    fetchEmojis();
+  }, [user, friends]);
+
   const bestFriends = friends.filter((f) => f.is_best_friend);
 
   const grouped = FRIEND_CATEGORIES.reduce<Record<string, ProfileFriend[]>>((acc, cat) => {
