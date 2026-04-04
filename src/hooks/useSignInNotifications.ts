@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useMsnSounds } from "./useMsnSounds";
 
-type SoundType = "message" | "nudge" | "online" | "offline" | "send" | "error" | "login";
+// Uses "online" sound from useMsnSounds
 
 const NOTIFICATION_STORAGE_KEY = "echo-settings-notifications";
 const DEBOUNCE_MS = 60_000; // 1 minute per contact
