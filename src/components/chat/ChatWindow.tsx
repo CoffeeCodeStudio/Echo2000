@@ -6,8 +6,6 @@
  * Visual sub-sections are delegated to dedicated components.
  */
 import { useState, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
-import type { LayoutContext } from "@/components/SharedLayout";
 import { cn } from "@/lib/utils";
 import { useChatWindow } from "@/hooks/useChatWindow";
 
@@ -30,7 +28,6 @@ interface ChatWindowProps {
 
 export function ChatWindow({ className }: ChatWindowProps) {
   const chat = useChatWindow();
-  const layoutContext = useOutletContext<LayoutContext>();
   const [dragging, setDragging] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -142,7 +139,6 @@ export function ChatWindow({ className }: ChatWindowProps) {
                   onVideoCall={chat.startVideoCall}
                   onScreenShare={chat.startScreenShare}
                   onNudge={chat.nudge}
-                  onGames={() => layoutContext?.setActiveTab?.("spel" as any)}
                   showInviteDialog={chat.showInviteDialog}
                   callActive={chat.webrtc.callActive}
                   callType={chat.webrtc.callType}

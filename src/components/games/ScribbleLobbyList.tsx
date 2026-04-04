@@ -4,16 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Pencil, Plus, Users, Clock } from "lucide-react";
+import { Gamepad2, Plus, Users, Clock } from "lucide-react";
 
 interface ScribbleLobbyListProps {
   onJoinLobby: (lobbyId: string) => void;
-  guestId: string;
-  guestUsername: string | null;
 }
 
-export function ScribbleLobbyList({ onJoinLobby, guestId, guestUsername }: ScribbleLobbyListProps) {
-  const { lobbies, loading, createLobby } = useScribbleLobbies(guestId, guestUsername);
+export function ScribbleLobbyList({ onJoinLobby }: ScribbleLobbyListProps) {
+  const { lobbies, loading, createLobby } = useScribbleLobbies();
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -44,66 +42,58 @@ export function ScribbleLobbyList({ onJoinLobby, guestId, guestUsername }: Scrib
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="px-3 py-4 max-w-2xl mx-auto">
+    <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+      <div className="container px-4 py-8 max-w-2xl mx-auto">
         {/* Header */}
-        <div className="retro-panel mb-4">
-          <div className="retro-panel-header flex items-center gap-2">
-            <Pencil className="w-4 h-4" />
-            <span>Klottra & Gissa</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Gamepad2 className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-display font-bold text-2xl">Scribble</h1>
+              <p className="text-sm text-muted-foreground">Rita & gissa med vänner!</p>
+            </div>
           </div>
-          <div className="retro-panel-body flex items-center justify-between gap-3">
-            <p className="text-base font-bold text-foreground">
-              Rita & gissa med vänner!
-            </p>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="retro-btn retro-btn-primary font-pixel text-[8px] gap-1 whitespace-nowrap"
-            >
-              <Plus className="w-3 h-3" />
-              Nytt spel
-            </button>
-          </div>
+          <Button onClick={() => setShowCreate(true)} className="font-display gap-2">
+            <Plus className="w-4 h-4" />
+            Skapa ny spelomgång
+          </Button>
         </div>
 
         {/* Lobby List */}
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">Laddar lobbys...</div>
+          <div className="text-center py-12 text-muted-foreground">Laddar lobbys...</div>
         ) : lobbies.length === 0 ? (
-          <div className="retro-panel">
-            <div className="retro-panel-body text-center py-6">
-              <Pencil className="w-10 h-10 mx-auto mb-2 text-muted-foreground/50" />
-              <p className="text-muted-foreground mb-3">Inga aktiva lobbys just nu.</p>
-              <button
-                onClick={() => setShowCreate(true)}
-                className="retro-btn retro-btn-primary font-pixel text-[8px] gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Skapa den första!
-              </button>
-            </div>
+          <div className="text-center py-12">
+            <Gamepad2 className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="text-muted-foreground mb-4">Inga aktiva lobbys just nu.</p>
+            <Button onClick={() => setShowCreate(true)} variant="outline" className="font-display gap-2">
+              <Plus className="w-4 h-4" />
+              Skapa den första!
+            </Button>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {lobbies.map((lobby) => (
               <div
                 key={lobby.id}
-                className="retro-panel hover:border-primary/60 transition-colors"
+                className="rounded-xl border-2 border-border bg-card overflow-hidden hover:border-primary/50 transition-colors"
               >
                 {/* Orange title bar */}
-                <div className="retro-panel-header flex items-center justify-between">
-                  <span className="truncate">{lobby.title}</span>
-                  <span className="text-[7px] opacity-80 capitalize ml-2 shrink-0">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 flex items-center justify-between">
+                  <h3 className="font-display font-bold text-sm text-white truncate">{lobby.title}</h3>
+                  <span className="text-xs text-white/80 font-mono capitalize">
                     {lobby.status === "waiting" ? "Väntar" : "Spelar"}
                   </span>
                 </div>
 
-                <div className="retro-panel-body flex items-center justify-between gap-3">
+                <div className="p-4 flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {lobby.description && (
-                      <p className="text-sm text-muted-foreground mb-1 line-clamp-1">{lobby.description}</p>
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-1">{lobby.description}</p>
                     )}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>Av: <strong className="text-foreground">{lobby.creator_username}</strong></span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -115,16 +105,13 @@ export function ScribbleLobbyList({ onJoinLobby, guestId, guestUsername }: Scrib
                       </span>
                     </div>
                   </div>
-                  {lobby.status === 'playing' ? (
-                    <span className="text-[8px] font-pixel text-muted-foreground italic px-2">Pågår...</span>
-                  ) : (
-                    <button
-                      onClick={() => onJoinLobby(lobby.id)}
-                      className="retro-btn retro-btn-primary font-pixel text-[8px] shrink-0"
-                    >
-                      Hoppa in
-                    </button>
-                  )}
+                  <Button
+                    size="sm"
+                    onClick={() => onJoinLobby(lobby.id)}
+                    className="font-display shrink-0"
+                  >
+                    Hoppa in
+                  </Button>
                 </div>
               </div>
             ))}
@@ -135,7 +122,7 @@ export function ScribbleLobbyList({ onJoinLobby, guestId, guestUsername }: Scrib
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-pixel text-xs">Skapa ny spelomgång</DialogTitle>
+              <DialogTitle className="font-display">Skapa ny spelomgång</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -158,53 +145,12 @@ export function ScribbleLobbyList({ onJoinLobby, guestId, guestUsername }: Scrib
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-2 mt-2">
-              <button
-                onClick={handleCreate}
-                disabled={!title.trim() || creating}
-                className="block w-full h-[40px] font-bold text-[#000000] text-center border-[3px] border-[#000000] rounded-none disabled:opacity-50"
-                style={{
-                  background: 'linear-gradient(180deg, hsl(16 85% 55%) 0%, hsl(16 80% 42%) 100%)',
-                  boxShadow: '3px 3px 0px #000000',
-                }}
-                onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(3px, 3px)';
-                }}
-                onMouseUp={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0px #000000';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'none';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0px #000000';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'none';
-                }}
-              >
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>Avbryt</Button>
+              <Button onClick={handleCreate} disabled={!title.trim() || creating} className="font-display">
                 {creating ? "Skapar..." : "Skapa"}
-              </button>
-              <button
-                className="block w-full h-[40px] font-bold text-[#000000] text-center border-[3px] border-[#000000] rounded-none"
-                style={{
-                  backgroundColor: '#CCCCCC',
-                  boxShadow: '3px 3px 0px #000000',
-                }}
-                onClick={() => setShowCreate(false)}
-                onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(3px, 3px)';
-                }}
-                onMouseUp={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0px #000000';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'none';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0px #000000';
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'none';
-                }}
-              >
-                Avbryt
-              </button>
-            </div>
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

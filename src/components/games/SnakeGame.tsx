@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, RotateCcw, Trophy, Clock, Medal, Apple, ArrowUp, ArrowDown, ArrowRight as ArrowRightIcon, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { fireConfetti, playVictorySound, playGameOverSound, playPickupSound } from "@/lib/game-effects";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const GRID_SIZE = 20;
-const CELL_SIZE = 16;
+const CELL_SIZE = 18;
 const INITIAL_SPEED = 150;
 const SPEED_INCREASE = 2;
 const MIN_SPEED = 60;
@@ -41,11 +44,11 @@ function getRandomPosition(snake: Position[]): Position {
 
 interface Props {
   onBack: () => void;
-  username: string | null;
 }
 
-export function SnakeGame({ onBack, username }: Props) {
-  const { toast } = useToast();
+export function SnakeGame({ onBack }: Props) {
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -56,7 +59,6 @@ export function SnakeGame({ onBack, username }: Props) {
   const scoreRef = useRef(0);
   const applesRef = useRef(0);
   const speedRef = useRef(INITIAL_SPEED);
-  const secondsRef = useRef(0);
 
   const [gameState, setGameState] = useState<"menu" | "playing" | "gameover" | "leaderboard">("menu");
   const [score, setScore] = useState(0);
@@ -68,62 +70,27 @@ export function SnakeGame({ onBack, username }: Props) {
   const [leaderboard, setLeaderboard] = useState<HighscoreEntry[]>([]);
   const [scoreSaved, setScoreSaved] = useState(false);
 
-  const INVALID_USERNAMES = new Set(["firefox", "chrome", "safari", "edge", "opera", "brave", "vivaldi", "chromium"]);
-
   const fetchLeaderboard = useCallback(async () => {
     const { data } = await supabase
       .from('snake_highscores')
       .select('*')
       .order('score', { ascending: false })
-      .limit(100);
-    const seen = new Set<string>();
-    const unique = ((data as HighscoreEntry[]) || []).filter(e => {
-      if (INVALID_USERNAMES.has(e.username.toLowerCase())) return false;
-      if (seen.has(e.username)) return false;
-      seen.add(e.username);
-      return true;
-    }).slice(0, 10);
-    setLeaderboard(unique);
+      .limit(20);
+    setLeaderboard((data as HighscoreEntry[]) || []);
   }, []);
 
   const saveScore = useCallback(async (finalScore: number, apples: number, timeSec: number) => {
-    if (scoreSaved) return;
+    if (!user || !profile || scoreSaved) return;
     setScoreSaved(true);
-
-    // Always save to localStorage
-    const localKey = 'snake-best';
-    const localBest = parseInt(localStorage.getItem(localKey) || '0');
-    if (finalScore > localBest) {
-      localStorage.setItem(localKey, String(finalScore));
-    }
-
-    // Only save to database if ?usr= is set and not a generic name
-    const BLOCKED_NAMES = ['gäst', 'anonym', 'guest', 'anonymous', 'användarnamn', 'anvndarnamn', 'namn', 'test', 'user'];
-    if (!username || BLOCKED_NAMES.includes(username.toLowerCase())) return;
-
-    // Check if player already has a higher score in DB
-    const { data: existing } = await supabase
-      .from('snake_highscores')
-      .select('id, score')
-      .eq('username', username)
-      .order('score', { ascending: false })
-      .limit(1);
-
-    if (existing && existing.length > 0 && existing[0].score >= finalScore) {
-      return;
-    }
-
     await supabase.from('snake_highscores').insert({
-      user_id: '00000000-0000-0000-0000-000000000000',
-      username: username,
-      avatar_url: null,
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
       score: finalScore,
       apples_eaten: apples,
       time_seconds: timeSec,
     });
-
-    toast({ title: "🏆 Ditt rekord har sparats!" });
-  }, [username, scoreSaved]);
+  }, [user, profile, scoreSaved]);
 
   const drawGame = useCallback(() => {
     const canvas = canvasRef.current;
@@ -134,12 +101,12 @@ export function SnakeGame({ onBack, username }: Props) {
     const w = GRID_SIZE * CELL_SIZE;
     const h = GRID_SIZE * CELL_SIZE;
 
-    // Dark background
-    ctx.fillStyle = "#0a0a1a";
+    // Background - dark retro grid
+    ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, w, h);
 
-    // Grid overlay
-    ctx.strokeStyle = "rgba(0, 255, 80, 0.06)";
+    // Grid lines
+    ctx.strokeStyle = "#16213e";
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
@@ -152,42 +119,42 @@ export function SnakeGame({ onBack, username }: Props) {
       ctx.stroke();
     }
 
-    // Scanline overlay
-    ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
-    for (let y = 0; y < h; y += 3) {
-      ctx.fillRect(0, y, w, 1);
-    }
-
-    // Apple - bright red pixel block
+    // Apple
     const apple = appleRef.current;
-    ctx.shadowColor = "#ff0000";
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = "#ff1111";
-    ctx.fillRect(apple.x * CELL_SIZE + 1, apple.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
-    // Apple highlight pixel
+    ctx.fillStyle = "#ff3b3b";
+    ctx.shadowColor = "#ff3b3b";
+    ctx.shadowBlur = 8;
+    ctx.fillRect(
+      apple.x * CELL_SIZE + 2,
+      apple.y * CELL_SIZE + 2,
+      CELL_SIZE - 4,
+      CELL_SIZE - 4
+    );
+    // Apple highlight
+    ctx.fillStyle = "#ff6b6b";
+    ctx.fillRect(
+      apple.x * CELL_SIZE + 3,
+      apple.y * CELL_SIZE + 3,
+      4,
+      4
+    );
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "#ff6666";
-    ctx.fillRect(apple.x * CELL_SIZE + 3, apple.y * CELL_SIZE + 3, 3, 3);
-    // Apple stem
-    ctx.fillStyle = "#33aa33";
-    ctx.fillRect(apple.x * CELL_SIZE + 6, apple.y * CELL_SIZE, 3, 3);
 
-    // Snake - bright green with pixel art feel
+    // Snake
     const snake = snakeRef.current;
     snake.forEach((segment, i) => {
       const isHead = i === 0;
+      const brightness = Math.max(40, 100 - i * 3);
 
       if (isHead) {
-        ctx.shadowColor = "#00ff44";
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = "#00ff44";
+        ctx.fillStyle = "#00ff88";
+        ctx.shadowColor = "#00ff88";
+        ctx.shadowBlur = 6;
       } else {
+        ctx.fillStyle = `hsl(150, 100%, ${brightness}%)`;
         ctx.shadowBlur = 0;
-        const g = Math.max(100, 220 - i * 6);
-        ctx.fillStyle = `rgb(0, ${g}, 30)`;
       }
 
-      // Pixel block body
       ctx.fillRect(
         segment.x * CELL_SIZE + 1,
         segment.y * CELL_SIZE + 1,
@@ -195,61 +162,47 @@ export function SnakeGame({ onBack, username }: Props) {
         CELL_SIZE - 2
       );
 
-      // Inner pixel highlight for depth
+      // Pixel eyes on head
       if (isHead) {
         ctx.shadowBlur = 0;
-        ctx.fillStyle = "#88ffaa";
-        ctx.fillRect(segment.x * CELL_SIZE + 3, segment.y * CELL_SIZE + 3, 3, 3);
-
-        // Eyes
         ctx.fillStyle = "#000";
         const dir = directionRef.current;
         const cx = segment.x * CELL_SIZE + CELL_SIZE / 2;
         const cy = segment.y * CELL_SIZE + CELL_SIZE / 2;
-        const eo = 3;
-
+        const eyeOffset = 3;
+        
         if (dir === "RIGHT" || dir === "LEFT") {
-          const dx = dir === "RIGHT" ? eo : -eo;
-          ctx.fillRect(cx + dx - 1, cy - 4, 2, 2);
-          ctx.fillRect(cx + dx - 1, cy + 2, 2, 2);
+          const dx = dir === "RIGHT" ? eyeOffset : -eyeOffset;
+          ctx.fillRect(cx + dx - 1, cy - 4, 3, 3);
+          ctx.fillRect(cx + dx - 1, cy + 2, 3, 3);
         } else {
-          const dy = dir === "DOWN" ? eo : -eo;
-          ctx.fillRect(cx - 4, cy + dy - 1, 2, 2);
-          ctx.fillRect(cx + 2, cy + dy - 1, 2, 2);
+          const dy = dir === "DOWN" ? eyeOffset : -eyeOffset;
+          ctx.fillRect(cx - 4, cy + dy - 1, 3, 3);
+          ctx.fillRect(cx + 2, cy + dy - 1, 3, 3);
         }
-      } else {
-        // Body segment inner pixel
-        ctx.fillStyle = `rgba(100, 255, 140, 0.3)`;
-        ctx.fillRect(segment.x * CELL_SIZE + 3, segment.y * CELL_SIZE + 3, 2, 2);
       }
     });
-
-    ctx.shadowBlur = 0;
   }, []);
 
   const endGame = useCallback(() => {
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
-
+    
     const finalScore = scoreRef.current;
     const apples = applesRef.current;
-    const timePlayed = secondsRef.current;
-
+    
     setScore(finalScore);
     setApplesEaten(apples);
     setGameState("gameover");
-    playGameOverSound();
 
     if (finalScore > highScore) {
       setHighScore(finalScore);
       localStorage.setItem("snake-best", String(finalScore));
-      fireConfetti();
-      playVictorySound();
     }
 
-    saveScore(finalScore, apples, timePlayed);
+    saveScore(finalScore, apples, seconds);
     fetchLeaderboard();
-  }, [highScore, saveScore, fetchLeaderboard]);
+  }, [highScore, saveScore, fetchLeaderboard, seconds]);
 
   const tick = useCallback(() => {
     const snake = snakeRef.current;
@@ -262,11 +215,13 @@ export function SnakeGame({ onBack, username }: Props) {
     if (dir === "LEFT") head.x -= 1;
     if (dir === "RIGHT") head.x += 1;
 
+    // Wall collision
     if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
       endGame();
       return;
     }
 
+    // Self collision
     if (snake.some(s => s.x === head.x && s.y === head.y)) {
       endGame();
       return;
@@ -276,13 +231,14 @@ export function SnakeGame({ onBack, username }: Props) {
     const apple = appleRef.current;
 
     if (head.x === apple.x && head.y === apple.y) {
+      // Ate apple
       applesRef.current += 1;
       scoreRef.current += 10 + Math.floor(applesRef.current / 5) * 5;
       setScore(scoreRef.current);
       setApplesEaten(applesRef.current);
-      playPickupSound();
       appleRef.current = getRandomPosition(newSnake);
 
+      // Speed up
       speedRef.current = Math.max(MIN_SPEED, speedRef.current - SPEED_INCREASE);
       if (gameLoopRef.current) clearInterval(gameLoopRef.current);
       gameLoopRef.current = setInterval(() => {
@@ -311,6 +267,7 @@ export function SnakeGame({ onBack, username }: Props) {
     setScoreSaved(false);
     setGameState("playing");
 
+    // Need to wait for canvas to mount
     setTimeout(() => {
       drawGame();
       if (gameLoopRef.current) clearInterval(gameLoopRef.current);
@@ -318,36 +275,42 @@ export function SnakeGame({ onBack, username }: Props) {
     }, 50);
   }, [drawGame, tick]);
 
+  // Timer
   useEffect(() => {
     if (gameState === "playing") {
-      secondsRef.current = 0;
-      timerRef.current = setInterval(() => {
-        secondsRef.current += 1;
-        setSeconds(s => s + 1);
-      }, 1000);
+      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
       return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }
   }, [gameState]);
 
+  // Keyboard controls
   useEffect(() => {
     if (gameState !== "playing") return;
 
     const handleKey = (e: KeyboardEvent) => {
       const dir = directionRef.current;
       switch (e.key) {
-        case "ArrowUp": case "w": case "W":
+        case "ArrowUp":
+        case "w":
+        case "W":
           e.preventDefault();
           if (dir !== "DOWN") nextDirectionRef.current = "UP";
           break;
-        case "ArrowDown": case "s": case "S":
+        case "ArrowDown":
+        case "s":
+        case "S":
           e.preventDefault();
           if (dir !== "UP") nextDirectionRef.current = "DOWN";
           break;
-        case "ArrowLeft": case "a": case "A":
+        case "ArrowLeft":
+        case "a":
+        case "A":
           e.preventDefault();
           if (dir !== "RIGHT") nextDirectionRef.current = "LEFT";
           break;
-        case "ArrowRight": case "d": case "D":
+        case "ArrowRight":
+        case "d":
+        case "D":
           e.preventDefault();
           if (dir !== "LEFT") nextDirectionRef.current = "RIGHT";
           break;
@@ -358,6 +321,7 @@ export function SnakeGame({ onBack, username }: Props) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [gameState]);
 
+  // Cleanup
   useEffect(() => {
     return () => {
       if (gameLoopRef.current) clearInterval(gameLoopRef.current);
@@ -365,6 +329,7 @@ export function SnakeGame({ onBack, username }: Props) {
     };
   }, []);
 
+  // Touch controls handler
   const handleDirection = (dir: Direction) => {
     const current = directionRef.current;
     if (
@@ -380,30 +345,37 @@ export function SnakeGame({ onBack, username }: Props) {
   // Leaderboard view
   if (gameState === "leaderboard") {
     return (
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-3 py-4 space-y-3">
-          <button onClick={() => setGameState("menu")} className="retro-btn text-[10px]">← Tillbaka till spel</button>
-          <div className="retro-panel">
-            <div className="retro-panel-header">🏆 TOPPLISTA — SNAKE</div>
-            <div className="max-h-96 overflow-y-auto">
-              {leaderboard.length === 0 ? (
-                <p className="text-center text-muted-foreground text-xs py-8 font-pixel">Ingen har spelat ännu — bli först!</p>
-              ) : leaderboard.map((entry, i) => {
-                const date = new Date(entry.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
-                return (
-                <div key={entry.id} className="retro-table-row">
-                  <span className="w-8 text-center font-bold text-xs">
-                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-bold text-xs truncate block">{entry.username}</span>
-                    <span className="text-[10px] text-muted-foreground">{entry.apples_eaten} äpplen · {formatTime(entry.time_seconds)} · {date}</span>
-                  </div>
-                  <span className="font-bold text-primary text-xs">{entry.score}p</span>
-                </div>
-                );
-              })}
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+        <div className="container px-4 py-8 max-w-lg mx-auto space-y-4">
+          <Button variant="ghost" size="sm" onClick={() => setGameState("menu")} className="text-muted-foreground">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka
+          </Button>
+          <div className="text-center space-y-2">
+            <Medal className="w-10 h-10 mx-auto text-primary" />
+            <h1 className="font-display font-bold text-2xl">Snake Topplista</h1>
+          </div>
+          <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 py-2">
+              <span className="font-display font-bold text-white text-sm">🐍 Bästa spelare</span>
             </div>
+            <ScrollArea className="max-h-96">
+              <div className="divide-y divide-border">
+                {leaderboard.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-8">Inga poäng ännu — bli den första!</p>
+                ) : leaderboard.map((entry, i) => (
+                  <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
+                    <span className="w-6 text-center font-display font-bold text-sm">
+                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-display font-bold text-sm truncate block">{entry.username}</span>
+                      <span className="text-xs text-muted-foreground">{entry.apples_eaten} äpplen · {formatTime(entry.time_seconds)}</span>
+                    </div>
+                    <span className="font-display font-bold text-emerald-400 text-sm">{entry.score}p</span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>
@@ -413,48 +385,53 @@ export function SnakeGame({ onBack, username }: Props) {
   // Menu
   if (gameState === "menu") {
     return (
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-3 py-4 space-y-3">
-          <button onClick={onBack} className="retro-btn text-[10px]">← Tillbaka till spel</button>
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+        <div className="container px-4 py-8 max-w-lg mx-auto space-y-6">
+          <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Tillbaka till spel
+          </Button>
 
-          <div className="retro-panel">
-            <div className="retro-panel-header">🐍 SNAKE</div>
-            <div className="retro-panel-body text-center space-y-3">
-              {/* Pixel snake art */}
-              <div className="flex justify-center gap-0.5 py-2">
-                {[...Array(8)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-3 h-3 rounded-none"
-                    style={{
-                      backgroundColor: i === 0 ? '#00ff44' : `rgb(0, ${Math.max(100, 220 - i * 15)}, 30)`,
-                      boxShadow: i === 0 ? '0 0 6px #00ff44' : 'none',
-                    }}
-                  />
-                ))}
-                <div className="w-3 h-3 rounded-full ml-2" style={{ backgroundColor: '#ff1111', boxShadow: '0 0 6px #ff0000' }} />
-              </div>
-              <p className="text-sm text-muted-foreground">Styr ormen, ät äpplen och väx dig längre!</p>
-              {highScore > 0 && (
-                <div className="retro-inset p-3 my-2">
-                  <div className="font-pixel text-[9px] text-muted-foreground mb-1">DITT BÄSTA</div>
-                  <div className="font-pixel text-lg text-primary" style={{ textShadow: '0 0 8px hsl(var(--primary) / 0.6)' }}>{highScore}p</div>
-                </div>
-              )}
-              <div className="retro-separator" />
-              <button onClick={startGame} className="retro-btn retro-btn-primary text-sm px-6 py-2">
-                ▶ STARTA SPELET
-              </button>
-            </div>
+          <div className="text-center space-y-3">
+            <div className="text-6xl mb-2" style={{ imageRendering: "pixelated" }}>🐍</div>
+            <h1 className="font-display font-bold text-3xl text-emerald-400">Snake</h1>
+            <p className="text-muted-foreground text-sm">Styr ormen, ät äpplen och väx dig längre!</p>
           </div>
 
-          <button
-            className="retro-btn w-full justify-center"
-            onClick={() => { setGameState("leaderboard"); fetchLeaderboard(); }}
-          >
-            🏆 Visa topplista
-          </button>
+          <div className="space-y-3">
+            <Button
+              onClick={startGame}
+              className="w-full font-display text-lg py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white"
+              size="lg"
+            >
+              🎮 Starta spelet
+            </Button>
 
+            <Button
+              variant="outline"
+              className="w-full font-display gap-2"
+              onClick={() => { setGameState("leaderboard"); fetchLeaderboard(); }}
+            >
+              <Medal className="w-4 h-4" /> Visa topplista
+            </Button>
+          </div>
+
+          {highScore > 0 && (
+            <div className="text-center">
+              <span className="text-xs text-muted-foreground">Ditt bästa: </span>
+              <span className="font-display font-bold text-emerald-400">{highScore}p</span>
+            </div>
+          )}
+
+          <div className="rounded-xl border border-border bg-card/50 p-4 space-y-2">
+            <h3 className="font-display font-bold text-sm flex items-center gap-1"><Trophy className="w-3 h-3 text-emerald-400" /> Kontroller</h3>
+            <ul className="text-xs text-muted-foreground space-y-1">
+              <li>• Piltangenter eller WASD för att styra</li>
+              <li>• Ät 🔴 äpplen för att växa och få poäng</li>
+              <li>• Undvik väggar och din egen svans</li>
+              <li>• Ju fler äpplen, desto snabbare!</li>
+              <li>• Mobilknappar visas på touchskärmar</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -464,33 +441,45 @@ export function SnakeGame({ onBack, username }: Props) {
   if (gameState === "gameover") {
     const isNewBest = score >= highScore;
     return (
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-3 py-4 space-y-3 text-center">
-          <div className="retro-panel">
-            <div className="retro-panel-header">💀 GAME OVER</div>
-            <div className="retro-panel-body space-y-3">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="retro-inset p-2">
-                  <div className="font-pixel text-[10px] text-primary">{score}p</div>
-                  <div className="text-[9px] text-muted-foreground font-pixel">POÄNG</div>
-                </div>
-                <div className="retro-inset p-2">
-                  <div className="font-pixel text-[10px] text-foreground">{applesEaten}</div>
-                  <div className="text-[9px] text-muted-foreground font-pixel">ÄPPLEN</div>
-                </div>
-                <div className="retro-inset p-2">
-                  <div className="font-pixel text-[10px] text-foreground">{formatTime(seconds)}</div>
-                  <div className="text-[9px] text-muted-foreground font-pixel">TID</div>
-                </div>
-              </div>
-              {isNewBest && score > 0 && <p className="font-pixel text-[9px] text-primary animate-pulse">⭐ NYTT REKORD! ⭐</p>}
-              
+      <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+        <div className="container px-4 py-8 max-w-lg mx-auto space-y-6 text-center">
+          <div className="text-6xl mb-2">💀</div>
+          <h1 className="font-display font-bold text-3xl text-red-400">Game Over!</h1>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border bg-card p-3">
+              <Trophy className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+              <div className="font-display font-bold text-xl text-emerald-400">{score}p</div>
+              <div className="text-xs text-muted-foreground">Poäng</div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-3">
+              <Apple className="w-5 h-5 text-red-400 mx-auto mb-1" />
+              <div className="font-display font-bold text-xl">{applesEaten}</div>
+              <div className="text-xs text-muted-foreground">Äpplen</div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-3">
+              <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
+              <div className="font-display font-bold text-xl">{formatTime(seconds)}</div>
+              <div className="text-xs text-muted-foreground">Tid</div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button onClick={startGame} className="retro-btn retro-btn-primary">🔄 Igen</button>
-            <button onClick={() => { setGameState("leaderboard"); fetchLeaderboard(); }} className="retro-btn">🏆 Topplista</button>
-            <button onClick={onBack} className="retro-btn">← Tillbaka till spel</button>
+
+          {isNewBest && score > 0 && (
+            <div className="text-sm font-display font-bold text-emerald-400 animate-pulse">
+              ⭐ Nytt rekord! ⭐
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button onClick={startGame} className="font-display gap-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600">
+              <RotateCcw className="w-4 h-4" /> Spela igen
+            </Button>
+            <Button variant="outline" onClick={() => { setGameState("leaderboard"); fetchLeaderboard(); }} className="font-display gap-1">
+              <Medal className="w-4 h-4" /> Topplista
+            </Button>
+            <Button variant="ghost" onClick={onBack} className="font-display">
+              Tillbaka
+            </Button>
           </div>
         </div>
       </div>
@@ -501,31 +490,29 @@ export function SnakeGame({ onBack, username }: Props) {
   const canvasSize = GRID_SIZE * CELL_SIZE;
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="px-3 py-3 space-y-3">
-        {/* HUD bar */}
-        <div className="retro-panel">
-          <div className="retro-panel-body p-2 flex items-center justify-between">
-            <button onClick={() => { endGame(); setGameState("menu"); }} className="retro-btn text-base py-0.5 px-2">✕ AVSLUTA</button>
-            <div className="flex items-center gap-4 font-pixel text-xs">
-              <span className="text-muted-foreground">⏱ {formatTime(seconds)}</span>
-              <span style={{ color: '#ff1111' }}>🍎 {applesEaten}</span>
-              <span className="text-primary font-bold">{score}P</span>
-            </div>
+    <div className="flex-1 overflow-y-auto scrollbar-nostalgic">
+      <div className="container px-4 py-4 max-w-2xl mx-auto space-y-3">
+        {/* Top bar */}
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={() => { endGame(); setGameState("menu"); }} className="text-muted-foreground">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Avsluta
+          </Button>
+          <div className="flex items-center gap-4 text-sm font-display">
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="w-3.5 h-3.5" /> {formatTime(seconds)}
+            </span>
+            <span className="flex items-center gap-1 text-red-400">
+              <Apple className="w-3.5 h-3.5" /> {applesEaten}
+            </span>
+            <span className="text-emerald-400 font-bold">{score}p</span>
           </div>
         </div>
 
-        {/* Game canvas with retro glow border */}
+        {/* Canvas */}
         <div className="flex justify-center">
           <div
-            className="relative"
-            style={{
-              width: canvasSize + 4,
-              height: canvasSize + 4,
-              border: '2px solid #00ff44',
-              boxShadow: '0 0 12px rgba(0, 255, 68, 0.4), inset 0 0 12px rgba(0, 255, 68, 0.1)',
-              background: '#0a0a1a',
-            }}
+            className="rounded-lg border-2 border-emerald-800/50 overflow-hidden shadow-lg shadow-emerald-900/20"
+            style={{ width: canvasSize, height: canvasSize }}
           >
             <canvas
               ref={canvasRef}
@@ -536,40 +523,52 @@ export function SnakeGame({ onBack, username }: Props) {
           </div>
         </div>
 
-        {/* Touch controls - mobile only */}
-        <div className="flex justify-center md:hidden mt-4">
-          <div className="grid grid-cols-3 gap-3" style={{ width: 240 }}>
+        {/* Touch controls */}
+        <div className="flex justify-center md:hidden">
+          <div className="grid grid-cols-3 gap-1 w-36">
             <div />
-            <button
-              className="flex items-center justify-center text-2xl font-bold select-none"
-              style={{ minWidth: 70, minHeight: 70, background: '#CCCCCC', color: '#000000', border: '3px solid #000000', borderRadius: 0, boxShadow: '4px 4px 0px #000000' }}
+            <Button
+              variant="outline"
+              size="sm"
+              className="aspect-square p-0 border-emerald-800/50 active:bg-emerald-900/50"
               onTouchStart={(e) => { e.preventDefault(); handleDirection("UP"); }}
               onClick={() => handleDirection("UP")}
-            >▲</button>
+            >
+              <ArrowUp className="w-5 h-5" />
+            </Button>
             <div />
-            <button
-              className="flex items-center justify-center text-2xl font-bold select-none"
-              style={{ minWidth: 70, minHeight: 70, background: '#CCCCCC', color: '#000000', border: '3px solid #000000', borderRadius: 0, boxShadow: '4px 4px 0px #000000' }}
+            <Button
+              variant="outline"
+              size="sm"
+              className="aspect-square p-0 border-emerald-800/50 active:bg-emerald-900/50"
               onTouchStart={(e) => { e.preventDefault(); handleDirection("LEFT"); }}
               onClick={() => handleDirection("LEFT")}
-            >◄</button>
-            <button
-              className="flex items-center justify-center text-2xl font-bold select-none"
-              style={{ minWidth: 70, minHeight: 70, background: '#CCCCCC', color: '#000000', border: '3px solid #000000', borderRadius: 0, boxShadow: '4px 4px 0px #000000' }}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="aspect-square p-0 border-emerald-800/50 active:bg-emerald-900/50"
               onTouchStart={(e) => { e.preventDefault(); handleDirection("DOWN"); }}
               onClick={() => handleDirection("DOWN")}
-            >▼</button>
-            <button
-              className="flex items-center justify-center text-2xl font-bold select-none"
-              style={{ minWidth: 70, minHeight: 70, background: '#CCCCCC', color: '#000000', border: '3px solid #000000', borderRadius: 0, boxShadow: '4px 4px 0px #000000' }}
+            >
+              <ArrowDown className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="aspect-square p-0 border-emerald-800/50 active:bg-emerald-900/50"
               onTouchStart={(e) => { e.preventDefault(); handleDirection("RIGHT"); }}
               onClick={() => handleDirection("RIGHT")}
-            >►</button>
+            >
+              <ArrowRightIcon className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
-        <p className="text-center text-[9px] text-muted-foreground font-pixel hidden md:block">
-          PILTANGENTER / WASD
+        <p className="text-center text-xs text-muted-foreground font-display hidden md:block">
+          Använd piltangenterna eller WASD för att styra
         </p>
       </div>
     </div>

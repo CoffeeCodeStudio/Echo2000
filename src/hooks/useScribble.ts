@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ScribbleLobby {
@@ -24,7 +26,6 @@ export interface ScribblePlayer {
   avatar_url: string | null;
   score: number;
   joined_at: string;
-  last_seen: string;
 }
 
 export interface ScribbleGuess {
@@ -39,102 +40,86 @@ export interface ScribbleGuess {
 
 /**
  * Lists and creates Scribble game lobbies.
- * Works for both authenticated and guest users.
+ *
+ * Automatically cleans up finished or stale (>5 min inactive) lobbies,
+ * fetches player counts, and subscribes to real-time lobby changes.
+ *
+ * @returns `lobbies` array, `loading`, `createLobby`, and `refetch`.
  */
-export function useScribbleLobbies(guestId: string, guestUsername: string | null) {
+export function useScribbleLobbies() {
   const [lobbies, setLobbies] = useState<ScribbleLobby[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
 
   const fetchLobbies = useCallback(async () => {
-    try {
-      // Clean up stale lobbies (no activity for 30+ minutes)
-      const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-      const { data: staleLobbies } = await supabase
-        .from('scribble_lobbies')
-        .select('id')
-        .in('status', ['waiting', 'playing'])
-        .lt('updated_at', thirtyMinAgo);
+    if (!user) return;
 
-      if (staleLobbies && staleLobbies.length > 0) {
-        const staleIds = staleLobbies.map(l => l.id);
-        // Delete players and guesses first, then mark lobby as finished and delete
-        await supabase.from('scribble_guesses').delete().in('lobby_id', staleIds);
-        await supabase.from('scribble_players').delete().in('lobby_id', staleIds);
-        await supabase
-          .from('scribble_lobbies')
-          .update({ status: 'finished' })
-          .in('id', staleIds);
-        await supabase.from('scribble_lobbies').delete().in('id', staleIds);
-        console.log(`Cleaned up ${staleIds.length} stale lobby(ies)`);
-      }
+    // Clean up finished or stale lobbies (inactive > 5 min)
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
-        .from('scribble_lobbies')
-        .select('*')
-        .in('status', ['waiting', 'playing'])
-        .order('created_at', { ascending: false });
+    // Delete finished lobbies
+    await supabase
+      .from('scribble_lobbies')
+      .delete()
+      .eq('status', 'finished');
 
-      if (error) {
-        console.error('Error fetching lobbies:', error);
-        setLoading(false);
-        return;
-      }
+    // Delete stale waiting lobbies (no activity for 5+ min)
+    await supabase
+      .from('scribble_lobbies')
+      .delete()
+      .eq('status', 'waiting')
+      .lt('updated_at', fiveMinAgo);
 
-      // Get player counts
-      const lobbyIds = (data || []).map(l => l.id);
-      let counts: Record<string, number> = {};
-      if (lobbyIds.length > 0) {
-        const { data: players } = await supabase
-          .from('scribble_players')
-          .select('lobby_id')
-          .in('lobby_id', lobbyIds);
+    const { data, error } = await supabase
+      .from('scribble_lobbies')
+      .select('*')
+      .in('status', ['waiting', 'playing'])
+      .gte('updated_at', fiveMinAgo)
+      .order('created_at', { ascending: false });
 
-        (players || []).forEach(p => {
-          counts[p.lobby_id] = (counts[p.lobby_id] || 0) + 1;
-        });
-      }
-
-      setLobbies((data || []).map(l => ({ ...l, player_count: counts[l.id] || 0 })));
-    } catch (err) {
-      console.error('Failed to fetch lobbies:', err);
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.error('Error fetching lobbies:', error);
+      return;
     }
-  }, []);
+
+    // Get player counts
+    const lobbyIds = (data || []).map(l => l.id);
+    const { data: players } = await supabase
+      .from('scribble_players')
+      .select('lobby_id')
+      .in('lobby_id', lobbyIds.length > 0 ? lobbyIds : ['none']);
+
+    const counts: Record<string, number> = {};
+    (players || []).forEach(p => {
+      counts[p.lobby_id] = (counts[p.lobby_id] || 0) + 1;
+    });
+
+    setLobbies((data || []).map(l => ({ ...l, player_count: counts[l.id] || 0 })));
+    setLoading(false);
+  }, [user]);
 
   useEffect(() => {
     fetchLobbies();
-
-    const timeout = setTimeout(() => {
-      setLoading(prev => {
-        if (prev) console.warn('Lobby fetch timed out after 5s');
-        return false;
-      });
-    }, 5000);
 
     const channel = supabase
       .channel('scribble-lobbies')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'scribble_lobbies' }, () => {
         fetchLobbies();
       })
-      .subscribe((status, err) => {
-        if (err) console.error('Scribble realtime subscription error:', err);
-      });
+      .subscribe();
 
-    return () => {
-      clearTimeout(timeout);
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchLobbies]);
 
   const createLobby = async (title: string, description: string) => {
-    const username = guestUsername || 'Gäst';
+    if (!user || !profile) return null;
     const { data, error } = await supabase
       .from('scribble_lobbies')
       .insert({
-        creator_id: guestId,
-        creator_username: username,
+        creator_id: user.id,
+        creator_username: profile.username,
         title,
         description,
       })
@@ -142,17 +127,18 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
       .single();
 
     if (error) {
-      toast({ title: 'Kunde inte skapa lobby', description: error.message, variant: 'destructive' });
+      console.error('Create lobby error:', error);
+      toast({ title: 'Kunde inte skapa lobby', description: 'Något gick fel. Försök igen.', variant: 'destructive' });
       return null;
     }
 
-    // Auto-join (upsert to avoid duplicates)
-    await supabase.from('scribble_players').upsert({
+    // Auto-join
+    await supabase.from('scribble_players').insert({
       lobby_id: data.id,
-      user_id: guestId,
-      username,
-      avatar_url: null,
-    }, { onConflict: 'lobby_id,user_id' });
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+    });
 
     return data;
   };
@@ -162,29 +148,45 @@ export function useScribbleLobbies(guestId: string, guestUsername: string | null
 
 /**
  * Manages the state of an active Scribble game session.
- * Works for both authenticated and guest users.
+ *
+ * Fetches lobby details, players, and guesses with real-time subscriptions.
+ * Sends a heartbeat every 60 s to keep the lobby alive.
+ *
+ * @param lobbyId - The lobby to join, or `null` if none is selected.
+ * @returns Lobby state, players, guesses, and action callbacks.
  */
-export function useScribbleGame(lobbyId: string | null, guestId: string, guestUsername: string | null) {
+export function useScribbleGame(lobbyId: string | null) {
   const [players, setPlayers] = useState<ScribblePlayer[]>([]);
   const [guesses, setGuesses] = useState<ScribbleGuess[]>([]);
   const [lobby, setLobby] = useState<ScribbleLobby | null>(null);
+  const [secureWord, setSecureWord] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
 
-  const username = guestUsername || 'Gäst';
-
   const fetchGame = useCallback(async () => {
-    if (!lobbyId) return;
+    if (!lobbyId || !user) return;
 
     const [lobbyRes, playersRes, guessesRes] = await Promise.all([
       supabase.from('scribble_lobbies').select('*').eq('id', lobbyId).single(),
-      supabase.from('scribble_players').select('*').eq('lobby_id', lobbyId).order('joined_at', { ascending: true }),
+      supabase.from('scribble_players').select('*').eq('lobby_id', lobbyId).order('score', { ascending: false }),
       supabase.from('scribble_guesses').select('*').eq('lobby_id', lobbyId).order('created_at', { ascending: true }).limit(100),
     ]);
 
-    if (lobbyRes.data) setLobby(lobbyRes.data);
+    if (lobbyRes.data) {
+      // Strip current_word from lobby data — never trust client-side
+      const { current_word: _stripped, ...safeLobby } = lobbyRes.data;
+      setLobby({ ...safeLobby, current_word: null });
+    }
     if (playersRes.data) setPlayers(playersRes.data);
     if (guessesRes.data) setGuesses(guessesRes.data);
-  }, [lobbyId]);
+
+    // Fetch secure word via RPC (only returns word if user is drawer)
+    const { data: word } = await supabase.rpc('get_scribble_word', {
+      p_lobby_id: lobbyId,
+    });
+    setSecureWord(word || null);
+  }, [lobbyId, user]);
 
   useEffect(() => {
     fetchGame();
@@ -201,217 +203,57 @@ export function useScribbleGame(lobbyId: string | null, guestId: string, guestUs
     return () => { supabase.removeChannel(channel); };
   }, [fetchGame, lobbyId]);
 
-  // Per-player heartbeat: update last_seen every 30s, also update lobby updated_at
+  // Heartbeat: update lobby's updated_at every 60s to keep it alive
   useEffect(() => {
-    if (!lobbyId || !guestId) return;
-
-    // Send heartbeat immediately on mount
-    const sendHeartbeat = async () => {
-      const now = new Date().toISOString();
-      await Promise.all([
-        supabase
-          .from('scribble_players')
-          .update({ last_seen: now })
-          .eq('lobby_id', lobbyId)
-          .eq('user_id', guestId),
-        supabase
-          .from('scribble_lobbies')
-          .update({ updated_at: now })
-          .eq('id', lobbyId),
-      ]);
-    };
-
-    sendHeartbeat();
-    const heartbeatInterval = setInterval(sendHeartbeat, 30_000);
-
-    return () => clearInterval(heartbeatInterval);
-  }, [lobbyId, guestId]);
-
-  // Stale player cleanup: check every 15s, remove players inactive >90s, advance turn if drawer removed
-  useEffect(() => {
-    if (!lobbyId) return;
-
-    const cleanupStale = async () => {
-      const ninetySecAgo = new Date(Date.now() - 90_000).toISOString();
-
-      const { data: stalePlayers } = await supabase
-        .from('scribble_players')
-        .select('user_id, username')
-        .eq('lobby_id', lobbyId)
-        .lt('last_seen', ninetySecAgo);
-
-      if (!stalePlayers || stalePlayers.length === 0) return;
-
-      for (const stale of stalePlayers) {
-        // Post leave notification
-        await supabase.from('scribble_guesses').insert({
-          lobby_id: lobbyId,
-          user_id: stale.user_id,
-          username: stale.username,
-          guess: `⚡ ${stale.username} kopplades bort`,
-          is_correct: false,
-        });
-
-        // Remove the player
-        await supabase
-          .from('scribble_players')
-          .delete()
-          .eq('lobby_id', lobbyId)
-          .eq('user_id', stale.user_id);
-      }
-
-      // Check remaining players
-      const { data: remaining } = await supabase
-        .from('scribble_players')
-        .select('user_id')
-        .eq('lobby_id', lobbyId);
-
-      const remainingPlayers = remaining || [];
-
-      if (remainingPlayers.length === 0) {
-        // All gone — finish and delete lobby
-        await supabase.from('scribble_guesses').delete().eq('lobby_id', lobbyId);
-        await supabase.from('scribble_lobbies').update({ status: 'finished' }).eq('id', lobbyId);
-        await supabase.from('scribble_lobbies').delete().eq('id', lobbyId);
-      } else {
-        const currentLobby = lobby;
-        const staleIds = stalePlayers.map(s => s.user_id);
-        const updates: Record<string, unknown> = {};
-
-        // If host was removed, transfer to oldest remaining
-        if (currentLobby?.creator_id && staleIds.includes(currentLobby.creator_id)) {
-          // Fetch with order to get oldest
-          const { data: ordered } = await supabase
-            .from('scribble_players')
-            .select('user_id, username')
-            .eq('lobby_id', lobbyId)
-            .order('joined_at', { ascending: true })
-            .limit(1);
-          if (ordered && ordered.length > 0) {
-            updates.creator_id = ordered[0].user_id;
-            updates.creator_username = ordered[0].username;
-          }
-        }
-
-        // If drawer was removed, advance turn
-        if (currentLobby?.current_drawer_id && staleIds.includes(currentLobby.current_drawer_id)) {
-          updates.current_drawer_id = remainingPlayers[0].user_id;
-          updates.current_word = null;
-          updates.round_number = (currentLobby.round_number || 0) + 1;
-        }
-
-        if (Object.keys(updates).length > 0) {
-          await supabase.from('scribble_lobbies').update(updates).eq('id', lobbyId);
-        }
-      }
-    };
-
-    const cleanupInterval = setInterval(cleanupStale, 15_000);
-    return () => clearInterval(cleanupInterval);
-  }, [lobbyId, lobby?.current_drawer_id, lobby?.round_number]); // eslint-disable-line
+    if (!lobbyId || !user) return;
+    const interval = setInterval(async () => {
+      await supabase
+        .from('scribble_lobbies')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', lobbyId);
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [lobbyId, user]);
 
   const joinLobby = async () => {
-    if (!lobbyId) return;
+    if (!lobbyId || !user || !profile) return;
+    const existing = players.find(p => p.user_id === user.id);
+    if (existing) return;
 
-    // Block joining if game is already playing
-    if (lobby?.status === 'playing') {
-      // Check if we're already a player (reconnecting)
-      const alreadyIn = players.some(p => p.user_id === guestId);
-      if (!alreadyIn) {
-        toast({ title: 'Spelet har redan börjat!', description: 'Vänta på nästa omgång.', variant: 'destructive' });
-        return false;
-      }
-    }
-
-    const { error } = await supabase.from('scribble_players').upsert({
+    const { error } = await supabase.from('scribble_players').insert({
       lobby_id: lobbyId,
-      user_id: guestId,
-      username,
-      avatar_url: null,
-      last_seen: new Date().toISOString(),
-    }, { onConflict: 'lobby_id,user_id' });
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+    });
     if (error) {
-      toast({ title: 'Kunde inte gå med', description: error.message, variant: 'destructive' });
-      return false;
+      console.error('Join lobby error:', error);
+      toast({ title: 'Kunde inte gå med', description: 'Något gick fel. Försök igen.', variant: 'destructive' });
     }
-    return true;
   };
 
   const submitGuess = async (guess: string) => {
-    if (!lobbyId) return;
-    const isCorrect = lobby?.current_word
-      ? guess.trim().toLowerCase() === lobby.current_word.trim().toLowerCase()
-      : false;
+    if (!lobbyId || !user || !profile) return false;
 
-    await supabase.from('scribble_guesses').insert({
-      lobby_id: lobbyId,
-      user_id: guestId,
-      username,
-      guess,
-      is_correct: isCorrect,
+    // Use server-side validation — never compare on client
+    const { data, error } = await supabase.rpc('submit_scribble_guess', {
+      p_lobby_id: lobbyId,
+      p_guess: guess,
     });
 
-    if (isCorrect) {
-      await supabase.from('scribble_players')
-        .update({ score: (players.find(p => p.user_id === guestId)?.score || 0) + 10 })
-        .eq('lobby_id', lobbyId)
-        .eq('user_id', guestId);
+    if (error) {
+      console.error('Submit guess error:', error);
+      return false;
     }
 
-    return isCorrect;
+    const result = data as { success: boolean; is_correct?: boolean; error?: string };
+    return result.success ? (result.is_correct ?? false) : false;
   };
 
   const leaveLobby = async () => {
-    if (!lobbyId) return;
-
-    // Post a leave notification as a system guess
-    await supabase.from('scribble_guesses').insert({
-      lobby_id: lobbyId,
-      user_id: guestId,
-      username,
-      guess: `📤 ${username} lämnade spelet`,
-      is_correct: false,
-    });
-
-    // Remove the player
-    await supabase.from('scribble_players').delete().eq('lobby_id', lobbyId).eq('user_id', guestId);
-
-    // Check remaining players
-    const { data: remaining } = await supabase
-      .from('scribble_players')
-      .select('user_id, username')
-      .eq('lobby_id', lobbyId)
-      .order('joined_at', { ascending: true });
-
-    const remainingPlayers = remaining || [];
-
-    if (remainingPlayers.length === 0) {
-      // Last player left — clean up lobby
-      await supabase.from('scribble_guesses').delete().eq('lobby_id', lobbyId);
-      await supabase.from('scribble_lobbies').update({ status: 'finished' }).eq('id', lobbyId);
-      await supabase.from('scribble_lobbies').delete().eq('id', lobbyId);
-    } else {
-      const updates: Record<string, unknown> = {};
-
-      // If host left, transfer to next player (oldest by joined_at)
-      if (lobby?.creator_id === guestId) {
-        const newHost = remainingPlayers[0];
-        updates.creator_id = newHost.user_id;
-        updates.creator_username = newHost.username;
-      }
-
-      // If drawer left during playing, advance turn
-      if (lobby?.current_drawer_id === guestId && lobby?.status === 'playing') {
-        updates.current_drawer_id = remainingPlayers[0].user_id;
-        updates.current_word = null;
-        updates.round_number = (lobby.round_number || 0) + 1;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await supabase.from('scribble_lobbies').update(updates).eq('id', lobbyId);
-      }
-    }
+    if (!lobbyId || !user) return;
+    await supabase.from('scribble_players').delete().eq('lobby_id', lobbyId).eq('user_id', user.id);
   };
 
-  return { lobby, players, guesses, joinLobby, submitGuess, leaveLobby, visitorId: guestId };
+  return { lobby, players, guesses, secureWord, joinLobby, submitGuess, leaveLobby };
 }

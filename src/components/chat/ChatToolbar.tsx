@@ -31,14 +31,13 @@ interface ChatToolbarProps {
   onVideoCall: () => void;
   onScreenShare: () => void;
   onNudge: () => void;
-  onGames?: () => void;
   showInviteDialog: boolean;
   callActive: boolean;
   callType: string;
 }
 
 export function ChatToolbar({
-  onInvite, onVoiceCall, onVideoCall, onScreenShare, onNudge, onGames,
+  onInvite, onVoiceCall, onVideoCall, onScreenShare, onNudge,
   showInviteDialog, callActive, callType,
 }: ChatToolbarProps) {
   return (
@@ -64,7 +63,7 @@ export function ChatToolbar({
           />
         </div>
       </VideoCallMenu>
-      <ToolbarButton icon={<Gamepad2 className="w-3.5 h-3.5" />} label="Spel" onClick={onGames} />
+      <ToolbarButton icon={<Gamepad2 className="w-3.5 h-3.5" />} label="Spel" />
       <div className="h-3 w-px bg-border mx-1" />
       <ToolbarButton icon={<Bell className="w-3.5 h-3.5" />} label="Nudge" onClick={onNudge} />
     </div>
