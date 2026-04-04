@@ -11,9 +11,10 @@ import { MsnSettingsPrivacy } from "./MsnSettingsPrivacy";
 import { MsnSettingsNotifications } from "./MsnSettingsNotifications";
 import { MsnSettingsSounds } from "./MsnSettingsSounds";
 import { MsnSettingsConnection } from "./MsnSettingsConnection";
+import { MsnSettingsBlocked } from "./MsnSettingsBlocked";
 import "./msn-settings.css";
 
-type Category = "personal" | "privacy" | "notifications" | "sounds" | "connection";
+type Category = "personal" | "privacy" | "notifications" | "sounds" | "connection" | "blocked";
 
 const categories: { id: Category; label: string; icon: typeof User }[] = [
   { id: "personal", label: "Personligt", icon: User },
@@ -21,6 +22,7 @@ const categories: { id: Category; label: string; icon: typeof User }[] = [
   { id: "notifications", label: "Aviseringar", icon: Bell },
   { id: "sounds", label: "Ljud", icon: Volume2 },
   { id: "connection", label: "Anslutning", icon: Wifi },
+  { id: "blocked", label: "Blockerade", icon: Shield },
 ];
 
 interface MsnSettingsPanelProps {
@@ -37,6 +39,7 @@ export function MsnSettingsPanel({ onClose }: MsnSettingsPanelProps) {
       case "notifications": return <MsnSettingsNotifications />;
       case "sounds": return <MsnSettingsSounds />;
       case "connection": return <MsnSettingsConnection />;
+      case "blocked": return <MsnSettingsBlocked />;
     }
   };
 
