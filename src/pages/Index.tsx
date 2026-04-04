@@ -45,6 +45,16 @@ export default function Index() {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const prevTabRef = useRef<Tab>(activeTab);
+  const slideDirection = useRef<"left" | "right">("right");
+
+  // Track slide direction on tab change
+  useEffect(() => {
+    const prev = TAB_ORDER[prevTabRef.current] ?? 0;
+    const curr = TAB_ORDER[activeTab] ?? 0;
+    slideDirection.current = curr >= prev ? "right" : "left";
+    prevTabRef.current = activeTab;
+  }, [activeTab]);
 
   const navigate = useNavigate();
   const { user } = useAuth();
