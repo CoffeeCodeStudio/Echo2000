@@ -117,8 +117,9 @@ export function parseBBCode(input: string): string {
   );
 
   // 5b. [file type="image|file" url="..."]filename[/file]
+  // After stripHtml, quotes are &quot; — match URL as everything up to &quot;
   s = s.replace(
-    /\[file\s+type=&quot;(image|file)&quot;\s+url=&quot;([^&]*)&quot;\]([\s\S]*?)\[\/file\]/gi,
+    /\[file\s+type=&quot;(image|file)&quot;\s+url=&quot;(.*?)&quot;\]([\s\S]*?)\[\/file\]/gi,
     (_m, fileType: string, url: string, filename: string) => {
       if (fileType === "image") {
         return `<img src="${url}" alt="${filename}" style="max-width:240px;border-radius:8px;margin:4px 0;display:block" loading="lazy" />`;
@@ -129,7 +130,7 @@ export function parseBBCode(input: string): string {
 
   // 5c. [voice url="..."][/voice]
   s = s.replace(
-    /\[voice\s+url=&quot;([^&]*)&quot;\]\[\/voice\]/gi,
+    /\[voice\s+url=&quot;(.*?)&quot;\]\[\/voice\]/gi,
     (_m, url: string) => {
       return `<div style="display:inline-block;background:rgba(0,0,0,0.15);border-radius:16px;padding:6px 12px;margin:2px 0"><audio controls preload="metadata" style="height:28px;max-width:220px" src="${url}"></audio></div>`;
     }
