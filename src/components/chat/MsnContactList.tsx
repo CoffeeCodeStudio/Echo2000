@@ -101,22 +101,24 @@ export function MsnContactList({
           unreadCounts[msg.sender_id] = (unreadCounts[msg.sender_id] || 0) + 1;
         });
 
-        const contactsList: MsnContact[] = friendships.map((friendship) => {
-          const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
-          const profile = profiles?.find((p) => p.user_id === friendUserId);
-          const presenceStatus = getUserStatus(friendUserId);
+        const contactsList: MsnContact[] = friendships
+          .map((friendship) => {
+            const friendUserId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+            const profile = profiles?.find((p) => p.user_id === friendUserId);
+            const presenceStatus = getUserStatus(friendUserId);
 
-          return {
-            id: friendUserId,
-            name: profile?.username || "Okänd",
-            email: `${profile?.username || "user"}@echo2000.se`,
-            status: presenceStatus,
-            statusMessage: profile?.status_message || "",
-            avatar: profile?.avatar_url || undefined,
-            unreadCount: unreadCounts[friendUserId] || 0,
-            isBot: profile?.is_bot || false,
-          };
-        });
+            return {
+              id: friendUserId,
+              name: profile?.username || "Okänd",
+              email: `${profile?.username || "user"}@echo2000.se`,
+              status: presenceStatus,
+              statusMessage: profile?.status_message || "",
+              avatar: profile?.avatar_url || undefined,
+              unreadCount: unreadCounts[friendUserId] || 0,
+              isBot: profile?.is_bot || false,
+            };
+          })
+          .filter((c) => !isBlocked(c.id));
 
         setContacts(contactsList);
       } catch (error) {
