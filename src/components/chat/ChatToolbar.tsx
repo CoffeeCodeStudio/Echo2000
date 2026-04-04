@@ -31,13 +31,14 @@ interface ChatToolbarProps {
   onVideoCall: () => void;
   onScreenShare: () => void;
   onNudge: () => void;
+  onGames?: () => void;
   showInviteDialog: boolean;
   callActive: boolean;
   callType: string;
 }
 
 export function ChatToolbar({
-  onInvite, onVoiceCall, onVideoCall, onScreenShare, onNudge,
+  onInvite, onVoiceCall, onVideoCall, onScreenShare, onNudge, onGames,
   showInviteDialog, callActive, callType,
 }: ChatToolbarProps) {
   return (
