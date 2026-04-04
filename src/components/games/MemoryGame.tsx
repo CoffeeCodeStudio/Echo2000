@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Trophy, Clock, MousePointerClick, Medal, Users } 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { fireConfetti, playVictorySound, playFlipSound, playMatchSound } from "@/lib/game-effects";
 
 const PIXEL_EMOJIS = [
   "🎮", "👾", "🕹️", "🤖", "💾", "📟", "🌟", "🎵",
