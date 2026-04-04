@@ -16,6 +16,7 @@ import { LajvProvider } from "@/contexts/LajvContext";
 const Room = lazy(() => import("./pages/Room"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminInactive = lazy(() => import("./pages/AdminInactive"));
 const Profile = lazy(() => import("./pages/Profile"));
 const News = lazy(() => import("./pages/News"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
