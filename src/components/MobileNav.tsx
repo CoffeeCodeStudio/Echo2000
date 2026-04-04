@@ -55,6 +55,10 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
   ];
 
   const moreTabs: { id: Tab; emoji: string; label: string; badge?: number }[] = [
+    { id: "chatt", emoji: "💬", label: "Chatt" },
+    { id: "mejl", emoji: "📨", label: "Mejl" },
+    { id: "spel", emoji: "🎮", label: "Spel" },
+    { id: "traffar", emoji: "🤝", label: "Träffar" },
     { id: "folk", emoji: "🌐", label: "Folk" },
     { id: "besokare", emoji: "👀", label: "Spanare", badge: counts.newVisitors > 0 ? counts.newVisitors : undefined },
     { id: "klotterplanket", emoji: "🎨", label: "Klotter" },
