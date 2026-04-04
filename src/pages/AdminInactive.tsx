@@ -44,11 +44,14 @@ function buildMailtoLink(user: InactiveUser): string {
   return `mailto:${user.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+type InactiveFilter = "all" | "1v" | "2v" | "4v";
+
 export default function AdminInactive() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [users, setUsers] = useState<InactiveUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<InactiveFilter>("all");
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
