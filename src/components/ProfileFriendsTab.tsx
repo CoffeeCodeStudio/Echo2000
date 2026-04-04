@@ -42,6 +42,8 @@ export function ProfileFriendsTab({ userId }: ProfileFriendsTabProps) {
   const { user } = useAuth();
   const isOwnProfile = user?.id === userId;
   const [pendingRemove, setPendingRemove] = useState<{ friendshipId: string; username: string } | null>(null);
+  // Map of friendUserId → voted emoji (the current user's vote on each friend)
+  const [friendEmojis, setFriendEmojis] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchFriends = async () => {
