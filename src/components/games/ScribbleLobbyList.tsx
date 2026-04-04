@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useScribbleLobbies } from "@/hooks/useScribble";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +13,9 @@ interface ScribbleLobbyListProps {
 }
 
 export function ScribbleLobbyList({ onJoinLobby }: ScribbleLobbyListProps) {
-  const { lobbies, loading, createLobby } = useScribbleLobbies();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { lobbies, loading, createLobby } = useScribbleLobbies(user?.id ?? "", profile?.username ?? null);
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
