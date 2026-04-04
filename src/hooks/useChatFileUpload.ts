@@ -85,5 +85,6 @@ export function useChatFileUpload(onSendMessage: (content: string) => Promise<an
     fileInputRef,
     openFilePicker,
     handleFileSelect,
+    uploadFile,
   };
 }

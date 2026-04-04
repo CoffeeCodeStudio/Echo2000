@@ -5,6 +5,7 @@
  * All state & logic lives in {@link useChatWindow}.
  * Visual sub-sections are delegated to dedicated components.
  */
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useChatWindow } from "@/hooks/useChatWindow";
 
