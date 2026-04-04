@@ -63,6 +63,7 @@ function App() {
               </Suspense>
               <CookieBanner />
             </BrowserRouter>
+            </PrivacyProvider>
           </LajvProvider>
         </RadioProvider>
       </TooltipProvider>
