@@ -40,9 +40,6 @@ export function ChatContactHeader({
           </div>
         </div>
         <div className="flex items-center gap-0.5 flex-shrink-0">
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-[#ff6600] hover:bg-[#fff3e6] hidden sm:flex" onClick={onVoiceCall}>
-            <Phone className="w-3.5 h-3.5" />
-          </Button>
           <VideoCallMenu onSelectCamera={onVideoCall} onSelectScreen={onScreenShare}>
             <Button variant="ghost" size="icon" className="h-7 w-7 text-[#ff6600] hover:bg-[#fff3e6] hidden sm:flex">
               <Video className="w-3.5 h-3.5" />
