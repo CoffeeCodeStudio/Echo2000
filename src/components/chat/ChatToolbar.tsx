@@ -64,7 +64,7 @@ export function ChatToolbar({
           />
         </div>
       </VideoCallMenu>
-      <ToolbarButton icon={<Gamepad2 className="w-3.5 h-3.5" />} label="Spel" />
+      <ToolbarButton icon={<Gamepad2 className="w-3.5 h-3.5" />} label="Spel" onClick={onGames} />
       <div className="h-3 w-px bg-border mx-1" />
       <ToolbarButton icon={<Bell className="w-3.5 h-3.5" />} label="Nudge" onClick={onNudge} />
     </div>
