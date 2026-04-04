@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Trophy, Clock, MousePointerClick, Medal, Users } 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { fireConfetti, playVictorySound, playFlipSound, playMatchSound } from "@/lib/game-effects";
 
 const PIXEL_EMOJIS = [
   "🎮", "👾", "🕹️", "🤖", "💾", "📟", "🌟", "🎵",
@@ -72,6 +73,21 @@ interface Props {
   onBack: () => void;
 }
 
+async function callMemoryApi(body: Record<string, unknown>) {
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/memory-game`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  return res.json();
+}
+
 export function MemoryGame({ onBack }: Props) {
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -93,10 +109,12 @@ export function MemoryGame({ onBack }: Props) {
   });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
+  const sessionTokenRef = useRef<string | null>(null);
+  const scoreSavedRef = useRef(false);
 
   const totalPairs = difficulty ? DIFFICULTY_CONFIG[difficulty].pairs : 0;
 
-  const startGame = useCallback((diff: Difficulty) => {
+  const startGame = useCallback(async (diff: Difficulty) => {
     setDifficulty(diff);
     setCards(buildDeck(DIFFICULTY_CONFIG[diff].pairs));
     setFlippedIds([]);
@@ -105,8 +123,22 @@ export function MemoryGame({ onBack }: Props) {
     setSeconds(0);
     setGameOver(false);
     setScoreSaved(false);
+    scoreSavedRef.current = false;
+    sessionTokenRef.current = null;
     lockRef.current = false;
-  }, []);
+
+    // Start anti-cheat session if logged in
+    if (user && profile) {
+      try {
+        const res = await callMemoryApi({ action: "start", username: profile.username, difficulty: diff });
+        if (res.session_token) {
+          sessionTokenRef.current = res.session_token;
+        }
+      } catch {
+        // Fallback: no session token, will use direct insert
+      }
+    }
+  }, [user, profile]);
 
   const fetchLeaderboard = useCallback(async (diff: Difficulty) => {
     const { data } = await supabase
@@ -145,6 +177,8 @@ export function MemoryGame({ onBack }: Props) {
     if (totalPairs > 0 && matchedPairs === totalPairs) {
       setGameOver(true);
       if (timerRef.current) clearInterval(timerRef.current);
+      fireConfetti();
+      playVictorySound();
       const score = calcScore(moves, seconds, totalPairs);
       if (difficulty) {
         const prev = bestScores[difficulty] || 0;
@@ -153,9 +187,25 @@ export function MemoryGame({ onBack }: Props) {
           setBestScores(next);
           localStorage.setItem("memory-best", JSON.stringify(next));
         }
-        // Save to database
-        saveScore(score, moves, seconds, difficulty);
-        fetchLeaderboard(difficulty);
+        // Try anti-cheat finish first
+        if (sessionTokenRef.current && !scoreSavedRef.current) {
+          scoreSavedRef.current = true;
+          setScoreSaved(true);
+          callMemoryApi({ action: "finish", session_token: sessionTokenRef.current }).then(res => {
+            if (!res.valid) {
+              // Fallback to direct insert
+              saveScore(score, moves, seconds, difficulty);
+            }
+            fetchLeaderboard(difficulty);
+          }).catch(() => {
+            saveScore(score, moves, seconds, difficulty);
+            fetchLeaderboard(difficulty);
+          });
+        } else {
+          // No session token, direct insert
+          saveScore(score, moves, seconds, difficulty);
+          fetchLeaderboard(difficulty);
+        }
       }
     }
   }, [matchedPairs, totalPairs]); // eslint-disable-line
@@ -166,6 +216,8 @@ export function MemoryGame({ onBack }: Props) {
     if (!card || card.flipped || card.matched) return;
     if (flippedIds.includes(id)) return;
 
+    playFlipSound();
+
     const newFlipped = [...flippedIds, id];
     setCards(prev => prev.map(c => c.id === id ? { ...c, flipped: true } : c));
     setFlippedIds(newFlipped);
@@ -175,11 +227,15 @@ export function MemoryGame({ onBack }: Props) {
       lockRef.current = true;
       const [a, b] = newFlipped;
       const cardA = cards.find(c => c.id === a)!;
-      const cardB = cards.find(c => c.id === b)!; // b is `id` so use card
       const emojiB = card.emoji; // current card
 
       if (cardA.emoji === emojiB) {
         // Match!
+        playMatchSound();
+        // Send anti-cheat event
+        if (sessionTokenRef.current) {
+          callMemoryApi({ action: "event", session_token: sessionTokenRef.current, event_type: "pair_found", card_a_id: a, card_b_id: b }).catch(() => {});
+        }
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, matched: true, flipped: true } : c
@@ -189,7 +245,10 @@ export function MemoryGame({ onBack }: Props) {
           lockRef.current = false;
         }, 400);
       } else {
-        // No match
+        // No match - send anti-cheat event
+        if (sessionTokenRef.current) {
+          callMemoryApi({ action: "event", session_token: sessionTokenRef.current, event_type: "mismatch", card_a_id: a, card_b_id: b }).catch(() => {});
+        }
         setTimeout(() => {
           setCards(prev => prev.map(c =>
             c.id === a || c.id === b ? { ...c, flipped: false } : c

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useScribbleGame } from "@/hooks/useScribble";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,8 +39,9 @@ const WORD_LIST = [
 ];
 
 export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
-  const { lobby, players, guesses, secureWord, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId);
   const { user } = useAuth();
+  const { profile } = useProfile();
+  const { lobby, players, guesses, joinLobby, submitGuess, leaveLobby } = useScribbleGame(lobbyId, user?.id ?? "", profile?.username ?? "Gäst");
   const { toast } = useToast();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -482,9 +484,9 @@ export function ScribbleGame({ lobbyId, onLeave }: ScribbleGameProps) {
               </div>
             )}
 
-            {isDrawer && secureWord && (
+            {isDrawer && lobby?.current_word && (
               <div className="text-center py-1 bg-primary/10 text-primary text-xs sm:text-sm font-display font-bold shrink-0">
-                Rita: {secureWord}
+                Rita: {lobby.current_word}
               </div>
             )}
 

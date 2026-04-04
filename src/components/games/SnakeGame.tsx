@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Trophy, Clock, Medal, Apple, ArrowUp, ArrowDown, 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { fireConfetti, playPickupSound, playGameOverSound, playVictorySound } from "@/lib/game-effects";
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 18;
@@ -81,6 +82,14 @@ export function SnakeGame({ onBack }: Props) {
 
   const saveScore = useCallback(async (finalScore: number, apples: number, timeSec: number) => {
     if (!user || !profile || scoreSaved) return;
+    // Check if user already has a higher score
+    const { data: existing } = await supabase
+      .from('snake_highscores')
+      .select('score')
+      .eq('user_id', user.id)
+      .order('score', { ascending: false })
+      .limit(1);
+    if (existing && existing.length > 0 && existing[0].score >= finalScore) return;
     setScoreSaved(true);
     await supabase.from('snake_highscores').insert({
       user_id: user.id,
@@ -198,6 +207,10 @@ export function SnakeGame({ onBack }: Props) {
     if (finalScore > highScore) {
       setHighScore(finalScore);
       localStorage.setItem("snake-best", String(finalScore));
+      fireConfetti();
+      playVictorySound();
+    } else {
+      playGameOverSound();
     }
 
     saveScore(finalScore, apples, seconds);
@@ -232,6 +245,7 @@ export function SnakeGame({ onBack }: Props) {
 
     if (head.x === apple.x && head.y === apple.y) {
       // Ate apple
+      playPickupSound();
       applesRef.current += 1;
       scoreRef.current += 10 + Math.floor(applesRef.current / 5) * 5;
       setScore(scoreRef.current);
