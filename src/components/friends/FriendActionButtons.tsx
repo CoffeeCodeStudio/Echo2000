@@ -1,8 +1,10 @@
-import { Heart, MessageCircle, Ban, FileText, UserPlus, Clock, UserCheck, UserMinus, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Ban, FileText, UserPlus, Clock, UserCheck, UserMinus, Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFriendship } from "@/hooks/useFriendship";
 import { useAuth } from "@/hooks/useAuth";
+import { useBlockList } from "@/hooks/useBlockList";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface FriendActionButtonsProps {
   targetUserId: string;
@@ -13,11 +15,33 @@ export function FriendActionButtons({ targetUserId, targetUsername }: FriendActi
   const { user } = useAuth();
   const navigate = useNavigate();
   const { status, loading, sendRequest, acceptRequest, removeFriendship } = useFriendship(targetUserId);
+  const { isBlocked, blockUser, unblockUser } = useBlockList();
 
   const handleSendMessage = () => {
-    // Navigate to mailbox with recipient pre-filled (future feature)
     navigate('/', { state: { tab: 'mejl', recipient: targetUsername } });
   };
+
+  const handleBlock = async () => {
+    const ok = await blockUser(targetUserId);
+    if (ok) {
+      toast.success(`${targetUsername} har blockerats`);
+      // Also remove friendship if it exists
+      if (status === 'accepted' || status === 'pending_sent' || status === 'pending_received') {
+        removeFriendship();
+      }
+    } else {
+      toast.error("Kunde inte blockera användaren");
+    }
+  };
+
+  const handleUnblock = async () => {
+    const ok = await unblockUser(targetUserId);
+    if (ok) {
+      toast.success(`${targetUsername} har avblockerats`);
+    }
+  };
+
+  const blocked = isBlocked(targetUserId);
 
   const renderFriendButton = () => {
     if (!user) {
@@ -30,6 +54,20 @@ export function FriendActionButtons({ targetUserId, targetUsername }: FriendActi
         >
           <UserPlus className="w-3 h-3 mr-1" />
           Logga in för att lägga till
+        </Button>
+      );
+    }
+
+    if (blocked) {
+      return (
+        <Button 
+          variant="link" 
+          size="sm" 
+          className="text-muted-foreground h-auto py-1 px-2 uppercase font-bold"
+          disabled
+        >
+          <Ban className="w-3 h-3 mr-1" />
+          Blockerad
         </Button>
       );
     }
@@ -51,80 +89,42 @@ export function FriendActionButtons({ targetUserId, targetUsername }: FriendActi
     switch (status) {
       case 'loading':
         return (
-          <Button 
-            variant="link" 
-            size="sm" 
-            className="text-muted-foreground h-auto py-1 px-2 uppercase font-bold"
-            disabled
-          >
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            Laddar...
+          <Button variant="link" size="sm" className="text-muted-foreground h-auto py-1 px-2 uppercase font-bold" disabled>
+            <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Laddar...
           </Button>
         );
-      
       case 'accepted':
         return (
-          <Button 
-            variant="link" 
-            size="sm" 
-            className="text-green-500 h-auto py-1 px-2 uppercase font-bold group"
-            onClick={removeFriendship}
-          >
+          <Button variant="link" size="sm" className="text-green-500 h-auto py-1 px-2 uppercase font-bold group" onClick={removeFriendship}>
             <UserCheck className="w-3 h-3 mr-1" />
             <span className="group-hover:hidden">Vänner ✓</span>
             <span className="hidden group-hover:inline text-destructive">Ta bort vän</span>
           </Button>
         );
-      
       case 'pending_sent':
         return (
-          <Button 
-            variant="link" 
-            size="sm" 
-            className="text-yellow-500 h-auto py-1 px-2 uppercase font-bold group"
-            onClick={removeFriendship}
-          >
+          <Button variant="link" size="sm" className="text-yellow-500 h-auto py-1 px-2 uppercase font-bold group" onClick={removeFriendship}>
             <Clock className="w-3 h-3 mr-1" />
             <span className="group-hover:hidden">Väntar...</span>
             <span className="hidden group-hover:inline text-destructive">Avbryt</span>
           </Button>
         );
-      
       case 'pending_received':
         return (
           <div className="flex items-center gap-1">
-            <Button 
-              variant="link" 
-              size="sm" 
-              className="text-green-500 h-auto py-1 px-2 uppercase font-bold"
-              onClick={acceptRequest}
-            >
-              <UserCheck className="w-3 h-3 mr-1" />
-              Acceptera
+            <Button variant="link" size="sm" className="text-green-500 h-auto py-1 px-2 uppercase font-bold" onClick={acceptRequest}>
+              <UserCheck className="w-3 h-3 mr-1" /> Acceptera
             </Button>
-            <Button 
-              variant="link" 
-              size="sm" 
-              className="text-destructive h-auto py-1 px-2 uppercase font-bold"
-              onClick={removeFriendship}
-            >
-              <UserMinus className="w-3 h-3 mr-1" />
-              Avböj
+            <Button variant="link" size="sm" className="text-destructive h-auto py-1 px-2 uppercase font-bold" onClick={removeFriendship}>
+              <UserMinus className="w-3 h-3 mr-1" /> Avböj
             </Button>
           </div>
         );
-      
       case 'none':
       default:
         return (
-          <Button 
-            variant="link" 
-            size="sm" 
-            className="text-primary h-auto py-1 px-2 uppercase font-bold"
-            onClick={sendRequest}
-          >
-            <Heart className="w-3 h-3 mr-1" />
-            Skapa Relation
+          <Button variant="link" size="sm" className="text-primary h-auto py-1 px-2 uppercase font-bold" onClick={sendRequest}>
+            <Heart className="w-3 h-3 mr-1" /> Skapa Relation
           </Button>
         );
     }
@@ -148,10 +148,27 @@ export function FriendActionButtons({ targetUserId, targetUsername }: FriendActi
       
       <span className="text-border">|</span>
       
-      <Button variant="link" size="sm" className="text-[#ff6600] h-auto py-1 px-2 uppercase font-bold text-[10px]">
-        <Ban className="w-3 h-3 mr-1" />
-        Blockera
-      </Button>
+      {blocked ? (
+        <Button
+          variant="link"
+          size="sm"
+          className="text-green-500 h-auto py-1 px-2 uppercase font-bold text-[10px]"
+          onClick={handleUnblock}
+        >
+          <ShieldOff className="w-3 h-3 mr-1" />
+          Avblockera
+        </Button>
+      ) : (
+        <Button
+          variant="link"
+          size="sm"
+          className="text-[#ff6600] h-auto py-1 px-2 uppercase font-bold text-[10px]"
+          onClick={handleBlock}
+        >
+          <Ban className="w-3 h-3 mr-1" />
+          Blockera
+        </Button>
+      )}
       
       <span className="text-border">|</span>
       

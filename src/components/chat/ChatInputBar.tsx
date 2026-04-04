@@ -1,6 +1,6 @@
-/** Emoticon bar + font toolbar + text input + send button — MSN XP style */
+/** Emoticon bar + font toolbar + text input + send button + file/voice — MSN XP style */
 import { useState, useRef, useCallback } from "react";
-import { Smile, Image, Gift, Bold, Italic, Underline, Palette, Bell, Type } from "lucide-react";
+import { Smile, Image, Gift, Bold, Italic, Underline, Palette, Bell, Type, Paperclip, Mic } from "lucide-react";
 import { Button } from "../ui/button";
 import { MsnEmoticonPicker, quickEmoticons } from "./MsnEmoticons";
 
@@ -11,6 +11,16 @@ interface ChatInputBarProps {
   onFocus: () => void;
   onBlur: () => void;
   onNudge?: () => void;
+  onFileClick?: () => void;
+  fileInputRef?: React.RefObject<HTMLInputElement>;
+  onFileSelect?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  uploading?: boolean;
+  uploadProgress?: number;
+  // Voice
+  recording?: boolean;
+  voiceUploading?: boolean;
+  voiceElapsed?: string;
+  onToggleVoice?: () => void;
 }
 
 const TEXT_COLORS = [
@@ -28,7 +38,13 @@ const FONT_SIZES = [
 
 const WINKS = ["💃", "🕺", "😘", "🤗", "🎉", "🌟", "💖", "🔥", "👋", "🎶", "✨", "🦋"];
 
-export function ChatInputBar({ inputMessage, onInputChange, onSend, onFocus, onBlur, onNudge }: ChatInputBarProps) {
+const ACCEPTED_FILE_TYPES = "image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar";
+
+export function ChatInputBar({
+  inputMessage, onInputChange, onSend, onFocus, onBlur, onNudge,
+  onFileClick, fileInputRef, onFileSelect, uploading, uploadProgress,
+  recording, voiceUploading, voiceElapsed, onToggleVoice,
+}: ChatInputBarProps) {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showFontSize, setShowFontSize] = useState(false);
@@ -69,7 +85,6 @@ export function ChatInputBar({ inputMessage, onInputChange, onSend, onFocus, onB
       onInputChange(before + openTag + selected + closeTag + after);
     } else {
       onInputChange(text + openTag + closeTag);
-      // Place cursor between tags
       setTimeout(() => {
         ta.focus();
         const cursorPos = (text + openTag).length;
@@ -78,33 +93,11 @@ export function ChatInputBar({ inputMessage, onInputChange, onSend, onFocus, onB
     }
   }, [inputMessage, onInputChange]);
 
-  const handleBold = () => {
-    closeAllPopups();
-    setActiveBold(!activeBold);
-    wrapSelection("b");
-  };
-
-  const handleItalic = () => {
-    closeAllPopups();
-    setActiveItalic(!activeItalic);
-    wrapSelection("i");
-  };
-
-  const handleUnderline = () => {
-    closeAllPopups();
-    setActiveUnderline(!activeUnderline);
-    wrapSelection("u");
-  };
-
-  const handleColor = (color: string) => {
-    wrapSelection("color", color);
-    setShowColorPicker(false);
-  };
-
-  const handleFontSize = (size: number) => {
-    wrapSelection("size", String(size));
-    setShowFontSize(false);
-  };
+  const handleBold = () => { closeAllPopups(); setActiveBold(!activeBold); wrapSelection("b"); };
+  const handleItalic = () => { closeAllPopups(); setActiveItalic(!activeItalic); wrapSelection("i"); };
+  const handleUnderline = () => { closeAllPopups(); setActiveUnderline(!activeUnderline); wrapSelection("u"); };
+  const handleColor = (color: string) => { wrapSelection("color", color); setShowColorPicker(false); };
+  const handleFontSize = (size: number) => { wrapSelection("size", String(size)); setShowFontSize(false); };
 
   const handleInsertImage = () => {
     if (imageUrl.trim()) {
@@ -123,6 +116,47 @@ export function ChatInputBar({ inputMessage, onInputChange, onSend, onFocus, onB
 
   return (
     <>
+      {/* Upload progress bar */}
+      {uploading && (
+        <div className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 border-t border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 transition-all duration-300 rounded-full"
+                style={{ width: `${uploadProgress || 0}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono">
+              {uploadProgress || 0}%
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Recording indicator */}
+      {recording && (
+        <div className="px-2 py-1.5 bg-red-50 dark:bg-red-900/30 border-t border-red-200 dark:border-red-800 flex items-center gap-2">
+          <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-[11px] text-red-600 dark:text-red-400 font-mono font-bold">
+            Spelar in… {voiceElapsed}
+          </span>
+          <span className="text-[10px] text-red-400 dark:text-red-500 ml-auto">
+            Max 2:00
+          </span>
+        </div>
+      )}
+
+      {/* Hidden file input */}
+      {fileInputRef && onFileSelect && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPTED_FILE_TYPES}
+          className="hidden"
+          onChange={onFileSelect}
+        />
+      )}
+
       {/* MSN Font Toolbar */}
       <div className="flex items-center gap-0.5 px-2 py-1 bg-gradient-to-b from-[#f6f6f6] to-[#ebebeb] dark:from-gray-800 dark:to-gray-750 border-t border-gray-300 dark:border-gray-600">
         {/* Font size */}
@@ -282,6 +316,30 @@ export function ChatInputBar({ inputMessage, onInputChange, onSend, onFocus, onB
         </div>
 
         <div className="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1" />
+
+        {/* File upload */}
+        {onFileClick && (
+          <button
+            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            onClick={onFileClick}
+            title="Bifoga fil"
+            disabled={uploading}
+          >
+            <Paperclip className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          </button>
+        )}
+
+        {/* Voice recording */}
+        {onToggleVoice && (
+          <button
+            className={`p-1 rounded transition-colors ${recording ? "bg-red-200 dark:bg-red-800" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+            onClick={onToggleVoice}
+            title={recording ? "Stoppa inspelning" : "Spela in röstmeddelande"}
+            disabled={voiceUploading}
+          >
+            <Mic className={`w-3.5 h-3.5 ${recording ? "text-red-500 animate-pulse" : "text-gray-600 dark:text-gray-400"}`} />
+          </button>
+        )}
 
         {/* Nudge */}
         {onNudge && (
