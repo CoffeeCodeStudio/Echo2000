@@ -147,10 +147,11 @@ export function MobileNav({ activeTab, onTabChange, isVisible = true }: MobileNa
                   onClick={() => { onTabChange(item.id); setMoreOpen(false); }}
                   className={cn("cursor-pointer gap-2 text-sm", activeTab === item.id && "bg-accent")}
                 >
-                  <span
-                    className={isMejl ? "nav-anim-bounce" : undefined}
-                    style={isMejl ? { display: "inline-block", animation: "nav-bounce 2s infinite" } : undefined}
-                  >{item.emoji}</span>
+                  <span>
+                    {isMejl ? (
+                      <span className="nav-anim-inner" style={{ display: "inline-block", animation: "nav-bounce 2s infinite" }}>{item.emoji}</span>
+                    ) : item.emoji}
+                  </span>
                   <span>{item.label}</span>
                   {item.badge && item.badge > 0 && (
                     <span className="ml-auto text-[10px] bg-destructive text-white rounded-full px-1.5">{item.badge}</span>
