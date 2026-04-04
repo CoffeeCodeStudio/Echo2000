@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
 import { useProfileVisits } from "@/hooks/useProfileVisits";
 import { useFriendVotes } from "@/hooks/useFriendVotes";
+import { useFriendship } from "@/hooks/useFriendship";
 import type { UserStatus } from "./StatusIndicator";
 
 import { ProfileInfoSection } from "./profile/ProfileInfoSection";
@@ -42,6 +43,9 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
   const { voteCounts, userVotes, totalVotes, toggleVote, loading: voteLoading } = useFriendVotes(
     profileUserId || undefined
   );
+  const { status: friendshipStatus } = useFriendship(profileUserId || undefined);
+  const isFriend = friendshipStatus === 'accepted';
+  const canVote = !isOwnProfile && isFriend;
 
   const isLoggedIn = !!user;
   const showDemoMode = !isLoggedIn && !userId;
@@ -208,9 +212,14 @@ export function ProfilePage({ userId, showSection }: ProfilePageProps) {
               userVotes={userVotes}
               totalVotes={totalVotes}
               onToggleVote={toggleVote}
-              disabled={isOwnProfile}
+              disabled={!canVote}
               loading={voteLoading}
             />
+            {!isOwnProfile && !isFriend && (
+              <p className="text-[10px] text-muted-foreground mt-2 italic">
+                Endast vänner kan rösta på personlighet.
+              </p>
+            )}
           </div>
         )}
 
