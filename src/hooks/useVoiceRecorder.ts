@@ -66,11 +66,18 @@ export function useVoiceRecorder(onSendMessage: (content: string) => Promise<any
           return;
         }
 
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = await supabase.storage
           .from("chat-files")
-          .getPublicUrl(path);
+          .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 days
 
-        await onSendMessage(`[voice url="${urlData.publicUrl}"][/voice]`);
+        if (!urlData?.signedUrl) {
+          toast.error("Kunde inte generera URL för röstmeddelandet");
+          setUploading(false);
+          resolve();
+          return;
+        }
+
+        await onSendMessage(`[voice url="${urlData.signedUrl}"][/voice]`);
         setUploading(false);
         resolve();
       };

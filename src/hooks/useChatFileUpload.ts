@@ -46,14 +46,19 @@ export function useChatFileUpload(onSendMessage: (content: string) => Promise<an
 
     setUploadProgress(80);
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = await supabase.storage
       .from("chat-files")
-      .getPublicUrl(path);
+      .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 days
 
-    const publicUrl = urlData.publicUrl;
+    const fileUrl = urlData?.signedUrl;
+    if (!fileUrl) {
+      setUploading(false);
+      setUploadProgress(0);
+      throw new Error("Could not generate file URL");
+    }
     const isImage = IMAGE_TYPES.includes(file.type);
     const fileType = isImage ? "image" : "file";
-    const bbcode = `[file type="${fileType}" url="${publicUrl}"]${file.name}[/file]`;
+    const bbcode = `[file type="${fileType}" url="${fileUrl}"]${file.name}[/file]`;
 
     setUploadProgress(90);
     await onSendMessage(bbcode);
