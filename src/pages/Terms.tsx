@@ -55,7 +55,7 @@ export default function Terms() {
           </div>
 
           <div className="p-3 bg-muted/40 border border-border">
-            <p className="font-bold text-foreground mb-1"><p className="font-bold text-foreground mb-1">7. Beta-status & ansvarsfrihet</p> & ansvarsfrihet</p>
+            <p className="font-bold text-foreground mb-1">7. Beta-status & ansvarsfrihet</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
               <li>Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas <strong>utan förvarning</strong>.</li>
               <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Beta-perioden.</li>.</li>
