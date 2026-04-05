@@ -1,0 +1,1 @@
+DROP POLICY "Authenticated users can view chat files" ON storage.objects;
