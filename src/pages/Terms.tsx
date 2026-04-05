@@ -58,7 +58,7 @@ export default function Terms() {
             <p className="font-bold text-foreground mb-1">7. Beta-status & ansvarsfrihet</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
               <li>Sidan är under aktiv utveckling. Funktioner kan ändras och data kan återställas <strong>utan förvarning</strong>.</li>
-              <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Beta-perioden.</li>.</li>
+              <li>Vi ansvarar <strong>inte</strong> för tekniska fel, driftstopp eller förlust av data under Beta-perioden.</li>
               <li>Genom att använda tjänsten accepterar du att den tillhandahålls <strong>"i befintligt skick"</strong> utan garantier.</li>
             </ul>
           </div>
