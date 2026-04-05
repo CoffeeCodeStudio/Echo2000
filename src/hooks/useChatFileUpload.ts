@@ -58,7 +58,7 @@ export function useChatFileUpload(onSendMessage: (content: string) => Promise<an
     }
     const isImage = IMAGE_TYPES.includes(file.type);
     const fileType = isImage ? "image" : "file";
-    const bbcode = `[file type="${fileType}" url="${publicUrl}"]${file.name}[/file]`;
+    const bbcode = `[file type="${fileType}" url="${fileUrl}"]${file.name}[/file]`;
 
     setUploadProgress(90);
     await onSendMessage(bbcode);
