@@ -20,7 +20,7 @@ export default function Terms() {
         <div className="text-sm text-muted-foreground space-y-4">
           <div className="p-3 bg-muted/40 border border-border">
             <p className="font-bold text-foreground mb-1">1. Allmänt</p>
-            <p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. <p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. Tjänsten är i Beta-fas och tillhandahålls utan garantier.</p> och tillhandahålls utan garantier.</p>
+            <p><p>ECHO2000 ("tjänsten") drivs av Echo2000-projektet. Genom att skapa ett konto godkänner du dessa villkor i sin helhet. Tjänsten är i Beta-fas och tillhandahålls utan garantier.</p></p>
           </div>
 
           <div className="p-3 bg-muted/40 border border-border">
