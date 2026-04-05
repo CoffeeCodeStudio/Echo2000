@@ -91,7 +91,7 @@ export default function Terms() {
           </div>
 
           <p className="text-xs text-muted-foreground/70 text-center pt-2">
-            Senast uppdaterad: mars 2026 · © 2026 Senast uppdaterad: mars 2026 · © 2026 Echo2000 Beta
+            Senast uppdaterad: mars 2026 · © 2026 Echo2000 Beta
           </p>
         </div>
       </div>
